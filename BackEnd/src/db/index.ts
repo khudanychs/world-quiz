@@ -3,16 +3,25 @@ import { config } from '../config/index.js';
 
 const { Pool } = pg;
 
-export const pool = new Pool({
-  host: config.database.host,
-  port: config.database.port,
-  database: config.database.name,
-  user: config.database.user,
-  password: config.database.password,
-  max: 20,
-  idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 2000,
-});
+// Use DATABASE_URL if available (Render, Heroku, etc.), otherwise use individual params
+export const pool = config.database.url
+  ? new Pool({
+      connectionString: config.database.url,
+      ssl: config.nodeEnv === 'production' ? { rejectUnauthorized: false } : false,
+      max: 20,
+      idleTimeoutMillis: 30000,
+      connectionTimeoutMillis: 2000,
+    })
+  : new Pool({
+      host: config.database.host,
+      port: config.database.port,
+      database: config.database.name,
+      user: config.database.user,
+      password: config.database.password,
+      max: 20,
+      idleTimeoutMillis: 30000,
+      connectionTimeoutMillis: 2000,
+    });
 
 // Test the connection
 pool.on('connect', () => {

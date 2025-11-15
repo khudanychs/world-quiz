@@ -1,10 +1,16 @@
 import 'dotenv/config';
 
+// Debug: log DATABASE_URL (first 20 chars only for security)
+console.log('🔍 DATABASE_URL:', process.env.DATABASE_URL ? `${process.env.DATABASE_URL.substring(0, 20)}...` : 'NOT SET');
+console.log('🔍 NODE_ENV:', process.env.NODE_ENV);
+
 export const config = {
   port: parseInt(process.env.PORT || '3000', 10),
   nodeEnv: process.env.NODE_ENV || 'development',
   
   database: {
+    // Support both individual params and DATABASE_URL (for Render)
+    url: process.env.DATABASE_URL,
     host: process.env.DB_HOST || 'localhost',
     port: parseInt(process.env.DB_PORT || '5432', 10),
     name: process.env.DB_NAME || 'world_quiz',
