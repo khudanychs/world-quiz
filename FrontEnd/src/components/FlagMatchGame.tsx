@@ -29,9 +29,15 @@ export default function FlagMatchGame() {
     const update = () => {
       const vw = window.innerWidth;
       const vh = window.innerHeight;
-      const maxW = vw * 0.95;
-      const maxH = vh * 0.9;
-      const ar = BASE_W / BASE_H;
+      const isPortrait = vh > vw;
+      
+      // More aggressive sizing for mobile portrait
+      const maxW = vw * (isPortrait ? 0.92 : 0.95);
+      const maxH = vh * (isPortrait ? 0.72 : 0.85);
+      
+      // Better aspect ratio for portrait mode (more height)
+      const ar = isPortrait ? 1.5 : (BASE_W / BASE_H);
+      
       let width = maxW;
       let height = width / ar;
       if (height > maxH) {
@@ -411,7 +417,7 @@ export default function FlagMatchGame() {
       <div
         style={{
           position: "absolute",
-          top: 56,
+          top: "clamp(52px, 8vh, 70px)",
           left: "50%",
           transform: "translateX(-50%)",
           zIndex: 4,
@@ -419,14 +425,14 @@ export default function FlagMatchGame() {
           alignItems: "center",
           flexWrap: "wrap",
           justifyContent: "center",
-          gap: "clamp(6px, 1.5vw, 10px)",
-          padding: "clamp(8px, 2vw, 14px)",
+          gap: "clamp(4px, 1.2vw, 8px)",
+          padding: "clamp(6px, 1.5vw, 12px) clamp(8px, 2vw, 14px)",
           borderRadius: "clamp(8px, 2vw, 12px)",
           border: "1px solid rgba(255,255,255,0.25)",
-          background: "rgba(0,0,0,0.45)",
-          backdropFilter: "blur(6px)",
-          boxShadow: "0 4px 12px rgba(0,0,0,0.35)",
-          maxWidth: "95vw",
+          background: "rgba(0,0,0,0.6)",
+          backdropFilter: "blur(8px)",
+          boxShadow: "0 4px 12px rgba(0,0,0,0.4)",
+          maxWidth: "92vw",
         }}
       >
         {loading ? (
@@ -508,13 +514,13 @@ export default function FlagMatchGame() {
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                minWidth: "clamp(60px, 15vw, 100px)",
-                minHeight: "clamp(45px, 11vw, 75px)",
-                maxWidth: "clamp(60px, 15vw, 100px)",
-                maxHeight: "clamp(45px, 11vw, 75px)",
+                minWidth: "clamp(50px, 12vw, 90px)",
+                minHeight: "clamp(38px, 9vw, 68px)",
+                maxWidth: "clamp(50px, 12vw, 90px)",
+                maxHeight: "clamp(38px, 9vw, 68px)",
                 background: "rgba(255,255,255,0.05)",
                 borderRadius: 4,
-                padding: 4,
+                padding: 3,
               }}
             >
               <img
@@ -533,9 +539,9 @@ export default function FlagMatchGame() {
                 }}
               />
             </div>
-            <div style={{ display: "flex", flexDirection: "column", minWidth: "clamp(100px, 25vw, 140px)" }}>
-              <strong style={{ fontSize: "clamp(11px, 2.6vw, 16px)" }}>Find this flag on the map</strong>
-              <span style={{ opacity: 0.8, fontSize: "clamp(9px, 2.2vw, 13px)" }}>Tap the matching country</span>
+            <div style={{ display: "flex", flexDirection: "column", minWidth: "clamp(90px, 22vw, 130px)" }}>
+              <strong style={{ fontSize: "clamp(10px, 2.4vw, 15px)" }}>Find this flag</strong>
+              <span style={{ opacity: 0.7, fontSize: "clamp(8px, 2vw, 12px)" }}>Tap country</span>
             </div>
             <span style={{ marginLeft: 4, opacity: 0.8, fontSize: "clamp(10px, 2.4vw, 14px)", whiteSpace: "nowrap" }}>
               {currentIdx + 1}/{targets.length}
