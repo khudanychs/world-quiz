@@ -1,6 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import InteractiveMap from "./InteractiveMap";
+import { useAuth } from "../contexts/AuthContext";
+import { db } from "../firebase";
+import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import {
   buildRestLookup,
   isClickableCountry,
@@ -17,6 +20,7 @@ const BASE_H = 500;
 type CountryInfo = { name: string; cca2: string; flag: string };
 
 export default function FlagMatchGame() {
+  const { user } = useAuth();
   const navigate = useNavigate();
 
   // Layout sizing
@@ -320,6 +324,29 @@ export default function FlagMatchGame() {
   }
 
   const gameOver = (currentIdx >= targets.length && targets.length > 0) || hasWon;
+
+  // Effect to save score when game is over
+  useEffect(() => {
+    if (gameOver && user && score > 0) {
+      const saveScore = async () => {
+        try {
+          await addDoc(collection(db, "scores"), {
+            userId: user.uid,
+            username: user.displayName,
+            score: score,
+            bestStreak: bestStreak,
+            createdAt: serverTimestamp(),
+            gameType: "FlagMatch",
+          });
+          console.log("Score saved successfully!");
+        } catch (error) {
+          console.error("Error saving score: ", error);
+        }
+      };
+
+      saveScore();
+    }
+  }, [gameOver, user, score, bestStreak]);
 
   return (
     <>

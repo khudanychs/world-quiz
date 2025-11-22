@@ -1,13 +1,32 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { apiService, User } from '../services/api';
+import {
+  onAuthStateChanged,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  signInWithPopup,
+  GoogleAuthProvider,
+  signOut,
+  updateProfile,
+  User as FirebaseUser // Rename to avoid conflict if any
+} from 'firebase/auth';
+import { auth } from '../firebase';
+
+// A custom User type to combine Firebase User and our custom fields if needed
+// For now, it will mostly mirror FirebaseUser's relevant fields
+export interface User {
+  uid: string;
+  displayName: string | null;
+  email: string | null;
+  photoURL: string | null;
+}
 
 interface AuthContextType {
   user: User | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
   register: (username: string, email: string, password: string) => Promise<void>;
-  loginWithGoogle: () => void;
-  logout: () => void;
+  loginWithGoogle: () => Promise<void>;
+  logout: () => Promise<void>;
   setNickname: (username: string) => Promise<void>;
   refreshUser: () => Promise<void>;
   isAuthenticated: boolean;
@@ -20,68 +39,103 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check if user is already logged in
-    const initAuth = async () => {
-      const token = localStorage.getItem('auth_token');
-      if (token) {
-        try {
-          const userData = await apiService.getProfile();
-          setUser(userData);
-        } catch (error) {
-          console.error('Failed to fetch user profile:', error);
-          apiService.clearToken();
-        }
+    const unsubscribe = onAuthStateChanged(auth, (firebaseUser: FirebaseUser | null) => {
+      if (firebaseUser) {
+        const formattedUser: User = {
+          uid: firebaseUser.uid,
+          displayName: firebaseUser.displayName,
+          email: firebaseUser.email,
+          photoURL: firebaseUser.photoURL,
+        };
+        setUser(formattedUser);
+      } else {
+        setUser(null);
       }
       setLoading(false);
-    };
+    });
 
-    initAuth();
+    // Cleanup subscription on unmount
+    return () => unsubscribe();
   }, []);
 
   const login = async (email: string, password: string) => {
     try {
-      const response = await apiService.login({ email, password });
-      setUser(response.user);
+      await signInWithEmailAndPassword(auth, email, password);
+      // onAuthStateChanged will handle setting the user
     } catch (error: any) {
-      throw new Error(error.response?.data?.error || 'Login failed');
+      // Map Firebase error codes to user-friendly messages
+      throw new Error(error.message || 'Login failed');
     }
   };
 
   const register = async (username: string, email: string, password: string) => {
     try {
-      const response = await apiService.register({ username, email, password });
-      setUser(response.user);
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      await updateProfile(userCredential.user, { displayName: username });
+      
+      // Manually update local user state to reflect display name immediately
+      const formattedUser: User = {
+          uid: userCredential.user.uid,
+          displayName: username,
+          email: userCredential.user.email,
+          photoURL: userCredential.user.photoURL,
+      };
+      setUser(formattedUser);
+      // onAuthStateChanged will also fire, but this provides a more immediate UI update
+      
     } catch (error: any) {
-      throw new Error(error.response?.data?.error || 'Registration failed');
+      throw new Error(error.message || 'Registration failed');
     }
   };
 
-  const loginWithGoogle = () => {
-    window.location.href = apiService.getGoogleAuthUrl();
+  const loginWithGoogle = async () => {
+    try {
+      const provider = new GoogleAuthProvider();
+      await signInWithPopup(auth, provider);
+      // onAuthStateChanged will handle setting the user
+    } catch (error: any) {
+        throw new Error(error.message || 'Google login failed');
+    }
   };
 
   const refreshUser = async () => {
-    try {
-      const userData = await apiService.getProfile();
-      setUser(userData);
-    } catch (error) {
-      console.error('Failed to refresh user:', error);
-      throw error;
+    await auth.currentUser?.reload();
+    const firebaseUser = auth.currentUser;
+    if (firebaseUser) {
+      const formattedUser: User = {
+        uid: firebaseUser.uid,
+        displayName: firebaseUser.displayName,
+        email: firebaseUser.email,
+        photoURL: firebaseUser.photoURL,
+      };
+      setUser(formattedUser);
+    } else {
+      setUser(null);
     }
   };
 
   const setNickname = async (username: string) => {
-    try {
-      const response = await apiService.setNickname(username);
-      setUser(response.user);
-    } catch (error: any) {
-      throw error;
+    const currentUser = auth.currentUser;
+    if (currentUser) {
+      try {
+        await updateProfile(currentUser, { displayName: username });
+        // Manually trigger a refresh to get the updated user object
+        await refreshUser();
+      } catch (error: any) {
+        throw new Error(error.message || 'Failed to update nickname');
+      }
+    } else {
+      throw new Error('No user is currently signed in.');
     }
   };
 
-  const logout = () => {
-    apiService.logout();
-    setUser(null);
+  const logout = async () => {
+    try {
+      await signOut(auth);
+      // onAuthStateChanged will handle setting the user to null
+    } catch (error: any) {
+        throw new Error(error.message || 'Logout failed');
+    }
   };
 
   return (

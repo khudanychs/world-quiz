@@ -63,7 +63,7 @@ export function Register() {
               minLength={3}
               maxLength={50}
               placeholder="johndoe"
-              pattern="[a-zA-Z0-9_-]+"
+              pattern="[a-zA-Z0-9_\\-]+"
               title="Only letters, numbers, underscores, and hyphens"
             />
           </div>

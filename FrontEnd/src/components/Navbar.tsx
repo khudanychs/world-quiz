@@ -24,10 +24,10 @@ export function Navbar() {
                   title="Settings"
                 >
                   <span className="navbar-user">
-                    {user?.avatar_url && (
-                      <img src={user.avatar_url} alt="avatar" className="navbar-avatar" />
+                    {user?.photoURL && (
+                      <img src={user.photoURL} alt="avatar" className="navbar-avatar" />
                     )}
-                    <span className="navbar-username">{user?.username}</span>
+                    <span className="navbar-username">{user?.displayName}</span>
                   </span>
                 </button>
                 <button onClick={logout} className="navbar-button">

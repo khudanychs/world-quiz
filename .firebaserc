@@ -1,5 +1,8 @@
 {
   "projects": {
-    "default": "world-quiz-476512"
-  }
+    "default": "world-quiz-476512",
+    "world quiz": "world-quiz-476512"
+  },
+  "targets": {},
+  "etags": {}
 }

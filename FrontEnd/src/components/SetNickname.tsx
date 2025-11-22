@@ -13,7 +13,7 @@ export const SetNickname = () => {
   useEffect(() => {
     // Pre-fill with Google display name or username
     if (user) {
-      setUsername(user.display_name || user.username || '');
+      setUsername(user.displayName || '');
     }
   }, [user]);
 
@@ -23,10 +23,10 @@ export const SetNickname = () => {
     setLoading(true);
 
     try {
-  await setNickname(username);
-  navigate('/', { replace: true }); // Replace history to avoid back to nickname
+      await setNickname(username);
+      navigate('/', { replace: true }); // Replace history to avoid back to nickname
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Failed to set nickname');
+      setError(err.message || 'Failed to set nickname');
     } finally {
       setLoading(false);
     }

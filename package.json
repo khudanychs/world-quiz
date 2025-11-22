@@ -1,22 +1,16 @@
 {
-  "name": "world-quiz-monorepo",
+  "name": "world-quiz",
   "version": "1.0.0",
   "private": true,
-  "description": "World Quiz - Multi-project repository with Frontend and Backend",
+  "description": "World Quiz - Interactive geography game",
   "scripts": {
     "dev": "npm run dev --prefix FrontEnd",
-    "dev:backend": "npm run dev --prefix BackEnd",
-    "dev:all": "concurrently \"npm run dev\" \"npm run dev:backend\"",
     "build": "npm run build --prefix FrontEnd",
-    "build:backend": "npm run build --prefix BackEnd",
-    "build:all": "npm run build && npm run build:backend",
     "preview": "npm run preview --prefix FrontEnd",
-    "install:all": "npm run install:frontend && npm run install:backend",
     "install:frontend": "cd FrontEnd && npm install",
-    "install:backend": "cd BackEnd && npm install",
-    "db:migrate": "npm run db:migrate --prefix BackEnd"
+    "deploy": "npm run build && firebase deploy"
   },
-  "keywords": ["world-quiz", "geography", "react", "vite", "express", "postgresql"],
+  "keywords": ["world-quiz", "geography", "react", "vite"],
   "author": "",
   "license": "MIT"
 }

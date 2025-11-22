@@ -2,7 +2,6 @@ import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { Navbar } from './components/Navbar';
 import { Login } from './components/Login';
 import { Register } from './components/Register';
-import { AuthCallback } from './components/AuthCallback';
 import { SetNickname } from './components/SetNickname';
 import WorldMap from './WorldMap';
 import FlagMatchGame from './components/FlagMatchGame';
@@ -26,7 +25,7 @@ export default function App() {
   const location = useLocation();
   const isMapRoute = location.pathname.startsWith('/map');
   const isGameRoute = location.pathname.startsWith('/game');
-  const isAuthRoute = ['/login', '/register', '/set-nickname', '/auth/callback'].some(p => location.pathname.startsWith(p));
+  const isAuthRoute = ['/login', '/register', '/set-nickname'].some(p => location.pathname.startsWith(p));
   const hideNav = isMapRoute || isGameRoute || isAuthRoute;
   return (
     <>
@@ -43,7 +42,6 @@ export default function App() {
         <Routes>
           <Route path='/login' element={<GuestRoute><Login /></GuestRoute>} />
           <Route path='/register' element={<GuestRoute><Register /></GuestRoute>} />
-          <Route path='/auth/callback' element={<AuthCallback />} />
           <Route
             path='/set-nickname'
             element={
