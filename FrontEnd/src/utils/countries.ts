@@ -15,9 +15,6 @@ export function normalizeCountryName(raw: string): string {
     "Cook Is.": "Cook Islands",
     "Fr. Polynesia": "French Polynesia",
     "N. Cyprus": "Northern Cyprus",
-    // Crimea is part of Ukraine (internationally recognized)
-    Crimea: "Ukraine",
-    "Crimean Peninsula": "Ukraine",
   };
   return map[raw] ?? raw;
 }
@@ -171,11 +168,6 @@ export function initializeGameEligibleCountries(
       }
     }
   }
-}
-
-export function isClickableCountry(rawName: string): boolean {
-  const name = normalizeCountryName(rawName);
-  return !nonClickableTerritories.has(name);
 }
 
 /**

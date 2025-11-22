@@ -18,6 +18,25 @@ service cloud.firestore {
                           && resource.data.userId == request.auth.uid;
     }
     
+    // Usernames collection - for unique username enforcement
+    match /usernames/{userId} {
+      // Anyone authenticated can read to check if username is taken
+      allow read: if request.auth != null;
+      // User can write their own username record
+      allow create: if request.auth != null 
+                    && request.auth.uid == userId
+                    && request.resource.data.username is string
+                    && request.resource.data.username_lower is string
+                    && request.resource.data.userId == request.auth.uid;
+      // User can update their own username record
+      allow update: if request.auth != null 
+                    && request.auth.uid == userId
+                    && request.resource.data.username is string
+                    && request.resource.data.username_lower is string;
+      // User can delete their own username record
+      allow delete: if request.auth != null && request.auth.uid == userId;
+    }
+    
     // Users collection - users can only read/write their own data
     match /users/{userId} {
       allow read: if request.auth != null && request.auth.uid == userId;

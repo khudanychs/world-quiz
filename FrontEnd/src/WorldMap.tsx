@@ -7,8 +7,6 @@ import {
   restAliases,
   normalizeApos,
   stripDiacritics,
-  isClickableCountry as isClickable,
-  nonClickableTerritories,
 } from "./utils/countries";
 
 /** --- Rozměry a rámeček obdélníku --- */
@@ -16,22 +14,6 @@ const BASE_W = 1000;
 const BASE_H = 500;
 const FRAME = 10;
 const FRAME_COLOR = "#5b8cff";
-
-/** Ostrovní státy (info only – nemění klikatelnost) */
-const islandCountries = new Set([
-  "Iceland", "Ireland", "United Kingdom", "Malta", "Cyprus", 
-  "Madagascar", "Sri Lanka", "Maldives", "Seychelles", "Mauritius",
-  "Indonesia", "Philippines", "Malaysia", "Singapore", "Brunei",
-  "Japan", "Taiwan", "New Zealand", "Australia", "Papua New Guinea",
-  "Fiji", "Samoa", "Tonga", "Vanuatu", "Solomon Islands",
-  "Palau", "Micronesia", "Marshall Islands", "Kiribati", "Nauru", "Tuvalu",
-  "Cuba", "Jamaica", "Haiti", "Dominican Republic", "Trinidad and Tobago",
-  "Barbados", "Saint Lucia", "Grenada", "Saint Vincent and the Grenadines",
-  "Antigua and Barbuda", "Dominica", "Saint Kitts and Nevis", "Bahamas",
-  "Cape Verde", "São Tomé and Príncipe", "Comoros", "Bahrain"
-]);
-
-/** Malé ostrovy/území sada importována z utils */
 
 export default function WorldMap() {
   const navigate = useNavigate();

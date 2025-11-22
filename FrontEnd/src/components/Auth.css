@@ -33,6 +33,16 @@
   border-left: 4px solid #c33;
 }
 
+.success-message {
+  background: #efe;
+  color: #2a5;
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  font-size: 14px;
+  border-left: 4px solid #2a5;
+}
+
 .form-group {
   margin-bottom: 20px;
 }

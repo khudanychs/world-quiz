@@ -9,6 +9,7 @@ export function Register() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
   const { register, loginWithGoogle } = useAuth();
   const navigate = useNavigate();
@@ -35,10 +36,12 @@ export function Register() {
     setLoading(true);
 
     try {
-  await register(username, email, password);
-  navigate('/', { replace: true }); // Replace history so back can't return to register
+      await register(username, email, password);
+      setSuccess('✅ Registration successful! Please check your email and click the verification link. After verifying, you can access the app.');
+      setError('');
     } catch (err: any) {
       setError(err.message);
+      setSuccess('');
     } finally {
       setLoading(false);
     }
@@ -50,6 +53,7 @@ export function Register() {
         <h2>Create Account</h2>
 
         {error && <div className="error-message">{error}</div>}
+        {success && <div className="success-message">{success}</div>}
 
         <form onSubmit={handleSubmit}>
           <div className="form-group">
@@ -63,7 +67,7 @@ export function Register() {
               minLength={3}
               maxLength={50}
               placeholder="johndoe"
-              pattern="[a-zA-Z0-9_\\-]+"
+              pattern="[a-zA-Z0-9_\-]+"
               title="Only letters, numbers, underscores, and hyphens"
             />
           </div>

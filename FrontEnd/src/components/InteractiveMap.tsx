@@ -174,21 +174,25 @@ export default function InteractiveMap({
                   style={{
                     default: {
                       fill: displayFill,
-                      stroke: hideForMarker ? "transparent" : "#d0cfc8",
-                      strokeWidth: 0.3,
+                      stroke: hideForMarker ? "transparent" : "#2d3748",
+                      strokeWidth: 1.2,
                       strokeLinejoin: "round",
                       strokeLinecap: "round",
                       outline: "none",
-                      transition: "none",
+                      transition: "fill 0.15s ease-out",
                       cursor: hideForMarker ? "default" : "pointer",
                       pointerEvents: hideForMarker ? "none" : "visibleFill",
                     },
                     hover: !hideForMarker
                       ? {
-                          fill: isSelected ? fill : "#c9bfa8",
+                          fill: displayFill,
+                          stroke: "#2d3748",
+                          strokeWidth: 1.2,
                           outline: "none",
                           cursor: "pointer",
                           pointerEvents: "visibleFill",
+                          transition: "fill 0.15s ease-out",
+                          filter: "brightness(1.1)",
                         }
                       : {
                           fill: displayFill,
@@ -197,10 +201,13 @@ export default function InteractiveMap({
                         },
                     pressed: !hideForMarker
                       ? {
-                          fill: isSelected ? fill : "#b8ad96",
+                          fill: fill,
+                          stroke: "#2d3748",
+                          strokeWidth: 1.2,
                           outline: "none",
                           cursor: "pointer",
                           pointerEvents: "visibleFill",
+                          transition: "fill 0.05s ease-out",
                         }
                       : {
                           fill: displayFill,

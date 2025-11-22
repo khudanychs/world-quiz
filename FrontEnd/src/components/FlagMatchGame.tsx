@@ -6,7 +6,6 @@ import { db } from "../firebase";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import {
   buildRestLookup,
-  isClickableCountry,
   isGameEligibleCountry,
   normalizeApos,
   normalizeCountryName,
@@ -88,6 +87,9 @@ export default function FlagMatchGame() {
   // Win state
   const [hasWon, setHasWon] = useState<boolean>(false);
   const [showWinAnimation, setShowWinAnimation] = useState<boolean>(false);
+  
+  // Skipped phase - when replaying skipped countries
+  const [isInSkippedPhase, setIsInSkippedPhase] = useState<boolean>(false);
 
   // Cache for preloaded flag images
   const preloadedFlagsRef = useRef<Set<string>>(new Set());
@@ -220,10 +222,19 @@ export default function FlagMatchGame() {
     setBestStreak(0);
     setHasWon(false);
     setShowWinAnimation(false);
+    setIsInSkippedPhase(false);
   }
 
   function onCountryClick(nameRaw: string) {
     if (!currentTarget) return;
+    
+    const norm = normalizeCountryName(nameRaw);
+    
+    // In skipped phase, only allow clicking on skipped countries
+    if (isInSkippedPhase && !skippedSet.has(norm)) {
+      return; // Ignore clicks on non-skipped countries
+    }
+    
     // Clear previously scheduled timeouts so rapid clicks don't queue
     if (correctTimerRef.current) {
       window.clearTimeout(correctTimerRef.current);
@@ -234,7 +245,6 @@ export default function FlagMatchGame() {
       wrongTimerRef.current = null;
     }
 
-    const norm = normalizeCountryName(nameRaw);
     const k1 = normalizeApos(norm);
     const k2 = stripDiacritics(k1);
     const clicked = restLookup[k1] || restLookup[k2];
@@ -282,8 +292,9 @@ export default function FlagMatchGame() {
             [skippedCountries[i], skippedCountries[j]] = [skippedCountries[j], skippedCountries[i]];
           }
           
-          // Add to targets and continue
+          // Add to targets and continue - ENTER SKIPPED PHASE
           setTargets(prev => [...prev, ...skippedCountries]);
+          setIsInSkippedPhase(true);
           setCurrentIdx((i) => i + 1);
         } else {
           setCurrentIdx((i) => i + 1);
@@ -457,7 +468,7 @@ export default function FlagMatchGame() {
               <>
                 <strong style={{ fontSize: "clamp(14px, 3.2vw, 20px)" }}>Round finished</strong>
                 <span style={{ opacity: 0.8, fontSize: "clamp(12px, 2.8vw, 16px)" }}>
-                  Score: {score}/{targets.length}
+                  Score: {score}/25
                 </span>
                 {bestStreak > 0 && (
                   <span style={{ opacity: 0.8, fontSize: "clamp(11px, 2.6vw, 14px)" }}>
