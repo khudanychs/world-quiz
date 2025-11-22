@@ -8,12 +8,7 @@ import {
   normalizeApos,
   stripDiacritics,
 } from "./utils/countries";
-
-/** --- Rozměry a rámeček obdélníku --- */
-const BASE_W = 1000;
-const BASE_H = 500;
-const FRAME = 10;
-const FRAME_COLOR = "#5b8cff";
+import { BASE_W, BASE_H, FRAME, FRAME_COLOR, calculateMapDimensions } from "./utils/mapConstants";
 
 export default function WorldMap() {
   const navigate = useNavigate();
@@ -23,23 +18,8 @@ export default function WorldMap() {
   useEffect(() => {
     const updateDimensions = () => {
       const vw = window.innerWidth;
-      const vh = window.innerHeight; // full viewport (navbar may be hidden on /map)
-
-      // Use up to 95% of viewport for width, 90% for height for breathing room
-      const maxW = vw * 0.95;
-      const maxH = vh * 0.90;
-
-      const aspectRatio = BASE_W / BASE_H; // keep 2:1-ish aspect
-
-      let width = maxW;
-      let height = width / aspectRatio;
-
-      if (height > maxH) {
-        height = maxH;
-        width = height * aspectRatio;
-      }
-
-      setDimensions({ width, height });
+      const vh = window.innerHeight;
+      setDimensions(calculateMapDimensions(vw, vh));
     };
 
     updateDimensions();

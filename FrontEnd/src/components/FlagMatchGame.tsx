@@ -11,10 +11,7 @@ import {
   normalizeCountryName,
   stripDiacritics,
 } from "../utils/countries";
-
-const FRAME = 10;
-const BASE_W = 1000;
-const BASE_H = 500;
+import { BASE_W, BASE_H, FRAME, calculateMapDimensions } from "../utils/mapConstants";
 
 type CountryInfo = { name: string; cca2: string; flag: string };
 
@@ -24,26 +21,13 @@ export default function FlagMatchGame() {
 
   // Layout sizing
   const [dimensions, setDimensions] = useState({ width: BASE_W, height: BASE_H });
+  const [isPortrait, setIsPortrait] = useState(window.innerHeight > window.innerWidth);
   useEffect(() => {
     const update = () => {
       const vw = window.innerWidth;
       const vh = window.innerHeight;
-      const isPortrait = vh > vw;
-      
-      // More aggressive sizing for mobile portrait
-      const maxW = vw * (isPortrait ? 0.92 : 0.95);
-      const maxH = vh * (isPortrait ? 0.72 : 0.85);
-      
-      // Better aspect ratio for portrait mode (more height)
-      const ar = isPortrait ? 1.5 : (BASE_W / BASE_H);
-      
-      let width = maxW;
-      let height = width / ar;
-      if (height > maxH) {
-        height = maxH;
-        width = height * ar;
-      }
-      setDimensions({ width, height });
+      setIsPortrait(vh > vw);
+      setDimensions(calculateMapDimensions(vw, vh));
     };
     update();
     window.addEventListener("resize", update);
@@ -87,9 +71,6 @@ export default function FlagMatchGame() {
   // Win state
   const [hasWon, setHasWon] = useState<boolean>(false);
   const [showWinAnimation, setShowWinAnimation] = useState<boolean>(false);
-  
-  // Skipped phase - when replaying skipped countries
-  const [isInSkippedPhase, setIsInSkippedPhase] = useState<boolean>(false);
 
   // Cache for preloaded flag images
   const preloadedFlagsRef = useRef<Set<string>>(new Set());
@@ -222,18 +203,12 @@ export default function FlagMatchGame() {
     setBestStreak(0);
     setHasWon(false);
     setShowWinAnimation(false);
-    setIsInSkippedPhase(false);
   }
 
   function onCountryClick(nameRaw: string) {
     if (!currentTarget) return;
     
     const norm = normalizeCountryName(nameRaw);
-    
-    // In skipped phase, only allow clicking on skipped countries
-    if (isInSkippedPhase && !skippedSet.has(norm)) {
-      return; // Ignore clicks on non-skipped countries
-    }
     
     // Clear previously scheduled timeouts so rapid clicks don't queue
     if (correctTimerRef.current) {
@@ -271,32 +246,13 @@ export default function FlagMatchGame() {
       }
       
       correctTimerRef.current = window.setTimeout(() => {
-        // Check if we've completed 25 countries
-        if (newScore === 25 && skippedSet.size === 0) {
-          // Win! All 25 correct with no skips
+        // Check if we've reached 25 correct answers - ALWAYS end the game
+        if (newScore === 25) {
+          // Game finished! Show results regardless of skipped countries
           setHasWon(true);
           setShowWinAnimation(true);
-        } else if (currentIdx + 1 >= targets.length && skippedSet.size > 0) {
-          // Reached end of initial 25, but there are skipped ones - add them back
-          const skippedCountries: CountryInfo[] = [];
-          skippedSet.forEach(skippedName => {
-            const k1 = normalizeApos(skippedName);
-            const k2 = stripDiacritics(k1);
-            const info = restLookup[k1] || restLookup[k2];
-            if (info) skippedCountries.push(info);
-          });
-          
-          // Shuffle skipped countries
-          for (let i = skippedCountries.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [skippedCountries[i], skippedCountries[j]] = [skippedCountries[j], skippedCountries[i]];
-          }
-          
-          // Add to targets and continue - ENTER SKIPPED PHASE
-          setTargets(prev => [...prev, ...skippedCountries]);
-          setIsInSkippedPhase(true);
-          setCurrentIdx((i) => i + 1);
         } else {
+          // Continue to next country
           setCurrentIdx((i) => i + 1);
         }
         
@@ -428,22 +384,24 @@ export default function FlagMatchGame() {
       <div
         style={{
           position: "absolute",
-          top: "clamp(52px, 8vh, 70px)",
+          top: isPortrait ? "clamp(48px, 7vh, 80px)" : "clamp(8px, 4vh, 40px)",
           left: "50%",
           transform: "translateX(-50%)",
           zIndex: 4,
           display: "flex",
           alignItems: "center",
-          flexWrap: "wrap",
+          flexWrap: "nowrap",
           justifyContent: "center",
-          gap: "clamp(4px, 1.2vw, 8px)",
-          padding: "clamp(6px, 1.5vw, 12px) clamp(8px, 2vw, 14px)",
+          gap: isPortrait ? "clamp(6px, 1.5vw, 10px)" : "clamp(4px, 1vw, 8px)",
+          padding: isPortrait 
+            ? "clamp(8px, 2vw, 14px) clamp(10px, 2.5vw, 16px)" 
+            : "clamp(4px, 1vw, 10px) clamp(6px, 1.5vw, 12px)",
           borderRadius: "clamp(8px, 2vw, 12px)",
           border: "1px solid rgba(255,255,255,0.25)",
-          background: "rgba(0,0,0,0.6)",
+          background: "rgba(0,0,0,0.65)",
           backdropFilter: "blur(8px)",
           boxShadow: "0 4px 12px rgba(0,0,0,0.4)",
-          maxWidth: "92vw",
+          maxWidth: "96vw",
         }}
       >
         {loading ? (

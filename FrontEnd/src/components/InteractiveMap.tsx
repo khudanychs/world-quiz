@@ -66,6 +66,11 @@ function hasCustomMarker(countryName: string): boolean {
   return inSmallIslands || inTerritories;
 }
 
+/** Calculate adaptive marker radius based on zoom level */
+function getMarkerRadius(zoom: number): number {
+  return Math.max(1.5, 3.5 / Math.sqrt(zoom));
+}
+
 type RSMGeography = {
   rsmKey: string;
   properties?: { name?: string; [k: string]: unknown };
@@ -175,7 +180,7 @@ export default function InteractiveMap({
                     default: {
                       fill: displayFill,
                       stroke: hideForMarker ? "transparent" : "#2d3748",
-                      strokeWidth: 1.2,
+                      strokeWidth: 0.65,
                       strokeLinejoin: "round",
                       strokeLinecap: "round",
                       outline: "none",
@@ -187,7 +192,7 @@ export default function InteractiveMap({
                       ? {
                           fill: displayFill,
                           stroke: "#2d3748",
-                          strokeWidth: 1.2,
+                          strokeWidth: 0.65,
                           outline: "none",
                           cursor: "pointer",
                           pointerEvents: "visibleFill",
@@ -203,7 +208,7 @@ export default function InteractiveMap({
                       ? {
                           fill: fill,
                           stroke: "#2d3748",
-                          strokeWidth: 1.2,
+                          strokeWidth: 0.65,
                           outline: "none",
                           cursor: "pointer",
                           pointerEvents: "visibleFill",
@@ -246,10 +251,10 @@ export default function InteractiveMap({
               key={`marker-${countryName}`}
               cx={x}
               cy={y}
-              r={5}
+              r={getMarkerRadius(zoom)}
               fill={fill}
               stroke="#d0cfc8"
-              strokeWidth={0.8}
+              strokeWidth={0.8 / Math.sqrt(zoom)}
               style={{
                 cursor: "pointer",
                 transition: "none",
@@ -283,10 +288,10 @@ export default function InteractiveMap({
               key={`territory-marker-${countryName}`}
               cx={x}
               cy={y}
-              r={5}
+              r={getMarkerRadius(zoom)}
               fill={fill}
               stroke="#d0cfc8"
-              strokeWidth={0.8}
+              strokeWidth={0.8 / Math.sqrt(zoom)}
               style={{
                 cursor: "pointer",
                 transition: "none",
