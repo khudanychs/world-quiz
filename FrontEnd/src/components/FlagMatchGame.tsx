@@ -1,23 +1,20 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import InteractiveMap from "./InteractiveMap";
+import GameHUD from "./GameHUD";
 import { useAuth } from "../contexts/AuthContext";
 import { db } from "../firebase";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
-import {
-  buildRestLookup,
-  isGameEligibleCountry,
-  normalizeApos,
-  normalizeCountryName,
-  stripDiacritics,
-} from "../utils/countries";
+import { normalizeCountryName } from "../utils/countries";
 import { BASE_W, BASE_H, FRAME, calculateMapDimensions } from "../utils/mapConstants";
-
-type CountryInfo = { name: string; cca2: string; flag: string };
+import { useFlagMatchGame } from "../hooks/useFlagMatchGame";
 
 export default function FlagMatchGame() {
   const { user } = useAuth();
   const navigate = useNavigate();
+
+  // Use custom hook for game logic
+  const game = useFlagMatchGame();
 
   // Layout sizing
   const [dimensions, setDimensions] = useState({ width: BASE_W, height: BASE_H });
@@ -43,50 +40,6 @@ export default function FlagMatchGame() {
     { coordinates: [0, 0], zoom: 1 }
   );
 
-  // Selection state
-  const [correctSet, setCorrectSet] = useState<Set<string>>(new Set());
-  const [skippedSet, setSkippedSet] = useState<Set<string>>(new Set());
-
-  // REST Countries lookup for flags and codes
-  const [restLookup, setRestLookup] = useState<Record<string, CountryInfo>>({});
-  const [loading, setLoading] = useState<boolean>(true);
-  const [loadError, setLoadError] = useState<string>("");
-
-  // Playable target list and current target
-  const [targets, setTargets] = useState<CountryInfo[]>([]);
-  const [currentIdx, setCurrentIdx] = useState<number>(0);
-  const currentTarget = targets[currentIdx];
-
-  // Game score
-  const [score, setScore] = useState<number>(0);
-  const [feedback, setFeedback] = useState<"" | "correct" | "wrong">("");
-  const [lastClicked, setLastClicked] = useState<null | { name: string; status: "correct" | "wrong" }>(null);
-  const [showNamePanel, setShowNamePanel] = useState<boolean>(false);
-  
-  // Streak tracking
-  const [currentStreak, setCurrentStreak] = useState<number>(0);
-  const [bestStreak, setBestStreak] = useState<number>(0);
-  const [showStreakAnimation, setShowStreakAnimation] = useState<boolean>(false);
-  
-  // Win state
-  const [hasWon, setHasWon] = useState<boolean>(false);
-  const [showWinAnimation, setShowWinAnimation] = useState<boolean>(false);
-
-  // Cache for preloaded flag images
-  const preloadedFlagsRef = useRef<Set<string>>(new Set());
-  const preloadImage = (url: string) => {
-    if (!url) return;
-    const set = preloadedFlagsRef.current;
-    if (set.has(url)) return;
-    const img = new Image();
-    img.src = url;
-    set.add(url);
-  };
-
-  // Timers for feedback to avoid queuing multiple timeouts during rapid clicks
-  const correctTimerRef = useRef<number | null>(null);
-  const wrongTimerRef = useRef<number | null>(null);
-
   // prevent page scroll on wheel over map
   const wrapperRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -97,217 +50,18 @@ export default function FlagMatchGame() {
     return () => el.removeEventListener("wheel", onWheel as any);
   }, []);
 
-  // Load REST Countries once
-  useEffect(() => {
-    let alive = true;
-    (async () => {
-      try {
-        setLoading(true);
-        setLoadError("");
-        const res = await fetch(
-          "https://restcountries.com/v3.1/all?fields=name,cca2,flags,independent,unMember"
-        );
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const data = (await res.json()) as Array<{
-          name: { common: string };
-          cca2: string;
-          flags: { svg?: string; png?: string };
-          independent?: boolean;
-          unMember?: boolean;
-        }>;
-        const lookup = buildRestLookup(data);
-        if (!alive) return;
-        setRestLookup(lookup);
-      } catch (e: any) {
-        if (!alive) return;
-        setLoadError(e?.message || "Failed to load countries");
-      } finally {
-        if (alive) setLoading(false);
-      }
-    })();
-    return () => {
-      alive = false;
-    };
-  }, []);
-
-  // Build targets after we have both lookup and geographies list (deferred until we render geographies)
-  const geosRef = useRef<any[] | null>(null);
-
   const FIT_SCALE = Math.max(1, Math.round(INNER_W * 0.32));
-
-  // Background prefetch: once we have both geographies and REST lookup, prefetch a larger set of flags
-  const didBgPrefetch = useRef(false);
-  useEffect(() => {
-    if (didBgPrefetch.current) return;
-    const geos = geosRef.current;
-    if (!geos || geos.length === 0) return;
-    if (!restLookup || Object.keys(restLookup).length === 0) return;
-
-    // Build playable list once and prefetch a reasonable amount (e.g., 60)
-    const playable: CountryInfo[] = [];
-    for (const geo of geos) {
-      const nameRaw = (geo.properties?.name as string) ?? "Unknown";
-      if (!isGameEligibleCountry(nameRaw)) continue;
-      const norm = normalizeCountryName(nameRaw);
-      const key1 = normalizeApos(norm);
-      const key2 = stripDiacritics(key1);
-      const info = restLookup[key1] || restLookup[key2];
-      if (info && info.flag) playable.push(info);
-    }
-    const unique = Array.from(new Map(playable.map((c) => [c.cca2, c])).values());
-    const batch = unique.slice(0, Math.min(60, unique.length));
-    batch.forEach((c) => preloadImage(c.flag));
-    didBgPrefetch.current = true;
-  }, [restLookup]);
-
-  // Clear any scheduled timers when unmounting
-  useEffect(() => {
-    return () => {
-      if (correctTimerRef.current) window.clearTimeout(correctTimerRef.current);
-      if (wrongTimerRef.current) window.clearTimeout(wrongTimerRef.current);
-    };
-  }, []);
-
-  function startNewGame() {
-    const geos = geosRef.current || [];
-    const playable: CountryInfo[] = [];
-    for (const geo of geos) {
-      const nameRaw = (geo.properties?.name as string) ?? "Unknown";
-      if (!isGameEligibleCountry(nameRaw)) continue;
-      const norm = normalizeCountryName(nameRaw);
-      const key1 = normalizeApos(norm);
-      const key2 = stripDiacritics(key1);
-      const info = restLookup[key1] || restLookup[key2];
-      if (info && info.flag) playable.push(info);
-    }
-
-    // Deduplicate by cca2
-    const unique = Array.from(new Map(playable.map((c) => [c.cca2, c])).values());
-    // Shuffle
-    for (let i = unique.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [unique[i], unique[j]] = [unique[j], unique[i]];
-    }
-    // Limit to a reasonable round length
-    const round = unique.slice(0, Math.min(25, unique.length));
-    // Preload flags for this round immediately
-    round.forEach((c) => preloadImage(c.flag));
-    setTargets(round);
-    setCurrentIdx(0);
-    setScore(0);
-    setCorrectSet(new Set());
-    setSkippedSet(new Set());
-    setFeedback("");
-    setLastClicked(null);
-    setCurrentStreak(0);
-    setBestStreak(0);
-    setHasWon(false);
-    setShowWinAnimation(false);
-  }
-
-  function onCountryClick(nameRaw: string) {
-    if (!currentTarget) return;
-    
-    const norm = normalizeCountryName(nameRaw);
-    
-    // Clear previously scheduled timeouts so rapid clicks don't queue
-    if (correctTimerRef.current) {
-      window.clearTimeout(correctTimerRef.current);
-      correctTimerRef.current = null;
-    }
-    if (wrongTimerRef.current) {
-      window.clearTimeout(wrongTimerRef.current);
-      wrongTimerRef.current = null;
-    }
-
-    const k1 = normalizeApos(norm);
-    const k2 = stripDiacritics(k1);
-    const clicked = restLookup[k1] || restLookup[k2];
-    if (clicked && clicked.cca2 === currentTarget.cca2) {
-      // Correct: immediately update states and keep highlighted until next click
-      const newScore = score + 1;
-      const newStreak = currentStreak + 1;
-      
-      setScore(newScore);
-      setCorrectSet((s) => new Set([...s, norm]));
-      setLastClicked({ name: norm, status: "correct" });
-      setFeedback("correct");
-      setCurrentStreak(newStreak);
-      
-      // Update best streak
-      if (newStreak > bestStreak) {
-        setBestStreak(newStreak);
-      }
-      
-      // Show streak animation for milestones (5, 10, 15, etc.)
-      if (newStreak > 0 && newStreak % 5 === 0) {
-        setShowStreakAnimation(true);
-        setTimeout(() => setShowStreakAnimation(false), 2000);
-      }
-      
-      correctTimerRef.current = window.setTimeout(() => {
-        // Check if we've reached 25 correct answers - ALWAYS end the game
-        if (newScore === 25) {
-          // Game finished! Show results regardless of skipped countries
-          setHasWon(true);
-          setShowWinAnimation(true);
-        } else {
-          // Continue to next country
-          setCurrentIdx((i) => i + 1);
-        }
-        
-        setFeedback("");
-        correctTimerRef.current = null;
-      }, 350);
-    } else {
-      // Wrong: stays highlighted until next click, reset streak
-      setLastClicked({ name: norm, status: "wrong" });
-      setFeedback("wrong");
-      setCurrentStreak(0);
-    }
-  }
-
-  function skipCurrentFlag() {
-    if (!currentTarget) return;
-    
-    // Clear any scheduled timeouts
-    if (correctTimerRef.current) {
-      window.clearTimeout(correctTimerRef.current);
-      correctTimerRef.current = null;
-    }
-    if (wrongTimerRef.current) {
-      window.clearTimeout(wrongTimerRef.current);
-      wrongTimerRef.current = null;
-    }
-
-    // Mark as skipped and highlight with orange
-    const norm = normalizeCountryName(currentTarget.name);
-    setSkippedSet((s) => new Set([...s, norm]));
-    // Clear last clicked so we don't show red highlight
-    setLastClicked(null);
-    // Reset streak on skip
-    setCurrentStreak(0);
-    
-    // Move to next after a brief delay
-    correctTimerRef.current = window.setTimeout(() => {
-      setCurrentIdx((i) => i + 1);
-      setFeedback("");
-      correctTimerRef.current = null;
-    }, 350);
-  }
-
-  const gameOver = (currentIdx >= targets.length && targets.length > 0) || hasWon;
 
   // Effect to save score when game is over
   useEffect(() => {
-    if (gameOver && user && score > 0) {
+    if (game.gameOver && user && game.score > 0) {
       const saveScore = async () => {
         try {
           await addDoc(collection(db, "scores"), {
             userId: user.uid,
             username: user.displayName,
-            score: score,
-            bestStreak: bestStreak,
+            score: game.score,
+            bestStreak: game.bestStreak,
             createdAt: serverTimestamp(),
             gameType: "FlagMatch",
           });
@@ -319,7 +73,7 @@ export default function FlagMatchGame() {
 
       saveScore();
     }
-  }, [gameOver, user, score, bestStreak]);
+  }, [game.gameOver, user, game.score, game.bestStreak]);
 
   return (
     <>
@@ -390,206 +144,41 @@ export default function FlagMatchGame() {
           zIndex: 4,
           display: "flex",
           alignItems: "center",
-          flexWrap: "nowrap",
+          flexWrap: isPortrait ? "wrap" : "nowrap",
           justifyContent: "center",
-          gap: isPortrait ? "clamp(6px, 1.5vw, 10px)" : "clamp(4px, 1vw, 8px)",
+          gap: isPortrait ? "clamp(8px, 2vw, 14px)" : "clamp(6px, 1.4vw, 12px)",
           padding: isPortrait 
-            ? "clamp(8px, 2vw, 14px) clamp(10px, 2.5vw, 16px)" 
-            : "clamp(4px, 1vw, 10px) clamp(6px, 1.5vw, 12px)",
+            ? "clamp(10px, 2.4vw, 18px) clamp(14px, 3vw, 22px)" 
+            : "clamp(6px, 1.2vw, 14px) clamp(10px, 2vw, 18px)",
           borderRadius: "clamp(8px, 2vw, 12px)",
           border: "1px solid rgba(255,255,255,0.25)",
           background: "rgba(0,0,0,0.65)",
           backdropFilter: "blur(8px)",
           boxShadow: "0 4px 12px rgba(0,0,0,0.4)",
-          maxWidth: "96vw",
+          maxWidth: isPortrait ? "94vw" : "96vw",
         }}
       >
-        {loading ? (
-          <span style={{ fontSize: "clamp(12px, 2.8vw, 16px)" }}>Loading flags…</span>
-        ) : loadError ? (
-          <span style={{ fontSize: "clamp(12px, 2.8vw, 16px)" }}>Error: {loadError}</span>
-        ) : gameOver ? (
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 12, padding: "8px 0" }}>
-            {hasWon ? (
-              <>
-                <strong style={{ fontSize: "clamp(16px, 3.5vw, 24px)", color: "#10b981" }}>🎉 Perfect Score! 🎉</strong>
-                <span style={{ opacity: 0.9, fontSize: "clamp(14px, 3vw, 18px)" }}>
-                  All {score} flags matched correctly!
-                </span>
-                {bestStreak > 0 && (
-                  <span style={{ opacity: 0.8, fontSize: "clamp(12px, 2.8vw, 16px)" }}>
-                    Best streak: {bestStreak} 🔥
-                  </span>
-                )}
-              </>
-            ) : (
-              <>
-                <strong style={{ fontSize: "clamp(14px, 3.2vw, 20px)" }}>Round finished</strong>
-                <span style={{ opacity: 0.8, fontSize: "clamp(12px, 2.8vw, 16px)" }}>
-                  Score: {score}/25
-                </span>
-                {bestStreak > 0 && (
-                  <span style={{ opacity: 0.8, fontSize: "clamp(11px, 2.6vw, 14px)" }}>
-                    Best streak: {bestStreak} 🔥
-                  </span>
-                )}
-              </>
-            )}
-            <button
-              onClick={startNewGame}
-              style={{
-                marginTop: 4,
-                padding: "clamp(8px, 2vw, 12px) clamp(16px, 4vw, 24px)",
-                borderRadius: "clamp(8px, 2vw, 12px)",
-                border: "2px solid rgba(16, 185, 129, 0.5)",
-                background: "rgba(16, 185, 129, 0.2)",
-                color: "#10b981",
-                fontSize: "clamp(13px, 3vw, 17px)",
-                fontWeight: 600,
-                cursor: "pointer",
-                transition: "all 0.2s",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = "rgba(16, 185, 129, 0.3)";
-                e.currentTarget.style.transform = "scale(1.05)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = "rgba(16, 185, 129, 0.2)";
-                e.currentTarget.style.transform = "scale(1)";
-              }}
-            >
-              🎮 New Game
-            </button>
-          </div>
-        ) : !currentTarget ? (
-          <button
-            onClick={startNewGame}
-            style={{
-              padding: "clamp(8px, 2vw, 12px) clamp(16px, 4vw, 20px)",
-              borderRadius: "clamp(8px, 2vw, 10px)",
-              border: "1px solid rgba(255,255,255,0.3)",
-              background: "rgba(255,255,255,0.08)",
-              color: "#fff",
-              fontSize: "clamp(13px, 3vw, 16px)",
-              cursor: "pointer",
-            }}
-          >
-            Start round
-          </button>
-        ) : (
-          <>
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                minWidth: "clamp(50px, 12vw, 90px)",
-                minHeight: "clamp(38px, 9vw, 68px)",
-                maxWidth: "clamp(50px, 12vw, 90px)",
-                maxHeight: "clamp(38px, 9vw, 68px)",
-                background: "rgba(255,255,255,0.05)",
-                borderRadius: 4,
-                padding: 3,
-              }}
-            >
-              <img
-                src={currentTarget.flag}
-                alt={`Flag to match`}
-                loading="eager"
-                decoding="async"
-                style={{
-                  maxWidth: "100%",
-                  maxHeight: "100%",
-                  width: "auto",
-                  height: "auto",
-                  objectFit: "contain",
-                  borderRadius: 2,
-                  boxShadow: "0 2px 8px rgba(0,0,0,0.3)"
-                }}
-              />
-            </div>
-            <div style={{ display: "flex", flexDirection: "column", minWidth: "clamp(90px, 22vw, 130px)" }}>
-              <strong style={{ fontSize: "clamp(10px, 2.4vw, 15px)" }}>Find this flag</strong>
-              <span style={{ opacity: 0.7, fontSize: "clamp(8px, 2vw, 12px)" }}>Tap country</span>
-            </div>
-            <span style={{ marginLeft: 4, opacity: 0.8, fontSize: "clamp(10px, 2.4vw, 14px)", whiteSpace: "nowrap" }}>
-              {currentIdx + 1}/{targets.length}
-            </span>
-            {currentStreak >= 3 && (
-              <span
-                style={{
-                  marginLeft: 4,
-                  padding: "4px 8px",
-                  borderRadius: 6,
-                  background: "rgba(251, 146, 60, 0.2)",
-                  border: "1px solid rgba(251, 146, 60, 0.4)",
-                  color: "#fb923c",
-                  fontSize: "clamp(10px, 2.4vw, 13px)",
-                  fontWeight: 600,
-                  whiteSpace: "nowrap",
-                }}
-              >
-                🔥 {currentStreak}
-              </span>
-            )}
-            <button
-              onClick={() => setShowNamePanel((v) => !v)}
-              title="Toggle last clicked country name"
-              style={{
-                marginLeft: 4,
-                padding: "clamp(4px, 1.5vw, 6px) clamp(8px, 2vw, 10px)",
-                minWidth: "clamp(70px, 18vw, 84px)",
-                borderRadius: "clamp(6px, 1.8vw, 8px)",
-                border: "1px solid rgba(255,255,255,0.3)",
-                background: "rgba(255,255,255,0.08)",
-                color: "#fff",
-                fontSize: "clamp(10px, 2.4vw, 13px)",
-                cursor: "pointer",
-              }}
-            >
-              {showNamePanel ? "Hide name" : "Show name"}
-            </button>
-            <button
-              onClick={skipCurrentFlag}
-              title="Skip this flag"
-              style={{
-                marginLeft: 4,
-                padding: "clamp(4px, 1.5vw, 6px) clamp(8px, 2vw, 10px)",
-                minWidth: "clamp(50px, 14vw, 60px)",
-                borderRadius: "clamp(6px, 1.8vw, 8px)",
-                border: "1px solid rgba(255,165,0,0.4)",
-                background: "rgba(255,165,0,0.15)",
-                color: "#ffa500",
-                fontSize: "clamp(10px, 2.4vw, 13px)",
-                fontWeight: 500,
-                cursor: "pointer",
-              }}
-            >
-              Skip
-            </button>
-          </>
-        )}
-      </div>
-
-      {/* Score top-right */}
-      <div
-        style={{
-          position: "absolute",
-          top: 12,
-          right: 12,
-          zIndex: 4,
-          padding: "clamp(6px, 1.8vw, 8px) clamp(10px, 2.5vw, 12px)",
-          borderRadius: "clamp(8px, 2vw, 10px)",
-          background: "rgba(0,0,0,0.45)",
-          border: "1px solid rgba(255,255,255,0.25)",
-          fontSize: "clamp(12px, 2.8vw, 16px)",
-        }}
-      >
-        Score: {score}
+        <GameHUD
+          loading={game.loading}
+          loadError={game.loadError}
+          gameOver={game.gameOver}
+          hasWon={game.hasWon}
+          score={game.score}
+          bestStreak={game.bestStreak}
+          currentTarget={game.currentTarget}
+          currentIdx={game.currentIdx}
+          targetsLength={game.targets.length}
+          currentStreak={game.currentStreak}
+          showNamePanel={game.showNamePanel}
+          onStartNewGame={game.startNewGame}
+          onToggleNamePanel={() => game.setShowNamePanel((v) => !v)}
+          onSkip={game.skipCurrentFlag}
+          isPortrait={isPortrait}
+        />
       </div>
 
       {/* Win Animation */}
-      {showWinAnimation && (
+      {game.showWinAnimation && (
         <div
           style={{
             position: "fixed",
@@ -629,7 +218,7 @@ export default function FlagMatchGame() {
             >
               <button
                 onClick={() => {
-                  setShowWinAnimation(false);
+                  // Close by navigating home
                   navigate("/");
                 }}
                 style={{
@@ -656,8 +245,7 @@ export default function FlagMatchGame() {
               </button>
               <button
                 onClick={() => {
-                  setShowWinAnimation(false);
-                  startNewGame();
+                  game.startNewGame();
                 }}
                 style={{
                   padding: "clamp(10px, 2.5vw, 14px) clamp(20px, 5vw, 32px)",
@@ -687,10 +275,10 @@ export default function FlagMatchGame() {
       )}
 
       {/* Streak Animation */}
-      {showStreakAnimation && currentStreak >= 5 && (
+      {game.showStreakAnimation && game.currentStreak >= 5 && (
         <div
           style={{
-            position: "absolute",
+            position: "fixed",
             top: "50%",
             left: "50%",
             transform: "translate(-50%, -50%)",
@@ -703,11 +291,11 @@ export default function FlagMatchGame() {
             pointerEvents: "none",
           }}
         >
-          {currentStreak} 🔥
+          {game.currentStreak} 🔥
         </div>
       )}
 
-      {showNamePanel && lastClicked && (
+      {game.showNamePanel && game.lastClicked && (
         <div
           style={{
             position: "absolute",
@@ -724,7 +312,7 @@ export default function FlagMatchGame() {
             textAlign: "center",
           }}
         >
-          {normalizeCountryName(lastClicked.name)}
+          {normalizeCountryName(game.lastClicked.name)}
         </div>
       )}
 
@@ -755,20 +343,18 @@ export default function FlagMatchGame() {
             setPos({ zoom, coordinates })
           }
           onCountryClick={(nameRaw: string) => {
-            onCountryClick(nameRaw);
+            game.onCountryClick(nameRaw);
           }}
           onGeographiesLoaded={(geographies) => {
-            if (!geosRef.current || geosRef.current.length === 0) {
-              geosRef.current = geographies;
-            }
+            game.handleGeographiesLoaded(geographies);
           }}
           getCountryFill={(nameRaw: string) => {
             const norm = normalizeCountryName(nameRaw);
             
-            const isCorrect = correctSet.has(norm);
-            const isSkipped = skippedSet.has(norm);
+            const isCorrect = game.correctSet.has(norm);
+            const isSkipped = game.skippedSet.has(norm);
             const defaultFill = "#e0d8c2";
-            const isLastWrong = lastClicked?.name === norm && lastClicked?.status === "wrong";
+            const isLastWrong = game.lastClicked?.name === norm && game.lastClicked?.status === "wrong";
             
             return isCorrect
               ? "#10b981"

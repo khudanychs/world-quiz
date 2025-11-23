@@ -12,7 +12,7 @@ import { BASE_W, BASE_H, FRAME, FRAME_COLOR, calculateMapDimensions } from "./ut
 
 export default function WorldMap() {
   const navigate = useNavigate();
-  /** --- Dynamické rozměry podle okna --- */
+  /** --- Dynamic dimensions based on window --- */
   const [dimensions, setDimensions] = useState({ width: BASE_W, height: BASE_H });
 
   useEffect(() => {
@@ -32,21 +32,21 @@ export default function WorldMap() {
   const INNER_W = OUTER_W - FRAME * 2;
   const INNER_H = OUTER_H - FRAME * 2;
 
-  /** --- Řízený pan & zoom --- */
+  /** --- Controlled pan & zoom --- */
   const [pos, setPos] = useState<{ coordinates: [number, number]; zoom: number }>({
     coordinates: [0, 0],
     zoom: 1,
   });
 
-  /** Hover/Select pro HUD */
+  /** Hover/Select for HUD */
   const [hovered, setHovered] = useState<string | null>(null);
   const [selected, setSelected] = useState<string | null>(null);
 
-  /** Capitals: název → [hlavní města] */
+  /** Capitals: name → [capital cities] */
   const [capitals, setCapitals] = useState<Record<string, string[]>>({});
   const [loadingCaps, setLoadingCaps] = useState<boolean>(true);
 
-  /** Zabrání scrollu stránky při kolečku nad mapou */
+  /** Prevent page scroll when wheeling over map */
   const wrapperRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     const el = wrapperRef.current;
@@ -58,7 +58,7 @@ export default function WorldMap() {
     return () => el.removeEventListener("wheel", onWheel as any);
   }, []);
 
-  /** Načtení hlavních měst 1× po startu */
+  /** Load capitals once on startup */
   useEffect(() => {
     let alive = true;
     (async () => {
@@ -100,7 +100,7 @@ export default function WorldMap() {
     return null;
   }
 
-  /** HUD – ukazuje název + hlavní město(a) */
+  /** HUD – shows name + capital(s) */
   const hudText = useMemo(() => {
     const name = selected ?? hovered;
     if (name) {
@@ -113,7 +113,7 @@ export default function WorldMap() {
       if (loadingCaps) return `${displayName} — Loading capital…`;
       return `${displayName} — Capital: unknown`;
     }
-    return "Drag = posun mapy, Wheel = plynulý zoom";
+    return "Drag = pan map, Wheel = smooth zoom";
   }, [hovered, selected, loadingCaps, capitals]);
 
   /** Fit scale pro NaturalEarth1 */
@@ -158,7 +158,7 @@ export default function WorldMap() {
         <span style={{ fontSize: 18, lineHeight: 1 }}>←</span>
         <span style={{ fontWeight: 600 }}>Back</span>
       </button>
-      {/* HUD vlevo nahoře */}
+      {/* HUD top left */}
       <div
         style={{
           position: "absolute",

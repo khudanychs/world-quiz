@@ -2,23 +2,23 @@
 import { ComposableMap, Geographies, Geography, ZoomableGroup } from "react-simple-maps";
 import { useState } from "react";
 
-// Stabilní zdroj dat (TopoJSON) – world-atlas
+// Stable data source (TopoJSON) – world-atlas
 const geoUrl = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
 
-// Pozice zoom/pan pro ZoomableGroup
+// Position for zoom/pan in ZoomableGroup
 type Position = {
   coordinates: [number, number];
   zoom: number;
 };
 
-// Minimální typ pro položky vracené z <Geographies>
+// Minimal type for items returned from <Geographies>
 type RSMGeography = {
   rsmKey: string;
-  // další vlastnosti nás teď nezajímají, necháme je volné
+  // other properties are not needed, leave them flexible
   [key: string]: unknown;
 };
 
-// Typ pro render-props argument v <Geographies>
+// Type for render-props argument in <Geographies>
 type GeographiesChildrenArgs = {
   geographies: RSMGeography[];
 };
@@ -35,21 +35,21 @@ export default function Globe() {
         width: 420,
         height: 420,
         borderRadius: "50%",
-        overflow: "hidden", // kulatý „rámeček“ jako zeměkoule
+        overflow: "hidden", // round "frame" like a globe
         boxShadow: "0 0 20px rgba(0,0,0,0.3)",
         background: "radial-gradient(circle at 30% 30%, #f0f4ff, #e6ecff 60%, #dde6ff)",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
       }}
-      aria-label="Interaktivní glóbus"
+      aria-label="Interactive globe"
     >
       <ComposableMap
-        // není třeba importovat projekci z d3-geo, stačí název
+        // no need to import projection from d3-geo, just the name
         projection="geoOrthographic"
         projectionConfig={{
-          scale: 190,          // velikost glóbu
-          rotate: [0, -20, 0], // lehký sklon
+          scale: 190,          // globe size
+          rotate: [0, -20, 0], // slight tilt
         }}
         width={400}
         height={400}
@@ -59,7 +59,7 @@ export default function Globe() {
           center={position.coordinates}
           zoom={position.zoom}
           onMoveEnd={(pos: Position) => setPosition(pos)}
-          zoomDuration={300}   // plynulé přiblížení/oddálení
+          zoomDuration={300}   // smooth zoom in/out
           minZoom={0.8}
           maxZoom={8}
         >
