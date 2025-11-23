@@ -8,17 +8,20 @@ interface SettingsProps {
 }
 
 export const Settings = ({ isOpen, onClose }: SettingsProps) => {
-  const { user, setNickname } = useAuth();
+  const { user, setNickname, deleteAccount } = useAuth();
   const [username, setUsername] = useState('');
   const [avatarUrl, setAvatarUrl] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState('');
+  const [deletePassword, setDeletePassword] = useState('');
 
   useEffect(() => {
     if (user) {
-      setUsername(user.username || '');
-      setAvatarUrl(user.avatar_url || '');
+      setUsername(user.displayName || '');
+      setAvatarUrl(user.photoURL || '');
     }
   }, [user]);
 
@@ -37,7 +40,7 @@ export const Settings = ({ isOpen, onClose }: SettingsProps) => {
     setLoading(true);
 
     // Check if username is the same as current
-    if (username === user?.username) {
+    if (username === user?.displayName) {
       setError('Nickname is the same as your current one');
       setLoading(false);
       return;
@@ -49,6 +52,32 @@ export const Settings = ({ isOpen, onClose }: SettingsProps) => {
     } catch (err: any) {
       setError(err.response?.data?.error || 'Failed to update nickname');
     } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (deleteConfirmText !== 'DELETE') {
+      setError('Please type DELETE to confirm');
+      return;
+    }
+
+    // Check if user is Google user (photoURL present) or email/password user
+    const isGoogleUser = user?.photoURL !== null;
+    
+    if (!isGoogleUser && !deletePassword) {
+      setError('Please enter your password to confirm account deletion.');
+      return;
+    }
+
+    setLoading(true);
+    setError('');
+
+    try {
+      await deleteAccount(deletePassword || undefined);
+      // User will be logged out automatically, no need to close modal
+    } catch (err: any) {
+      setError(err.message || 'Failed to delete account');
       setLoading(false);
     }
   };
@@ -73,12 +102,12 @@ export const Settings = ({ isOpen, onClose }: SettingsProps) => {
                 <img src={avatarUrl} alt="Profile" className="profile-picture-preview" />
               ) : (
                 <div className="profile-picture-placeholder">
-                  {user?.username?.[0]?.toUpperCase() || '?'}
+                  {user?.displayName?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || '?'}
                 </div>
               )}
               <div className="profile-picture-info">
                 <p className="profile-picture-note">
-                  {user?.google_id 
+                  {user?.photoURL 
                     ? 'Your profile picture is managed by Google'
                     : 'Profile pictures coming soon!'}
                 </p>
@@ -132,16 +161,96 @@ export const Settings = ({ isOpen, onClose }: SettingsProps) => {
               <div className="info-row">
                 <span className="info-label">Account Type:</span>
                 <span className="info-value">
-                  {user?.google_id ? 'Google Account' : 'Local Account'}
+                  {user?.photoURL ? 'Google Account' : 'Local Account'}
                 </span>
               </div>
               <div className="info-row">
                 <span className="info-label">Member Since:</span>
                 <span className="info-value">
-                  {user?.created_at ? new Date(user.created_at).toLocaleDateString() : 'N/A'}
+                  {user?.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}
                 </span>
               </div>
             </div>
+          </div>
+
+          {/* Danger Zone - Delete Account */}
+          <div className="settings-section danger-zone" id="delete-section">
+            <h3>Danger Zone</h3>
+            {!showDeleteConfirm ? (
+              <button 
+                className="delete-account-button"
+                onClick={() => {
+                  setShowDeleteConfirm(true);
+                  // Scroll to delete section after state update
+                  setTimeout(() => {
+                    document.getElementById('delete-section')?.scrollIntoView({ 
+                      behavior: 'smooth', 
+                      block: 'end' 
+                    });
+                  }, 100);
+                }}
+              >
+                Delete My Account
+              </button>
+            ) : (
+              <div className="delete-confirm">
+                <p className="delete-warning">
+                  ⚠️ This action cannot be undone. All your data including scores and progress will be permanently deleted.
+                </p>
+                <div className="form-group">
+                  <label htmlFor="delete-confirm">
+                    Type <strong>DELETE</strong> to confirm:
+                  </label>
+                  <input
+                    type="text"
+                    id="delete-confirm"
+                    value={deleteConfirmText}
+                    onChange={(e) => setDeleteConfirmText(e.target.value)}
+                    placeholder="DELETE"
+                    autoComplete="off"
+                  />
+                </div>
+                
+                {/* Password field for email/password users */}
+                {user?.photoURL === null && (
+                  <div className="form-group">
+                    <label htmlFor="delete-password">
+                      Enter your password:
+                    </label>
+                    <input
+                      type="password"
+                      id="delete-password"
+                      value={deletePassword}
+                      onChange={(e) => setDeletePassword(e.target.value)}
+                      placeholder="Password"
+                      autoComplete="current-password"
+                    />
+                  </div>
+                )}
+                
+                <div className="delete-actions">
+                  <button 
+                    className="cancel-delete-button"
+                    onClick={() => {
+                      setShowDeleteConfirm(false);
+                      setDeleteConfirmText('');
+                      setDeletePassword('');
+                      setError('');
+                    }}
+                    disabled={loading}
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    className="confirm-delete-button"
+                    onClick={handleDeleteAccount}
+                    disabled={loading || deleteConfirmText !== 'DELETE'}
+                  >
+                    {loading ? 'Deleting...' : 'Delete Account'}
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>

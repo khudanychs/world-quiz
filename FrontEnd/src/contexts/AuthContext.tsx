@@ -8,6 +8,9 @@ import {
   signOut,
   updateProfile,
   sendEmailVerification,
+  reauthenticateWithCredential,
+  EmailAuthProvider,
+  reauthenticateWithPopup,
   User as FirebaseUser // Rename to avoid conflict if any
 } from 'firebase/auth';
 import { doc, setDoc, getDoc, deleteDoc, query, collection, where, getDocs } from 'firebase/firestore';
@@ -22,6 +25,7 @@ export interface User {
   email: string | null;
   photoURL: string | null;
   emailVerified: boolean;
+  createdAt: string | null;
 }
 
 interface AuthContextType {
@@ -34,6 +38,7 @@ interface AuthContextType {
   setNickname: (username: string) => Promise<void>;
   refreshUser: () => Promise<void>;
   sendVerificationEmail: () => Promise<void>;
+  deleteAccount: (password?: string) => Promise<void>;
   isAuthenticated: boolean;
 }
 
@@ -74,6 +79,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           email: firebaseUser.email,
           photoURL: firebaseUser.photoURL,
           emailVerified: firebaseUser.emailVerified,
+          createdAt: firebaseUser.metadata.creationTime || null,
         };
         setUser(formattedUser);
       } else {
@@ -102,24 +108,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const register = async (username: string, email: string, password: string) => {
     try {
+      console.log('🔍 Starting registration for:', email);
+      
       // Check if username is already taken
+      console.log('🔍 Checking if username is taken:', username);
       const usernameQuery = query(collection(db, 'usernames'), where('username_lower', '==', username.toLowerCase()));
       const usernameSnapshot = await getDocs(usernameQuery);
       
       if (!usernameSnapshot.empty) {
+        console.log('❌ Username already taken');
         throw new Error('Username already in use. Please choose a different one.');
       }
       
+      console.log('✅ Username available');
+      
       // Create user account
+      console.log('🔍 Creating Firebase auth account...');
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      console.log('✅ Auth account created:', userCredential.user.uid);
       
       // CRITICAL: Do all these operations sequentially and wait for each
       try {
         // 1. Update display name
+        console.log('🔍 Updating display name...');
         await updateProfile(userCredential.user, { displayName: username });
         console.log('✅ Display name updated');
         
         // 2. Reserve the username in Firestore - critical for uniqueness
+        console.log('🔍 Saving username to Firestore...');
         await setDoc(doc(db, 'usernames', userCredential.user.uid), {
           username: username,
           username_lower: username.toLowerCase(),
@@ -129,14 +145,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         console.log('✅ Username saved to Firestore');
         
         // 3. Send verification email
+        console.log('🔍 Sending verification email...');
         await sendEmailVerification(userCredential.user);
         console.log('✅ Verification email sent');
+        console.log('✅ Registration complete!');
         
         // User stays logged in but will see verification message
         // onAuthStateChanged will handle setting the user with emailVerified: false
       } catch (firestoreError: any) {
         // If anything fails, delete the auth account to keep things consistent
         console.error('❌ Failed to complete registration:', firestoreError);
+        console.error('Error details:', firestoreError.message, firestoreError.code);
         try {
           await userCredential.user.delete();
         } catch (deleteError) {
@@ -146,6 +165,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
       
     } catch (error: any) {
+      console.error('❌ Registration error:', error);
       throw new Error(getFirebaseErrorMessage(error));
     }
   };
@@ -187,6 +207,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         email: firebaseUser.email,
         photoURL: firebaseUser.photoURL,
         emailVerified: firebaseUser.emailVerified,
+        createdAt: firebaseUser.metadata.creationTime || null,
       };
       setUser(formattedUser);
     } else {
@@ -249,6 +270,54 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const deleteAccount = async (password?: string) => {
+    const currentUser = auth.currentUser;
+    if (!currentUser) {
+      throw new Error('No user is currently signed in.');
+    }
+
+    try {
+      // Re-authenticate user before deletion (required by Firebase)
+      const isGoogleUser = currentUser.providerData.some(
+        provider => provider.providerId === 'google.com'
+      );
+
+      if (isGoogleUser) {
+        // Re-authenticate with Google
+        const provider = new GoogleAuthProvider();
+        await reauthenticateWithPopup(currentUser, provider);
+      } else {
+        // Re-authenticate with email/password
+        if (!password) {
+          throw new Error('Password is required to delete your account.');
+        }
+        if (!currentUser.email) {
+          throw new Error('Email not found.');
+        }
+        const credential = EmailAuthProvider.credential(currentUser.email, password);
+        await reauthenticateWithCredential(currentUser, credential);
+      }
+
+      // Delete username from Firestore
+      await deleteDoc(doc(db, 'usernames', currentUser.uid));
+      
+      // Delete all user's scores
+      const scoresQuery = query(
+        collection(db, 'scores'),
+        where('userId', '==', currentUser.uid)
+      );
+      const scoresSnapshot = await getDocs(scoresQuery);
+      const deletePromises = scoresSnapshot.docs.map(doc => deleteDoc(doc.ref));
+      await Promise.all(deletePromises);
+      
+      // Delete the authentication account
+      // Note: Firebase Delete User Data extension will handle remaining cleanup
+      await currentUser.delete();
+    } catch (error: any) {
+      throw new Error(getFirebaseErrorMessage(error));
+    }
+  };
+
   const logout = async () => {
     try {
       await signOut(auth);
@@ -269,6 +338,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         refreshUser,
         setNickname,
         sendVerificationEmail,
+        deleteAccount,
         logout,
         isAuthenticated: !!user,
       }}

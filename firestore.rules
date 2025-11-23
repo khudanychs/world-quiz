@@ -20,14 +20,13 @@ service cloud.firestore {
     
     // Usernames collection - for unique username enforcement
     match /usernames/{userId} {
-      // Anyone authenticated can read to check if username is taken
-      allow read: if request.auth != null;
+      // Anyone can read to check if username is taken (even before registration)
+      allow read: if true;
       // User can write their own username record
       allow create: if request.auth != null 
                     && request.auth.uid == userId
                     && request.resource.data.username is string
-                    && request.resource.data.username_lower is string
-                    && request.resource.data.userId == request.auth.uid;
+                    && request.resource.data.username_lower is string;
       // User can update their own username record
       allow update: if request.auth != null 
                     && request.auth.uid == userId
