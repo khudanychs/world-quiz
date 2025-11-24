@@ -88,9 +88,10 @@ export default function FlagMatchGame() {
             to { transform: scale(1); opacity: 1; }
           }
           @keyframes streakPop {
-            0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
-            50% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
-            100% { transform: translate(-50%, -50%) scale(1); opacity: 0; }
+            0% { transform: translate(-50%, -50%) scale(0.8); opacity: 0; }
+            40% { transform: translate(-50%, -50%) scale(1.15); opacity: 1; }
+            60% { transform: translate(-50%, -50%) scale(1.05); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(0.95); opacity: 0; }
           }
         `}
       </style>
@@ -107,6 +108,7 @@ export default function FlagMatchGame() {
           overflow: "hidden",
           position: "relative",
           overscrollBehavior: "none",
+          gap: isPortrait ? "clamp(16px, 3vh, 32px)" : "0", // Mezera mezi HUD a mapou
         }}
       >
       <button
@@ -137,10 +139,13 @@ export default function FlagMatchGame() {
       {/* Top center panel */}
       <div
         style={{
-          position: "absolute",
-          top: isPortrait ? "clamp(48px, 7vh, 80px)" : "clamp(8px, 4vh, 40px)",
-          left: "50%",
-          transform: "translateX(-50%)",
+          position: isPortrait ? "relative" : "absolute",
+          top: isPortrait ? "auto" : "clamp(8px, 4vh, 40px)",
+          left: isPortrait ? "auto" : "50%",
+          transform: isPortrait ? "none" : "translateX(-50%)",
+          // V portrait módu gap z rodiče zajišťuje automatické centrování
+          marginBottom: isPortrait ? "0" : "0",
+          marginTop: isPortrait ? "0" : "0",
           zIndex: 4,
           display: "flex",
           alignItems: "center",
@@ -274,11 +279,11 @@ export default function FlagMatchGame() {
         </div>
       )}
 
-      {/* Streak Animation */}
-      {game.showStreakAnimation && game.currentStreak >= 5 && (
+      {/* Streak Animation - zobrazí se uprostřed mapy */}
+      {game.showStreakAnimation && game.currentStreak >= 5 && wrapperRef.current && (
         <div
           style={{
-            position: "fixed",
+            position: "absolute",
             top: "50%",
             left: "50%",
             transform: "translate(-50%, -50%)",
@@ -287,7 +292,7 @@ export default function FlagMatchGame() {
             fontWeight: "bold",
             color: "#fb923c",
             textShadow: "0 0 20px rgba(251, 146, 60, 0.8), 0 0 40px rgba(251, 146, 60, 0.4)",
-            animation: "streakPop 0.6s ease-out",
+            animation: "streakPop 1.2s ease-in-out",
             pointerEvents: "none",
           }}
         >
@@ -329,6 +334,7 @@ export default function FlagMatchGame() {
           display: "grid",
           placeItems: "center",
           touchAction: "none",
+          position: "relative",
         }}
         aria-label="Flag match game map"
       >

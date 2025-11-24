@@ -206,7 +206,7 @@ export default function InteractiveMap({
               cy={y}
               r={getMarkerRadius(zoom)}
               fill={fill}
-              stroke="#d0cfc8"
+              stroke="#8B8A85"
               strokeWidth={0.8 / Math.sqrt(zoom)}
               style={{
                 cursor: "pointer",
@@ -243,7 +243,7 @@ export default function InteractiveMap({
               cy={y}
               r={getMarkerRadius(zoom)}
               fill={fill}
-              stroke="#d0cfc8"
+              stroke="#8B8A85"
               strokeWidth={0.8 / Math.sqrt(zoom)}
               style={{
                 cursor: "pointer",

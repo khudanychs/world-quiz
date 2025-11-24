@@ -57,6 +57,7 @@
   align-items: center;
   gap: 4px;
   flex-shrink: 0;
+  flex-wrap: nowrap;
 }
 
 @media (min-width: 576px) {
@@ -222,4 +223,16 @@
 .navbar-button:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+/* Mobilní oprava - skrytí jména na malých displejích */
+@media (max-width: 600px) {
+  .navbar-username {
+    display: none;
+  }
+  
+  .navbar-button {
+    padding: 6px 10px;
+    font-size: 12px;
+  }
 }

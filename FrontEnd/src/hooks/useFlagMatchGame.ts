@@ -53,9 +53,9 @@ export function useFlagMatchGame() {
   // Timers for feedback to avoid queuing multiple timeouts during rapid clicks
   const correctTimerRef = useRef<number | null>(null);
   const wrongTimerRef = useRef<number | null>(null);
+  const streakTimerRef = useRef<number | null>(null);
 
   const geosRef = useRef<any[] | null>(null);
-  const didBgPrefetch = useRef(false);
 
   // Load REST Countries once
   useEffect(() => {
@@ -90,57 +90,41 @@ export function useFlagMatchGame() {
     };
   }, []);
 
-  // Background prefetch flags
-  useEffect(() => {
-    if (didBgPrefetch.current) return;
-    const geos = geosRef.current;
-    if (!geos || geos.length === 0) return;
-    if (!restLookup || Object.keys(restLookup).length === 0) return;
-
-    const playable: CountryInfo[] = [];
-    for (const geo of geos) {
-      const nameRaw = (geo.properties?.name as string) ?? "Unknown";
-      if (!isGameEligibleCountry(nameRaw)) continue;
-      const norm = normalizeCountryName(nameRaw);
-      const key1 = normalizeApos(norm);
-      const key2 = stripDiacritics(key1);
-      const info = restLookup[key1] || restLookup[key2];
-      if (info && info.flag) playable.push(info);
-    }
-    const unique = Array.from(new Map(playable.map((c) => [c.cca2, c])).values());
-    const batch = unique.slice(0, Math.min(60, unique.length));
-    batch.forEach((c) => preloadImage(c.flag));
-    didBgPrefetch.current = true;
-  }, [restLookup]);
-
   // Clear timers on unmount
   useEffect(() => {
     return () => {
       if (correctTimerRef.current) window.clearTimeout(correctTimerRef.current);
       if (wrongTimerRef.current) window.clearTimeout(wrongTimerRef.current);
+      if (streakTimerRef.current) window.clearTimeout(streakTimerRef.current);
     };
   }, []);
 
   function startNewGame() {
     const geos = geosRef.current || [];
     const playable: CountryInfo[] = [];
+    
     for (const geo of geos) {
       const nameRaw = (geo.properties?.name as string) ?? "Unknown";
-      if (!isGameEligibleCountry(nameRaw)) continue;
       const norm = normalizeCountryName(nameRaw);
       const key1 = normalizeApos(norm);
       const key2 = stripDiacritics(key1);
       const info = restLookup[key1] || restLookup[key2];
-      if (info && info.flag) playable.push(info);
+      
+      // Pokud máme info a vlajku, přidej do playable
+      if (info && info.flag) {
+        // Kontrola jestli není na blacklistu
+        if (!isGameEligibleCountry(nameRaw)) continue;
+        playable.push(info);
+      }
     }
-
+    
     const unique = Array.from(new Map(playable.map((c) => [c.cca2, c])).values());
+    
     for (let i = unique.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [unique[i], unique[j]] = [unique[j], unique[i]];
     }
     const round = unique.slice(0, Math.min(25, unique.length));
-    round.forEach((c) => preloadImage(c.flag));
     setTargets(round);
     setCurrentIdx(0);
     setScore(0);
@@ -152,6 +136,17 @@ export function useFlagMatchGame() {
     setBestStreak(0);
     setHasWon(false);
     setShowWinAnimation(false);
+    
+    if (streakTimerRef.current) {
+      window.clearTimeout(streakTimerRef.current);
+      streakTimerRef.current = null;
+    }
+    setShowStreakAnimation(false);
+    
+    // Preload prvních 10 vlajek pro plynulý začátek
+    round.slice(0, 10).forEach((c) => {
+      if (c.flag) preloadImage(c.flag);
+    });
   }
 
   function onCountryClick(nameRaw: string) {
@@ -186,8 +181,21 @@ export function useFlagMatchGame() {
       }
       
       if (newStreak > 0 && newStreak % 5 === 0) {
+        if (streakTimerRef.current) {
+          window.clearTimeout(streakTimerRef.current);
+        }
         setShowStreakAnimation(true);
-        setTimeout(() => setShowStreakAnimation(false), 2000);
+        streakTimerRef.current = window.setTimeout(() => {
+          setShowStreakAnimation(false);
+          streakTimerRef.current = null;
+        }, 1200);
+      }
+      
+      // Preload POUZE příští vlajku (nextIdx) - ta se zobrazí za 350ms
+      // Vlajky nextIdx+1, nextIdx+2 už jsou načtené z předchozího kroku
+      const nextIdx = currentIdx + 1;
+      if (nextIdx < targets.length && targets[nextIdx]?.flag) {
+        preloadImage(targets[nextIdx].flag);
       }
       
       correctTimerRef.current = window.setTimeout(() => {
@@ -223,6 +231,12 @@ export function useFlagMatchGame() {
     setSkippedSet((s) => new Set([...s, norm]));
     setLastClicked(null);
     setCurrentStreak(0);
+    
+    // Preload POUZE příští vlajku při skipu
+    const nextIdx = currentIdx + 1;
+    if (nextIdx < targets.length && targets[nextIdx]?.flag) {
+      preloadImage(targets[nextIdx].flag);
+    }
     
     correctTimerRef.current = window.setTimeout(() => {
       setCurrentIdx((i) => i + 1);
