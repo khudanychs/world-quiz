@@ -19,7 +19,7 @@ An interactive geography quiz web application with multiple game modes. Test you
   - Unique username system
   - Account deletion with re-authentication security
   
-- 🏆 **Leaderboard:**
+- 🏆 **Leaderboard (coming soon):**
   - Global score tracking
   - Game mode filtering
   - Real-time updates
@@ -142,7 +142,7 @@ firebase deploy --only firestore:rules
 ### Flag Match Game
 - 25 random countries per game
 - Click on the map to identify the country for each flag
-- Score tracking and leaderboard integration
+- Score tracking and leaderboard integration (soon)
 - Mobile-optimized UI with orientation detection
 
 ### Responsive Design
@@ -157,10 +157,6 @@ firebase deploy --only firestore:rules
 - Re-authentication required before account deletion
 - Firestore security rules prevent unauthorized data access
 - CORS configured for Firebase services
-
-## Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## License
 
