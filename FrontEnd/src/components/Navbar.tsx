@@ -35,14 +35,9 @@ export function Navbar() {
                 </button>
               </>
             ) : (
-              <>
-                <a href="/login" className="navbar-link">
-                  Login
-                </a>
-                <a href="/register" className="navbar-button">
-                  Sign Up
-                </a>
-              </>
+              <a href="/auth" className="navbar-button">
+                Join us
+              </a>
             )}
           </div>
         </div>
