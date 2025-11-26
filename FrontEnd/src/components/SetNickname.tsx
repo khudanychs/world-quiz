@@ -52,7 +52,7 @@ export const SetNickname = () => {
               required
               minLength={3}
               maxLength={50}
-              pattern="[a-zA-Z0-9_-]+"
+              pattern="[a-zA-Z0-9_\-]+"
               title="Username can only contain letters, numbers, underscores, and hyphens"
             />
             <small>3-50 characters, letters, numbers, underscores, and hyphens only</small>

@@ -225,14 +225,19 @@
   box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
 }
 
-/* Mobilní oprava - skrytí jména na malých displejích */
+/* Mobilní oprava - menší jméno na malých displejích */
 @media (max-width: 600px) {
   .navbar-username {
-    display: none;
+    max-width: 80px;
+    font-size: 12px;
   }
   
   .navbar-button {
     padding: 6px 10px;
     font-size: 12px;
+  }
+  
+  .navbar-user {
+    padding: 4px 6px;
   }
 }

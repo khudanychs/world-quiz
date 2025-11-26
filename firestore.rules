@@ -2,10 +2,11 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
-    // Scores collection - only authenticated users can read, only owner can write
+    // Scores collection - everyone can read (for leaderboard), only verified users can write
     match /scores/{scoreId} {
-      allow read: if request.auth != null;
+      allow read: if true;
       allow create: if request.auth != null 
+                    && request.auth.token.email_verified == true
                     && request.resource.data.userId == request.auth.uid
                     && request.resource.data.username is string
                     && request.resource.data.score is number
@@ -15,6 +16,7 @@ service cloud.firestore {
                     && (request.resource.data.gameMode == 'flag-match' 
                         || request.resource.data.gameMode == 'capital-match');
       allow update, delete: if request.auth != null 
+                          && request.auth.token.email_verified == true
                           && resource.data.userId == request.auth.uid;
     }
     
@@ -22,17 +24,14 @@ service cloud.firestore {
     match /usernames/{userId} {
       // Anyone can read to check if username is taken (even before registration)
       allow read: if true;
-      // User can write their own username record
-      allow create: if request.auth != null 
-                    && request.auth.uid == userId
-                    && request.resource.data.username is string
-                    && request.resource.data.username_lower is string;
-      // User can update their own username record
-      allow update: if request.auth != null 
-                    && request.auth.uid == userId
-                    && request.resource.data.username is string
-                    && request.resource.data.username_lower is string;
-      // User can delete their own username record
+      // User can create/update their own username record
+      // Create: during registration (no email verification required yet)
+      // Update: after login (any authenticated user can change their username)
+      allow create, update: if request.auth != null 
+                            && request.auth.uid == userId
+                            && request.resource.data.username is string
+                            && request.resource.data.username_lower is string;
+      // Authenticated users can delete their username
       allow delete: if request.auth != null && request.auth.uid == userId;
     }
     

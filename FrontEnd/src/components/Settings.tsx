@@ -8,7 +8,7 @@ interface SettingsProps {
 }
 
 export const Settings = ({ isOpen, onClose }: SettingsProps) => {
-  const { user, setNickname, deleteAccount } = useAuth();
+  const { user, setNickname, deleteAccount, refreshUser } = useAuth();
   const [username, setUsername] = useState('');
   const [avatarUrl, setAvatarUrl] = useState('');
   const [error, setError] = useState('');
@@ -49,8 +49,10 @@ export const Settings = ({ isOpen, onClose }: SettingsProps) => {
     try {
       await setNickname(username);
       setSuccess('Nickname updated successfully!');
+      // Refresh user data to show new nickname immediately
+      await refreshUser();
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Failed to update nickname');
+      setError(err.message || 'Failed to update nickname');
     } finally {
       setLoading(false);
     }
@@ -75,7 +77,8 @@ export const Settings = ({ isOpen, onClose }: SettingsProps) => {
 
     try {
       await deleteAccount(deletePassword || undefined);
-      // User will be logged out automatically, no need to close modal
+      // User will be logged out automatically, close modal
+      onClose();
     } catch (err: any) {
       setError(err.message || 'Failed to delete account');
       setLoading(false);
@@ -133,7 +136,7 @@ export const Settings = ({ isOpen, onClose }: SettingsProps) => {
                   required
                   minLength={3}
                   maxLength={50}
-                  pattern="[a-zA-Z0-9_-]+"
+                  pattern="[a-zA-Z0-9_\-]+"
                   title="Username can only contain letters, numbers, underscores, and hyphens"
                   autoComplete="off"
                 />

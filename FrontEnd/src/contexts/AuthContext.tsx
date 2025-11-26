@@ -51,22 +51,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser: FirebaseUser | null) => {
       if (firebaseUser) {
-        // CRITICAL: Block unverified email/password users
-        // Google users are auto-verified, so only check email/password accounts
-        const isEmailPasswordUser = firebaseUser.providerData.some(
-          provider => provider.providerId === 'password'
-        );
-        
-        if (isEmailPasswordUser && !firebaseUser.emailVerified) {
-          console.log('⚠️ User has unverified email, signing out immediately');
-          // Sign out unverified users immediately
-          // This ensures they stay as "guest" and can use the app normally
-          await signOut(auth);
-          setUser(null);
-          setLoading(false);
-          return;
-        }
-        
         // Check if username exists in Firestore, if not create it
         // This is a fallback in case registration failed to create it
         if (firebaseUser.displayName) {
@@ -165,12 +149,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         await sendEmailVerification(userCredential.user);
         console.log('✅ Verification email sent');
         
-        // 4. Sign out the user immediately - they must verify email first
-        console.log('🔍 Signing out user until email is verified...');
-        await signOut(auth);
+        // DON'T sign out - let them see the verification screen
         console.log('✅ Registration complete!');
         
-        // User is now signed out and must verify email before logging in
+        // User stays logged in with emailVerified=false
+        // They will see verification screen via VerifiedOrGuestRoute
       } catch (firestoreError: any) {
         // If anything fails, delete the auth account to keep things consistent
         console.error('❌ Failed to complete registration:', firestoreError);
