@@ -8,12 +8,14 @@ An interactive geography quiz web application with multiple game modes. Test you
 - **Flag Match** - Identify countries by their flags on an interactive world map
 - Streak tracking with personal best records
 - 25 countries per game session
+- 250+ countries and territories including microstates
 
 ### 🗺️ Interactive Map
 - Explore mode with zoom and pan capabilities
 - Responsive design optimized for mobile and desktop
-- Adaptive marker sizing based on screen size
+- Visual markers for small countries (Vatican, Monaco, Palestine, etc.)
 - Touch-friendly controls
+- Capital city information on hover
 
 ### 👤 User System
 - Email/password authentication with email verification
@@ -53,13 +55,13 @@ An interactive geography quiz web application with multiple game modes. Test you
 world-quiz/
 ├── FrontEnd/
 │   ├── public/
-│   │   ├── countries.json     # Country data (local)
-│   │   └── flags/             # SVG flag images (local)
+│   │   ├── countries.json     # Country data (250+ countries)
+│   │   └── flags/             # SVG flag images (~270 flags)
 │   ├── src/
 │   │   ├── components/        # React components
 │   │   ├── contexts/          # Auth context
 │   │   ├── hooks/             # Custom hooks (useFlagMatchGame)
-│   │   ├── services/          # API services
+│   │   ├── pages/             # Page components
 │   │   └── utils/             # Utilities and constants
 │   └── package.json
 ├── functions/                 # Firebase Cloud Functions

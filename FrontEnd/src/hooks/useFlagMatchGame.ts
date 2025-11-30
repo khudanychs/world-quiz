@@ -6,6 +6,7 @@ import {
   normalizeCountryName,
   stripDiacritics,
 } from "../utils/countries";
+import { SMALL_ISLAND_MARKERS, TERRITORY_MARKERS } from "../utils/markerPositions";
 
 type CountryInfo = { name: string; cca2: string; flag: string };
 
@@ -102,6 +103,7 @@ export function useFlagMatchGame() {
     const geos = geosRef.current || [];
     const playable: CountryInfo[] = [];
     
+    // Add countries from map polygons
     for (const geo of geos) {
       const nameRaw = (geo.properties?.name as string) ?? "Unknown";
       const norm = normalizeCountryName(nameRaw);
@@ -113,6 +115,19 @@ export function useFlagMatchGame() {
       if (info && info.flag) {
         // Kontrola jestli není na blacklistu
         if (!isGameEligibleCountry(nameRaw)) continue;
+        playable.push(info);
+      }
+    }
+    
+    // Add countries from markers (small island nations and microstates)
+    const allMarkers = { ...SMALL_ISLAND_MARKERS, ...TERRITORY_MARKERS };
+    for (const markerName of Object.keys(allMarkers)) {
+      const norm = normalizeCountryName(markerName);
+      const key1 = normalizeApos(norm);
+      const key2 = stripDiacritics(key1);
+      const info = restLookup[key1] || restLookup[key2];
+      
+      if (info && info.flag && isGameEligibleCountry(markerName)) {
         playable.push(info);
       }
     }

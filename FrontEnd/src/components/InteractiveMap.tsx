@@ -21,9 +21,11 @@ function hasCustomMarker(countryName: string): boolean {
 
 /** Calculate adaptive marker radius based on zoom level and screen size */
 function getMarkerRadius(zoom: number, isDesktop: boolean = true): number {
-  // Desktop: larger markers (base 5), Mobile: smaller markers (base 3)
-  const baseRadius = isDesktop ? 5 : 3;
-  return Math.max(isDesktop ? 2.5 : 1.5, baseRadius / Math.sqrt(zoom));
+  // Desktop: larger markers (base 8), Mobile: smaller markers (base 5)
+  // Markers stay reasonably sized even when zoomed in
+  const baseRadius = isDesktop ? 8 : 5;
+  const minRadius = isDesktop ? 4 : 2.5;
+  return Math.max(minRadius, baseRadius / Math.pow(zoom, 0.4));
 }
 
 type RSMGeography = {
@@ -210,8 +212,8 @@ export default function InteractiveMap({
               cy={y}
               r={getMarkerRadius(zoom, isDesktop)}
               fill={fill}
-              stroke="#8B8A85"
-              strokeWidth={0.8 / Math.sqrt(zoom)}
+              stroke="#2d3748"
+              strokeWidth={Math.max(0.5, 1.2 / Math.pow(zoom, 0.3))}
               style={{
                 cursor: "pointer",
                 transition: "none",
@@ -247,8 +249,8 @@ export default function InteractiveMap({
               cy={y}
               r={getMarkerRadius(zoom, isDesktop)}
               fill={fill}
-              stroke="#8B8A85"
-              strokeWidth={0.8 / Math.sqrt(zoom)}
+              stroke="#2d3748"
+              strokeWidth={Math.max(0.5, 1.2 / Math.pow(zoom, 0.3))}
               style={{
                 cursor: "pointer",
                 transition: "none",

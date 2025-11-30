@@ -44,7 +44,6 @@ export default function FlagMatchGame() {
       const allTimeBest = allTimeDoc.exists() ? (allTimeDoc.data().streak || 0) : 0;
       
       if (streak > allTimeBest) {
-        console.log("Updating all-time best:", streak, "(previous:", allTimeBest, ")");
         await setDoc(allTimeDocRef, {
           userId: user.uid,
           username: user.displayName,
@@ -63,7 +62,6 @@ export default function FlagMatchGame() {
       const todayBest = dailyDoc.exists() ? (dailyDoc.data().streak || 0) : 0;
       
       if (streak > todayBest) {
-        console.log("Updating today's best:", streak, "(previous:", todayBest, ")");
         await setDoc(dailyDocRef, {
           date: todayDate,
           userId: user.uid,
@@ -73,10 +71,8 @@ export default function FlagMatchGame() {
           gameType: "FlagMatch",
         });
       }
-      
-      console.log("Streak processing complete!", streak);
     } catch (error) {
-      console.error("Error saving streak: ", error);
+      console.error("Error saving streak:", error);
       streakSavedRef.current = false; // Allow retry on error
     }
   }, [user]);

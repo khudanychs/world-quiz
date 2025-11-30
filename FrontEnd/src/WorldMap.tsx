@@ -71,7 +71,10 @@ export default function WorldMap() {
           const key = normalizeApos(c.name.common);
           m[key] = c.capital && c.capital.length > 0 ? c.capital : [];
         }
+        // Add capitals for territories/disputed areas not in REST Countries
         m["Northern Cyprus"] = ["Nicosia (North)"];
+        m["Somaliland"] = ["Hargeisa"];
+        m["Western Sahara"] = ["El Aaiún (disputed)"];
         if (alive) setCapitals(m);
       } catch (e) {
         console.error("Failed to load capitals", e);

@@ -57,8 +57,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           try {
             const usernameDoc = await getDoc(doc(db, 'usernames', firebaseUser.uid));
             if (!usernameDoc.exists()) {
-              console.log('⚠️ Username not found in Firestore, creating it now...');
-              
               // Check if username is already taken, add suffix if needed
               let username = firebaseUser.displayName;
               let usernameToUse = username;
@@ -89,10 +87,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 userId: firebaseUser.uid,
                 createdAt: new Date()
               }, { merge: false });
-              console.log('✅ Username synced to Firestore:', usernameToUse);
             }
           } catch (error) {
-            console.error('❌ Failed to sync username to Firestore:', error);
+            console.error('Failed to sync username to Firestore:', error);
             // Don't block login if this fails
           }
         }
@@ -132,56 +129,38 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const register = async (username: string, email: string, password: string) => {
     try {
-      console.log('🔍 Starting registration for:', email);
-      
       // Check if username is already taken
-      console.log('🔍 Checking if username is taken:', username);
       const usernameQuery = query(collection(db, 'usernames'), where('username_lower', '==', username.toLowerCase()));
       const usernameSnapshot = await getDocs(usernameQuery);
       
       if (!usernameSnapshot.empty) {
-        console.log('❌ Username already taken');
         throw new Error('Username already in use. Please choose a different one.');
       }
       
-      console.log('✅ Username available');
-      
       // Create user account
-      console.log('🔍 Creating Firebase auth account...');
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      console.log('✅ Auth account created:', userCredential.user.uid);
       
       // CRITICAL: Do all these operations sequentially and wait for each
       try {
         // 1. Update display name
-        console.log('🔍 Updating display name...');
         await updateProfile(userCredential.user, { displayName: username });
-        console.log('✅ Display name updated');
         
         // 2. Reserve the username in Firestore - critical for uniqueness
-        console.log('🔍 Saving username to Firestore...');
         await setDoc(doc(db, 'usernames', userCredential.user.uid), {
           username: username,
           username_lower: username.toLowerCase(),
           userId: userCredential.user.uid,
           createdAt: new Date()
         }, { merge: false });
-        console.log('✅ Username saved to Firestore');
         
         // 3. Send verification email
-        console.log('🔍 Sending verification email...');
         await sendEmailVerification(userCredential.user);
-        console.log('✅ Verification email sent');
-        
-        // DON'T sign out - let them see the verification screen
-        console.log('✅ Registration complete!');
         
         // User stays logged in with emailVerified=false
         // They will see verification screen via VerifiedOrGuestRoute
       } catch (firestoreError: any) {
         // If anything fails, delete the auth account to keep things consistent
-        console.error('❌ Failed to complete registration:', firestoreError);
-        console.error('Error details:', firestoreError.message, firestoreError.code);
+        console.error('Failed to complete registration:', firestoreError);
         try {
           await userCredential.user.delete();
         } catch (deleteError) {
@@ -191,7 +170,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
       
     } catch (error: any) {
-      console.error('❌ Registration error:', error);
       throw new Error(getFirebaseErrorMessage(error));
     }
   };
@@ -319,7 +297,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         
         if (streakDoc.exists()) {
           await updateDoc(streakDocRef, { username: username });
-          console.log(`✅ Updated username in all-time streak record`);
         }
         
         // Update username in user's daily streak records
@@ -331,9 +308,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         
         for (const dailyDoc of dailyStreaksSnapshot.docs) {
           await updateDoc(dailyDoc.ref, { username: username });
-        }
-        if (!dailyStreaksSnapshot.empty) {
-          console.log(`✅ Updated username in ${dailyStreaksSnapshot.size} daily streak records`);
         }
         
         // Manually trigger a refresh to get the updated user object

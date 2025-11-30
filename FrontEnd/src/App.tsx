@@ -28,7 +28,6 @@ function VerifiedOrGuestRoute({ children }: { children: React.ReactNode }) {
   // Google users are auto-verified, so skip the check for them
   const isEmailPasswordUser = user && user.email && !user.photoURL;
   if (user && !user.emailVerified && isEmailPasswordUser) {
-    console.log('🚫 BLOCKING unverified user:', user.email, 'emailVerified:', user.emailVerified);
     
     const handleCheckVerification = async () => {
       setChecking(true);

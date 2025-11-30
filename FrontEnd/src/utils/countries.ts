@@ -15,6 +15,7 @@ export function normalizeCountryName(raw: string): string {
     "Cook Is.": "Cook Islands",
     "Fr. Polynesia": "French Polynesia",
     "N. Cyprus": "Northern Cyprus",
+    "W. Sahara": "Western Sahara",
   };
   return map[raw] ?? raw;
 }
@@ -41,7 +42,7 @@ const nonClickableTerritories = new Set<string>([
   "Siachen Glacier",
   
   // Disputed/occupied territories
-  "Crimea", "Crimean Peninsula", "Northern Cyprus", "Western Sahara",
+  "Crimea", "Crimean Peninsula", "Northern Cyprus", "W. Sahara",
   
   // French overseas territories
   "French Guiana", "Guadeloupe", "Martinique", "Réunion", "Mayotte",
@@ -62,6 +63,7 @@ const nonClickableTerritories = new Set<string>([
   
   // Danish autonomous territories
   "Faroe Islands",
+  // Note: Greenland is NOT excluded - it's playable in the flag game
   
   // New Zealand territories
   "Cook Islands", "Niue", "Tokelau",
@@ -130,11 +132,14 @@ export function initializeGameEligibleCountries(
 ): void {
   gameEligibleCountriesCache = new Set();
   
+  // Special territories that should be playable despite not being UN members
+  const specialPlayableTerritories = new Set(["Greenland", "Taiwan", "Kosovo", "Palestine"]);
+  
   for (const country of countries) {
     const name = country.name.common;
     
-    // Include all UN member states and independent countries
-    if (country.unMember || country.independent) {
+    // Include all UN member states, independent countries, and special territories
+    if (country.unMember || country.independent || specialPlayableTerritories.has(name)) {
       // Add the main name
       gameEligibleCountriesCache.add(name);
       
