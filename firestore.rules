@@ -41,6 +41,41 @@ service cloud.firestore {
       allow write: if request.auth != null && request.auth.uid == userId;
     }
     
+    // Streaks collection - for leaderboard with streaks
+    match /streaks/{streakId} {
+      // Everyone can read (for leaderboard display, including guests)
+      allow read: if true;
+      // Only verified users can create their own streak records
+      allow create: if request.auth != null 
+                    && request.auth.token.email_verified == true
+                    && request.resource.data.userId == request.auth.uid
+                    && request.resource.data.username is string
+                    && request.resource.data.streak is number
+                    && request.resource.data.streak >= 0;
+      // Users can update/delete their own streak records
+      allow update, delete: if request.auth != null 
+                          && request.auth.token.email_verified == true
+                          && resource.data.userId == request.auth.uid;
+    }
+    
+    // Daily streaks collection - for "Today" leaderboard
+    match /dailyStreaks/{dailyStreakId} {
+      // Everyone can read (for leaderboard display, including guests)
+      allow read: if true;
+      // Only verified users can create their own daily streak records
+      allow create: if request.auth != null 
+                    && request.auth.token.email_verified == true
+                    && request.resource.data.userId == request.auth.uid
+                    && request.resource.data.username is string
+                    && request.resource.data.streak is number
+                    && request.resource.data.streak >= 0
+                    && request.resource.data.date is string;
+      // Users can update/delete their own daily streak records
+      allow update, delete: if request.auth != null 
+                          && request.auth.token.email_verified == true
+                          && resource.data.userId == request.auth.uid;
+    }
+    
     // Leaderboard - everyone can read, but only authenticated users' scores are shown
     match /leaderboard/{entry} {
       allow read: if true;

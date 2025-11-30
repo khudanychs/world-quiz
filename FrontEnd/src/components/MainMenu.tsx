@@ -1,5 +1,4 @@
 import { useNavigate } from 'react-router-dom';
-import { Leaderboard } from './Leaderboard';
 import './MainMenu.css';
 
 export default function MainMenu() {
@@ -41,8 +40,6 @@ export default function MainMenu() {
           </div>
         </div>
       </section>
-
-      <Leaderboard />
 
       <footer className="menu-footer">
         <button className="menu-primary" onClick={() => navigate('/map')}>

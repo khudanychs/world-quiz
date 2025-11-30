@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react';
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from '../firebase';
 import { useAuth } from '../contexts/AuthContext';
 import './Settings.css';
 
@@ -17,6 +19,8 @@ export const Settings = ({ isOpen, onClose }: SettingsProps) => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteConfirmText, setDeleteConfirmText] = useState('');
   const [deletePassword, setDeletePassword] = useState('');
+  const [highestStreak, setHighestStreak] = useState<number | null>(null);
+  const [streakLoading, setStreakLoading] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -24,6 +28,32 @@ export const Settings = ({ isOpen, onClose }: SettingsProps) => {
       setAvatarUrl(user.photoURL || '');
     }
   }, [user]);
+
+  // Fetch user's highest streak when modal opens
+  useEffect(() => {
+    if (isOpen && user) {
+      const fetchHighestStreak = async () => {
+        setStreakLoading(true);
+        try {
+          // Document ID is user.uid (one record per user)
+          const streakDocRef = doc(db, 'streaks', user.uid);
+          const streakDoc = await getDoc(streakDocRef);
+          if (streakDoc.exists()) {
+            const data = streakDoc.data();
+            setHighestStreak(data.streak);
+          } else {
+            setHighestStreak(0);
+          }
+        } catch (err) {
+          console.error('Error fetching highest streak:', err);
+          setHighestStreak(null);
+        } finally {
+          setStreakLoading(false);
+        }
+      };
+      fetchHighestStreak();
+    }
+  }, [isOpen, user]);
 
   useEffect(() => {
     // Clear messages when modal opens or closes
@@ -172,6 +202,22 @@ export const Settings = ({ isOpen, onClose }: SettingsProps) => {
                 <span className="info-value">
                   {user?.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}
                 </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Stats Section */}
+          <div className="settings-section">
+            <h3>Your Stats</h3>
+            <div className="stats-container">
+              <div className="stat-card">
+                <span className="stat-icon">🔥</span>
+                <div className="stat-content">
+                  <span className="stat-value">
+                    {streakLoading ? '...' : (highestStreak ?? '—')}
+                  </span>
+                  <span className="stat-label">Best Streak</span>
+                </div>
               </div>
             </div>
           </div>

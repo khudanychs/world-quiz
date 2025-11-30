@@ -1,13 +1,22 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import InteractiveMap from "./InteractiveMap";
 import GameHUD from "./GameHUD";
 import { useAuth } from "../contexts/AuthContext";
 import { db } from "../firebase";
-import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
 import { normalizeCountryName } from "../utils/countries";
 import { BASE_W, BASE_H, FRAME, calculateMapDimensions } from "../utils/mapConstants";
 import { useFlagMatchGame } from "../hooks/useFlagMatchGame";
+
+// Get today's date string in UTC (YYYY-MM-DD format)
+function getTodayDateString(): string {
+  const now = new Date();
+  const year = now.getUTCFullYear();
+  const month = String(now.getUTCMonth() + 1).padStart(2, '0');
+  const day = String(now.getUTCDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
 
 export default function FlagMatchGame() {
   const { user } = useAuth();
@@ -15,6 +24,70 @@ export default function FlagMatchGame() {
 
   // Use custom hook for game logic
   const game = useFlagMatchGame();
+
+  // Track if streak has been saved to avoid duplicates
+  const streakSavedRef = useRef(false);
+
+  // Function to save streak to both all-time and daily collections
+  const saveStreak = useCallback(async (streak: number) => {
+    if (streakSavedRef.current || streak <= 0 || !user) {
+      return;
+    }
+    
+    try {
+      streakSavedRef.current = true;
+      
+      // 1. Save to ALL-TIME streaks (streaks/{userId})
+      const allTimeDocRef = doc(db, "streaks", user.uid);
+      const allTimeDoc = await getDoc(allTimeDocRef);
+      
+      const allTimeBest = allTimeDoc.exists() ? (allTimeDoc.data().streak || 0) : 0;
+      
+      if (streak > allTimeBest) {
+        console.log("Updating all-time best:", streak, "(previous:", allTimeBest, ")");
+        await setDoc(allTimeDocRef, {
+          userId: user.uid,
+          username: user.displayName,
+          streak: streak,
+          createdAt: serverTimestamp(),
+          gameType: "FlagMatch",
+        });
+      }
+      
+      // 2. Save to DAILY streaks (dailyStreaks/{date}_{userId})
+      const todayDate = getTodayDateString();
+      const dailyDocId = `${todayDate}_${user.uid}`;
+      const dailyDocRef = doc(db, "dailyStreaks", dailyDocId);
+      const dailyDoc = await getDoc(dailyDocRef);
+      
+      const todayBest = dailyDoc.exists() ? (dailyDoc.data().streak || 0) : 0;
+      
+      if (streak > todayBest) {
+        console.log("Updating today's best:", streak, "(previous:", todayBest, ")");
+        await setDoc(dailyDocRef, {
+          date: todayDate,
+          userId: user.uid,
+          username: user.displayName,
+          streak: streak,
+          createdAt: serverTimestamp(),
+          gameType: "FlagMatch",
+        });
+      }
+      
+      console.log("Streak processing complete!", streak);
+    } catch (error) {
+      console.error("Error saving streak: ", error);
+      streakSavedRef.current = false; // Allow retry on error
+    }
+  }, [user]);
+
+  // Handle back navigation with streak save
+  const handleBack = useCallback(() => {
+    if (game.bestStreak > 0 && user && !streakSavedRef.current) {
+      saveStreak(game.bestStreak);
+    }
+    navigate("/");
+  }, [game.bestStreak, user, saveStreak, navigate]);
 
   // Layout sizing
   const [dimensions, setDimensions] = useState({ width: BASE_W, height: BASE_H });
@@ -52,28 +125,19 @@ export default function FlagMatchGame() {
 
   const FIT_SCALE = Math.max(1, Math.round(INNER_W * 0.32));
 
-  // Effect to save score when game is over
+  // Effect to save streak when game is over
   useEffect(() => {
-    if (game.gameOver && user && game.score > 0) {
-      const saveScore = async () => {
-        try {
-          await addDoc(collection(db, "scores"), {
-            userId: user.uid,
-            username: user.displayName,
-            score: game.score,
-            bestStreak: game.bestStreak,
-            createdAt: serverTimestamp(),
-            gameType: "FlagMatch",
-          });
-          console.log("Score saved successfully!");
-        } catch (error) {
-          console.error("Error saving score: ", error);
-        }
-      };
-
-      saveScore();
+    if (game.gameOver && game.bestStreak > 0) {
+      saveStreak(game.bestStreak);
     }
-  }, [game.gameOver, user, game.score, game.bestStreak]);
+  }, [game.gameOver, game.bestStreak, saveStreak]);
+
+  // Reset streakSavedRef when starting a new game
+  useEffect(() => {
+    if (game.currentIdx === 0 && game.targets.length > 0 && !game.gameOver) {
+      streakSavedRef.current = false;
+    }
+  }, [game.currentIdx, game.targets.length, game.gameOver]);
 
   return (
     <>
@@ -112,7 +176,7 @@ export default function FlagMatchGame() {
         }}
       >
       <button
-        onClick={() => navigate("/")}
+        onClick={handleBack}
         aria-label="Back to main menu"
         style={{
           position: "absolute",
@@ -170,6 +234,7 @@ export default function FlagMatchGame() {
           hasWon={game.hasWon}
           score={game.score}
           bestStreak={game.bestStreak}
+          skippedCount={game.skippedSet.size}
           currentTarget={game.currentTarget}
           currentIdx={game.currentIdx}
           targetsLength={game.targets.length}
@@ -206,13 +271,27 @@ export default function FlagMatchGame() {
               position: "relative",
             }}
           >
-            <div style={{ fontSize: "clamp(60px, 15vw, 120px)", marginBottom: 20 }}>🎉</div>
-            <h1 style={{ fontSize: "clamp(32px, 8vw, 64px)", margin: "0 0 20px", color: "#10b981" }}>
-              Perfect!
+            <div style={{ fontSize: "clamp(60px, 15vw, 120px)", marginBottom: 20 }}>
+              {game.bestStreak === 25 ? "🏆" : "🎉"}
+            </div>
+            <h1 style={{ fontSize: "clamp(32px, 8vw, 64px)", margin: "0 0 20px", color: game.bestStreak === 25 ? "#fbbf24" : "#10b981" }}>
+              {game.bestStreak === 25 ? "LEGENDARY!" : "Perfect!"}
             </h1>
-            <p style={{ fontSize: "clamp(18px, 4.5vw, 32px)", margin: "0 0 40px", opacity: 0.9 }}>
-              All 25 flags matched! 🌍
+            <p style={{ fontSize: "clamp(18px, 4.5vw, 32px)", margin: "0 0 16px", opacity: 0.9 }}>
+              {game.bestStreak === 25 
+                ? "25 flags, 25 streak! Flawless victory! 🔥" 
+                : "All 25 flags matched! 🌍"}
             </p>
+            {game.bestStreak < 25 && (
+              <p style={{ fontSize: "clamp(14px, 3.5vw, 24px)", margin: "0 0 40px", opacity: 0.7 }}>
+                Best streak: {game.bestStreak} 🔥
+              </p>
+            )}
+            {game.bestStreak === 25 && (
+              <p style={{ fontSize: "clamp(12px, 3vw, 18px)", margin: "0 0 40px", opacity: 0.6, fontStyle: "italic" }}>
+                "Is it possible to learn this power?" — Everyone else
+              </p>
+            )}
             <div
               style={{
                 display: "flex",
@@ -345,6 +424,7 @@ export default function FlagMatchGame() {
           center={[0, 15]}
           zoom={pos.zoom}
           coordinates={pos.coordinates}
+          isDesktop={!isPortrait && window.innerWidth >= 768}
           onMoveEnd={({ zoom, coordinates }: { zoom: number; coordinates: [number, number] }) =>
             setPos({ zoom, coordinates })
           }

@@ -1,10 +1,12 @@
-import { useState, FormEvent } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect, FormEvent } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import './Auth.css';
 
 export function Auth() {
-  const [mode, setMode] = useState<'register' | 'login'>('register');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const initialMode = searchParams.get('mode') === 'login' ? 'login' : 'register';
+  const [mode, setMode] = useState<'register' | 'login'>(initialMode);
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -14,6 +16,16 @@ export function Auth() {
   const [loading, setLoading] = useState(false);
   const { login, register, loginWithGoogle } = useAuth();
   const navigate = useNavigate();
+
+  // Update mode when URL parameter changes
+  useEffect(() => {
+    const urlMode = searchParams.get('mode');
+    if (urlMode === 'login') {
+      setMode('login');
+    } else if (urlMode === 'register') {
+      setMode('register');
+    }
+  }, [searchParams]);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -167,6 +179,7 @@ export function Auth() {
                 type="button" 
                 onClick={() => {
                   setMode('login');
+                  setSearchParams({ mode: 'login' });
                   setError('');
                   setSuccess('');
                 }}
@@ -182,6 +195,7 @@ export function Auth() {
                 type="button" 
                 onClick={() => {
                   setMode('register');
+                  setSearchParams({ mode: 'register' });
                   setError('');
                   setSuccess('');
                 }}

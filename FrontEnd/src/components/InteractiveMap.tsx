@@ -19,9 +19,11 @@ function hasCustomMarker(countryName: string): boolean {
   return inSmallIslands || inTerritories;
 }
 
-/** Calculate adaptive marker radius based on zoom level */
-function getMarkerRadius(zoom: number): number {
-  return Math.max(1.5, 3.5 / Math.sqrt(zoom));
+/** Calculate adaptive marker radius based on zoom level and screen size */
+function getMarkerRadius(zoom: number, isDesktop: boolean = true): number {
+  // Desktop: larger markers (base 5), Mobile: smaller markers (base 3)
+  const baseRadius = isDesktop ? 5 : 3;
+  return Math.max(isDesktop ? 2.5 : 1.5, baseRadius / Math.sqrt(zoom));
 }
 
 type RSMGeography = {
@@ -45,6 +47,7 @@ interface InteractiveMapProps {
   getCountryFill?: (countryName: string) => string;
   selectedCountry?: string | null;
   onGeographiesLoaded?: (geographies: RSMGeography[]) => void;
+  isDesktop?: boolean;
 }
 
 export default function InteractiveMap({
@@ -60,6 +63,7 @@ export default function InteractiveMap({
   getCountryFill,
   selectedCountry,
   onGeographiesLoaded,
+  isDesktop = true,
 }: InteractiveMapProps) {
   
   // Create projection function for coordinate transformation
@@ -204,7 +208,7 @@ export default function InteractiveMap({
               key={`marker-${countryName}`}
               cx={x}
               cy={y}
-              r={getMarkerRadius(zoom)}
+              r={getMarkerRadius(zoom, isDesktop)}
               fill={fill}
               stroke="#8B8A85"
               strokeWidth={0.8 / Math.sqrt(zoom)}
@@ -241,7 +245,7 @@ export default function InteractiveMap({
               key={`territory-marker-${countryName}`}
               cx={x}
               cy={y}
-              r={getMarkerRadius(zoom)}
+              r={getMarkerRadius(zoom, isDesktop)}
               fill={fill}
               stroke="#8B8A85"
               strokeWidth={0.8 / Math.sqrt(zoom)}

@@ -5,6 +5,7 @@ interface GameHUDProps {
   hasWon: boolean;
   score: number;
   bestStreak: number;
+  skippedCount: number;
   currentTarget: { name: string; cca2: string; flag: string } | undefined;
   currentIdx: number;
   targetsLength: number;
@@ -23,6 +24,7 @@ export default function GameHUD({
   hasWon,
   score,
   bestStreak,
+  skippedCount,
   currentTarget,
   currentIdx,
   targetsLength,
@@ -46,25 +48,32 @@ export default function GameHUD({
   }
 
   if (gameOver) {
+    const isPerfectStreak = bestStreak === 25;
+    
     return (
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 12, padding: "8px 0" }}>
-        {hasWon ? (
+        {hasWon && isPerfectStreak ? (
+          <>
+            <strong style={{ fontSize: "clamp(16px, 3.5vw, 24px)", color: "#fbbf24" }}>🏆 LEGENDARY! 🏆</strong>
+            <span style={{ opacity: 0.9, fontSize: "clamp(14px, 3vw, 18px)" }}>
+              25/25 flags, 25 streak! You're a geography god! 🌍👑
+            </span>
+          </>
+        ) : hasWon ? (
           <>
             <strong style={{ fontSize: "clamp(16px, 3.5vw, 24px)", color: "#10b981" }}>🎉 Perfect Score! 🎉</strong>
             <span style={{ opacity: 0.9, fontSize: "clamp(14px, 3vw, 18px)" }}>
-              All {score} flags matched correctly!
+              All {score} flags matched!
             </span>
-            {bestStreak > 0 && (
-              <span style={{ opacity: 0.8, fontSize: "clamp(12px, 2.8vw, 16px)" }}>
-                Best streak: {bestStreak} 🔥
-              </span>
-            )}
+            <span style={{ opacity: 0.8, fontSize: "clamp(12px, 2.8vw, 16px)" }}>
+              Best streak: {bestStreak} 🔥
+            </span>
           </>
         ) : (
           <>
             <strong style={{ fontSize: "clamp(14px, 3.2vw, 20px)" }}>Round finished</strong>
             <span style={{ opacity: 0.8, fontSize: "clamp(12px, 2.8vw, 16px)" }}>
-              Score: {score}/25
+              Matched: {score}/25 {skippedCount > 0 && `(${skippedCount} skipped)`}
             </span>
             {bestStreak > 0 && (
               <span style={{ opacity: 0.8, fontSize: "clamp(11px, 2.6vw, 14px)" }}>

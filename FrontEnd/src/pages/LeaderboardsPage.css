@@ -1,0 +1,60 @@
+.leaderboards-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #0b1020 0%, #1a1f35 100%);
+  padding-top: 64px; /* navbar height */
+  display: flex;
+  justify-content: center;
+}
+
+.leaderboards-container {
+  width: 100%;
+  max-width: 800px;
+  padding: 40px 20px;
+}
+
+@media (min-width: 768px) {
+  .leaderboards-container {
+    padding: 60px 40px;
+  }
+}
+
+.leaderboards-title {
+  text-align: center;
+  color: #fff;
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 0 0 12px 0;
+}
+
+@media (min-width: 768px) {
+  .leaderboards-title {
+    font-size: 2.5rem;
+  }
+}
+
+.leaderboards-subtitle {
+  text-align: center;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 1rem;
+  margin: 0 0 32px 0;
+}
+
+@media (min-width: 768px) {
+  .leaderboards-subtitle {
+    font-size: 1.1rem;
+    margin: 0 0 48px 0;
+  }
+}
+
+.leaderboards-grid {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+}
+
+/* Override leaderboard card styles for this page */
+.leaderboards-grid .leaderboard-card {
+  margin-top: 0;
+  max-width: 100%;
+}

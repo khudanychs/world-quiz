@@ -13,7 +13,7 @@ import {
   reauthenticateWithPopup,
   User as FirebaseUser // Rename to avoid conflict if any
 } from 'firebase/auth';
-import { doc, setDoc, getDoc, deleteDoc, query, collection, where, getDocs } from 'firebase/firestore';
+import { doc, setDoc, getDoc, deleteDoc, updateDoc, query, collection, where, getDocs } from 'firebase/firestore';
 import { auth, db } from '../firebase';
 import { getFirebaseErrorMessage } from '../utils/firebaseErrors';
 
@@ -58,14 +58,38 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             const usernameDoc = await getDoc(doc(db, 'usernames', firebaseUser.uid));
             if (!usernameDoc.exists()) {
               console.log('⚠️ Username not found in Firestore, creating it now...');
-              // Username record doesn't exist, create it now
+              
+              // Check if username is already taken, add suffix if needed
+              let username = firebaseUser.displayName;
+              let usernameToUse = username;
+              let suffix = 1;
+              
+              while (true) {
+                const usernameQuery = query(
+                  collection(db, 'usernames'),
+                  where('username_lower', '==', usernameToUse.toLowerCase())
+                );
+                const existingUsername = await getDocs(usernameQuery);
+                
+                if (existingUsername.empty) {
+                  break;
+                }
+                suffix++;
+                usernameToUse = `${username}${suffix}`;
+              }
+              
+              // Update displayName if suffix was added
+              if (usernameToUse !== username) {
+                await updateProfile(firebaseUser, { displayName: usernameToUse });
+              }
+              
               await setDoc(doc(db, 'usernames', firebaseUser.uid), {
-                username: firebaseUser.displayName,
-                username_lower: firebaseUser.displayName.toLowerCase(),
+                username: usernameToUse,
+                username_lower: usernameToUse.toLowerCase(),
                 userId: firebaseUser.uid,
                 createdAt: new Date()
               }, { merge: false });
-              console.log('✅ Username synced to Firestore');
+              console.log('✅ Username synced to Firestore:', usernameToUse);
             }
           } catch (error) {
             console.error('❌ Failed to sync username to Firestore:', error);
@@ -183,10 +207,37 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         
         if (!usernameDoc.exists()) {
           // User doesn't have a username record, create one
-          const username = result.user.displayName;
+          // But first check if the Google displayName is already taken
+          let username = result.user.displayName;
+          let usernameToUse = username;
+          let suffix = 1;
+          
+          // Keep trying with incremented suffix until we find unique username
+          while (true) {
+            const usernameQuery = query(
+              collection(db, 'usernames'),
+              where('username_lower', '==', usernameToUse.toLowerCase())
+            );
+            const existingUsername = await getDocs(usernameQuery);
+            
+            if (existingUsername.empty) {
+              // This username is available
+              break;
+            }
+            
+            // Username taken, try with suffix
+            suffix++;
+            usernameToUse = `${username}${suffix}`;
+          }
+          
+          // Update Firebase Auth displayName if we added suffix
+          if (usernameToUse !== username) {
+            await updateProfile(result.user, { displayName: usernameToUse });
+          }
+          
           await setDoc(doc(db, 'usernames', result.user.uid), {
-            username: username,
-            username_lower: username.toLowerCase(),
+            username: usernameToUse,
+            username_lower: usernameToUse.toLowerCase(),
             userId: result.user.uid,
             createdAt: new Date()
           });
@@ -261,6 +312,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           userId: currentUser.uid,
           updatedAt: new Date()
         });
+        
+        // Update username in user's all-time streak record (document ID = user.uid)
+        const streakDocRef = doc(db, 'streaks', currentUser.uid);
+        const streakDoc = await getDoc(streakDocRef);
+        
+        if (streakDoc.exists()) {
+          await updateDoc(streakDocRef, { username: username });
+          console.log(`✅ Updated username in all-time streak record`);
+        }
+        
+        // Update username in user's daily streak records
+        const dailyStreaksQuery = query(
+          collection(db, 'dailyStreaks'),
+          where('userId', '==', currentUser.uid)
+        );
+        const dailyStreaksSnapshot = await getDocs(dailyStreaksQuery);
+        
+        for (const dailyDoc of dailyStreaksSnapshot.docs) {
+          await updateDoc(dailyDoc.ref, { username: username });
+        }
+        if (!dailyStreaksSnapshot.empty) {
+          console.log(`✅ Updated username in ${dailyStreaksSnapshot.size} daily streak records`);
+        }
         
         // Manually trigger a refresh to get the updated user object
         await refreshUser();

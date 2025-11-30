@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { Navbar } from './components/Navbar';
 import { Auth } from './components/Auth';
@@ -5,12 +6,15 @@ import { SetNickname } from './components/SetNickname';
 import WorldMap from './WorldMap';
 import FlagMatchGame from './components/FlagMatchGame';
 import MainMenu from './components/MainMenu';
+import LeaderboardsPage from './pages/LeaderboardsPage';
 import { useAuth } from './contexts/AuthContext';
 import './App.css';
 
 // Route that shows verification screen for unverified users, but allows guests
 function VerifiedOrGuestRoute({ children }: { children: React.ReactNode }) {
   const { user, loading, logout } = useAuth();
+  const [checking, setChecking] = useState(false);
+  const [error, setError] = useState('');
   
   if (loading) {
     return (
@@ -25,6 +29,36 @@ function VerifiedOrGuestRoute({ children }: { children: React.ReactNode }) {
   const isEmailPasswordUser = user && user.email && !user.photoURL;
   if (user && !user.emailVerified && isEmailPasswordUser) {
     console.log('🚫 BLOCKING unverified user:', user.email, 'emailVerified:', user.emailVerified);
+    
+    const handleCheckVerification = async () => {
+      setChecking(true);
+      setError('');
+      try {
+        // Reload the Firebase user to get fresh emailVerified status
+        const { auth } = await import('./firebase');
+        if (auth.currentUser) {
+          await auth.currentUser.reload();
+          const freshUser = auth.currentUser;
+          
+          if (freshUser.emailVerified) {
+            // Email is now verified! Reload page to update state
+            setError('');
+            setChecking(false);
+            window.location.reload();
+            return;
+          } else {
+            // Still not verified
+            setError('Email not verified yet. Please check your inbox and click the verification link.');
+          }
+        } else {
+          setError('Session expired. Please refresh the page.');
+        }
+      } catch (e) {
+        setError('Failed to check verification status. Please try again.');
+      }
+      setChecking(false);
+    };
+    
     return (
       <div style={{
         height: '100vh',
@@ -49,21 +83,27 @@ function VerifiedOrGuestRoute({ children }: { children: React.ReactNode }) {
           <p style={{color: '#666', fontSize: '14px', marginTop: '16px'}}>
             Email sent to: <strong>{user.email}</strong>
           </p>
+          {error && (
+            <p style={{color: '#e53e3e', fontSize: '14px', marginTop: '16px', padding: '10px', background: '#fff5f5', borderRadius: '8px'}}>
+              {error}
+            </p>
+          )}
           <div style={{ display: 'flex', gap: '12px', marginTop: '24px', justifyContent: 'center', flexWrap: 'wrap' }}>
             <button
-              onClick={() => window.location.reload()}
+              onClick={handleCheckVerification}
+              disabled={checking}
               style={{
                 padding: '12px 24px',
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                background: checking ? '#a0aec0' : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
                 color: 'white',
                 border: 'none',
                 borderRadius: '8px',
                 fontSize: '16px',
                 fontWeight: '600',
-                cursor: 'pointer'
+                cursor: checking ? 'not-allowed' : 'pointer'
               }}
             >
-              I've Verified My Email
+              {checking ? 'Checking...' : "I've Verified My Email"}
             </button>
             <button
               onClick={async () => {
@@ -160,6 +200,7 @@ export default function App() {
             }
           />
           <Route path='/' element={<VerifiedOrGuestRoute><MainMenu /></VerifiedOrGuestRoute>} />
+          <Route path='/leaderboards' element={<VerifiedOrGuestRoute><LeaderboardsPage /></VerifiedOrGuestRoute>} />
           <Route path='/map' element={<VerifiedOrGuestRoute><WorldMap /></VerifiedOrGuestRoute>} />
           <Route path='/game/flags' element={<VerifiedOrGuestRoute><FlagMatchGame /></VerifiedOrGuestRoute>} />
         </Routes>

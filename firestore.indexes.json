@@ -1,0 +1,29 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "streaks",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "streak", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "streaks",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "dailyStreaks",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "date", "order": "ASCENDING" },
+        { "fieldPath": "streak", "order": "DESCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

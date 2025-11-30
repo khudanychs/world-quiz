@@ -11,8 +11,39 @@
 .leaderboard-title {
   text-align: center;
   margin-top: 0;
-  margin-bottom: 20px;
+  margin-bottom: 16px;
   font-size: 1.5rem;
+  color: #fff;
+}
+
+/* Toggle buttons */
+.leaderboard-toggle {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.toggle-btn {
+  padding: 8px 20px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: transparent;
+  color: #9ca3af;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.toggle-btn:hover {
+  border-color: rgba(255, 255, 255, 0.4);
+  color: #e5e7eb;
+}
+
+.toggle-btn.active {
+  background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+  border-color: transparent;
   color: #fff;
 }
 
@@ -44,11 +75,25 @@
   border-bottom: none;
 }
 
+.leaderboard-item.current-user {
+  background: rgba(249, 115, 22, 0.1);
+  border-radius: 8px;
+  padding: 10px 8px;
+  margin: 0 -8px;
+}
+
 .leaderboard-rank {
   font-weight: bold;
   font-size: 1.1rem;
   color: #9ca3af;
-  width: 30px;
+  width: 36px;
+  text-align: center;
+}
+
+.leaderboard-rank.rank-1,
+.leaderboard-rank.rank-2,
+.leaderboard-rank.rank-3 {
+  font-size: 1.3rem;
 }
 
 .leaderboard-name {
@@ -57,8 +102,47 @@
   color: #e5e7eb;
 }
 
-.leaderboard-score {
+.leaderboard-streak {
+  display: flex;
+  align-items: center;
+  gap: 4px;
   font-weight: bold;
   font-size: 1.1rem;
-  color: #34d399; /* A nice green for scores */
+  color: #f97316;
+}
+
+.streak-fire {
+  font-size: 1rem;
+}
+
+/* Guest CTA */
+.guest-cta {
+  margin-top: 20px;
+  padding: 16px;
+  background: rgba(249, 115, 22, 0.1);
+  border: 1px dashed rgba(249, 115, 22, 0.3);
+  border-radius: 10px;
+  text-align: center;
+}
+
+.guest-cta p {
+  margin: 0 0 12px 0;
+  color: #e5e7eb;
+  font-size: 0.95rem;
+}
+
+.cta-button {
+  padding: 10px 24px;
+  border-radius: 8px;
+  border: none;
+  background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.cta-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(249, 115, 22, 0.3);
 }
