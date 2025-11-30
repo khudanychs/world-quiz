@@ -174,6 +174,7 @@ export function initializeGameEligibleCountries(
  * Build a lookup from REST Countries results to map names.
  * Uses common name, alias map, and diacritics/apos normalization.
  * Also initializes the game-eligible countries cache.
+ * Flags are loaded from local /flags/ folder for reliability and speed.
  */
 export function buildRestLookup(
   countries: Array<{
@@ -198,7 +199,8 @@ export function buildRestLookup(
 
   for (const c of countries) {
     const common = c.name.common;
-    const flag = c.flags.svg || c.flags.png || "";
+    // Use local flag files instead of external URLs for reliability and speed
+    const flag = `/flags/${c.cca2.toLowerCase()}.svg`;
     const val = { name: common, cca2: c.cca2, flag };
     set(common, val);
 

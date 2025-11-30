@@ -58,13 +58,13 @@ export default function WorldMap() {
     return () => el.removeEventListener("wheel", onWheel as any);
   }, []);
 
-  /** Load capitals once on startup */
+  /** Load capitals once on startup from local file */
   useEffect(() => {
     let alive = true;
     (async () => {
       try {
         setLoadingCaps(true);
-        const res = await fetch("https://restcountries.com/v3.1/all?fields=name,capital");
+        const res = await fetch("/countries.json");
         const data = (await res.json()) as Array<{ name: { common: string }; capital?: string[] }>;
         const m: Record<string, string[]> = {};
         for (const c of data) {

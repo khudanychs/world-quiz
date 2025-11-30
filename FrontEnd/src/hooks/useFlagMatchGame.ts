@@ -57,16 +57,15 @@ export function useFlagMatchGame() {
 
   const geosRef = useRef<any[] | null>(null);
 
-  // Load REST Countries once
+  // Load REST Countries once (from local file - faster and more reliable)
   useEffect(() => {
     let alive = true;
     (async () => {
       try {
         setLoading(true);
         setLoadError("");
-        const res = await fetch(
-          "https://restcountries.com/v3.1/all?fields=name,cca2,flags,independent,unMember"
-        );
+        // Load from local file instead of external API
+        const res = await fetch("/countries.json");
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = (await res.json()) as Array<{
           name: { common: string };
