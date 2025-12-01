@@ -6,7 +6,7 @@ import { getFirestore } from "firebase/firestore";
 // Your web app's Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyDq6Fj5_xEqW3C0TM4kq6VrqMd1YOgtMW4",
-  authDomain: "world-quiz-476512.firebaseapp.com",
+  authDomain: "world-quiz.com",
   projectId: "world-quiz-476512",
   storageBucket: "world-quiz-476512.firebasestorage.app",
   messagingSenderId: "822254491537",
