@@ -10,7 +10,7 @@ export function normalizeCountryName(raw: string): string {
     "Eq. Guinea": "Equatorial Guinea",
     "Côte d'Ivoire": "Ivory Coast",
     "S. Sudan": "South Sudan",
-    "Czech Rep.": "Czechia",
+    "Czech Rep.": "Czech Republic",
     "Wallis and Futuna Is.": "Wallis and Futuna",
     "Cook Is.": "Cook Islands",
     "Fr. Polynesia": "French Polynesia",
@@ -216,5 +216,6 @@ export function buildRestLookup(
       }
     }
   }
+  
   return lookup;
 }

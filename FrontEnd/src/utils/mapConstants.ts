@@ -9,11 +9,11 @@ export function calculateMapDimensions(vw: number, vh: number) {
   const isPortrait = vh > vw;
   
   // Aggressive sizing for better map visibility
-  const maxW = vw * (isPortrait ? 0.92 : 0.95);
-  const maxH = vh * (isPortrait ? 0.55 : 0.80); // Adjusted for portrait UI panel
+  const maxW = vw * (isPortrait ? 0.95 : 0.95);
+  const maxH = vh * (isPortrait ? 0.70 : 0.80); // Higher for mobile portrait
   
-  // Better aspect ratio for portrait mode
-  const ar = isPortrait ? 1.5 : (BASE_W / BASE_H);
+  // Better aspect ratio for portrait mode (taller map)
+  const ar = isPortrait ? 1.3 : (BASE_W / BASE_H);
   
   let width = maxW;
   let height = width / ar;

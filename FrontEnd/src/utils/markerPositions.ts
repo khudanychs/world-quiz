@@ -38,12 +38,3 @@ export const SMALL_ISLAND_MARKERS: Record<string, [number, number]> = {
   "Bahrain": [50.6, 26.1],
   "Palestine": [35.2, 31.9],
 };
-
-/** 
- * Territories (non-UN members) that can appear with markers
- */
-export const TERRITORY_MARKERS: Record<string, [number, number]> = {
-  // New Zealand territories
-  "Cook Islands": [-159.8, -21.2],
-  "Niue": [-169.9, -19.1],
-};

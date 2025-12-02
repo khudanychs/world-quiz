@@ -6,7 +6,7 @@ import {
   normalizeCountryName,
   stripDiacritics,
 } from "../utils/countries";
-import { SMALL_ISLAND_MARKERS, TERRITORY_MARKERS } from "../utils/markerPositions";
+import { SMALL_ISLAND_MARKERS} from "../utils/markerPositions";
 
 type CountryInfo = { name: string; cca2: string; flag: string };
 
@@ -120,7 +120,7 @@ export function useFlagMatchGame() {
     }
     
     // Add countries from markers (small island nations and microstates)
-    const allMarkers = { ...SMALL_ISLAND_MARKERS, ...TERRITORY_MARKERS };
+    const allMarkers = { ...SMALL_ISLAND_MARKERS};
     for (const markerName of Object.keys(allMarkers)) {
       const norm = normalizeCountryName(markerName);
       const key1 = normalizeApos(norm);

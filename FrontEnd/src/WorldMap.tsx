@@ -32,6 +32,9 @@ export default function WorldMap() {
   const INNER_W = OUTER_W - FRAME * 2;
   const INNER_H = OUTER_H - FRAME * 2;
 
+  // Detect if we're on desktop (width >= 768px)
+  const isDesktop = dimensions.width >= 768;
+
   /** --- Controlled pan & zoom --- */
   const [pos, setPos] = useState<{ coordinates: [number, number]; zoom: number }>({
     coordinates: [0, 0],
@@ -75,6 +78,11 @@ export default function WorldMap() {
         m["Northern Cyprus"] = ["Nicosia (North)"];
         m["Somaliland"] = ["Hargeisa"];
         m["Western Sahara"] = ["El Aaiún (disputed)"];
+        m["Macedonia"] = ["Skopje"];
+        m["Falkland Is."] = ["Stanley"];
+        m["Dominican Rep."] = ["Santo Domingo"];
+        m["Solomon Is."] = ["Honiara"];
+        m["eSwatini"] = ["Mbabane", "Lobamba"];
         if (alive) setCapitals(m);
       } catch (e) {
         console.error("Failed to load capitals", e);
@@ -209,6 +217,7 @@ export default function WorldMap() {
           onCountryClick={(name) => setSelected(name)}
           onCountryHover={setHovered}
           selectedCountry={selected}
+          isDesktop={isDesktop}
         />
       </div>
     </div>

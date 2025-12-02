@@ -2,30 +2,81 @@
 import { ComposableMap, Geographies, Geography, ZoomableGroup } from "react-simple-maps";
 import { geoNaturalEarth1 } from "d3-geo";
 import { normalizeCountryName } from "../utils/countries";
-import { SMALL_ISLAND_MARKERS, TERRITORY_MARKERS } from "../utils/markerPositions";
+import { SMALL_ISLAND_MARKERS } from "../utils/markerPositions";
 
 const PROJECTION = "geoNaturalEarth1" as const;
-const geoUrl = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
+const geoUrl = "/countries-110m.json";
+
+/* ============================================================================
+   MARKER CONFIGURATION - Edit these values to customize marker appearance
+   ============================================================================ */
+
+// Desktop marker settings (screens >= 768px)
+const DESKTOP_MARKER = {
+  baseRadius: 8,      // Starting size at zoom=1 (fully zoomed out)
+  minRadius: 4,       // Smallest allowed size
+  zoomExponent: 0.4,  // How fast markers shrink when zooming (lower = slower)
+  strokeColor: "#2d3748",
+  baseStrokeWidth: 1.2,
+  minStrokeWidth: 0.5,
+  strokeZoomExponent: 0.6,
+};
+
+// Mobile marker settings (screens < 768px)
+const MOBILE_MARKER = {
+  baseRadius: 2.5,    // Starting size at zoom=1
+  minRadius: 1.2,     // Smallest allowed size  
+  zoomExponent: 0.5,  // Shrinks faster than desktop
+  strokeColor: "#2d3748",
+  baseStrokeWidth: 0.8,
+  minStrokeWidth: 0.3,
+  strokeZoomExponent: 0.5,
+};
+
+// Zoom limits
+const ZOOM_CONFIG = {
+  minZoom: 0.9,
+  maxZoom: 50,
+};
+
+/* ============================================================================ */
 
 /** Check if a country has a custom marker */
 function hasCustomMarker(countryName: string): boolean {
   const normalized = normalizeCountryName(countryName);
-  const inSmallIslands = Object.keys(SMALL_ISLAND_MARKERS).some(
+  return Object.keys(SMALL_ISLAND_MARKERS).some(
     markerName => normalizeCountryName(markerName) === normalized
   );
-  const inTerritories = Object.keys(TERRITORY_MARKERS).some(
-    markerName => normalizeCountryName(markerName) === normalized
-  );
-  return inSmallIslands || inTerritories;
 }
 
-/** Calculate adaptive marker radius based on zoom level and screen size */
-function getMarkerRadius(zoom: number, isDesktop: boolean = true): number {
-  // Desktop: larger markers (base 8), Mobile: smaller markers (base 5)
-  // Markers stay reasonably sized even when zoomed in
-  const baseRadius = isDesktop ? 8 : 5;
-  const minRadius = isDesktop ? 4 : 2.5;
-  return Math.max(minRadius, baseRadius / Math.pow(zoom, 0.4));
+/**
+ * Calculate adaptive marker radius based on zoom level and screen size
+ * Formula: max(minRadius, baseRadius / zoom^exponent)
+ */
+function getMarkerRadius(zoom: number, isDesktop: boolean): number {
+  const config = isDesktop ? DESKTOP_MARKER : MOBILE_MARKER;
+  return Math.max(
+    config.minRadius,
+    config.baseRadius / Math.pow(zoom, config.zoomExponent)
+  );
+}
+
+/**
+ * Calculate adaptive stroke width based on zoom level and screen size
+ * Formula: max(minStrokeWidth, baseStrokeWidth / zoom^exponent)
+ */
+function getMarkerStrokeWidth(zoom: number, isDesktop: boolean): number {
+  const config = isDesktop ? DESKTOP_MARKER : MOBILE_MARKER;
+  return Math.max(
+    config.minStrokeWidth,
+    config.baseStrokeWidth / Math.pow(zoom, config.strokeZoomExponent)
+  );
+}
+
+/** Get stroke color based on device type */
+function getMarkerStrokeColor(isDesktop: boolean): string {
+  const config = isDesktop ? DESKTOP_MARKER : MOBILE_MARKER;
+  return config.strokeColor;
 }
 
 type RSMGeography = {
@@ -97,9 +148,8 @@ export default function InteractiveMap({
       <ZoomableGroup
         center={coordinates}
         zoom={zoom}
-        minZoom={0.9}
-        maxZoom={12}
-        zoomSensitivity={0.2}
+        minZoom={ZOOM_CONFIG.minZoom}
+        maxZoom={ZOOM_CONFIG.maxZoom}
         onMoveEnd={onMoveEnd}
       >
         <Geographies geography={geoUrl}>
@@ -212,45 +262,8 @@ export default function InteractiveMap({
               cy={y}
               r={getMarkerRadius(zoom, isDesktop)}
               fill={fill}
-              stroke="#2d3748"
-              strokeWidth={Math.max(0.5, 1.2 / Math.pow(zoom, 0.3))}
-              style={{
-                cursor: "pointer",
-                transition: "none",
-              }}
-              onMouseEnter={() => handleCountryHover(norm)}
-              onMouseLeave={() => handleCountryHover(null)}
-              onClick={() => handleCountryClick(countryName)}
-            />
-          );
-        })}
-        
-        {/* Territory markers */}
-        {Object.entries(TERRITORY_MARKERS).map(([countryName, [lon, lat]]) => {
-          const norm = normalizeCountryName(countryName);
-          const isSelected = selectedCountry === norm;
-          
-          const fill = getCountryFill 
-            ? getCountryFill(norm)
-            : isSelected 
-              ? "#3b82f6" 
-              : "#e0d8c2";
-          
-          // Project the coordinates to screen space
-          const projected = projection([lon, lat]);
-          if (!projected) return null;
-          
-          const [x, y] = projected;
-          
-          return (
-            <circle
-              key={`territory-marker-${countryName}`}
-              cx={x}
-              cy={y}
-              r={getMarkerRadius(zoom, isDesktop)}
-              fill={fill}
-              stroke="#2d3748"
-              strokeWidth={Math.max(0.5, 1.2 / Math.pow(zoom, 0.3))}
+              stroke={getMarkerStrokeColor(isDesktop)}
+              strokeWidth={getMarkerStrokeWidth(zoom, isDesktop)}
               style={{
                 cursor: "pointer",
                 transition: "none",
