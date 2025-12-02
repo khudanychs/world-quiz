@@ -4,17 +4,24 @@
 export function normalizeCountryName(raw: string): string {
   const map: Record<string, string> = {
     "Bosnia and Herz.": "Bosnia and Herzegovina",
-    Congo: "Republic of the Congo",
+    "Congo": "Republic of the Congo",
     "Dem. Rep. Congo": "DR Congo",
     "Central African Rep.": "Central African Republic",
     "Eq. Guinea": "Equatorial Guinea",
-    "Côte d'Ivoire": "Ivory Coast",
+    "Côte d'Ivoire": "Ivory Coast",  // Display as English name
+    "CĂ´te d'Ivoire": "Ivory Coast",  // Broken UTF-8 encoding from TopoJSON
     "S. Sudan": "South Sudan",
+    "Czechia": "Czech Republic",
     "Czech Rep.": "Czech Republic",
+    "Dominican Rep.": "Dominican Republic",
+    "Solomon Is.": "Solomon Islands",
+    "Falkland Is.": "Falkland Islands",
+    "Macedonia": "North Macedonia",
+    "eSwatini": "Eswatini",
+    "Fr. S. Antarctic Lands": "French Southern Territories",
     "Wallis and Futuna Is.": "Wallis and Futuna",
     "Cook Is.": "Cook Islands",
     "Fr. Polynesia": "French Polynesia",
-    "N. Cyprus": "Northern Cyprus",
     "W. Sahara": "Western Sahara",
   };
   return map[raw] ?? raw;
@@ -27,6 +34,28 @@ export const restAliases: Record<string, string> = {
   "Wallis and Futuna Is.": "Wallis and Futuna",
   "Cook Is.": "Cook Islands",
   "Fr. Polynesia": "French Polynesia",
+  "Côte d'Ivoire": "Ivory Coast",  // Map has French name, REST has English
+  "CĂ´te d'Ivoire": "Ivory Coast",  // Broken UTF-8 encoding from TopoJSON
+};
+
+/**
+ * Normalized name variations - map from display name (after normalizeCountryName)
+ * to REST Countries API name. Used to find country data after normalization.
+ * Note: Only include mappings where the display name differs from REST Countries common name
+ */
+const NORMALIZED_TO_REST: Record<string, string> = {
+  "Czech Republic": "Czechia",
+  "DR Congo": "Democratic Republic of the Congo",
+  "Republic of the Congo": "Republic of the Congo",
+  "Bosnia and Herzegovina": "Bosnia and Herzegovina",
+  "Central African Republic": "Central African Republic",
+  "Equatorial Guinea": "Equatorial Guinea",
+  "South Sudan": "South Sudan",
+  "Dominican Republic": "Dominican Republic",
+  "Solomon Islands": "Solomon Islands",
+  "North Macedonia": "North Macedonia",
+  "Falkland Islands": "Falkland Islands",
+  "Eswatini": "Eswatini",
 };
 
 export const normalizeApos = (s: string) => s.replace(/\u2019/g, "'");
@@ -39,15 +68,16 @@ export const stripDiacritics = (s: string) =>
  */
 const nonClickableTerritories = new Set<string>([
   // Geographic features (not countries)
-  "Siachen Glacier",
+  "Siachen Glacier", "Antarctica",
   
   // Disputed/occupied territories
-  "Crimea", "Crimean Peninsula", "Northern Cyprus", "W. Sahara",
+  "Crimea", "Crimean Peninsula", "W. Sahara",
   
   // French overseas territories
   "French Guiana", "Guadeloupe", "Martinique", "Réunion", "Mayotte",
   "New Caledonia", "French Polynesia", "Wallis and Futuna",
   "St. Pierre and Miquelon", "Saint Barthélemy", "Saint Martin",
+  "French Southern Territories", "Fr. S. Antarctic Lands",
   
   // British overseas territories
   "Falkland Islands", "British Virgin Islands", "Cayman Islands",
@@ -209,12 +239,91 @@ export function buildRestLookup(
     const val = { name: common, cca2: c.cca2, flag };
     set(common, val);
 
-    // Also store aliases we know
+    // Also store aliases we know (map short names to REST names)
     for (const [from, to] of Object.entries(restAliases)) {
       if (to === common) {
         set(from, val);
       }
     }
+    
+    // Store normalized variations with DISPLAY NAME as the stored name
+    for (const [displayName, restName] of Object.entries(NORMALIZED_TO_REST)) {
+      if (restName === common) {
+        // Use displayName for the name property so it shows correctly in UI
+        const displayVal = { name: displayName, cca2: c.cca2, flag };
+        set(displayName, displayVal);
+      }
+    }
+  }
+  
+  return lookup;
+}
+
+export type CountryInfoWithCapitals = {
+  name: string;
+  cca2: string;
+  flag: string;
+  capitals: string[];
+};
+
+/**
+ * Build a comprehensive country lookup with capitals for Explore Map.
+ * Includes all normalized variations and special territories.
+ */
+export function buildCountryLookupWithCapitals(
+  countries: Array<{
+    name: { common: string };
+    cca2: string;
+    flags: { svg?: string; png?: string };
+    capital?: string[];
+    independent?: boolean;
+    unMember?: boolean;
+  }>
+): Record<string, CountryInfoWithCapitals> {
+  const lookup: Record<string, CountryInfoWithCapitals> = {};
+
+  const set = (key: string, val: CountryInfoWithCapitals) => {
+    const k1 = normalizeApos(key);
+    const k2 = stripDiacritics(k1);
+    lookup[k1] = val;
+    lookup[k2] = val;
+  };
+
+  for (const c of countries) {
+    const common = c.name.common;
+    const flag = `/flags/${c.cca2.toLowerCase()}.svg`;
+    const capitals = c.capital || [];
+    const val: CountryInfoWithCapitals = { name: common, cca2: c.cca2, flag, capitals };
+    set(common, val);
+
+    // Store aliases
+    for (const [from, to] of Object.entries(restAliases)) {
+      if (to === common) {
+        set(from, val);
+      }
+    }
+    
+    // Store normalized variations with DISPLAY NAME as the stored name
+    for (const [displayName, restName] of Object.entries(NORMALIZED_TO_REST)) {
+      if (restName === common) {
+        // Use displayName for the name property so it shows correctly in UI
+        const displayVal: CountryInfoWithCapitals = { name: displayName, cca2: c.cca2, flag, capitals };
+        set(displayName, displayVal);
+      }
+    }
+  }
+  
+  // Add special territories not in REST Countries or too small for map
+  const specialTerritories: CountryInfoWithCapitals[] = [
+    { name: "Western Sahara", cca2: "EH", flag: "/flags/eh.svg", capitals: ["El Aaiún (disputed)"] },
+    { name: "Kosovo", cca2: "XK", flag: "/flags/xk.svg", capitals: ["Pristina"] },
+    { name: "Taiwan", cca2: "TW", flag: "/flags/tw.svg", capitals: ["Taipei"] },
+    { name: "Antarctica", cca2: "AQ", flag: "/flags/aq.svg", capitals: [] },
+    { name: "São Tomé and Príncipe", cca2: "ST", flag: "/flags/st.svg", capitals: ["São Tomé"] },
+  ];
+  
+  for (const territory of specialTerritories) {
+    set(territory.name, territory);
   }
   
   return lookup;

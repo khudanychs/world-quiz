@@ -6,17 +6,18 @@ import { useAuth } from "../contexts/AuthContext";
 import { db } from "../firebase";
 import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
 import { normalizeCountryName } from "../utils/countries";
-import { BASE_W, BASE_H, FRAME, calculateMapDimensions } from "../utils/mapConstants";
+import { FRAME } from "../utils/mapConstants";
 import { useFlagMatchGame } from "../hooks/useFlagMatchGame";
-
-// Get today's date string in UTC (YYYY-MM-DD format)
-function getTodayDateString(): string {
-  const now = new Date();
-  const year = now.getUTCFullYear();
-  const month = String(now.getUTCMonth() + 1).padStart(2, '0');
-  const day = String(now.getUTCDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
-}
+import { useMapDimensions } from "../hooks/useMapDimensions";
+import { usePreventWheelScroll } from "../hooks/usePreventWheelScroll";
+import {
+  BACK_BUTTON_STYLE,
+  PAGE_CONTAINER_STYLE,
+  getMapWrapperStyle,
+  GREEN_BUTTON_STYLE,
+  GREEN_BUTTON_HOVER,
+} from "../utils/sharedStyles";
+import { getTodayDateString } from "../utils/dateUtils";
 
 export default function FlagMatchGame() {
   const { user } = useAuth();
@@ -85,20 +86,8 @@ export default function FlagMatchGame() {
     navigate("/");
   }, [game.bestStreak, user, saveStreak, navigate]);
 
-  // Layout sizing
-  const [dimensions, setDimensions] = useState({ width: BASE_W, height: BASE_H });
-  const [isPortrait, setIsPortrait] = useState(window.innerHeight > window.innerWidth);
-  useEffect(() => {
-    const update = () => {
-      const vw = window.innerWidth;
-      const vh = window.innerHeight;
-      setIsPortrait(vh > vw);
-      setDimensions(calculateMapDimensions(vw, vh));
-    };
-    update();
-    window.addEventListener("resize", update);
-    return () => window.removeEventListener("resize", update);
-  }, []);
+  // Layout sizing using shared hook
+  const { dimensions, isPortrait } = useMapDimensions();
 
   const OUTER_W = dimensions.width;
   const OUTER_H = dimensions.height;
@@ -111,13 +100,7 @@ export default function FlagMatchGame() {
 
   // prevent page scroll on wheel over map
   const wrapperRef = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    const el = wrapperRef.current;
-    if (!el) return;
-    const onWheel = (e: WheelEvent) => e.preventDefault();
-    el.addEventListener("wheel", onWheel, { passive: false });
-    return () => el.removeEventListener("wheel", onWheel as any);
-  }, []);
+  usePreventWheelScroll(wrapperRef);
 
   const FIT_SCALE = Math.max(1, Math.round(INNER_W * 0.32));
 
@@ -157,40 +140,14 @@ export default function FlagMatchGame() {
       </style>
       <div
         style={{
-          height: "100%",
-          width: "100%",
-          background: "#0b1020",
-          color: "#fff",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          overflow: "hidden",
-          position: "relative",
-          overscrollBehavior: "none",
-          gap: isPortrait ? "clamp(16px, 3vh, 32px)" : "0", // Mezera mezi HUD a mapou
+          ...PAGE_CONTAINER_STYLE,
+          gap: isPortrait ? "clamp(16px, 3vh, 32px)" : "0",
         }}
       >
       <button
         onClick={handleBack}
         aria-label="Back to main menu"
-        style={{
-          position: "absolute",
-          top: 12,
-          left: 12,
-          zIndex: 4,
-          display: "inline-flex",
-          alignItems: "center",
-          gap: 8,
-          padding: "8px 12px",
-          borderRadius: 10,
-          border: "1px solid rgba(255,255,255,0.25)",
-          background: "rgba(0,0,0,0.45)",
-          color: "#fff",
-          cursor: "pointer",
-          backdropFilter: "blur(6px)",
-          boxShadow: "0 4px 12px rgba(0,0,0,0.35)",
-        }}
+        style={BACK_BUTTON_STYLE}
       >
         <span style={{ fontSize: 18, lineHeight: 1 }}>←</span>
         <span style={{ fontWeight: 600 }}>Back</span>
@@ -297,10 +254,7 @@ export default function FlagMatchGame() {
               }}
             >
               <button
-                onClick={() => {
-                  // Close by navigating home
-                  navigate("/");
-                }}
+                onClick={() => navigate("/")}
                 style={{
                   padding: "clamp(10px, 2.5vw, 14px) clamp(20px, 5vw, 32px)",
                   borderRadius: "clamp(8px, 2vw, 12px)",
@@ -324,28 +278,13 @@ export default function FlagMatchGame() {
                 🏠 Home
               </button>
               <button
-                onClick={() => {
-                  game.startNewGame();
-                }}
+                onClick={() => game.startNewGame()}
                 style={{
+                  ...GREEN_BUTTON_STYLE,
                   padding: "clamp(10px, 2.5vw, 14px) clamp(20px, 5vw, 32px)",
-                  borderRadius: "clamp(8px, 2vw, 12px)",
-                  border: "2px solid rgba(16, 185, 129, 0.5)",
-                  background: "rgba(16, 185, 129, 0.2)",
-                  color: "#10b981",
                   fontSize: "clamp(14px, 3.5vw, 18px)",
-                  fontWeight: 600,
-                  cursor: "pointer",
-                  transition: "all 0.2s",
                 }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = "rgba(16, 185, 129, 0.3)";
-                  e.currentTarget.style.transform = "scale(1.05)";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = "rgba(16, 185, 129, 0.2)";
-                  e.currentTarget.style.transform = "scale(1)";
-                }}
+                {...GREEN_BUTTON_HOVER}
               >
                 🎮 New Game
               </button>
@@ -399,16 +338,7 @@ export default function FlagMatchGame() {
       <div
         ref={wrapperRef}
         style={{
-          width: OUTER_W,
-          height: OUTER_H,
-          border: `${FRAME}px solid #5b8cff`,
-          borderRadius: 24,
-          overflow: "hidden",
-          boxShadow: "0 10px 30px rgba(0,0,0,0.35)",
-          background: "linear-gradient(180deg, #0f2a4a 0%, #0b1c34 60%, #081226 100%)",
-          display: "grid",
-          placeItems: "center",
-          touchAction: "none",
+          ...getMapWrapperStyle(OUTER_W, OUTER_H, FRAME, "#5b8cff"),
           position: "relative",
         }}
         aria-label="Flag match game map"

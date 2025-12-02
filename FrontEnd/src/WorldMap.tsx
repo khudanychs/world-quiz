@@ -1,39 +1,33 @@
-// src/WorldMap.tsx - Renamed from App.tsx
-import { useMemo, useRef, useState, useEffect } from "react";
+// src/WorldMap.tsx - Explore Map mode with country info panel
+import { useRef, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import InteractiveMap from "./components/InteractiveMap";
 import {
   normalizeCountryName,
-  restAliases,
   normalizeApos,
   stripDiacritics,
+  buildCountryLookupWithCapitals,
+  CountryInfoWithCapitals,
 } from "./utils/countries";
-import { BASE_W, BASE_H, FRAME, FRAME_COLOR, calculateMapDimensions } from "./utils/mapConstants";
+import { FRAME, FRAME_COLOR } from "./utils/mapConstants";
+import {
+  BACK_BUTTON_STYLE,
+  PAGE_CONTAINER_STYLE,
+  getMapWrapperStyle,
+} from "./utils/sharedStyles";
+import { useMapDimensions } from "./hooks/useMapDimensions";
+import { usePreventWheelScroll } from "./hooks/usePreventWheelScroll";
 
 export default function WorldMap() {
   const navigate = useNavigate();
+  
   /** --- Dynamic dimensions based on window --- */
-  const [dimensions, setDimensions] = useState({ width: BASE_W, height: BASE_H });
-
-  useEffect(() => {
-    const updateDimensions = () => {
-      const vw = window.innerWidth;
-      const vh = window.innerHeight;
-      setDimensions(calculateMapDimensions(vw, vh));
-    };
-
-    updateDimensions();
-    window.addEventListener("resize", updateDimensions);
-    return () => window.removeEventListener("resize", updateDimensions);
-  }, []);
+  const { dimensions, isPortrait, isDesktop } = useMapDimensions();
 
   const OUTER_W = dimensions.width;
   const OUTER_H = dimensions.height;
   const INNER_W = OUTER_W - FRAME * 2;
   const INNER_H = OUTER_H - FRAME * 2;
-
-  // Detect if we're on desktop (width >= 768px)
-  const isDesktop = dimensions.width >= 768;
 
   /** --- Controlled pan & zoom --- */
   const [pos, setPos] = useState<{ coordinates: [number, number]; zoom: number }>({
@@ -41,53 +35,42 @@ export default function WorldMap() {
     zoom: 1,
   });
 
-  /** Hover/Select for HUD */
-  const [hovered, setHovered] = useState<string | null>(null);
+  /** Selected country for info panel */
   const [selected, setSelected] = useState<string | null>(null);
+  const [hovered, setHovered] = useState<string | null>(null);
 
-  /** Capitals: name → [capital cities] */
-  const [capitals, setCapitals] = useState<Record<string, string[]>>({});
-  const [loadingCaps, setLoadingCaps] = useState<boolean>(true);
+  /** Country data: lookup by name */
+  const [countryLookup, setCountryLookup] = useState<Record<string, CountryInfoWithCapitals>>({});
+  const [loading, setLoading] = useState<boolean>(true);
 
   /** Prevent page scroll when wheeling over map */
   const wrapperRef = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    const el = wrapperRef.current;
-    if (!el) return;
-    const onWheel = (e: WheelEvent) => {
-      e.preventDefault();
-    };
-    el.addEventListener("wheel", onWheel, { passive: false });
-    return () => el.removeEventListener("wheel", onWheel as any);
-  }, []);
+  usePreventWheelScroll(wrapperRef);
 
-  /** Load capitals once on startup from local file */
+  /** Load country data once on startup from local file */
   useEffect(() => {
     let alive = true;
     (async () => {
       try {
-        setLoadingCaps(true);
+        setLoading(true);
         const res = await fetch("/countries.json");
-        const data = (await res.json()) as Array<{ name: { common: string }; capital?: string[] }>;
-        const m: Record<string, string[]> = {};
-        for (const c of data) {
-          const key = normalizeApos(c.name.common);
-          m[key] = c.capital && c.capital.length > 0 ? c.capital : [];
-        }
-        // Add capitals for territories/disputed areas not in REST Countries
-        m["Northern Cyprus"] = ["Nicosia (North)"];
-        m["Somaliland"] = ["Hargeisa"];
-        m["Western Sahara"] = ["El Aaiún (disputed)"];
-        m["Macedonia"] = ["Skopje"];
-        m["Falkland Is."] = ["Stanley"];
-        m["Dominican Rep."] = ["Santo Domingo"];
-        m["Solomon Is."] = ["Honiara"];
-        m["eSwatini"] = ["Mbabane", "Lobamba"];
-        if (alive) setCapitals(m);
+        const data = (await res.json()) as Array<{
+          name: { common: string };
+          cca2: string;
+          flags: { svg?: string; png?: string };
+          capital?: string[];
+          independent?: boolean;
+          unMember?: boolean;
+        }>;
+        
+        // Use shared function to build lookup with all variations
+        const lookup = buildCountryLookupWithCapitals(data);
+        
+        if (alive) setCountryLookup(lookup);
       } catch (e) {
-        console.error("Failed to load capitals", e);
+        console.error("Failed to load country data", e);
       } finally {
-        if (alive) setLoadingCaps(false);
+        if (alive) setLoading(false);
       }
     })();
     return () => {
@@ -95,37 +78,31 @@ export default function WorldMap() {
     };
   }, []);
 
-  function getCapitalsFor(countryNameRaw: string): string[] | null {
+  /** Get country info for display */
+  function getCountryInfo(countryNameRaw: string): CountryInfoWithCapitals | null {
     const name = normalizeCountryName(countryNameRaw);
     const nameStd = normalizeApos(name);
-
-    if (capitals[nameStd]?.length) return capitals[nameStd];
-
-    const alias = restAliases[nameStd];
-    if (alias && capitals[alias]?.length) return capitals[alias];
-
+    
+    if (countryLookup[nameStd]) return countryLookup[nameStd];
+    
+    // Try without diacritics
     const target = stripDiacritics(nameStd);
-    for (const k of Object.keys(capitals)) {
-      if (stripDiacritics(k) === target && capitals[k].length) return capitals[k];
+    for (const k of Object.keys(countryLookup)) {
+      if (stripDiacritics(k) === target) return countryLookup[k];
     }
-    return null;
+    
+    // Return basic info if not found
+    return {
+      name: name,
+      cca2: "",
+      flag: "",
+      capitals: [],
+    };
   }
 
-  /** HUD – shows name + capital(s) */
-  const hudText = useMemo(() => {
-    const name = selected ?? hovered;
-    if (name) {
-      const displayName = normalizeCountryName(name);
-      const caps = getCapitalsFor(name);
-      if (caps && caps.length > 0) {
-        const label = caps.length > 1 ? "Capitals" : "Capital";
-        return `${displayName} — ${label}: ${caps.join(", ")}`;
-      }
-      if (loadingCaps) return `${displayName} — Loading capital…`;
-      return `${displayName} — Capital: unknown`;
-    }
-    return "Drag = pan map, Wheel = smooth zoom";
-  }, [hovered, selected, loadingCaps, capitals]);
+  /** Selected country info */
+  const selectedInfo = selected ? getCountryInfo(selected) : null;
+  const displayName = selectedInfo?.name || (selected ? normalizeCountryName(selected) : null);
 
   /** Fit scale pro NaturalEarth1 */
   const FIT_SCALE = Math.max(1, Math.round(INNER_W * 0.32));
@@ -133,77 +110,212 @@ export default function WorldMap() {
   return (
     <div
       style={{
-        height: "100%",
-        width: "100%",
-        background: "#0b1020",
-        color: "#fff",
-        display: "grid",
-        placeItems: "center",
-        overflow: "hidden",
-        position: "relative",
-        overscrollBehavior: "none",
+        ...PAGE_CONTAINER_STYLE,
+        gap: isPortrait ? "clamp(12px, 2vh, 24px)" : "0",
       }}
     >
       {/* Back button to main menu */}
       <button
         onClick={() => navigate("/")}
         aria-label="Back to main menu"
-        style={{
-          position: "absolute",
-          top: 12,
-          left: 12,
-          zIndex: 4,
-          display: "inline-flex",
-          alignItems: "center",
-          gap: 8,
-          padding: "8px 12px",
-          borderRadius: 10,
-          border: "1px solid rgba(255,255,255,0.25)",
-          background: "rgba(0,0,0,0.45)",
-          color: "#fff",
-          cursor: "pointer",
-          backdropFilter: "blur(6px)",
-          boxShadow: "0 4px 12px rgba(0,0,0,0.35)",
-        }}
+        style={BACK_BUTTON_STYLE}
       >
         <span style={{ fontSize: 18, lineHeight: 1 }}>←</span>
         <span style={{ fontWeight: 600 }}>Back</span>
       </button>
-      {/* HUD top left */}
+
+      {/* Country Info Panel - Top Center */}
       <div
         style={{
-          position: "absolute",
-          top: 60,
-          left: 12,
-          padding: "8px 12px",
-          background: "rgba(0,0,0,0.45)",
-          borderRadius: 8,
-          fontSize: Math.min(14, OUTER_W / 50),
-          pointerEvents: "none",
-          zIndex: 3,
-          minWidth: Math.min(260, OUTER_W * 0.4),
-          maxWidth: "90vw",
-          wordBreak: "break-word",
+          position: isPortrait ? "relative" : "absolute",
+          top: isPortrait ? "auto" : "clamp(8px, 3vh, 30px)",
+          left: isPortrait ? "auto" : "50%",
+          transform: isPortrait ? "none" : "translateX(-50%)",
+          zIndex: 4,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: isPortrait ? "clamp(12px, 3vw, 20px)" : "clamp(10px, 2vw, 18px)",
+          padding: isPortrait
+            ? "clamp(12px, 3vw, 20px) clamp(16px, 4vw, 28px)"
+            : "clamp(8px, 1.5vw, 16px) clamp(14px, 2.5vw, 24px)",
+          borderRadius: "clamp(10px, 2vw, 16px)",
+          border: "1px solid rgba(255,255,255,0.25)",
+          background: "rgba(0,0,0,0.65)",
+          backdropFilter: "blur(8px)",
+          boxShadow: "0 4px 16px rgba(0,0,0,0.4)",
+          minWidth: isPortrait ? "clamp(200px, 70vw, 360px)" : "clamp(280px, 35vw, 420px)",
+          minHeight: isPortrait ? "clamp(80px, 18vw, 120px)" : "clamp(60px, 8vh, 100px)",
+          transition: "all 0.2s ease-out",
         }}
       >
-        {hudText}
+        {loading ? (
+          <div style={{ 
+            fontSize: isPortrait ? "clamp(14px, 4vw, 18px)" : "clamp(12px, 1.4vw, 16px)",
+            opacity: 0.7 
+          }}>
+            Loading...
+          </div>
+        ) : selectedInfo && selectedInfo.flag ? (
+          <>
+            {/* Flag */}
+            <div
+              style={{
+                width: isPortrait ? "clamp(60px, 18vw, 100px)" : "clamp(70px, 10vw, 120px)",
+                height: isPortrait ? "clamp(40px, 12vw, 70px)" : "clamp(45px, 6.5vw, 80px)",
+                borderRadius: "clamp(4px, 1vw, 8px)",
+                overflow: "hidden",
+                boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
+                border: "1px solid rgba(255,255,255,0.2)",
+                flexShrink: 0,
+              }}
+            >
+              <img
+                src={selectedInfo.flag}
+                alt={`${displayName} flag`}
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  objectFit: "cover",
+                }}
+              />
+            </div>
+            
+            {/* Country Name & Capital */}
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: isPortrait ? "clamp(4px, 1vw, 8px)" : "clamp(2px, 0.5vw, 6px)",
+                textAlign: "left",
+              }}
+            >
+              <div
+                style={{
+                  fontSize: isPortrait ? "clamp(18px, 5vw, 28px)" : "clamp(16px, 2vw, 26px)",
+                  fontWeight: 700,
+                  lineHeight: 1.2,
+                }}
+              >
+                {displayName}
+              </div>
+              {selectedInfo.capitals.length > 0 ? (
+                <div
+                  style={{
+                    fontSize: isPortrait ? "clamp(12px, 3.5vw, 18px)" : "clamp(11px, 1.3vw, 16px)",
+                    opacity: 0.8,
+                    lineHeight: 1.3,
+                  }}
+                >
+                  <span style={{ opacity: 0.6 }}>
+                    {selectedInfo.capitals.length > 1 ? "Capitals: " : "Capital: "}
+                  </span>
+                  {selectedInfo.capitals.join(", ")}
+                </div>
+              ) : displayName === "Antarctica" ? null : (
+                <div
+                  style={{
+                    fontSize: isPortrait ? "clamp(12px, 3.5vw, 18px)" : "clamp(11px, 1.3vw, 16px)",
+                    opacity: 0.5,
+                    fontStyle: "italic",
+                  }}
+                >
+                  Capital unknown
+                </div>
+              )}
+            </div>
+          </>
+        ) : selected ? (
+          /* Selected but no flag available */
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              gap: "clamp(4px, 1vw, 8px)",
+            }}
+          >
+            <div
+              style={{
+                fontSize: isPortrait ? "clamp(18px, 5vw, 28px)" : "clamp(16px, 2vw, 26px)",
+                fontWeight: 700,
+              }}
+            >
+              {displayName}
+            </div>
+            {selectedInfo?.capitals && selectedInfo.capitals.length > 0 && (
+              <div
+                style={{
+                  fontSize: isPortrait ? "clamp(12px, 3.5vw, 18px)" : "clamp(11px, 1.3vw, 16px)",
+                  opacity: 0.8,
+                }}
+              >
+                <span style={{ opacity: 0.6 }}>
+                  {selectedInfo.capitals.length > 1 ? "Capitals: " : "Capital: "}
+                </span>
+                {selectedInfo.capitals.join(", ")}
+              </div>
+            )}
+          </div>
+        ) : (
+          /* No country selected - show hint */
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              gap: "clamp(4px, 1vw, 8px)",
+              textAlign: "center",
+            }}
+          >
+            <div
+              style={{
+                fontSize: isPortrait ? "clamp(14px, 4vw, 20px)" : "clamp(13px, 1.5vw, 18px)",
+                fontWeight: 600,
+                opacity: 0.9,
+              }}
+            >
+              🌍 Explore the World
+            </div>
+            <div
+              style={{
+                fontSize: isPortrait ? "clamp(11px, 3vw, 15px)" : "clamp(10px, 1.2vw, 14px)",
+                opacity: 0.6,
+              }}
+            >
+              Click on any country to see its flag and capital
+            </div>
+          </div>
+        )}
       </div>
+
+      {/* Hover indicator - small label */}
+      {hovered && hovered !== selected && (
+        <div
+          style={{
+            position: "absolute",
+            bottom: isPortrait ? "auto" : 20,
+            top: isPortrait ? 60 : "auto",
+            left: "50%",
+            transform: "translateX(-50%)",
+            zIndex: 3,
+            padding: "6px 14px",
+            borderRadius: 8,
+            background: "rgba(0,0,0,0.6)",
+            backdropFilter: "blur(4px)",
+            fontSize: isPortrait ? "clamp(11px, 3vw, 14px)" : "clamp(11px, 1.2vw, 14px)",
+            opacity: 0.9,
+            pointerEvents: "none",
+          }}
+        >
+          {normalizeCountryName(hovered)}
+        </div>
+      )}
 
       {/* --- Rounded rectangle frame + clip --- */}
       <div
         ref={wrapperRef}
-        style={{
-          width: OUTER_W,
-          height: OUTER_H,
-          border: `${FRAME}px solid ${FRAME_COLOR}`,
-          borderRadius: 24,
-          overflow: "hidden",
-          boxShadow: "0 10px 30px rgba(0,0,0,0.35)",
-          background: "linear-gradient(180deg, #0f2a4a 0%, #0b1c34 60%, #081226 100%)",
-          display: "grid",
-          placeItems: "center",
-          touchAction: "none",
-        }}
+        style={getMapWrapperStyle(OUTER_W, OUTER_H, FRAME, FRAME_COLOR)}
         aria-label="World map in rounded rectangle (pan & zoom)"
       >
         <InteractiveMap

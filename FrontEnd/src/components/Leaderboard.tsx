@@ -4,15 +4,7 @@ import { db } from "../firebase";
 import { useAuth } from "../contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import './Leaderboard.css';
-
-// Get today's date string in UTC (YYYY-MM-DD format)
-function getTodayDateString(): string {
-  const now = new Date();
-  const year = now.getUTCFullYear();
-  const month = String(now.getUTCMonth() + 1).padStart(2, '0');
-  const day = String(now.getUTCDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
-}
+import { getTodayDateString } from "../utils/dateUtils";
 
 // Define the structure of a streak document
 interface StreakEntry {

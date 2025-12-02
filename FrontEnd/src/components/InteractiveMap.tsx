@@ -41,6 +41,17 @@ const ZOOM_CONFIG = {
 
 /* ============================================================================ */
 
+/** Territories to completely hide from the map */
+const HIDDEN_TERRITORIES = new Set([
+  "Fr. S. Antarctic Lands",
+  "French Southern Territories",
+]);
+
+/** Check if a territory should be completely hidden */
+function isHiddenTerritory(nameRaw: string): boolean {
+  return HIDDEN_TERRITORIES.has(nameRaw) || HIDDEN_TERRITORIES.has(normalizeCountryName(nameRaw));
+}
+
 /** Check if a country has a custom marker */
 function hasCustomMarker(countryName: string): boolean {
   const normalized = normalizeCountryName(countryName);
@@ -163,6 +174,11 @@ export default function InteractiveMap({
               const nameRaw = (geo.properties?.name as string) ?? "Unknown";
               const name = normalizeCountryName(nameRaw);
               
+              // Completely hide certain territories
+              if (isHiddenTerritory(nameRaw)) {
+                return null;
+              }
+              
               const isSelected = selectedCountry === name;
 
               // Hide countries that have custom markers
@@ -231,7 +247,7 @@ export default function InteractiveMap({
                   }}
                   onMouseEnter={!hideForMarker ? () => handleCountryHover(name) : undefined}
                   onMouseLeave={!hideForMarker ? () => handleCountryHover(null) : undefined}
-                  onClick={!hideForMarker ? () => handleCountryClick(nameRaw) : undefined}
+                  onClick={!hideForMarker ? () => handleCountryClick(name) : undefined}
                 />
               );
             });

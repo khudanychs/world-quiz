@@ -1,3 +1,5 @@
+import { GREEN_BUTTON_STYLE, GREEN_BUTTON_HOVER } from "../utils/sharedStyles";
+
 interface GameHUDProps {
   loading: boolean;
   loadError: string;
@@ -84,26 +86,8 @@ export default function GameHUD({
         )}
         <button
           onClick={onStartNewGame}
-          style={{
-            marginTop: 4,
-            padding: "clamp(8px, 2vw, 12px) clamp(16px, 4vw, 24px)",
-            borderRadius: "clamp(8px, 2vw, 12px)",
-            border: "2px solid rgba(16, 185, 129, 0.5)",
-            background: "rgba(16, 185, 129, 0.2)",
-            color: "#10b981",
-            fontSize: "clamp(13px, 3vw, 17px)",
-            fontWeight: 600,
-            cursor: "pointer",
-            transition: "all 0.2s",
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = "rgba(16, 185, 129, 0.3)";
-            e.currentTarget.style.transform = "scale(1.05)";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = "rgba(16, 185, 129, 0.2)";
-            e.currentTarget.style.transform = "scale(1)";
-          }}
+          style={{ ...GREEN_BUTTON_STYLE, marginTop: 4 }}
+          {...GREEN_BUTTON_HOVER}
         >
           🎮 New Game
         </button>

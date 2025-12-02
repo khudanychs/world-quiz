@@ -168,6 +168,11 @@ export function useFlagMatchGame() {
     
     const norm = normalizeCountryName(nameRaw);
     
+    // Ignore clicks on already correctly guessed countries (don't break streak)
+    if (correctSet.has(norm)) {
+      return;
+    }
+    
     if (correctTimerRef.current) {
       window.clearTimeout(correctTimerRef.current);
       correctTimerRef.current = null;
