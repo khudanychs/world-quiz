@@ -10,6 +10,35 @@
       "**/.*",
       "**/node_modules/**"
     ],
+    "headers": [
+      {
+        "source": "/flags/**",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "public, max-age=31536000, immutable"
+          }
+        ]
+      },
+      {
+        "source": "/countries.json",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "public, max-age=86400"
+          }
+        ]
+      },
+      {
+        "source": "/countries-110m.json",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "public, max-age=31536000, immutable"
+          }
+        ]
+      }
+    ],
     "rewrites": [
       {
         "source": "**",

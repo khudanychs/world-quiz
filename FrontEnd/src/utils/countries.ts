@@ -9,7 +9,6 @@ export function normalizeCountryName(raw: string): string {
     "Central African Rep.": "Central African Republic",
     "Eq. Guinea": "Equatorial Guinea",
     "Côte d'Ivoire": "Ivory Coast",  // Display as English name
-    "CĂ´te d'Ivoire": "Ivory Coast",  // Broken UTF-8 encoding from TopoJSON
     "S. Sudan": "South Sudan",
     "Czechia": "Czech Republic",
     "Czech Rep.": "Czech Republic",
@@ -35,7 +34,6 @@ export const restAliases: Record<string, string> = {
   "Cook Is.": "Cook Islands",
   "Fr. Polynesia": "French Polynesia",
   "Côte d'Ivoire": "Ivory Coast",  // Map has French name, REST has English
-  "CĂ´te d'Ivoire": "Ivory Coast",  // Broken UTF-8 encoding from TopoJSON
 };
 
 /**
