@@ -207,7 +207,7 @@ export function initializeGameEligibleCountries(
  * Build a lookup from REST Countries results to map names.
  * Uses common name, alias map, and diacritics/apos normalization.
  * Also initializes the game-eligible countries cache.
- * Flags are loaded from local /flags/ folder for reliability and speed.
+ * Flags are loaded from local /flags-v2/ folder for reliability and speed.
  */
 export function buildRestLookup(
   countries: Array<{
@@ -233,7 +233,7 @@ export function buildRestLookup(
   for (const c of countries) {
     const common = c.name.common;
     // Use local flag files instead of external URLs for reliability and speed
-    const flag = `/flags/${c.cca2.toLowerCase()}.svg`;
+    const flag = `/flags-v2/${c.cca2.toLowerCase()}.svg`;
     const val = { name: common, cca2: c.cca2, flag };
     set(common, val);
 
@@ -289,7 +289,7 @@ export function buildCountryLookupWithCapitals(
 
   for (const c of countries) {
     const common = c.name.common;
-    const flag = `/flags/${c.cca2.toLowerCase()}.svg`;
+    const flag = `/flags-v2/${c.cca2.toLowerCase()}.svg`;
     const capitals = c.capital || [];
     const val: CountryInfoWithCapitals = { name: common, cca2: c.cca2, flag, capitals };
     set(common, val);
@@ -313,11 +313,11 @@ export function buildCountryLookupWithCapitals(
   
   // Add special territories not in REST Countries or too small for map
   const specialTerritories: CountryInfoWithCapitals[] = [
-    { name: "Western Sahara", cca2: "EH", flag: "/flags/eh.svg", capitals: ["El Aaiún (disputed)"] },
-    { name: "Kosovo", cca2: "XK", flag: "/flags/xk.svg", capitals: ["Pristina"] },
-    { name: "Taiwan", cca2: "TW", flag: "/flags/tw.svg", capitals: ["Taipei"] },
-    { name: "Antarctica", cca2: "AQ", flag: "/flags/aq.svg", capitals: [] },
-    { name: "São Tomé and Príncipe", cca2: "ST", flag: "/flags/st.svg", capitals: ["São Tomé"] },
+    { name: "Western Sahara", cca2: "EH", flag: "/flags-v2/eh.svg", capitals: ["El Aaiún (disputed)"] },
+    { name: "Kosovo", cca2: "XK", flag: "/flags-v2/xk.svg", capitals: ["Pristina"] },
+    { name: "Taiwan", cca2: "TW", flag: "/flags-v2/tw.svg", capitals: ["Taipei"] },
+    { name: "Antarctica", cca2: "AQ", flag: "/flags-v2/aq.svg", capitals: [] },
+    { name: "São Tomé and Príncipe", cca2: "ST", flag: "/flags-v2/st.svg", capitals: ["São Tomé"] },
   ];
   
   for (const territory of specialTerritories) {

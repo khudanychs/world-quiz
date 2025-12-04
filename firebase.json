@@ -12,7 +12,7 @@
     ],
     "headers": [
       {
-        "source": "/flags/**",
+        "source": "/flags-v2/**",
         "headers": [
           {
             "key": "Cache-Control",

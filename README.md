@@ -47,7 +47,7 @@ An interactive geography quiz web application with multiple game modes. Test you
 
 ### Data Sources (All Local)
 - Country data: `/public/countries.json`
-- Flag images: `/public/flags/*.svg` (from [flag-icons](https://github.com/lipis/flag-icons))
+- Flag images: `/public/flags-v2/*.svg` (from [flag-icons](https://github.com/lipis/flag-icons))
 
 ## Project Structure
 
