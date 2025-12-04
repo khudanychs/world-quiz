@@ -1,13 +1,1 @@
-<svg xmlns="http://www.w3.org/2000/svg" id="flag-icons-dj" viewBox="0 0 640 480">
-  <defs>
-    <clipPath id="dj-a">
-      <path fill-opacity=".7" d="M-40 0h682.7v512H-40z"/>
-    </clipPath>
-  </defs>
-  <g fill-rule="evenodd" clip-path="url(#dj-a)" transform="translate(37.5)scale(.94)">
-    <path fill="#0c0" d="M-40 0h768v512H-40z"/>
-    <path fill="#69f" d="M-40 0h768v256H-40z"/>
-    <path fill="#fffefe" d="m-40 0 382.7 255.7L-40 511z"/>
-    <path fill="red" d="M119.8 292 89 270l-30.7 22.4L69.7 256l-30.6-22.5 37.9-.3 11.7-36.3 12 36.2h37.9l-30.5 22.7 11.7 36.4z"/>
-  </g>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="600"><path fill="#6ab2e7" d="M0 0h900v600H0z"/><path fill="#12ad2b" d="M0 300h900v300H0z"/><path d="M0 0v600l259.808-150 259.807-150-259.807-150z" fill="#fff"/><path d="m198.86 225 18.616 57.295h60.243l-48.738 35.41L247.598 375l-48.738-35.41L150.122 375l18.616-57.295L120 282.295h60.243z" fill="#d7141a"/></svg>

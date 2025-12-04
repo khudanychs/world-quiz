@@ -160,7 +160,7 @@ export default function FlagMatchGame() {
           top: isPortrait ? "auto" : "clamp(8px, 4vh, 40px)",
           left: isPortrait ? "auto" : "50%",
           transform: isPortrait ? "none" : "translateX(-50%)",
-          // V portrait módu gap z rodiče zajišťuje automatické centrování
+          // In portrait mode, parent gap handles automatic centering
           marginBottom: isPortrait ? "0" : "0",
           marginTop: isPortrait ? "0" : "0",
           zIndex: 4,
@@ -293,7 +293,7 @@ export default function FlagMatchGame() {
         </div>
       )}
 
-      {/* Streak Animation - zobrazí se uprostřed mapy */}
+      {/* Streak Animation - displayed in the center of the map */}
       {game.showStreakAnimation && game.currentStreak >= 5 && wrapperRef.current && (
         <div
           style={{

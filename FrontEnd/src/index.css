@@ -30,7 +30,7 @@ html, body, #root {
   overflow: hidden;
 }
 
-/* odstraníme centrování, aby mapa mohla vyplnit celé okno */
+/* Remove centering so the map can fill the entire window */
 body {
   display: block;
   min-width: 320px;

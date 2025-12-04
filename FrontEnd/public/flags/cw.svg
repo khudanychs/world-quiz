@@ -1,14 +1,1 @@
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" id="flag-icons-cw" viewBox="0 0 640 480">
-  <defs>
-    <clipPath id="cw-a">
-      <path fill-opacity=".7" d="M0 0h682.7v512H0z"/>
-    </clipPath>
-    <path id="cw-b" d="m0-1 .2.7H1L.3 0l.2.7L0 .4l-.6.4.2-.7-.5-.4h.7z"/>
-  </defs>
-  <g clip-path="url(#cw-a)" transform="scale(.94)">
-    <path fill="#002b7f" d="M0 0h768v512H0z"/>
-    <path fill="#f9e814" d="M0 320h768v64H0z"/>
-    <use xlink:href="#cw-b" width="13500" height="9000" x="2" y="2" fill="#fff" transform="scale(42.67)"/>
-    <use xlink:href="#cw-b" width="13500" height="9000" x="3" y="3" fill="#fff" transform="scale(56.9)"/>
-  </g>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="600" viewBox="0 0 54 36"><path fill="#002b7f" d="M0 0h54v36H0"/><path fill="#f9e814" d="M0 22.5h54V27H0"/><path fill="#fff" d="m4.2 8.4.1-.1L6 3l1.8 5.4-4.6-3.3h5.7m.7 10.1L12 8l2.4 7.2-6.2-4.4h7.6"/></svg>

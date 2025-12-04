@@ -308,7 +308,7 @@
   color: #fff;
 }
 
-/* Mobilní oprava - menší jméno na malých displejích */
+/* Mobile fix - smaller name on small screens */
 @media (max-width: 600px) {
   .navbar-username {
     max-width: 80px;

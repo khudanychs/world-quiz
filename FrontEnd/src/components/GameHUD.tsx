@@ -116,36 +116,18 @@ export default function GameHUD({
   
   return (
     <>
-      <div
+      {/* Flag - SVG has correct aspect ratio built-in */}
+      <img
+        src={currentTarget.flag}
+        alt="Flag to match"
         style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          minWidth: "clamp(50px, 12vw, 90px)",
-          minHeight: "clamp(44px, 10vw, 76px)",
-          maxWidth: "clamp(60px, 14vw, 100px)",
-          maxHeight: "clamp(44px, 10vw, 76px)",
-          background: "rgba(255,255,255,0.05)",
-          borderRadius: 4,
-          padding: 3,
+          height: "clamp(44px, 10vw, 70px)",
+          width: "auto",
+          borderRadius: 2,
+          boxShadow: "0 2px 6px rgba(0,0,0,0.4)",
+          flexShrink: 0,
         }}
-      >
-        <img
-          src={currentTarget.flag}
-          alt="Flag to match"
-          loading="eager"
-          decoding="async"
-          style={{
-            maxWidth: "100%",
-            maxHeight: "100%",
-            width: "auto",
-            height: "auto",
-            objectFit: "contain",
-            borderRadius: 2,
-            boxShadow: "0 2px 8px rgba(0,0,0,0.3)"
-          }}
-        />
-      </div>
+      />
       <div style={{ display: "flex", flexDirection: "column", minWidth: "clamp(100px, 24vw, 150px)" }}>
         <strong style={{ fontSize: "clamp(12px, 2.6vw, 18px)" }}>Find this flag</strong>
         <span style={{ opacity: 0.7, fontSize: "clamp(9px, 2.2vw, 13px)" }}>Tap country</span>

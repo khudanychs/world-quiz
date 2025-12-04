@@ -158,28 +158,18 @@ export default function WorldMap() {
           </div>
         ) : selectedInfo && selectedInfo.flag ? (
           <>
-            {/* Flag */}
-            <div
+            {/* Flag - SVG has correct aspect ratio built-in */}
+            <img
+              src={selectedInfo.flag}
+              alt={`${displayName} flag`}
               style={{
-                width: isPortrait ? "clamp(60px, 18vw, 100px)" : "clamp(70px, 10vw, 120px)",
-                height: isPortrait ? "clamp(40px, 12vw, 70px)" : "clamp(45px, 6.5vw, 80px)",
-                borderRadius: "clamp(4px, 1vw, 8px)",
-                overflow: "hidden",
-                boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
-                border: "1px solid rgba(255,255,255,0.2)",
+                height: isPortrait ? "clamp(50px, 14vw, 80px)" : "clamp(55px, 7vw, 90px)",
+                width: "auto",
+                borderRadius: "clamp(2px, 0.5vw, 4px)",
+                boxShadow: "0 2px 6px rgba(0,0,0,0.4)",
                 flexShrink: 0,
               }}
-            >
-              <img
-                src={selectedInfo.flag}
-                alt={`${displayName} flag`}
-                style={{
-                  width: "100%",
-                  height: "100%",
-                  objectFit: "cover",
-                }}
-              />
-            </div>
+            />
             
             {/* Country Name & Capital */}
             <div

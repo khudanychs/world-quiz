@@ -111,9 +111,9 @@ export function useFlagMatchGame() {
       const key2 = stripDiacritics(key1);
       const info = restLookup[key1] || restLookup[key2];
       
-      // Pokud máme info a vlajku, přidej do playable
+      // If we have info and flag, add to playable
       if (info && info.flag) {
-        // Kontrola jestli není na blacklistu
+        // Check if country is not on the blacklist
         if (!isGameEligibleCountry(nameRaw)) continue;
         playable.push(info);
       }
@@ -156,8 +156,8 @@ export function useFlagMatchGame() {
       streakTimerRef.current = null;
     }
     setShowStreakAnimation(false);
-    
-    // Preload prvních 10 vlajek pro plynulý začátek
+
+    // Preload first 10 flags for smooth start
     round.slice(0, 10).forEach((c) => {
       if (c.flag) preloadImage(c.flag);
     });
@@ -210,8 +210,8 @@ export function useFlagMatchGame() {
         }, 1200);
       }
       
-      // Preload POUZE příští vlajku (nextIdx) - ta se zobrazí za 350ms
-      // Vlajky nextIdx+1, nextIdx+2 už jsou načtené z předchozího kroku
+      // Preload ONLY the next flag (nextIdx) - it will be shown in 350ms
+      // Flags nextIdx+1, nextIdx+2 are already loaded from previous step
       const nextIdx = currentIdx + 1;
       if (nextIdx < targets.length && targets[nextIdx]?.flag) {
         preloadImage(targets[nextIdx].flag);
@@ -251,7 +251,7 @@ export function useFlagMatchGame() {
     setLastClicked(null);
     setCurrentStreak(0);
     
-    // Preload POUZE příští vlajku při skipu
+    // Preload ONLY the next flag on skip
     const nextIdx = currentIdx + 1;
     if (nextIdx < targets.length && targets[nextIdx]?.flag) {
       preloadImage(targets[nextIdx].flag);
