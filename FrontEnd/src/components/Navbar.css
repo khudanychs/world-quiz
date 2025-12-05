@@ -29,10 +29,24 @@
 .navbar-brand {
   cursor: pointer;
   transition: opacity 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
 .navbar-brand:hover {
   opacity: 0.8;
+}
+
+.navbar-logo {
+  height: 56px;
+  width: auto;
+}
+
+@media (min-width: 768px) {
+  .navbar-logo {
+    height: 56px;
+  }
 }
 
 .navbar-brand h1 {

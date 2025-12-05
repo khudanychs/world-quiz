@@ -43,7 +43,8 @@ export function Navbar() {
         <div className="container-fluid">
           {/* Logo / Brand - clickable to home */}
           <div className="navbar-brand" onClick={() => handleNavClick('/')}>
-            <h1 className="m-0">🌍 World Quiz</h1>
+            <img src="/newlogo.png" alt="World Quiz" className="navbar-logo" />
+            <h1 className="m-0">World Quiz</h1>
           </div>
 
           {/* Desktop Navigation Links */}

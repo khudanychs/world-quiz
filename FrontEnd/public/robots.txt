@@ -1,0 +1,9 @@
+# World Quiz Robots.txt
+User-agent: *
+Allow: /
+
+# Sitemap location
+Sitemap: https://world-quiz.com/sitemap.xml
+
+# Disallow API and internal paths
+Disallow: /api/
