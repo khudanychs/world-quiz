@@ -1,13 +1,15 @@
 // src/WorldMap.tsx - Explore Map mode with country info panel
-import { useRef, useState, useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import InteractiveMap from "./components/InteractiveMap";
+import { useMapDimensions } from "./hooks/useMapDimensions";
+import { usePreventWheelScroll } from "./hooks/usePreventWheelScroll";
 import {
-  normalizeCountryName,
-  normalizeApos,
-  stripDiacritics,
-  buildCountryLookupWithCapitals,
   CountryInfoWithCapitals,
+  buildCountryLookupWithCapitals,
+  normalizeApos,
+  normalizeCountryName,
+  stripDiacritics,
 } from "./utils/countries";
 import { FRAME, FRAME_COLOR } from "./utils/mapConstants";
 import {
@@ -15,8 +17,6 @@ import {
   PAGE_CONTAINER_STYLE,
   getMapWrapperStyle,
 } from "./utils/sharedStyles";
-import { useMapDimensions } from "./hooks/useMapDimensions";
-import { usePreventWheelScroll } from "./hooks/usePreventWheelScroll";
 
 export default function WorldMap() {
   const navigate = useNavigate();
