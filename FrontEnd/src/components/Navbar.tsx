@@ -57,6 +57,12 @@ export function Navbar() {
                 Home
               </button>
               <button 
+                className={`nav-link ${isActive('/countries') ? 'active' : ''}`}
+                onClick={() => handleNavClick('/countries')}
+              >
+                Countries
+              </button>
+              <button 
                 className={`nav-link ${isActive('/leaderboards') ? 'active' : ''}`}
                 onClick={() => handleNavClick('/leaderboards')}
               >
@@ -130,6 +136,12 @@ export function Navbar() {
                 onClick={() => handleNavClick('/')}
               >
                 🏠 Home
+              </button>
+              <button 
+                className={`mobile-nav-link ${isActive('/countries') ? 'active' : ''}`}
+                onClick={() => handleNavClick('/countries')}
+              >
+                🌍 Countries
               </button>
               <button 
                 className={`mobile-nav-link ${isActive('/leaderboards') ? 'active' : ''}`}

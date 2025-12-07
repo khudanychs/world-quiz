@@ -167,7 +167,7 @@ export default function InteractiveMap({
           {({ geographies }: GeographiesArgs) => {
             // Notify parent about loaded geographies
             if (onGeographiesLoaded && geographies.length > 0) {
-              onGeographiesLoaded(geographies as any);
+              onGeographiesLoaded(geographies as RSMGeography[]);
             }
 
             return geographies.map((geo: RSMGeography) => {

@@ -113,7 +113,7 @@ const nonClickableTerritories = new Set<string>([
 ]);
 
 /**
- * Cached set of game-eligible countries fetched from REST Countries API
+ * Cached set of game-eligible countries fetched from local countries-full.json
  * Populated when buildRestLookup is called
  */
 let gameEligibleCountriesCache: Set<string> | null = null;

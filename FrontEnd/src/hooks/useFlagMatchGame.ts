@@ -66,7 +66,7 @@ export function useFlagMatchGame() {
         setLoading(true);
         setLoadError("");
         // Load from local file instead of external API
-        const res = await fetch("/countries.json");
+        const res = await fetch("/countries-full.json");
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = (await res.json()) as Array<{
           name: { common: string };

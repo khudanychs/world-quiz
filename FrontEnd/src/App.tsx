@@ -7,6 +7,7 @@ import WorldMap from './WorldMap';
 import FlagMatchGame from './components/FlagMatchGame';
 import MainMenu from './components/MainMenu';
 import LeaderboardsPage from './pages/LeaderboardsPage';
+import CountryIndex from './pages/CountryIndex';
 import { useAuth } from './contexts/AuthContext';
 import './App.css';
 
@@ -160,6 +161,7 @@ export default function App() {
   const isMapRoute = location.pathname.startsWith('/map');
   const isGameRoute = location.pathname.startsWith('/game');
   const isAuthRoute = ['/auth', '/set-nickname'].some(p => location.pathname.startsWith(p));
+  const isCountriesRoute = location.pathname.startsWith('/countries');
   
   // Check if user is unverified email/password user
   const isEmailPasswordUser = user && user.email && !user.photoURL;
@@ -200,6 +202,7 @@ export default function App() {
           />
           <Route path='/' element={<VerifiedOrGuestRoute><MainMenu /></VerifiedOrGuestRoute>} />
           <Route path='/leaderboards' element={<VerifiedOrGuestRoute><LeaderboardsPage /></VerifiedOrGuestRoute>} />
+          <Route path='/countries' element={<VerifiedOrGuestRoute><CountryIndex /></VerifiedOrGuestRoute>} />
           <Route path='/map' element={<VerifiedOrGuestRoute><WorldMap /></VerifiedOrGuestRoute>} />
           <Route path='/game/flags' element={<VerifiedOrGuestRoute><FlagMatchGame /></VerifiedOrGuestRoute>} />
         </Routes>
