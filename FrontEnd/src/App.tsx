@@ -163,15 +163,17 @@ export default function App() {
   const isGameRoute = location.pathname.startsWith('/game');
   const isAuthRoute = ['/auth', '/set-nickname'].some(p => location.pathname.startsWith(p));
   const isCountriesRoute = location.pathname.startsWith('/countries');
+  const isPrivacyRoute = location.pathname === '/privacy';
   
   // Check if user is unverified email/password user
   const isEmailPasswordUser = user && user.email && !user.photoURL;
   const isUnverified = user && !user.emailVerified && isEmailPasswordUser;
   
-  // Hide navbar for map, game, auth routes, and unverified users
-  const hideNav = isMapRoute || isGameRoute || isAuthRoute || isUnverified;
+  // Hide navbar for map, game, auth routes, and unverified users (but NOT for privacy policy)
+  const hideNav = isMapRoute || isGameRoute || isAuthRoute || (isUnverified && !isPrivacyRoute);
   
-  if (loading) {
+  // Don't show loading screen for public routes (privacy policy)
+  if (loading && !isPrivacyRoute) {
     return (
       <div style={{height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0b1020', color: '#fff'}}>
         <div>Loading...</div>
