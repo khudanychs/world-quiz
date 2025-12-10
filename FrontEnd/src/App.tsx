@@ -8,6 +8,7 @@ import FlagMatchGame from './components/FlagMatchGame';
 import MainMenu from './components/MainMenu';
 import LeaderboardsPage from './pages/LeaderboardsPage';
 import CountryIndex from './pages/CountryIndex';
+import PrivacyPolicy from './pages/PrivacyPolicy';
 import { useAuth } from './contexts/AuthContext';
 import './App.css';
 
@@ -205,6 +206,7 @@ export default function App() {
           <Route path='/countries' element={<VerifiedOrGuestRoute><CountryIndex /></VerifiedOrGuestRoute>} />
           <Route path='/map' element={<VerifiedOrGuestRoute><WorldMap /></VerifiedOrGuestRoute>} />
           <Route path='/game/flags' element={<VerifiedOrGuestRoute><FlagMatchGame /></VerifiedOrGuestRoute>} />
+          <Route path='/privacy' element={<PrivacyPolicy />} />
         </Routes>
       </div>
     </>

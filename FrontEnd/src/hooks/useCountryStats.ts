@@ -77,10 +77,9 @@ export function useCountryStats(cca2: string | null): CountryStats {
         }
         
         const [country] = await response.json();
-        
-        // Hardcoded exclusions for non-official languages
+        //EXCLUDE WRONG LANGUAGES FOR CERTAIN COUNTRIES
         const languageExclusions: Record<string, Set<string>> = {
-          'CZ': new Set(['sk']), // Czechia: Slovak is not official
+          'CZ': new Set(['slk']), 
         };
         
         // Extract official languages from nativeName object (more accurate)

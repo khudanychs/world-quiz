@@ -157,6 +157,24 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
+.privacy-consent {
+  margin-top: 16px;
+  text-align: center;
+  color: #666;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.privacy-consent a {
+  color: #667eea;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.privacy-consent a:hover {
+  text-decoration: underline;
+}
+
 .auth-footer {
   margin-top: 24px;
   text-align: center;

@@ -1,5 +1,5 @@
 import { useState, FormEvent } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { GoogleIcon } from './Icons';
 import './Auth.css';
@@ -124,6 +124,10 @@ export function Register() {
           <GoogleIcon />
           Continue with Google
         </button>
+
+        <p className="privacy-consent">
+          By creating an account, you agree to our <Link to="/privacy">Privacy Policy & Terms of Service</Link>
+        </p>
 
         <p className="auth-footer">
           Already have an account? <a href="/login">Log in</a>

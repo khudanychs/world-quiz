@@ -14,7 +14,7 @@ export function Navbar() {
 
   useEffect(() => {
     const handleResize = () => {
-      const mobile = window.innerWidth < 768;
+      const mobile = window.innerWidth < 850;
       setIsMobile(mobile);
       if (!mobile) {
         setIsMobileMenuOpen(false);
@@ -181,6 +181,11 @@ export function Navbar() {
                   </a>
                 </>
               )}
+
+              {/* Footer Links */}
+              <div className="mobile-footer">
+                <a href="/privacy" className="footer-link">Privacy & Terms</a>
+              </div>
             </div>
           </div>
         </div>
