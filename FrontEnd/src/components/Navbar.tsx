@@ -8,13 +8,13 @@ export function Navbar() {
   const { user, isAuthenticated, logout } = useAuth();
   const [showSettings, setShowSettings] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 900);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 1000);
   const navigate = useNavigate();
   const location = useLocation();
 
   useEffect(() => {
     const handleResize = () => {
-      const mobile = window.innerWidth < 900;
+      const mobile = window.innerWidth < 1000;
       setIsMobile(mobile);
       if (!mobile) {
         setIsMobileMenuOpen(false);
@@ -67,6 +67,13 @@ export function Navbar() {
                 onClick={() => handleNavClick('/leaderboards')}
               >
                 Leaderboards
+              </button>
+              <button 
+                className={`nav-link ${isActive('/privacy') ? 'active' : ''}`}
+                onClick={() => handleNavClick('/privacy')}
+                style={{ fontSize: '0.85em', opacity: 0.8 }}
+              >
+                Privacy
               </button>
             </div>
           )}
