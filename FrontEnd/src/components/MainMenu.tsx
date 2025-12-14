@@ -22,16 +22,15 @@ export default function MainMenu() {
           <div className="menu-card-body">
             <h3>Flag Match</h3>
             <p>Match countries to their flags.</p>
+          </div>
+        </button>
+        <button className="menu-card" onClick={() => navigate('/game/shape-match')}>
+          <div className="menu-card-body">
+            <h3>Shape Match</h3>
+            <p>Match flags to country shapes on a timer!</p>
             <span className="menu-tag" style={{background:'#22c55e'}}>New</span>
           </div>
         </button>
-        <div className="menu-card disabled">
-          <div className="menu-card-body">
-            <h3>Regions Challenge</h3>
-            <p>Identify countries by region on a timer.</p>
-            <span className="menu-tag">Coming soon</span>
-          </div>
-        </div>
         <div className="menu-card disabled">
           <div className="menu-card-body">
             <h3>Boundaries Blitz</h3>

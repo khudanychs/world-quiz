@@ -5,6 +5,7 @@ import { Auth } from './components/Auth';
 import { SetNickname } from './components/SetNickname';
 import WorldMap from './WorldMap';
 import FlagMatchGame from './components/FlagMatchGame';
+import CardMatchGame from './components/CardMatchGame';
 import MainMenu from './components/MainMenu';
 import LeaderboardsPage from './pages/LeaderboardsPage';
 import CountryIndex from './pages/CountryIndex';
@@ -208,6 +209,7 @@ export default function App() {
           <Route path='/countries' element={<VerifiedOrGuestRoute><CountryIndex /></VerifiedOrGuestRoute>} />
           <Route path='/map' element={<VerifiedOrGuestRoute><WorldMap /></VerifiedOrGuestRoute>} />
           <Route path='/game/flags' element={<VerifiedOrGuestRoute><FlagMatchGame /></VerifiedOrGuestRoute>} />
+          <Route path='/game/shape-match' element={<VerifiedOrGuestRoute><CardMatchGame /></VerifiedOrGuestRoute>} />
           <Route path='/privacy' element={<PrivacyPolicy />} />
         </Routes>
       </div>

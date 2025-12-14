@@ -11,21 +11,21 @@ const geoUrl = "/countries-110m.json";
    MARKER CONFIGURATION - Edit these values to customize marker appearance
    ============================================================================ */
 
-// Desktop marker settings (screens >= 768px)
+// Desktop marker settings (screens >= 900px)
 const DESKTOP_MARKER = {
   baseRadius: 8,      // Starting size at zoom=1 (fully zoomed out)
   minRadius: 4,       // Smallest allowed size
   zoomExponent: 0.4,  // How fast markers shrink when zooming (lower = slower)
   strokeColor: "#2d3748",
-  baseStrokeWidth: 1.2,
-  minStrokeWidth: 0.5,
+  baseStrokeWidth: 1.1,
+  minStrokeWidth: 0.6,
   strokeZoomExponent: 0.6,
 };
 
-// Mobile marker settings (screens < 768px)
+// Mobile marker settings (screens < 900px)
 const MOBILE_MARKER = {
-  baseRadius: 2.5,    // Starting size at zoom=1
-  minRadius: 1.2,     // Smallest allowed size  
+  baseRadius: 4,    // Starting size at zoom=1
+  minRadius: 2.5,     // Smallest allowed size  
   zoomExponent: 0.5,  // Shrinks faster than desktop
   strokeColor: "#2d3748",
   baseStrokeWidth: 0.8,
