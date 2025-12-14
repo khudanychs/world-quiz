@@ -8,13 +8,13 @@ export function Navbar() {
   const { user, isAuthenticated, logout } = useAuth();
   const [showSettings, setShowSettings] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 900);
   const navigate = useNavigate();
   const location = useLocation();
 
   useEffect(() => {
     const handleResize = () => {
-      const mobile = window.innerWidth < 850;
+      const mobile = window.innerWidth < 900;
       setIsMobile(mobile);
       if (!mobile) {
         setIsMobileMenuOpen(false);

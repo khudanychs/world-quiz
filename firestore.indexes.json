@@ -23,6 +23,23 @@
         { "fieldPath": "date", "order": "ASCENDING" },
         { "fieldPath": "streak", "order": "DESCENDING" }
       ]
+    },
+    {
+      "collectionGroup": "dailyStreaks",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "date", "order": "ASCENDING" },
+        { "fieldPath": "streak", "order": "DESCENDING" },
+        { "fieldPath": "createdAt", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "streaks",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "streak", "order": "DESCENDING" },
+        { "fieldPath": "createdAt", "order": "ASCENDING" }
+      ]
     }
   ],
   "fieldOverrides": []

@@ -53,6 +53,7 @@ function useStreaks(timeFilter: 'today' | 'allTime') {
           collection(db, "dailyStreaks"),
           where("date", "==", todayDate),
           orderBy("streak", "desc"),
+          orderBy("createdAt", "asc"),
           limit(10)
         );
       } else {
@@ -60,6 +61,7 @@ function useStreaks(timeFilter: 'today' | 'allTime') {
         q = query(
           collection(db, "streaks"),
           orderBy("streak", "desc"),
+          orderBy("createdAt", "asc"),
           limit(10)
         );
       }
