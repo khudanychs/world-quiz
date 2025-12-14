@@ -8,7 +8,7 @@
 [![React](https://img.shields.io/badge/React-18-61dafb.svg)](https://reactjs.org/)
 [![Vite](https://img.shields.io/badge/Vite-7.2-646cff.svg)](https://vitejs.dev/)
 [![Firebase](https://img.shields.io/badge/Firebase-10-ffca28.svg)](https://firebase.google.com/)
-[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![License](https://img.shields.io/badge/License-Proprietary-red.svg)](LICENSE)
 
 [🎮 Play Now](https://world-quiz.com) | [📖 Documentation](#getting-started) | [🐛 Report Bug](https://github.com/sergioGyarab/world-quiz/issues)
 
@@ -403,19 +403,27 @@ npx tsc --noEmit
 
 ## 🤝 Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+This is a proprietary project. Contributions are accepted only with explicit permission from the copyright holder.
 
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+If you'd like to contribute:
+1. Contact the project owner via [GitHub](https://github.com/sergioGyarab)
+2. Request permission and discuss your proposed changes
+3. Upon approval, you may submit a Pull Request
+4. All contributions will remain property of the copyright holder
 
 ---
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+**Copyright © 2025 Sergio Gyarab. All Rights Reserved.**
+
+This software is proprietary and confidential. Unauthorized copying, distribution, modification, 
+or use of this software, via any medium, is strictly prohibited without the express written 
+permission of the copyright holder.
+
+For licensing inquiries or permission requests, please contact via [GitHub](https://github.com/sergioGyarab).
+
+See the [LICENSE](LICENSE) file for complete terms.
 
 ---
 
