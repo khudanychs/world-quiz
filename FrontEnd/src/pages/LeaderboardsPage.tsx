@@ -1,7 +1,12 @@
+import { useState } from 'react';
 import { Leaderboard } from '../components/Leaderboard';
 import './LeaderboardsPage.css';
 
+type GameMode = 'flag-match' | 'shape-match';
+
 export default function LeaderboardsPage() {
+  const [gameMode, setGameMode] = useState<GameMode>('flag-match');
+
   return (
     <div className="leaderboards-page">
       <div className="leaderboards-container">
@@ -10,8 +15,24 @@ export default function LeaderboardsPage() {
           See how you stack up against other players!
         </p>
         
+        {/* Game Mode Selector */}
+        <div className="game-mode-selector">
+          <button
+            className={`mode-btn ${gameMode === 'flag-match' ? 'active' : ''}`}
+            onClick={() => setGameMode('flag-match')}
+          >
+            🗺️ Flag Match
+          </button>
+          <button
+            className={`mode-btn ${gameMode === 'shape-match' ? 'active' : ''}`}
+            onClick={() => setGameMode('shape-match')}
+          >
+            🎮 Shape Match
+          </button>
+        </div>
+        
         <div className="leaderboards-grid">
-          <Leaderboard />
+          <Leaderboard gameMode={gameMode} />
         </div>
       </div>
     </div>

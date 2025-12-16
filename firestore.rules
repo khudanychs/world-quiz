@@ -76,6 +76,38 @@ service cloud.firestore {
                           && resource.data.userId == request.auth.uid;
     }
     
+    // Shape Match Scores collection - all-time high scores
+    match /shapeMatchScores/{userId} {
+      // Everyone can read (for leaderboard display, including guests)
+      allow read: if true;
+      // Authenticated users can create/update their own score records
+      allow create, update: if request.auth != null 
+                            && request.auth.uid == userId
+                            && request.resource.data.userId == request.auth.uid
+                            && request.resource.data.username is string
+                            && request.resource.data.score is number
+                            && request.resource.data.score >= 0;
+      // Users can delete their own score records
+      allow delete: if request.auth != null 
+                    && request.auth.uid == userId;
+    }
+    
+    // Daily Shape Match Scores collection - for "Today" leaderboard
+    match /dailyShapeMatchScores/{dailyScoreId} {
+      // Everyone can read (for leaderboard display, including guests)
+      allow read: if true;
+      // Authenticated users can create/update their own daily score records
+      allow create, update: if request.auth != null 
+                            && request.resource.data.userId == request.auth.uid
+                            && request.resource.data.username is string
+                            && request.resource.data.score is number
+                            && request.resource.data.score >= 0
+                            && request.resource.data.date is string;
+      // Users can delete their own daily score records
+      allow delete: if request.auth != null 
+                    && resource.data.userId == request.auth.uid;
+    }
+    
     // Leaderboard - everyone can read, but only authenticated users' scores are shown
     match /leaderboard/{entry} {
       allow read: if true;

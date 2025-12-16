@@ -14,29 +14,51 @@ interface StreakEntry {
   streak: number;
 }
 
-// Cache for streaks data (prevents excessive reads on filter switching)
-const streaksCache: {
-  today: { data: StreakEntry[]; timestamp: number } | null;
-  allTime: { data: StreakEntry[]; timestamp: number } | null;
+// Define the structure of a score document
+interface ScoreEntry {
+  id: string;
+  userId: string;
+  username: string;
+  score: number;
+}
+
+type GameMode = 'flag-match' | 'shape-match';
+
+// Cache for leaderboard data (prevents excessive reads on filter switching)
+const leaderboardCache: {
+  'flag-match': {
+    today: { data: StreakEntry[]; timestamp: number } | null;
+    allTime: { data: StreakEntry[]; timestamp: number } | null;
+  };
+  'shape-match': {
+    today: { data: ScoreEntry[]; timestamp: number } | null;
+    allTime: { data: ScoreEntry[]; timestamp: number } | null;
+  };
 } = {
-  today: null,
-  allTime: null
+  'flag-match': {
+    today: null,
+    allTime: null
+  },
+  'shape-match': {
+    today: null,
+    allTime: null
+  }
 };
 
 const CACHE_DURATION = 60 * 1000; // 1 minute cache
 
-// Hook for streaks - fetches top 10 best streaks with caching
-function useStreaks(timeFilter: 'today' | 'allTime') {
-  const [streaks, setStreaks] = useState<StreakEntry[]>([]);
+// Hook for leaderboard data - fetches top 10 with caching
+function useLeaderboard(gameMode: GameMode, timeFilter: 'today' | 'allTime') {
+  const [entries, setEntries] = useState<StreakEntry[] | ScoreEntry[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const fetchStreaks = useCallback(async (forceRefresh = false) => {
+  const fetchLeaderboard = useCallback(async (forceRefresh = false) => {
     // Check cache first (unless force refresh)
-    const cached = streaksCache[timeFilter];
+    const cached = leaderboardCache[gameMode][timeFilter];
     const now = Date.now();
     
     if (!forceRefresh && cached && (now - cached.timestamp) < CACHE_DURATION) {
-      setStreaks(cached.data);
+      setEntries(cached.data as any);
       setLoading(false);
       return;
     }
@@ -44,62 +66,96 @@ function useStreaks(timeFilter: 'today' | 'allTime') {
     setLoading(true);
     
     try {
-      // Build query based on time filter
       let q;
-      if (timeFilter === 'today') {
-        // Query dailyStreaks collection filtered by today's date
-        const todayDate = getTodayDateString();
-        q = query(
-          collection(db, "dailyStreaks"),
-          where("date", "==", todayDate),
-          orderBy("streak", "desc"),
-          orderBy("createdAt", "asc"),
-          limit(10)
-        );
+      
+      if (gameMode === 'flag-match') {
+        // Flag Match: Query by streak
+        if (timeFilter === 'today') {
+          const todayDate = getTodayDateString();
+          q = query(
+            collection(db, "dailyStreaks"),
+            where("date", "==", todayDate),
+            orderBy("streak", "desc"),
+            orderBy("createdAt", "asc"),
+            limit(10)
+          );
+        } else {
+          q = query(
+            collection(db, "streaks"),
+            orderBy("streak", "desc"),
+            orderBy("createdAt", "asc"),
+            limit(10)
+          );
+        }
       } else {
-        // All time - query streaks collection sorted by streak
-        q = query(
-          collection(db, "streaks"),
-          orderBy("streak", "desc"),
-          orderBy("createdAt", "asc"),
-          limit(10)
-        );
+        // Shape Match: Query by score
+        if (timeFilter === 'today') {
+          const todayDate = getTodayDateString();
+          q = query(
+            collection(db, "dailyShapeMatchScores"),
+            where("date", "==", todayDate),
+            orderBy("score", "desc"),
+            orderBy("createdAt", "asc"),
+            limit(10)
+          );
+        } else {
+          q = query(
+            collection(db, "shapeMatchScores"),
+            orderBy("score", "desc"),
+            orderBy("createdAt", "asc"),
+            limit(10)
+          );
+        }
       }
 
       const snapshot = await getDocs(q);
-      const topStreaks = snapshot.docs.map(doc => ({
+      const topEntries = snapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
-      } as StreakEntry));
+      }));
 
-      // Update cache
-      streaksCache[timeFilter] = { data: topStreaks, timestamp: now };
+      // Update cache with proper type
+      if (gameMode === 'flag-match') {
+        (leaderboardCache[gameMode][timeFilter] as any) = { 
+          data: topEntries as StreakEntry[], 
+          timestamp: now 
+        };
+      } else {
+        (leaderboardCache[gameMode][timeFilter] as any) = { 
+          data: topEntries as ScoreEntry[], 
+          timestamp: now 
+        };
+      }
       
-      setStreaks(topStreaks);
+      setEntries(topEntries as any);
     } catch (error) {
-      console.error("Error fetching streaks: ", error);
+      console.error("Error fetching leaderboard: ", error);
     } finally {
       setLoading(false);
     }
-  }, [timeFilter]);
+  }, [gameMode, timeFilter]);
 
   useEffect(() => {
-    fetchStreaks();
+    fetchLeaderboard();
     
     // Auto-refresh every 5 minutes (force refresh to bypass cache)
-    const interval = setInterval(() => fetchStreaks(true), 5 * 60 * 1000);
+    const interval = setInterval(() => fetchLeaderboard(true), 5 * 60 * 1000);
     return () => clearInterval(interval);
-  }, [fetchStreaks]);
+  }, [fetchLeaderboard]);
 
-  return { streaks, loading, refetch: () => fetchStreaks(true) };
+  return { entries, loading, refetch: () => fetchLeaderboard(true) };
 }
 
 // Refresh cooldown in milliseconds (30 seconds)
 const REFRESH_COOLDOWN = 30 * 1000;
 
-export function Leaderboard() {
+interface LeaderboardProps {
+  gameMode: GameMode;
+}
+
+export function Leaderboard({ gameMode }: LeaderboardProps) {
   const [timeFilter, setTimeFilter] = useState<'today' | 'allTime'>('today');
-  const { streaks, loading, refetch } = useStreaks(timeFilter);
+  const { entries, loading, refetch } = useLeaderboard(gameMode, timeFilter);
   const { user } = useAuth();
   const navigate = useNavigate();
   
@@ -132,10 +188,12 @@ export function Leaderboard() {
   const isGuest = !user;
   const isOnCooldown = cooldownRemaining > 0;
 
+  const title = gameMode === 'flag-match' ? '🔥 Top Streaks' : '🏆 Top Scores';
+
   return (
     <div className="leaderboard-card">
       <div className="leaderboard-header">
-        <h3 className="leaderboard-title">🔥 Top Streaks</h3>
+        <h3 className="leaderboard-title">{title}</h3>
         <button 
           className={`refresh-btn ${isOnCooldown ? 'on-cooldown' : ''} ${loading ? 'loading' : ''}`}
           onClick={handleRefresh}
@@ -177,11 +235,11 @@ export function Leaderboard() {
 
       {loading ? (
         <div className="loader">Loading...</div>
-      ) : streaks.length === 0 ? (
-        <p className="no-scores">No streaks yet. Be the first!</p>
+      ) : entries.length === 0 ? (
+        <p className="no-scores">No {gameMode === 'flag-match' ? 'streaks' : 'scores'} yet. Be the first!</p>
       ) : (
         <ol className="leaderboard-list">
-          {streaks.map((entry, index) => (
+          {entries.map((entry, index) => (
             <li 
               key={entry.id} 
               className={`leaderboard-item ${user?.uid === entry.userId ? 'current-user' : ''}`}
@@ -190,10 +248,17 @@ export function Leaderboard() {
                 {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `${index + 1}.`}
               </span>
               <span className="leaderboard-name">{entry.username || 'Anonymous'}</span>
-              <span className="leaderboard-streak">
-                <span className="streak-fire">🔥</span>
-                {entry.streak}
-              </span>
+              {gameMode === 'flag-match' ? (
+                <span className="leaderboard-streak">
+                  <span className="streak-fire">🔥</span>
+                  {((entry as StreakEntry).streak || 0)}
+                </span>
+              ) : (
+                <span className="leaderboard-score">
+                  <span className="score-icon">💎</span>
+                  {((entry as ScoreEntry).score || 0).toLocaleString()}
+                </span>
+              )}
             </li>
           ))}
         </ol>

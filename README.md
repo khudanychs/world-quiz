@@ -37,6 +37,8 @@ Fast-paced card matching challenge combining flags and country shapes
 - 🔥 Progressive streak multipliers (up to 3× at 20+ streak)
 - 💯 Base score: 1,000 points per match
 - 🎨 Beautiful SVG country shape rendering
+- 🏆 Separate leaderboard with daily and all-time high scores
+- ⚡ Ultra-responsive gameplay - click instantly without delays
 
 ### 📚 Comprehensive Country Encyclopedia
 
@@ -69,12 +71,15 @@ Full-featured authentication with Firebase
 
 ### 🏆 Global Leaderboards
 
-Compete with players worldwide
-- 📅 **Daily Leaderboards** - Today's best streaks
+Compete with players worldwide across multiple game modes
+- 🗺️ **Flag Match Rankings** - Best streaks (25 countries in a row)
+- 🎮 **Shape Match Rankings** - Highest scores (60-second challenges)
+- 📅 **Daily Leaderboards** - Today's best performances
 - 🌟 **All-Time Rankings** - Overall champions
 - 🔄 **Auto-refresh** - Updates every 5 minutes
 - 🛡️ **Anti-abuse** - 30-second manual refresh cooldown
 - ⚡ **Cached Data** - Optimized to minimize database reads
+- 🎯 **Game Mode Toggle** - Switch between Flag Match and Shape Match leaderboards
 
 ---
 
@@ -292,7 +297,7 @@ Built files will be in `FrontEnd/dist/`
 
 ### Firestore Collections
 
-#### `streaks` - All-Time Best Scores
+#### `streaks` - All-Time Best Streaks (Flag Match)
 ```typescript
 Document ID: {userId}
 {
@@ -300,11 +305,10 @@ Document ID: {userId}
   username: string;      // Display name
   streak: number;        // Best streak count
   createdAt: Timestamp;  // Firebase server timestamp
-  gameType: string;      // "FlagMatch" or "CardMatch"
 }
 ```
 
-#### `dailyStreaks` - Daily Best Scores
+#### `dailyStreaks` - Daily Best Streaks (Flag Match)
 ```typescript
 Document ID: {YYYY-MM-DD}_{userId}
 {
@@ -313,7 +317,31 @@ Document ID: {YYYY-MM-DD}_{userId}
   username: string;      // Display name
   streak: number;        // Best streak today
   createdAt: Timestamp;  // Firebase server timestamp
-  gameType: string;      // "FlagMatch" or "CardMatch"
+}
+```
+
+#### `shapeMatchScores` - All-Time High Scores (Shape Match)
+```typescript
+Document ID: {userId}
+{
+  userId: string;        // Firebase UID
+  username: string;      // Display name
+  score: number;         // Highest score achieved
+  createdAt: Timestamp;  // Firebase server timestamp
+  updatedAt: Timestamp;  // Last update timestamp
+}
+```
+
+#### `dailyShapeMatchScores` - Daily High Scores (Shape Match)
+```typescript
+Document ID: {userId}_{YYYY-MM-DD}
+{
+  date: string;          // YYYY-MM-DD format
+  userId: string;        // Firebase UID
+  username: string;      // Display name
+  score: number;         // Best score today
+  createdAt: Timestamp;  // Firebase server timestamp
+  updatedAt: Timestamp;  // Last update timestamp
 }
 ```
 
@@ -331,9 +359,13 @@ Document ID: {userId}
 
 ### Firestore Indexes
 
-Required composite indexes (auto-created on first query or via `firestore.indexes.json`):
-- `dailyStreaks`: `date` (ASC), `streak` (DESC)
-- `streaks`: `gameType` (ASC), `streak` (DESC)
+Required composite indexes (configured in `firestore.indexes.json`):
+- `dailyStreaks`: `date` (ASC), `streak` (DESC), `createdAt` (ASC)
+- `streaks`: `streak` (DESC), `createdAt` (ASC)
+- `dailyShapeMatchScores`: `date` (ASC), `score` (DESC), `createdAt` (ASC)
+- `shapeMatchScores`: `score` (DESC), `createdAt` (ASC)
+
+Deploy indexes: `firebase deploy --only firestore:indexes`
 
 ---
 
@@ -352,14 +384,20 @@ Required composite indexes (auto-created on first query or via `firestore.indexe
 ```javascript
 // Users can only read/write their own username
 match /usernames/{userId} {
-  allow read: if request.auth != null;
+  allow read: if true;  // Allow checking username availability
   allow write: if request.auth.uid == userId;
 }
 
-// Streak documents: read by all, write by owner only
+// Flag Match streaks: read by all, write by authenticated owner
 match /streaks/{userId} {
-  allow read: if request.auth != null;
-  allow write: if request.auth.uid == userId;
+  allow read: if true;
+  allow create, update: if request.auth != null && request.auth.uid == userId;
+}
+
+// Shape Match scores: read by all, write by authenticated owner
+match /shapeMatchScores/{userId} {
+  allow read: if true;
+  allow create, update: if request.auth != null && request.auth.uid == userId;
 }
 ```
 
@@ -398,6 +436,33 @@ npm run preview
 # Type checking only
 npx tsc --noEmit
 ```
+
+---
+
+## 🔒 Privacy & Legal
+
+### Privacy Policy
+
+World Quiz is committed to protecting your privacy and ensuring data security:
+
+- **Data Collection**: We collect minimal user data (email, username, game scores)
+- **Authentication**: Secure Firebase Authentication for user accounts
+- **Data Storage**: Game scores and usernames stored in Firebase Firestore
+- **Third-Party Services**: Uses Firebase (Google), flag icons, and geographic data APIs
+- **Cookies**: Essential cookies for authentication and session management only
+- **User Rights**: Account deletion available through settings at any time
+
+For complete details, visit our [Privacy Policy](https://world-quiz.com/privacy) page.
+
+### Terms & Conditions
+
+By using World Quiz, you agree to:
+- Use the service for educational and entertainment purposes only
+- Not attempt to manipulate leaderboards or game systems
+- Respect intellectual property rights of all content
+- Comply with all applicable laws and regulations
+
+Full terms available at [Terms & Conditions](https://world-quiz.com/terms) page.
 
 ---
 

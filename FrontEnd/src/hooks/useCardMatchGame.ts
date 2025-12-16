@@ -9,11 +9,37 @@ import {
 } from "../utils/countries";
 import { SMALL_ISLAND_MARKERS } from "../utils/markerPositions";
 
+// Type definitions to replace 'any'
+type Position = number[];
+type Coordinates = Position | Position[] | Position[][] | Position[][][];
+
+interface Geometry {
+  type: string;
+  coordinates: Coordinates;
+}
+
+interface GeoJsonFeature {
+  type: "Feature";
+  properties: Record<string, unknown> | null;
+  geometry: Geometry | null;
+}
+
+interface FeatureCollection {
+  type: "FeatureCollection";
+  features: GeoJsonFeature[];
+}
+
+interface Topology {
+  type: "Topology";
+  objects: { [key: string]: any }; 
+  arcs: any[];
+}
+
 export interface CountryCard {
   name: string;
   cca2: string;
   flag: string;
-  geometry: any; // TopoJSON geometry for the country shape
+  geometry: Geometry; // TopoJSON geometry for the country shape
   type: "flag" | "shape";
   id: string; // Unique ID for the card
 }
@@ -69,7 +95,7 @@ export function useCardMatchGame() {
   });
 
   const [restLookup, setRestLookup] = useState<Record<string, CountryInfo>>({});
-  const [topoData, setTopoData] = useState<any>(null);
+  const [topoData, setTopoData] = useState<Topology | null>(null);
   const timerRef = useRef<number | null>(null);
   const [feedbackCard, setFeedbackCard] = useState<string | null>(null);
 
@@ -144,11 +170,12 @@ export function useCardMatchGame() {
     if (!topoData) return;
 
     // Convert TopoJSON to GeoJSON
-    const geoData: any = feature(topoData, topoData.objects.countries);
+    // feature returns Feature or FeatureCollection. Cast to FeatureCollection to access features.
+    const geoData = feature(topoData, topoData.objects.countries) as unknown as FeatureCollection;
     const features = geoData.features || [];
 
     // Get playable countries (those with flags and valid geometry)
-    const playableCountries: Array<{ info: CountryInfo; geometry: any }> = [];
+    const playableCountries: Array<{ info: CountryInfo; geometry: Geometry }> = [];
     const seenCountryCodes = new Set<string>();
 
     for (const feat of features) {
@@ -170,9 +197,36 @@ export function useCardMatchGame() {
       }
 
       if (feat.geometry) {
-        let geometry: any = feat.geometry;
+        let geometry: Geometry = feat.geometry;
         
-        // Fix for countries crossing the antimeridian (Russia, Fiji)
+        // Special handling for France - keep Metropolitan France and Corsica
+        // Filter polygons to exclude overseas territories (French Guiana, Reunion, etc.)
+        if (info.cca2 === "FR" && geometry.type === "MultiPolygon") {
+          const polygons = geometry.coordinates as Position[][][];
+          
+          // Keep polygons roughly within European bounds
+          // France Metropole + Corsica: approx Lon -6 to 10, Lat 41 to 52
+          const europeanPolygons = polygons.filter(polygon => {
+            const ring = polygon[0];
+            if (!ring || ring.length === 0) return false;
+            
+            // Check the first point of the exterior ring
+            const [lon, lat] = ring[0];
+            return lon >= -6 && lon <= 10 && lat >= 41 && lat <= 52;
+          });
+
+          if (europeanPolygons.length > 0) {
+             // If we found European parts, use them.
+             // If result has 1 polygon, we can simplify to Polygon type, but MultiPolygon is fine too.
+             // Keeping as MultiPolygon for consistency if Corsica is separate.
+             geometry = {
+               type: "MultiPolygon",
+               coordinates: europeanPolygons
+             };
+          }
+        }
+
+        // Fix for countries crossing the IDL (Russia, Fiji)
         // We shift negative longitudes to positive (+360) to make them contiguous
         // This moves them from e.g. -170 to 190, so the shape is 20..190 instead of split
         if (info.cca2 === "RU" || info.cca2 === "FJ") {
@@ -193,7 +247,9 @@ export function useCardMatchGame() {
           };
 
           if (geometry.coordinates) {
-             shiftCoords(geometry.coordinates);
+             // We can't easily type the recursive structure for mutation without type assertions
+             // but we'll cast to any[] for the helper to keep it simple while main types are strict
+             shiftCoords(geometry.coordinates as any[]);
           }
         }
         
@@ -219,32 +275,13 @@ export function useCardMatchGame() {
       if (!info || !info.flag || seenCountryCodes.has(info.cca2)) continue;
 
       // Try to find the geometry in the features
-      const matchingFeature = features.find((feat: any) => {
+      const matchingFeature = features.find((feat: GeoJsonFeature) => {
         const featName = normalizeCountryName((feat.properties?.name as string) ?? "");
         return featName === normalized || featName === key1 || featName === key2;
       });
 
       if (matchingFeature && matchingFeature.geometry) {
-        // Special handling for Russia - use only the largest piece
         let geometry = matchingFeature.geometry;
-        if (info.cca2 === "RU" && geometry.type === "MultiPolygon") {
-          const polygons = geometry.coordinates;
-          let largestPolygon = polygons[0];
-          let maxCoords = 0;
-          
-          for (const polygon of polygons) {
-            const coordCount = polygon[0]?.length || 0;
-            if (coordCount > maxCoords) {
-              maxCoords = coordCount;
-              largestPolygon = polygon;
-            }
-          }
-          
-          geometry = {
-            type: "Polygon",
-            coordinates: largestPolygon
-          };
-        }
         
         playableCountries.push({ info, geometry });
         seenCountryCodes.add(info.cca2);
@@ -359,7 +396,8 @@ export function useCardMatchGame() {
     if (state.selectedCards.length === 1) {
       const firstCard = state.cards.find((c) => c.id === state.selectedCards[0]);
       if (firstCard && firstCard.type === card.type) {
-        // Can't match two flags or two shapes - do nothing
+        // Replace the previous selection with the new one (same type)
+        setState((s) => ({ ...s, selectedCards: [cardId] }));
         return;
       }
     }
@@ -393,9 +431,10 @@ export function useCardMatchGame() {
         const multiplier = getStreakMultiplier(newStreak);
         const points = Math.round(BASE_POINTS * multiplier);
 
+        // Update state immediately - clear selections so user can click next card instantly
         setState((s) => ({
           ...s,
-          selectedCards: newSelected,
+          selectedCards: [],
           matchedPairs: new Set([...s.matchedPairs, firstCard.cca2]),
           totalMatches: s.totalMatches + 1,
           score: s.score + points,
@@ -403,26 +442,24 @@ export function useCardMatchGame() {
           maxStreak: Math.max(s.maxStreak, newStreak),
         }));
 
-        // Show feedback and clear after delay
+        // Show feedback animation (visual only, doesn't block interaction)
         setFeedbackCard(cardId);
         setTimeout(() => {
           setFeedbackCard(null);
-          setState((s) => ({ ...s, selectedCards: [] }));
-        }, 300);
+        }, 400);
       } else {
-        // Wrong match - reset streak
+        // Wrong match - reset streak and clear selections immediately
         setState((s) => ({
           ...s,
-          selectedCards: newSelected,
+          selectedCards: [],
           streak: 0,
         }));
 
-        // Show feedback and clear after delay
+        // Show feedback animation (visual only, doesn't block interaction)
         setFeedbackCard(cardId);
         setTimeout(() => {
           setFeedbackCard(null);
-          setState((s) => ({ ...s, selectedCards: [] }));
-        }, 400);
+        }, 300);
       }
     }
   }

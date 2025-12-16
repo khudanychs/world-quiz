@@ -3,6 +3,7 @@ import { useEffect, useState, useLayoutEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { CountryCard, useCardMatchGame } from "../hooks/useCardMatchGame";
+import { saveShapeMatchScore } from "../utils/leaderboardUtils";
 import {
     BACK_BUTTON_STYLE,
     GREEN_BUTTON_HOVER,
@@ -35,7 +36,7 @@ function CountryShapeSVG({ card }: { card: CountryCard }) {
   const feature: GeoJSON.Feature = {
     type: 'Feature',
     properties: {},
-    geometry: card.geometry
+    geometry: card.geometry as unknown as GeoJSON.Geometry
   };
 
   // 1. Calculate the centroid to center the projection on the country
@@ -133,7 +134,7 @@ function GameCard({
           ? "rgba(59, 130, 246, 0.2)"
           : "rgba(255, 255, 255, 0.05)",
         cursor: isMatched ? "default" : "pointer",
-        transition: "all 0.2s ease",
+        transition: "all 0.12s ease",
         padding: "8px",
         display: "flex",
         alignItems: "center",
@@ -141,10 +142,12 @@ function GameCard({
         overflow: "hidden",
         transform: isSelected ? "scale(0.95)" : "scale(1)",
         opacity: isMatched ? 0.6 : 1,
+        zIndex: isSelected || isFeedback ? 10 : 1,
+        isolation: "isolate",
         animation: isCorrectFeedback
-          ? "correct-pulse 0.5s ease"
+          ? "correct-pulse 0.4s ease"
           : isWrongFeedback
-          ? "wrong-shake 0.5s ease"
+          ? "wrong-shake 0.3s ease"
           : "none",
       }}
     >
@@ -152,11 +155,14 @@ function GameCard({
         <img
           src={card.flag}
           alt={card.name}
+          draggable={false}
+          onDragStart={(e) => e.preventDefault()}
           style={{
             width: "100%",
             height: "100%",
             objectFit: "contain",
             borderRadius: "4px",
+            userSelect: "none",
           }}
         />
       ) : (
@@ -226,9 +232,7 @@ export default function CardMatchGame() {
         const score = game.score;
         if (score === 0) return;
 
-        // TODO: Save to leaderboard when Firebase permissions are configured
-        // Skipping for now to avoid errors
-
+        await saveShapeMatchScore(user, score);
         setSavedToLeaderboard(true);
       } catch (err) {
         console.error("Failed to save score:", err);
@@ -249,6 +253,18 @@ export default function CardMatchGame() {
     game.startNewGame();
   };
 
+  const handleBack = async () => {
+    // Save score if abandoning game with points
+    if (game.gameStarted && !game.gameOver && game.score > 0 && !savedToLeaderboard) {
+      try {
+        await saveShapeMatchScore(user, game.score);
+      } catch (e) {
+        console.error("Failed to save on exit:", e);
+      }
+    }
+    navigate("/");
+  };
+
   if (game.loading) {
     return (
       <div style={{ ...PAGE_CONTAINER_STYLE, alignItems: "center", justifyContent: "center" }}>
@@ -262,7 +278,7 @@ export default function CardMatchGame() {
       <div style={{ ...PAGE_CONTAINER_STYLE, alignItems: "center", justifyContent: "center" }}>
         <div style={{ color: "#ef4444", fontSize: "18px" }}>Error: {game.loadError}</div>
         <button
-          onClick={() => navigate("/")}
+          onClick={handleBack}
           style={{ ...BACK_BUTTON_STYLE, marginTop: "20px" }}
         >
           ← Back to Menu
@@ -357,7 +373,7 @@ export default function CardMatchGame() {
 
           <div style={{ display: "flex", gap: "12px", justifyContent: "center", flexWrap: "wrap" }}>
             <button
-              onClick={() => navigate("/")}
+              onClick={handleBack}
               style={{
                 ...BACK_BUTTON_STYLE,
                 padding: "12px 24px",
@@ -451,7 +467,7 @@ export default function CardMatchGame() {
 
           <div style={{ display: "flex", gap: "12px", justifyContent: "center", flexWrap: "wrap" }}>
             <button
-              onClick={() => navigate("/")}
+              onClick={handleBack}
               style={{
                 ...BACK_BUTTON_STYLE,
                 padding: "14px 28px",
@@ -510,7 +526,7 @@ export default function CardMatchGame() {
           overflowY: "auto",
         }}>
           <button 
-            onClick={() => navigate("/")} 
+            onClick={handleBack} 
             style={{
               ...BACK_BUTTON_STYLE,
               position: "static", 
@@ -592,6 +608,7 @@ export default function CardMatchGame() {
             height: "auto",
             maxHeight: "100%",
             aspectRatio: "1/1", // Try to keep grid square
+            isolation: "isolate",
           }}>
             {game.cards.map((card) => {
               const isSelected = game.selectedCards.includes(card.id);
@@ -637,7 +654,7 @@ export default function CardMatchGame() {
         }}
       >
         <button 
-          onClick={() => navigate("/")} 
+          onClick={handleBack} 
           style={{
             ...BACK_BUTTON_STYLE,
             padding: "clamp(4px, 1vw, 8px) clamp(8px, 2vw, 12px)", 
@@ -726,6 +743,7 @@ export default function CardMatchGame() {
           gridTemplateColumns: `repeat(${gridSize}, 1fr)`,
           gap: "clamp(4px, 1vw, 8px)",
           width: "100%",
+          isolation: "isolate",
         }}
       >
         {game.cards.map((card) => {
