@@ -10,6 +10,7 @@ import MainMenu from './components/MainMenu';
 import LeaderboardsPage from './pages/LeaderboardsPage';
 import CountryIndex from './pages/CountryIndex';
 import PrivacyPolicy from './pages/PrivacyPolicy';
+import TermsConditions from './pages/TermsConditions';
 import { useAuth } from './contexts/AuthContext';
 import './App.css';
 
@@ -165,16 +166,18 @@ export default function App() {
   const isAuthRoute = ['/auth', '/set-nickname'].some(p => location.pathname.startsWith(p));
   const isCountriesRoute = location.pathname.startsWith('/countries');
   const isPrivacyRoute = location.pathname === '/privacy';
+  const isTermsRoute = location.pathname === '/terms';
+  const isPublicRoute = isPrivacyRoute || isTermsRoute;
   
   // Check if user is unverified email/password user
   const isEmailPasswordUser = user && user.email && !user.photoURL;
   const isUnverified = user && !user.emailVerified && isEmailPasswordUser;
   
-  // Hide navbar for map, game, auth routes, and unverified users (but NOT for privacy policy)
-  const hideNav = isMapRoute || isGameRoute || isAuthRoute || (isUnverified && !isPrivacyRoute);
+  // Hide navbar for map, game, auth routes, and unverified users (but NOT for public routes)
+  const hideNav = isMapRoute || isGameRoute || isAuthRoute || (isUnverified && !isPublicRoute);
   
-  // Don't show loading screen for public routes (privacy policy)
-  if (loading && !isPrivacyRoute) {
+  // Don't show loading screen for public routes (privacy policy, terms)
+  if (loading && !isPublicRoute) {
     return (
       <div style={{height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0b1020', color: '#fff'}}>
         <div>Loading...</div>
@@ -209,6 +212,7 @@ export default function App() {
           <Route path='/countries' element={<VerifiedOrGuestRoute><CountryIndex /></VerifiedOrGuestRoute>} />
           <Route path='/map' element={<VerifiedOrGuestRoute><WorldMap /></VerifiedOrGuestRoute>} />
           <Route path='/game/flags' element={<VerifiedOrGuestRoute><FlagMatchGame /></VerifiedOrGuestRoute>} />
+          <Route path='/terms' element={<TermsConditions />} />
           <Route path='/game/shape-match' element={<VerifiedOrGuestRoute><CardMatchGame /></VerifiedOrGuestRoute>} />
           <Route path='/privacy' element={<PrivacyPolicy />} />
         </Routes>

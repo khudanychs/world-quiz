@@ -1,0 +1,149 @@
+.terms-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  padding: 40px 20px;
+}
+
+.terms-container {
+  max-width: 900px;
+  margin: 0 auto;
+  background: rgba(30, 41, 59, 0.8);
+  border-radius: 16px;
+  padding: 40px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  color: #e2e8f0;
+  line-height: 1.7;
+}
+
+.back-button {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #e2e8f0;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  margin-bottom: 24px;
+  transition: all 0.2s ease;
+}
+
+.back-button:hover {
+  background: rgba(255, 255, 255, 0.15);
+  transform: translateX(-4px);
+}
+
+.terms-container h1 {
+  color: #fff;
+  font-size: 36px;
+  margin-bottom: 8px;
+  font-weight: 700;
+}
+
+.last-updated {
+  color: rgba(226, 232, 240, 0.6);
+  font-size: 14px;
+  margin-bottom: 32px;
+}
+
+.terms-container section {
+  margin-bottom: 32px;
+}
+
+.terms-container h2 {
+  color: #fff;
+  font-size: 24px;
+  margin-top: 32px;
+  margin-bottom: 16px;
+  font-weight: 600;
+  border-bottom: 2px solid rgba(102, 126, 234, 0.3);
+  padding-bottom: 8px;
+}
+
+.terms-container h3 {
+  color: #cbd5e1;
+  font-size: 18px;
+  margin-top: 20px;
+  margin-bottom: 12px;
+  font-weight: 500;
+}
+
+.terms-container p {
+  color: #cbd5e1;
+  margin-bottom: 12px;
+}
+
+.terms-container ul {
+  margin-left: 24px;
+  margin-bottom: 16px;
+}
+
+.terms-container li {
+  color: #cbd5e1;
+  margin-bottom: 8px;
+}
+
+.terms-container strong {
+  color: #e2e8f0;
+  font-weight: 600;
+}
+
+.terms-container a {
+  color: #667eea;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.terms-container a:hover {
+  color: #818cf8;
+  text-decoration: underline;
+}
+
+/* Contact Info Box */
+.contact-info {
+  background: rgba(102, 126, 234, 0.08);
+  border-left: 4px solid #667eea;
+  padding: 16px 20px;
+  margin: 16px 0;
+  border-radius: 8px;
+}
+
+.contact-info p {
+  margin-bottom: 8px;
+}
+
+/* Related Section */
+.related-section {
+  background: rgba(102, 126, 234, 0.1);
+  border: 1px solid rgba(102, 126, 234, 0.3);
+  border-radius: 12px;
+  padding: 24px;
+  margin-top: 40px;
+}
+
+.related-section h2 {
+  border-bottom: none;
+  margin-top: 0;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .terms-page {
+    padding: 20px 16px;
+  }
+
+  .terms-container {
+    padding: 24px;
+  }
+
+  .terms-container h1 {
+    font-size: 28px;
+  }
+
+  .terms-container h2 {
+    font-size: 20px;
+  }
+
+  .terms-container h3 {
+    font-size: 16px;
+  }
+}

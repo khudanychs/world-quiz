@@ -1,5 +1,5 @@
 import { useState, useEffect, FormEvent } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import './Auth.css';
 
@@ -170,6 +170,14 @@ export function Auth() {
           </svg>
           Continue with Google
         </button>
+
+        {mode === 'register' && (
+          <p className="privacy-consent">
+            By continuing, you agree to our{' '}
+            <Link to="/terms">Terms of Service</Link> and{' '}
+            <Link to="/privacy">Privacy Policy</Link>.
+          </p>
+        )}
 
         <p className="auth-footer">
           {mode === 'register' ? (

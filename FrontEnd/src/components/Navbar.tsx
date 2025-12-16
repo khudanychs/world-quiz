@@ -75,6 +75,13 @@ export function Navbar() {
               >
                 Privacy
               </button>
+              <button 
+                className={`nav-link ${isActive('/terms') ? 'active' : ''}`}
+                onClick={() => handleNavClick('/terms')}
+                style={{ fontSize: '0.85em', opacity: 0.8 }}
+              >
+                Terms
+              </button>
             </div>
           )}
 
@@ -191,7 +198,9 @@ export function Navbar() {
 
               {/* Footer Links */}
               <div className="mobile-footer">
-                <a href="/privacy" className="footer-link">Privacy & Terms</a>
+                <a href="/privacy" className="footer-link">Privacy Policy</a>
+                <span className="footer-separator">•</span>
+                <a href="/terms" className="footer-link">Terms & Conditions</a>
               </div>
             </div>
           </div>
