@@ -1,10 +1,10 @@
-.terms-page {
+.terms-conditions-page {
   min-height: 100vh;
   background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
   padding: 40px 20px;
 }
 
-.terms-container {
+.terms-conditions-container {
   max-width: 900px;
   margin: 0 auto;
   background: rgba(30, 41, 59, 0.8);
@@ -32,7 +32,7 @@
   transform: translateX(-4px);
 }
 
-.terms-container h1 {
+.terms-conditions-container h1 {
   color: #fff;
   font-size: 36px;
   margin-bottom: 8px;
@@ -45,11 +45,11 @@
   margin-bottom: 32px;
 }
 
-.terms-container section {
+.terms-conditions-container section {
   margin-bottom: 32px;
 }
 
-.terms-container h2 {
+.terms-conditions-container h2 {
   color: #fff;
   font-size: 24px;
   margin-top: 32px;
@@ -59,7 +59,7 @@
   padding-bottom: 8px;
 }
 
-.terms-container h3 {
+.terms-conditions-container h3 {
   color: #cbd5e1;
   font-size: 18px;
   margin-top: 20px;
@@ -67,33 +67,33 @@
   font-weight: 500;
 }
 
-.terms-container p {
+.terms-conditions-container p {
   color: #cbd5e1;
   margin-bottom: 12px;
 }
 
-.terms-container ul {
+.terms-conditions-container ul {
   margin-left: 24px;
   margin-bottom: 16px;
 }
 
-.terms-container li {
+.terms-conditions-container li {
   color: #cbd5e1;
   margin-bottom: 8px;
 }
 
-.terms-container strong {
+.terms-conditions-container strong {
   color: #e2e8f0;
   font-weight: 600;
 }
 
-.terms-container a {
+.terms-conditions-container a {
   color: #667eea;
   text-decoration: none;
   transition: color 0.2s ease;
 }
 
-.terms-container a:hover {
+.terms-conditions-container a:hover {
   color: #818cf8;
   text-decoration: underline;
 }
@@ -127,23 +127,23 @@
 
 /* Mobile responsive */
 @media (max-width: 768px) {
-  .terms-page {
+  .terms-conditions-page {
     padding: 20px 16px;
   }
 
-  .terms-container {
+  .terms-conditions-container {
     padding: 24px;
   }
 
-  .terms-container h1 {
+  .terms-conditions-container h1 {
     font-size: 28px;
   }
 
-  .terms-container h2 {
+  .terms-conditions-container h2 {
     font-size: 20px;
   }
 
-  .terms-container h3 {
+  .terms-conditions-container h3 {
     font-size: 16px;
   }
 }
