@@ -2,10 +2,10 @@ import { geoNaturalEarth1, geoPath, geoCentroid } from "d3-geo";
 import { useEffect, useState, useLayoutEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
+import { BackButton } from "./BackButton";
 import { CountryCard, useCardMatchGame } from "../hooks/useCardMatchGame";
 import { saveShapeMatchScore } from "../utils/leaderboardUtils";
 import {
-    BACK_BUTTON_STYLE,
     GREEN_BUTTON_HOVER,
     GREEN_BUTTON_STYLE,
     PAGE_CONTAINER_STYLE,
@@ -277,12 +277,16 @@ export default function CardMatchGame() {
     return (
       <div style={{ ...PAGE_CONTAINER_STYLE, alignItems: "center", justifyContent: "center" }}>
         <div style={{ color: "#ef4444", fontSize: "18px" }}>Error: {game.loadError}</div>
-        <button
+        <BackButton
           onClick={handleBack}
-          style={{ ...BACK_BUTTON_STYLE, marginTop: "20px" }}
-        >
-          ← Back to Menu
-        </button>
+          style={{ 
+            position: "relative",
+            top: "auto",
+            left: "auto",
+            marginTop: "20px" 
+          }}
+          label="Back to Menu"
+        />
       </div>
     );
   }
@@ -372,16 +376,18 @@ export default function CardMatchGame() {
           </div>
 
           <div style={{ display: "flex", gap: "12px", justifyContent: "center", flexWrap: "wrap" }}>
-            <button
+            <BackButton
               onClick={handleBack}
               style={{
-                ...BACK_BUTTON_STYLE,
+                position: "relative",
+                top: "auto",
+                left: "auto",
                 padding: "12px 24px",
                 fontSize: "16px",
               }}
-            >
-              🏠 Home
-            </button>
+              label="Home"
+              icon={<span>🏠</span>}
+            />
             <button
               onClick={handleNewGame}
               style={{
@@ -466,16 +472,16 @@ export default function CardMatchGame() {
           </div>
 
           <div style={{ display: "flex", gap: "12px", justifyContent: "center", flexWrap: "wrap" }}>
-            <button
+            <BackButton
               onClick={handleBack}
               style={{
-                ...BACK_BUTTON_STYLE,
+                position: "relative",
+                top: "auto",
+                left: "auto",
                 padding: "14px 28px",
                 fontSize: "16px",
               }}
-            >
-              ← Back
-            </button>
+            />
             <button
               onClick={game.startNewGame}
               style={{
@@ -525,18 +531,17 @@ export default function CardMatchGame() {
           maxHeight: "90vh",
           overflowY: "auto",
         }}>
-          <button 
+          <BackButton 
             onClick={handleBack} 
             style={{
-              ...BACK_BUTTON_STYLE,
               position: "static", 
               width: "100%", 
               justifyContent: "center",
-              marginBottom: "8px"
+              marginBottom: "8px",
+              padding: "8px 12px",
             }}
-          >
-            ← Menu
-          </button>
+            label="Menu"
+          />
   
           {/* Timer */}
           <div style={{
@@ -653,18 +658,19 @@ export default function CardMatchGame() {
           gap: "clamp(4px, 1vw, 8px)",
         }}
       >
-        <button 
+        <BackButton 
           onClick={handleBack} 
           style={{
-            ...BACK_BUTTON_STYLE,
-            padding: "clamp(4px, 1vw, 8px) clamp(8px, 2vw, 12px)", 
-            fontSize: "clamp(11px, 2.5vw, 14px)", 
+            position: "relative",
+            top: "auto",
+            left: "auto",
+            padding: "8px 16px", 
+            fontSize: "clamp(12px, 2.5vw, 15px)", 
             whiteSpace: "nowrap",
             flexShrink: 0,
           }}
-        >
-          ← Menu
-        </button>
+          label="Menu"
+        />
 
         <div
           style={{

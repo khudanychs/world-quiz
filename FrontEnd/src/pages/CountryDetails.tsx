@@ -1,5 +1,6 @@
 import { useEffect, useMemo } from 'react';
 import { useCountryStats, useExchangeRate } from '../hooks/useCountryStats';
+import { BackButton } from '../components/BackButton';
 import './CountryDetails.css';
 
 interface Country {
@@ -110,13 +111,15 @@ export default function CountryDetails({ country, onClose, onCountryClick }: Cou
       <article className="country-detail-content">
         {/* Close Button */}
         <div className="country-detail-close">
-          <button 
-            className="country-detail-close-btn" 
+          <BackButton 
             onClick={onClose}
             aria-label="Close"
-          >
-            ×
-          </button>
+            style={{
+              position: 'relative',
+              top: 'auto',
+              left: 'auto',
+            }}
+          />
         </div>
 
         <div className="country-detail-body">

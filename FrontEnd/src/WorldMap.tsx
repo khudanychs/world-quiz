@@ -1,22 +1,14 @@
 // src/WorldMap.tsx - Explore Map mode with country info panel
 import { useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import InteractiveMap from "./components/InteractiveMap";
-import { useMapDimensions } from "./hooks/useMapDimensions";
-import { usePreventWheelScroll } from "./hooks/usePreventWheelScroll";
+import { useNavigate } from 'react-router-dom';
+import { BackButton } from './components/BackButton';
+import InteractiveMap from './components/InteractiveMap';
+import { useAuth } from './contexts/AuthContext';
 import {
-  CountryInfoWithCapitals,
-  buildCountryLookupWithCapitals,
-  normalizeApos,
-  normalizeCountryName,
-  stripDiacritics,
-} from "./utils/countries";
-import { FRAME, FRAME_COLOR } from "./utils/mapConstants";
-import {
-  BACK_BUTTON_STYLE,
   PAGE_CONTAINER_STYLE,
   getMapWrapperStyle,
-} from "./utils/sharedStyles";
+} from './utils/sharedStyles';
+import { getTodayDateString } from './utils/dateUtils';
 
 export default function WorldMap() {
   const navigate = useNavigate();
@@ -115,14 +107,7 @@ export default function WorldMap() {
       }}
     >
       {/* Back button to main menu */}
-      <button
-        onClick={() => navigate("/")}
-        aria-label="Back to main menu"
-        style={BACK_BUTTON_STYLE}
-      >
-        <span style={{ fontSize: 18, lineHeight: 1 }}>←</span>
-        <span style={{ fontWeight: 600 }}>Back</span>
-      </button>
+      <BackButton onClick={() => navigate('/')} />
 
       {/* Country Info Panel - Top Center */}
       <div

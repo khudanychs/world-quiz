@@ -1,15 +1,22 @@
 import { useNavigate } from 'react-router-dom';
+import { BackButton } from '../components/BackButton';
 import './TermsConditions.css';
 
 export default function TermsConditions() {
   const navigate = useNavigate();
 
   return (
-    <div className="terms-page">
-      <div className="terms-container">
-        <button className="back-button" onClick={() => navigate(-1)}>
-          ← Back
-        </button>
+    <div className="terms-conditions-page">
+      <div className="terms-conditions-container">
+        <BackButton
+          style={{
+            position: 'relative',
+            top: 'auto',
+            left: 'auto',
+            marginBottom: '24px',
+          }}
+          onClick={() => navigate(-1)}
+        />
 
         <h1>Terms & Conditions</h1>
         <p className="last-updated">Last Updated: December 16, 2025</p>

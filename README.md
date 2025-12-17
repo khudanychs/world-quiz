@@ -150,7 +150,7 @@ world-quiz/
 │   │   │   ├── Leaderboard.tsx   # Leaderboard display
 │   │   │   ├── MainMenu.tsx      # Home screen menu
 │   │   │   ├── Navbar.tsx        # Navigation bar
-│   │   │   └── Settings.tsx      # User settings modal
+│   │   │   ├── Settings.tsx      # User settings page
 │   │   ├── contexts/
 │   │   │   └── AuthContext.tsx   # Firebase authentication context
 │   │   ├── hooks/                # Custom React hooks

@@ -3,6 +3,7 @@ import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { Navbar } from './components/Navbar';
 import { Auth } from './components/Auth';
 import { SetNickname } from './components/SetNickname';
+import { Settings } from './components/Settings';
 import WorldMap from './WorldMap';
 import FlagMatchGame from './components/FlagMatchGame';
 import CardMatchGame from './components/CardMatchGame';
@@ -212,6 +213,7 @@ export default function App() {
           <Route path='/countries' element={<VerifiedOrGuestRoute><CountryIndex /></VerifiedOrGuestRoute>} />
           <Route path='/map' element={<VerifiedOrGuestRoute><WorldMap /></VerifiedOrGuestRoute>} />
           <Route path='/game/flags' element={<VerifiedOrGuestRoute><FlagMatchGame /></VerifiedOrGuestRoute>} />
+          <Route path='/settings' element={<ProtectedRoute><Settings /></ProtectedRoute>} />
           <Route path='/terms' element={<TermsConditions />} />
           <Route path='/game/shape-match' element={<VerifiedOrGuestRoute><CardMatchGame /></VerifiedOrGuestRoute>} />
           <Route path='/privacy' element={<PrivacyPolicy />} />

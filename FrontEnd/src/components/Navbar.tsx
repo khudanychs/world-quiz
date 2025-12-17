@@ -1,12 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Settings } from './Settings';
 import './Navbar.css';
 
 export function Navbar() {
   const { user, isAuthenticated, logout } = useAuth();
-  const [showSettings, setShowSettings] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 1000);
   const navigate = useNavigate();
@@ -91,8 +89,8 @@ export function Navbar() {
               {isAuthenticated ? (
                 <>
                   <button 
-                    className="navbar-user-button"
-                    onClick={() => setShowSettings(true)}
+                    className={`navbar-user-button ${isActive('/settings') ? 'active' : ''}`}
+                    onClick={() => handleNavClick('/settings')}
                     title="Settings"
                   >
                     <span className="navbar-user">
@@ -170,10 +168,9 @@ export function Navbar() {
               {isAuthenticated ? (
                 <>
                   <button 
-                    className="mobile-user-button"
+                    className={`mobile-user-button ${isActive('/settings') ? 'active' : ''}`}
                     onClick={() => {
-                      setShowSettings(true);
-                      setIsMobileMenuOpen(false);
+                      handleNavClick('/settings');
                     }}
                   >
                     {user?.photoURL && (
@@ -206,8 +203,6 @@ export function Navbar() {
           </div>
         </div>
       )}
-
-      <Settings isOpen={showSettings} onClose={() => setShowSettings(false)} />
     </>
   );
 }

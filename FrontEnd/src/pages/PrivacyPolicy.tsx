@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom';
+import { BackButton } from '../components/BackButton';
 import './PrivacyPolicy.css';
 
 export default function PrivacyPolicy() {
@@ -7,9 +8,15 @@ export default function PrivacyPolicy() {
   return (
     <div className="privacy-policy-page">
       <div className="privacy-policy-container">
-        <button className="back-button" onClick={() => navigate(-1)}>
-          ← Back
-        </button>
+        <BackButton
+          style={{
+            position: 'relative',
+            top: 'auto',
+            left: 'auto',
+            marginBottom: '24px',
+          }}
+          onClick={() => navigate(-1)}
+        />
 
         <h1>Privacy Policy</h1>
         <p className="last-updated">Last Updated: December 16, 2025</p>

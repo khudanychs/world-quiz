@@ -1,16 +1,14 @@
 import { useState, useEffect } from 'react';
 import { doc, getDoc } from 'firebase/firestore';
+import { useNavigate } from 'react-router-dom';
 import { db } from '../firebase';
 import { useAuth } from '../contexts/AuthContext';
+import { BackButton } from './BackButton';
 import './Settings.css';
 
-interface SettingsProps {
-  isOpen: boolean;
-  onClose: () => void;
-}
-
-export const Settings = ({ isOpen, onClose }: SettingsProps) => {
+export const Settings = () => {
   const { user, setNickname, deleteAccount, refreshUser } = useAuth();
+  const navigate = useNavigate();
   const [username, setUsername] = useState('');
   const [avatarUrl, setAvatarUrl] = useState('');
   const [error, setError] = useState('');
@@ -29,9 +27,9 @@ export const Settings = ({ isOpen, onClose }: SettingsProps) => {
     }
   }, [user]);
 
-  // Fetch user's highest streak when modal opens
+  // Fetch user's highest streak when component mounts
   useEffect(() => {
-    if (isOpen && user) {
+    if (user) {
       const fetchHighestStreak = async () => {
         setStreakLoading(true);
         try {
@@ -53,15 +51,7 @@ export const Settings = ({ isOpen, onClose }: SettingsProps) => {
       };
       fetchHighestStreak();
     }
-  }, [isOpen, user]);
-
-  useEffect(() => {
-    // Clear messages when modal opens or closes
-    if (!isOpen) {
-      setError('');
-      setSuccess('');
-    }
-  }, [isOpen]);
+  }, [user]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -107,23 +97,27 @@ export const Settings = ({ isOpen, onClose }: SettingsProps) => {
 
     try {
       await deleteAccount(deletePassword || undefined);
-      // User will be logged out automatically, close modal
-      onClose();
+      // User will be logged out automatically and redirected by protected route
     } catch (err: any) {
       setError(err.message || 'Failed to delete account');
       setLoading(false);
     }
   };
 
-  if (!isOpen) return null;
-
   return (
-    <>
-      <div className="settings-overlay" onClick={onClose} />
-      <div className="settings-modal">
+    <div className="settings-page-wrapper">
+      <div className="settings-page-card">
         <div className="settings-header">
+          <BackButton
+            onClick={() => navigate(-1)}
+            style={{
+              position: 'relative',
+              top: 'auto',
+              left: 'auto',
+              marginRight: '24px',
+            }}
+          />
           <h2>Settings</h2>
-          <button className="settings-close" onClick={onClose}>×</button>
         </div>
 
         <div className="settings-content">
@@ -303,6 +297,6 @@ export const Settings = ({ isOpen, onClose }: SettingsProps) => {
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 };

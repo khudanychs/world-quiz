@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
+import { BackButton } from "./BackButton";
 import InteractiveMap from "./InteractiveMap";
 import GameHUD from "./GameHUD";
 import { useAuth } from "../contexts/AuthContext";
@@ -11,7 +12,6 @@ import { useFlagMatchGame } from "../hooks/useFlagMatchGame";
 import { useMapDimensions } from "../hooks/useMapDimensions";
 import { usePreventWheelScroll } from "../hooks/usePreventWheelScroll";
 import {
-  BACK_BUTTON_STYLE,
   PAGE_CONTAINER_STYLE,
   getMapWrapperStyle,
   GREEN_BUTTON_STYLE,
@@ -144,14 +144,7 @@ export default function FlagMatchGame() {
           gap: isPortrait ? "clamp(16px, 3vh, 32px)" : "0",
         }}
       >
-      <button
-        onClick={handleBack}
-        aria-label="Back to main menu"
-        style={BACK_BUTTON_STYLE}
-      >
-        <span style={{ fontSize: 18, lineHeight: 1 }}>←</span>
-        <span style={{ fontWeight: 600 }}>Back</span>
-      </button>
+      <BackButton onClick={handleBack} />
 
       {/* Top center panel */}
       <div
@@ -314,7 +307,7 @@ export default function FlagMatchGame() {
         </div>
       )}
 
-      {game.showNamePanel && game.lastClicked && (
+      {game.showNamePanel && game.currentTarget && (
         <div
           style={{
             position: "absolute",
@@ -331,7 +324,7 @@ export default function FlagMatchGame() {
             textAlign: "center",
           }}
         >
-          {normalizeCountryName(game.lastClicked.name)}
+          {normalizeCountryName(game.currentTarget.name)}
         </div>
       )}
 

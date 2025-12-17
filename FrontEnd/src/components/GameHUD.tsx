@@ -154,7 +154,7 @@ export default function GameHUD({
       )}
       <button
         onClick={onToggleNamePanel}
-        title="Toggle last clicked country name"
+        title="Show current flag's name"
         style={{
           marginLeft: 4,
           padding: "clamp(4px, 1.5vw, 6px) clamp(8px, 2vw, 10px)",
