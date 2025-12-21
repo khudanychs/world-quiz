@@ -207,10 +207,7 @@ export const Settings = () => {
               <div className="stat-card">
                 <span className="stat-icon">🔥</span>
                 <div className="stat-content">
-                  <span className="stat-value">
-                    {streakLoading ? '...' : (highestStreak ?? '—')}
-                  </span>
-                  <span className="stat-label">Best Streak</span>
+                  <p><span style={{ fontWeight: 'bold', color: '#fff', fontSize: '22px' }}>Best Streak:&ensp; </span><span className="stat-value">{streakLoading ? '...' : (highestStreak ?? '—')}</span></p>
                 </div>
               </div>
             </div>

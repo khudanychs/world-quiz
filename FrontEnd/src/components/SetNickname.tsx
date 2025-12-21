@@ -36,9 +36,11 @@ export const SetNickname = () => {
     <div className="auth-container">
       <div className="auth-card">
         <h2>Choose Your Nickname</h2>
-        <p className="auth-subtitle">You can keep your Google name or choose a new one!</p>
+        <p style={{ textAlign: 'center', color: '#666', marginBottom: '24px', fontSize: '14px' }}>
+          You can keep your Google name or choose a new one!
+        </p>
         
-        {error && <div className="auth-error">{error}</div>}
+        {error && <div className="error-message">{error}</div>}
         
         <form onSubmit={handleSubmit}>
           <div className="form-group">
@@ -60,7 +62,7 @@ export const SetNickname = () => {
 
           <button 
             type="submit" 
-            className="auth-button"
+            className="btn-primary"
             disabled={loading || username.length < 3}
           >
             {loading ? 'Setting...' : 'Continue to Game'}

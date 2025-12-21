@@ -3,8 +3,8 @@ import { useEffect, useState, useLayoutEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { BackButton } from "./BackButton";
-import { CountryCard, useCardMatchGame } from "../hooks/useCardMatchGame";
-import { saveShapeMatchScore } from "../utils/leaderboardUtils";
+import { CountryCard, useCardMatchGame, CardKind } from "../hooks/useCardMatchGame";
+import { saveCardsMatchScore } from "../utils/leaderboardUtils";
 import {
     GREEN_BUTTON_HOVER,
     GREEN_BUTTON_STYLE,
@@ -105,15 +105,25 @@ function GameCard({
   isMatched,
   isFeedback,
   onClick,
+  showColorLegend,
 }: {
   card: CountryCard;
   isSelected: boolean;
   isMatched: boolean;
   isFeedback: boolean;
   onClick: () => void;
+  showColorLegend: boolean;
 }) {
   const isCorrectFeedback = isFeedback && isMatched;
   const isWrongFeedback = isFeedback && !isMatched;
+  
+  // Determine text color based on card type when legend is shown
+  const getTextColor = () => {
+    if (!showColorLegend) return "#fff";
+    if (card.type === "country") return "#3b82f6"; // Blue for countries
+    if (card.type === "capital") return "#ef4444"; // Red for capitals
+    return "#fff";
+  };
 
   return (
     <button
@@ -165,8 +175,36 @@ function GameCard({
             userSelect: "none",
           }}
         />
-      ) : (
+      ) : card.type === "shape" ? (
         <CountryShapeSVG card={card} />
+      ) : (
+        <div
+          style={{
+            width: "100%",
+            height: "100%",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "8px",
+          }}
+        >
+          <span
+            title={card.text || card.name}
+            style={{
+              color: getTextColor(),
+              fontWeight: 700,
+              textAlign: "center",
+              lineHeight: 1.15,
+              wordBreak: "break-word",
+              hyphens: "auto",
+              textShadow: showColorLegend ? "0 0 8px rgba(0,0,0,0.5)" : "none",
+              // Base responsive size with adjustment for length
+              fontSize: `clamp(12px, ${Math.max(2, 3 - ((card.text || card.name).length / 20))}vw, 22px)`,
+            }}
+          >
+            {card.type === "country" ? (card.text || card.name) : (card.text || "")}
+          </span>
+        </div>
       )}
 
       {/* Overlay for matched state */}
@@ -218,7 +256,9 @@ function useOrientation() {
 export default function CardMatchGame() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const game = useCardMatchGame();
+  const [firstType, setFirstType] = useState<CardKind>("flag");
+  const [secondType, setSecondType] = useState<CardKind>("shape");
+  const game = useCardMatchGame({ first: firstType, second: secondType });
   const [showResults, setShowResults] = useState(false);
   const [savedToLeaderboard, setSavedToLeaderboard] = useState(false);
   const isLandscape = useOrientation();
@@ -232,7 +272,7 @@ export default function CardMatchGame() {
         const score = game.score;
         if (score === 0) return;
 
-        await saveShapeMatchScore(user, score);
+        await saveCardsMatchScore(user, score);
         setSavedToLeaderboard(true);
       } catch (err) {
         console.error("Failed to save score:", err);
@@ -257,7 +297,7 @@ export default function CardMatchGame() {
     // Save score if abandoning game with points
     if (game.gameStarted && !game.gameOver && game.score > 0 && !savedToLeaderboard) {
       try {
-        await saveShapeMatchScore(user, game.score);
+        await saveCardsMatchScore(user, game.score);
       } catch (e) {
         console.error("Failed to save on exit:", e);
       }
@@ -428,18 +468,17 @@ export default function CardMatchGame() {
           }}
         >
           <h1 style={{ color: "#fff", fontSize: "clamp(28px, 6vw, 40px)", marginBottom: "16px" }}>
-            🗺️ Shape Match
+            🎴 Cards Match
           </h1>
           <p
             style={{
               color: "rgba(255, 255, 255, 0.7)",
               fontSize: "clamp(14px, 3vw, 18px)",
-              marginBottom: "30px",
+              marginBottom: "20px",
               lineHeight: 1.6,
             }}
           >
-            Match country flags to their shapes! Click a flag, then click its matching country
-            shape. Build streaks for bonus points!
+            Choose what to match — Flags, Countries, Capitals, or Shapes — then match the pairs fast to build streaks and score big!
           </p>
 
           <div
@@ -447,7 +486,7 @@ export default function CardMatchGame() {
               background: "rgba(255, 255, 255, 0.05)",
               borderRadius: "12px",
               padding: "20px",
-              marginBottom: "30px",
+              marginBottom: "20px",
               textAlign: "left",
             }}
           >
@@ -469,6 +508,130 @@ export default function CardMatchGame() {
               <li>15 streak: 2.5x multiplier (2,500 pts)</li>
               <li>20+ streak: 3x multiplier (3,000 pts)</li>
             </ul>
+          </div>
+
+          {/* Mode Selector */}
+          <div
+            style={{
+              display: "flex",
+              gap: "clamp(12px, 3vw, 20px)",
+              alignItems: "center",
+              justifyContent: "center",
+              marginBottom: "24px",
+              flexWrap: "wrap",
+            }}
+          >
+            <div style={{ display: "flex", flexDirection: "column", gap: "8px", minWidth: "clamp(160px, 40%, 200px)", flex: "1" }}>
+              <label style={{ color: "rgba(255,255,255,0.7)", fontSize: "clamp(11px, 2.5vw, 13px)", fontWeight: "500", letterSpacing: "0.5px", textTransform: "uppercase" }}>Match from</label>
+              <div style={{ position: "relative" }}>
+                <select
+                  value={firstType}
+                  onChange={(e) => {
+                    const val = e.target.value as CardKind;
+                    setFirstType(val);
+                    if (val === secondType) {
+                      // auto-switch second to a different default
+                      const options = (["flag", "country", "capital", "shape"] as CardKind[]).filter((o) => o !== val);
+                      setSecondType(options[0]);
+                    }
+                  }}
+                  style={{
+                    appearance: "none",
+                    background: "linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(147, 51, 234, 0.15))",
+                    backdropFilter: "blur(10px)",
+                    border: "2px solid rgba(59, 130, 246, 0.3)",
+                    color: "#fff",
+                    borderRadius: "12px",
+                    padding: "12px 40px 12px 16px",
+                    fontSize: "clamp(13px, 3vw, 15px)",
+                    fontWeight: "600",
+                    outline: "none",
+                    cursor: "pointer",
+                    transition: "all 0.3s ease",
+                    width: "100%",
+                    boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.border = "2px solid rgba(59, 130, 246, 0.6)";
+                    e.currentTarget.style.transform = "translateY(-2px)";
+                    e.currentTarget.style.boxShadow = "0 6px 20px rgba(59, 130, 246, 0.3)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.border = "2px solid rgba(59, 130, 246, 0.3)";
+                    e.currentTarget.style.transform = "translateY(0)";
+                    e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,0,0,0.15)";
+                  }}
+                >
+                  {(["flag", "country", "capital", "shape"] as CardKind[]).map((opt) => (
+                    <option key={opt} value={opt} style={{ background: "#1a1a2e", color: "#fff", padding: "10px" }}>
+                      {opt.charAt(0).toUpperCase() + opt.slice(1)}
+                    </option>
+                  ))}
+                </select>
+                <div style={{
+                  position: "absolute",
+                  right: "14px",
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  pointerEvents: "none",
+                  color: "rgba(255,255,255,0.7)",
+                  fontSize: "12px",
+                }}>▼</div>
+              </div>
+            </div>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: "8px", minWidth: "clamp(160px, 40%, 200px)", flex: "1" }}>
+              <label style={{ color: "rgba(255,255,255,0.7)", fontSize: "clamp(11px, 2.5vw, 13px)", fontWeight: "500", letterSpacing: "0.5px", textTransform: "uppercase" }}>Match to</label>
+              <div style={{ position: "relative" }}>
+                <select
+                  value={secondType}
+                  onChange={(e) => setSecondType(e.target.value as CardKind)}
+                  style={{
+                    appearance: "none",
+                    background: "linear-gradient(135deg, rgba(236, 72, 153, 0.15), rgba(251, 146, 60, 0.15))",
+                    backdropFilter: "blur(10px)",
+                    border: "2px solid rgba(236, 72, 153, 0.3)",
+                    color: "#fff",
+                    borderRadius: "12px",
+                    padding: "12px 40px 12px 16px",
+                    fontSize: "clamp(13px, 3vw, 15px)",
+                    fontWeight: "600",
+                    outline: "none",
+                    cursor: "pointer",
+                    transition: "all 0.3s ease",
+                    width: "100%",
+                    boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.border = "2px solid rgba(236, 72, 153, 0.6)";
+                    e.currentTarget.style.transform = "translateY(-2px)";
+                    e.currentTarget.style.boxShadow = "0 6px 20px rgba(236, 72, 153, 0.3)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.border = "2px solid rgba(236, 72, 153, 0.3)";
+                    e.currentTarget.style.transform = "translateY(0)";
+                    e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,0,0,0.15)";
+                  }}
+                >
+                  {(["flag", "country", "capital", "shape"] as CardKind[])
+                    .filter((opt) => opt !== firstType)
+                    .map((opt) => (
+                      <option key={opt} value={opt} style={{ background: "#1a1a2e", color: "#fff", padding: "10px" }}>
+                        {opt.charAt(0).toUpperCase() + opt.slice(1)}
+                      </option>
+                    ))}
+                </select>
+                <div style={{
+                  position: "absolute",
+                  right: "14px",
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  pointerEvents: "none",
+                  color: "rgba(255,255,255,0.7)",
+                  fontSize: "12px",
+                }}>▼</div>
+              </div>
+            </div>
           </div>
 
           <div style={{ display: "flex", gap: "12px", justifyContent: "center", flexWrap: "wrap" }}>
@@ -503,6 +666,7 @@ export default function CardMatchGame() {
   // Game screen
   const timeWarning = game.timeLeft <= 10;
   const gridSize = Math.sqrt(game.cards.length);
+  const showColorLegend = (firstType === "country" && secondType === "capital") || (firstType === "capital" && secondType === "country");
 
   // Landscape Layout (Side-by-side)
   if (isLandscape) {
@@ -601,10 +765,36 @@ export default function CardMatchGame() {
           flex: 1,
           height: "100%",
           display: "flex",
+          flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
-          maxWidth: "80vh", // Keep it roughly square/portrait-ish aspect within landscape
+          maxWidth: "80vh",
+          gap: "12px",
         }}>
+          {/* Color Legend */}
+          {showColorLegend && (
+            <div style={{
+              display: "flex",
+              gap: "16px",
+              padding: "8px 16px",
+              background: "rgba(0,0,0,0.4)",
+              borderRadius: "8px",
+              border: "1px solid rgba(255,255,255,0.1)",
+              fontSize: "12px",
+              flexWrap: "wrap",
+              justifyContent: "center",
+            }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                <div style={{ width: "12px", height: "12px", borderRadius: "3px", background: "#3b82f6" }} />
+                <span style={{ color: "rgba(255,255,255,0.9)" }}>Countries</span>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                <div style={{ width: "12px", height: "12px", borderRadius: "3px", background: "#ef4444" }} />
+                <span style={{ color: "rgba(255,255,255,0.9)" }}>Capitals</span>
+              </div>
+            </div>
+          )}
+          
           <div style={{
             display: "grid",
             gridTemplateColumns: `repeat(${gridSize}, 1fr)`,
@@ -612,7 +802,7 @@ export default function CardMatchGame() {
             width: "100%",
             height: "auto",
             maxHeight: "100%",
-            aspectRatio: "1/1", // Try to keep grid square
+            aspectRatio: "1/1",
             isolation: "isolate",
           }}>
             {game.cards.map((card) => {
@@ -628,6 +818,7 @@ export default function CardMatchGame() {
                   isMatched={isMatched}
                   isFeedback={isFeedback}
                   onClick={() => game.handleCardClick(card.id)}
+                  showColorLegend={showColorLegend}
                 />
               );
             })}
@@ -742,6 +933,31 @@ export default function CardMatchGame() {
         </div>
       </div>
 
+      {/* Color Legend */}
+      {showColorLegend && (
+        <div style={{
+          display: "flex",
+          gap: "clamp(12px, 3vw, 20px)",
+          padding: "clamp(8px, 2vw, 12px) clamp(12px, 3vw, 16px)",
+          background: "rgba(0,0,0,0.4)",
+          borderRadius: "8px",
+          border: "1px solid rgba(255,255,255,0.1)",
+          fontSize: "clamp(11px, 2.5vw, 13px)",
+          justifyContent: "center",
+          marginBottom: "clamp(8px, 2vw, 12px)",
+          flexWrap: "wrap",
+        }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+            <div style={{ width: "clamp(10px, 2.5vw, 14px)", height: "clamp(10px, 2.5vw, 14px)", borderRadius: "3px", background: "#3b82f6", flexShrink: 0 }} />
+            <span style={{ color: "rgba(255,255,255,0.9)", whiteSpace: "nowrap" }}>Countries</span>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+            <div style={{ width: "clamp(10px, 2.5vw, 14px)", height: "clamp(10px, 2.5vw, 14px)", borderRadius: "3px", background: "#ef4444", flexShrink: 0 }} />
+            <span style={{ color: "rgba(255,255,255,0.9)", whiteSpace: "nowrap" }}>Capitals</span>
+          </div>
+        </div>
+      )}
+
       {/* Game grid */}
       <div
         style={{
@@ -765,6 +981,7 @@ export default function CardMatchGame() {
               isMatched={isMatched}
               isFeedback={isFeedback}
               onClick={() => game.handleCardClick(card.id)}
+              showColorLegend={showColorLegend}
             />
           );
         })}

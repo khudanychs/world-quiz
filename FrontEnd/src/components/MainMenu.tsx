@@ -26,8 +26,8 @@ export default function MainMenu() {
         </button>
         <button className="menu-card" onClick={() => navigate('/game/shape-match')}>
           <div className="menu-card-body">
-            <h3>Shape Match</h3>
-            <p>Match flags to country shapes on a timer!</p>
+            <h3>Cards Match</h3>
+            <p>Match Flags, Countries, Capitals, or Shapes on a timer!</p>
             <span className="menu-tag" style={{background:'#22c55e'}}>New</span>
           </div>
         </button>

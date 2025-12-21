@@ -43,7 +43,7 @@
   font-weight: 700;
   letter-spacing: -0.5px;
   background: linear-gradient(135deg, #fff 0%, #cbd5e1 100%);
-  -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
@@ -123,23 +123,34 @@
   margin-bottom: 10px;
 }
 
-.form-group input {
+.settings-page-card .form-group input {
   width: 100%;
   padding: 14px 16px;
   background: rgba(0, 0, 0, 0.2);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 12px;
-  color: #fff;
+  color: #fff !important;
   font-size: 16px;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   box-sizing: border-box;
 }
 
-.form-group input:focus {
+.settings-page-card .form-group input:focus {
   outline: none;
   border-color: #667eea;
   background: rgba(0, 0, 0, 0.3);
+  color: #fff !important;
+  -webkit-text-fill-color: #fff !important;
   box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+}
+
+.settings-page-card .form-group input:-webkit-autofill,
+.settings-page-card .form-group input:-webkit-autofill:hover,
+.settings-page-card .form-group input:-webkit-autofill:focus,
+.settings-page-card .form-group input:-webkit-autofill:active {
+  -webkit-text-fill-color: #fff !important;
+  -webkit-box-shadow: 0 0 0 30px rgba(0, 0, 0, 0.2) inset !important;
+  box-shadow: 0 0 0 30px rgba(0, 0, 0, 0.2) inset !important;
 }
 
 .form-group small {
@@ -257,7 +268,7 @@
   font-size: 28px;
   font-weight: 800;
   background: linear-gradient(135deg, #fb923c 0%, #f97316 100%);
-  -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 

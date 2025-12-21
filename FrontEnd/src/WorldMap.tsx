@@ -9,6 +9,16 @@ import {
   getMapWrapperStyle,
 } from './utils/sharedStyles';
 import { getTodayDateString } from './utils/dateUtils';
+import { useMapDimensions } from './hooks/useMapDimensions';
+import { usePreventWheelScroll } from './hooks/usePreventWheelScroll';
+import { 
+  normalizeCountryName, 
+  normalizeApos, 
+  stripDiacritics, 
+  buildCountryLookupWithCapitals,
+  type CountryInfoWithCapitals 
+} from './utils/countries';
+import { FRAME, FRAME_COLOR } from './utils/mapConstants';
 
 export default function WorldMap() {
   const navigate = useNavigate();

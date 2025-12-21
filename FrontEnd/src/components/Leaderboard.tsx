@@ -22,7 +22,7 @@ interface ScoreEntry {
   score: number;
 }
 
-type GameMode = 'flag-match' | 'shape-match';
+type GameMode = 'flag-match' | 'cards-match';
 
 // Cache for leaderboard data (prevents excessive reads on filter switching)
 const leaderboardCache: {
@@ -30,7 +30,7 @@ const leaderboardCache: {
     today: { data: StreakEntry[]; timestamp: number } | null;
     allTime: { data: StreakEntry[]; timestamp: number } | null;
   };
-  'shape-match': {
+  'cards-match': {
     today: { data: ScoreEntry[]; timestamp: number } | null;
     allTime: { data: ScoreEntry[]; timestamp: number } | null;
   };
@@ -39,7 +39,7 @@ const leaderboardCache: {
     today: null,
     allTime: null
   },
-  'shape-match': {
+  'cards-match': {
     today: null,
     allTime: null
   }
@@ -88,11 +88,11 @@ function useLeaderboard(gameMode: GameMode, timeFilter: 'today' | 'allTime') {
           );
         }
       } else {
-        // Shape Match: Query by score
+        // Cards Match: Query by score
         if (timeFilter === 'today') {
           const todayDate = getTodayDateString();
           q = query(
-            collection(db, "dailyShapeMatchScores"),
+            collection(db, "dailyCardsMatchScores"),
             where("date", "==", todayDate),
             orderBy("score", "desc"),
             orderBy("createdAt", "asc"),
@@ -100,7 +100,7 @@ function useLeaderboard(gameMode: GameMode, timeFilter: 'today' | 'allTime') {
           );
         } else {
           q = query(
-            collection(db, "shapeMatchScores"),
+            collection(db, "cardsMatchScores"),
             orderBy("score", "desc"),
             orderBy("createdAt", "asc"),
             limit(10)
@@ -188,7 +188,7 @@ export function Leaderboard({ gameMode }: LeaderboardProps) {
   const isGuest = !user;
   const isOnCooldown = cooldownRemaining > 0;
 
-  const title = gameMode === 'flag-match' ? '🔥 Top Streaks' : '🏆 Top Scores';
+  const title = gameMode === 'flag-match' ? '🔥 Top Streaks' : '🏆 Cards Match — Top Scores';
 
   return (
     <div className="leaderboard-card">

@@ -5,7 +5,8 @@ import {
   normalizeApos, 
   stripDiacritics, 
   isGameEligibleCountry,
-  buildRestLookup 
+  buildRestLookup,
+  buildCountryLookupWithCapitals
 } from "../utils/countries";
 import { SMALL_ISLAND_MARKERS } from "../utils/markerPositions";
 
@@ -35,13 +36,16 @@ interface Topology {
   arcs: any[];
 }
 
+export type CardKind = "flag" | "shape" | "country" | "capital";
+
 export interface CountryCard {
   name: string;
   cca2: string;
   flag: string;
   geometry: Geometry; // TopoJSON geometry for the country shape
-  type: "flag" | "shape";
+  type: CardKind;
   id: string; // Unique ID for the card
+  text?: string; // For country/capital display
 }
 
 interface GameState {
@@ -78,7 +82,7 @@ function getStreakMultiplier(streak: number): number {
   return 3; // Max multiplier
 }
 
-export function useCardMatchGame() {
+export function useCardMatchGame(pair: { first: CardKind; second: CardKind }) {
   const [state, setState] = useState<GameState>({
     cards: [],
     selectedCards: [],
@@ -95,6 +99,7 @@ export function useCardMatchGame() {
   });
 
   const [restLookup, setRestLookup] = useState<Record<string, CountryInfo>>({});
+  const [capLookup, setCapLookup] = useState<Record<string, { name: string; cca2: string; flag: string; capitals: string[] }>>({});
   const [topoData, setTopoData] = useState<Topology | null>(null);
   const timerRef = useRef<number | null>(null);
   const [feedbackCard, setFeedbackCard] = useState<string | null>(null);
@@ -113,11 +118,13 @@ export function useCardMatchGame() {
           name: { common: string };
           cca2: string;
           flags: { svg?: string; png?: string };
+          capital?: string[];
           independent?: boolean;
           unMember?: boolean;
         }>;
 
         const lookup = buildRestLookup(restData);
+        const caps = buildCountryLookupWithCapitals(restData);
         console.log("Loaded REST Countries:", Object.keys(lookup).length);
 
         // Load TopoJSON for country shapes
@@ -128,6 +135,7 @@ export function useCardMatchGame() {
         if (!alive) return;
 
         setRestLookup(lookup);
+        setCapLookup(caps);
         setTopoData(topology);
         setState((s) => ({ ...s, loading: false }));
       } catch (err) {
@@ -302,33 +310,41 @@ export function useCardMatchGame() {
     const pairCount = GRID_SIZE / 2;
     const selectedCountries = unique.slice(0, pairCount);
 
-    // Create cards - one flag and one shape for each country
+    // Create cards - one card of first type and one of second for each country
     const gameCards: CountryCard[] = [];
     for (const country of selectedCountries) {
       if (!country.info || !country.info.flag) {
         console.error("Invalid country data:", country);
         continue;
       }
-      
-      // Flag card
-      gameCards.push({
-        name: country.info.name,
-        cca2: country.info.cca2,
-        flag: country.info.flag,
-        geometry: country.geometry,
-        type: "flag",
-        id: `${country.info.cca2}-flag`,
-      });
 
-      // Shape card
-      gameCards.push({
-        name: country.info.name,
-        cca2: country.info.cca2,
-        flag: country.info.flag,
-        geometry: country.geometry,
-        type: "shape",
-        id: `${country.info.cca2}-shape`,
-      });
+      const makeCard = (kind: CardKind): CountryCard => {
+        const base: Omit<CountryCard, "type" | "id"> = {
+          name: country.info.name,
+          cca2: country.info.cca2,
+          flag: country.info.flag,
+          geometry: country.geometry,
+          text: undefined,
+        };
+
+        if (kind === "flag") {
+          return { ...base, type: "flag", id: `${country.info.cca2}-flag` };
+        }
+        if (kind === "shape") {
+          return { ...base, type: "shape", id: `${country.info.cca2}-shape` };
+        }
+        if (kind === "country") {
+          return { ...base, type: "country", id: `${country.info.cca2}-country`, text: country.info.name };
+        }
+        // capital
+        const capInfo = capLookup[normalizeApos(country.info.name)] || capLookup[stripDiacritics(normalizeApos(country.info.name))];
+        const capitals = capInfo?.capitals || [];
+        const mainCapital = capitals.length > 0 ? capitals[0] : "";
+        return { ...base, type: "capital", id: `${country.info.cca2}-capital`, text: mainCapital };
+      };
+
+      gameCards.push(makeCard(pair.first));
+      gameCards.push(makeCard(pair.second));
     }
 
     // Shuffle cards
@@ -421,7 +437,7 @@ export function useCardMatchGame() {
       }
 
       // Check if they match (same country code, different types)
-      // Also prevent matching two flags or two shapes
+      // Also prevent matching same type (including text types)
       const isMatch =
         firstCard.cca2 === secondCard.cca2 && firstCard.type !== secondCard.type;
 
