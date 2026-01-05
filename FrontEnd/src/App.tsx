@@ -17,7 +17,7 @@ import './App.css';
 
 // Route that shows verification screen for unverified users, but allows guests
 function VerifiedOrGuestRoute({ children }: { children: React.ReactNode }) {
-  const { user, loading, logout } = useAuth();
+  const {user, loading, logout } = useAuth();
   const [checking, setChecking] = useState(false);
   const [error, setError] = useState('');
   

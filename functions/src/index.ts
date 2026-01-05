@@ -89,6 +89,75 @@ export const cleanupOldDailyStreaks = onSchedule(
 );
 
 /**
+ * Scheduled function that runs at midnight UTC
+ * to clean up old CardMatch daily points
+ * Deletes all cardMatchDailyPoints documents from previous days
+ */
+export const cleanupOldCardMatchDailyPoints = onSchedule(
+  {
+    schedule: "0 0 * * *", // Every day at midnight UTC
+    timeZone: "UTC",
+  },
+  async () => {
+    const db = admin.firestore();
+    const todayDate = getTodayDateString();
+
+    logger.info(
+      `Starting cleanup of old CardMatch daily points (keeping ${todayDate})...`
+    );
+
+    let deletedCount = 0;
+    const batchSize = 500; // Firestore batch limit
+
+    try {
+      // Query all dailyCardsMatchScores docs where date is NOT today
+      const allDocsSnapshot = await db
+        .collection("dailyCardsMatchScores").get();
+
+      // Filter documents that are not from today
+      const docsToDelete = allDocsSnapshot.docs.filter((doc) => {
+        const docDate = doc.data().date;
+        return docDate && docDate !== todayDate;
+      });
+
+      if (docsToDelete.length === 0) {
+        logger.info("No old CardMatch daily points to delete.");
+        return;
+      }
+
+      const count = docsToDelete.length;
+      logger.info(
+        `Found ${count} old CardMatch daily points documents to delete.`
+      );
+
+      // Delete in batches
+      for (let i = 0; i < docsToDelete.length; i += batchSize) {
+        const batch = db.batch();
+        const chunk = docsToDelete.slice(i, i + batchSize);
+
+        for (const doc of chunk) {
+          batch.delete(doc.ref);
+          deletedCount++;
+        }
+
+        await batch.commit();
+        logger.info(`Deleted batch of ${chunk.length} documents.`);
+      }
+
+      logger.info(
+        `Cleanup complete. Deleted ${deletedCount} CardMatch daily docs.`
+      );
+    } catch (error) {
+      logger.error(
+        "Error during CardMatch daily points cleanup:",
+        error
+      );
+      throw error;
+    }
+  }
+);
+
+/**
  * Scheduled function that runs every hour to clean up unverified accounts
  * Deletes users who haven't verified their email within 30 minutes
  */
