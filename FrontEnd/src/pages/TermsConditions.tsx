@@ -181,7 +181,7 @@ export default function TermsConditions() {
             For any questions or concerns regarding these Terms & Conditions:
           </p>
           <div className="contact-info">
-            <p><strong>Email:</strong> <a href="mailto:privacy@world-quiz.com">privacy@world-quiz.com</a></p>
+            <p><strong>Email:</strong> <a href="mailto:terms@world-quiz.com">terms@world-quiz.com</a></p>
             <p><strong>Service Controller:</strong> World Quiz Team</p>
             <p><strong>Jurisdiction:</strong> Czech Republic, European Union</p>
           </div>

@@ -30,7 +30,7 @@ export default function PrivacyPolicy() {
           <div className="data-controller-info">
             <p><strong>Service:</strong> World Quiz</p>
             <p><strong>Controller:</strong> World Quiz Team</p>
-            <p><strong>Contact Email:</strong> <a href="mailto:privacy@world-quiz.com">privacy@world-quiz.com</a></p>
+            <p><strong>Contact Email:</strong> <a href="mailto:privacypolicy@world-quiz.com">privacypolicy@world-quiz.com</a></p>
             <p><strong>Jurisdiction:</strong> Czech Republic, European Union</p>
           </div>
           <p>
@@ -196,7 +196,7 @@ export default function PrivacyPolicy() {
           </p>
           <ul>
             <li>Using the "Delete Account" button in Settings (requires re-authentication)</li>
-            <li>Sending an email request to <a href="mailto:privacy@world-quiz.com">privacy@world-quiz.com</a></li>
+            <li>Sending an email request to <a href="mailto:privacypolicy@world-quiz.com">privacypolicy@world-quiz.com</a></li>
           </ul>
           <p>
             Upon deletion, all your data (User ID, username, scores, timestamps) will be permanently 
@@ -206,7 +206,7 @@ export default function PrivacyPolicy() {
           <h3>6.4 Right to Data Portability (Article 20)</h3>
           <p>
             You have the right to receive your personal data in a structured, commonly used, and 
-            machine-readable format (JSON). Contact <a href="mailto:privacy@world-quiz.com">privacy@world-quiz.com</a> to 
+            machine-readable format (JSON). Contact <a href="mailto:privacypolicy@world-quiz.com">privacypolicy@world-quiz.com</a> to 
             request a data export.
           </p>
 
@@ -231,7 +231,7 @@ export default function PrivacyPolicy() {
           <h3>6.7 Exercising Your Rights</h3>
           <p>
             To exercise any of these rights, please contact us at: 
-            <a href="mailto:privacy@world-quiz.com"> privacy@world-quiz.com</a>
+            <a href="mailto:privacypolicy@world-quiz.com"> privacypolicy@world-quiz.com</a>
           </p>
           <p>
             We will respond to your request within 1 month as required by Article 12(3) GDPR.
@@ -309,7 +309,7 @@ export default function PrivacyPolicy() {
           </p>
           <p>
             If you are a parent or guardian and believe your child has provided us with personal 
-            information, please contact us at <a href="mailto:privacy@world-quiz.com">privacy@world-quiz.com</a>. 
+            information, please contact us at <a href="mailto:privacypolicy@world-quiz.com">privacypolicy@world-quiz.com</a>. 
             We will delete such information immediately.
           </p>
         </section>
@@ -345,7 +345,7 @@ export default function PrivacyPolicy() {
             For any questions, concerns, or requests regarding this Privacy Policy or your personal data:
           </p>
           <div className="contact-info">
-            <p><strong>Email:</strong> <a href="mailto:privacy@world-quiz.com">privacy@world-quiz.com</a></p>
+            <p><strong>Email:</strong> <a href="mailto:privacypolicy@world-quiz.com">privacypolicy@world-quiz.com</a></p>
             <p><strong>Data Controller:</strong> World Quiz Team</p>
             <p><strong>Response Time:</strong> Within 1 month </p>
           </div>
