@@ -69,6 +69,15 @@ Full-featured authentication with Firebase
 - 🎮 **Guest Mode** - Play without registration (scores not saved)
 - 🗑️ **Account Management** - Secure account deletion with re-authentication
 
+### 🎨 Profile Customization
+
+Personalize your gaming identity
+- 🏳️ **Flag Profile Picture** - Choose from 370+ circular country flags
+- 🔍 **Smart Search** - Filter flags by country code
+- 💾 **Instant Sync** - LocalStorage caching for instant display
+- 🌐 **Bundled Assets** - Flags load locally (no external CDN)
+- 📱 **Responsive Grid** - Beautiful flag picker on all devices
+
 ### 🏆 Global Leaderboards
 
 Compete with players worldwide across multiple game modes
@@ -94,6 +103,7 @@ Compete with players worldwide across multiple game modes
 | [React Router](https://reactrouter.com/) | 7.9 | Client-side routing |
 | [react-simple-maps](https://www.react-simple-maps.io/) | 3.0 | SVG map rendering |
 | [d3-geo](https://github.com/d3/d3-geo) | 3.1 | Geographic projections |
+| [circle-flags](https://github.com/HatScripts/circle-flags) | 1.0 | Circular SVG country flags |
 | [Bootstrap](https://getbootstrap.com/) | 5.3 | UI components |
 | [Axios](https://axios-http.com/) | 1.13 | HTTP client |
 
@@ -145,6 +155,7 @@ world-quiz/
 │   │   │   ├── Auth.tsx          # Unified auth component
 │   │   │   ├── CardMatchGame.tsx # Shape matching game
 │   │   │   ├── FlagMatchGame.tsx # Flag identification game
+│   │   │   ├── FlagSelector.tsx  # Profile flag picker (370+ flags)
 │   │   │   ├── GameHUD.tsx       # Game UI overlay
 │   │   │   ├── InteractiveMap.tsx # Map component
 │   │   │   ├── Leaderboard.tsx   # Leaderboard display

@@ -123,8 +123,18 @@
 .leaderboard-item {
   display: flex;
   align-items: center;
+  gap: 8px;
   padding: 10px 0;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.leaderboard-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  flex-shrink: 0;
 }
 
 .leaderboard-item:last-child {

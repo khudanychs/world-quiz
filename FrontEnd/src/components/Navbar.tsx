@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { getFlagUrl } from './FlagSelector';
 import './Navbar.css';
 
 export function Navbar() {
@@ -9,6 +10,9 @@ export function Navbar() {
   const [isMobile, setIsMobile] = useState(window.innerWidth < 1000);
   const navigate = useNavigate();
   const location = useLocation();
+
+  // Profile flag comes directly from user context now (cached in localStorage)
+  const profileFlag = user?.profileFlag || null;
 
   useEffect(() => {
     const handleResize = () => {
@@ -94,8 +98,19 @@ export function Navbar() {
                     title="Settings"
                   >
                     <span className="navbar-user">
-                      {user?.photoURL && (
+                      {profileFlag && getFlagUrl(profileFlag) ? (
+                        <img 
+                          src={getFlagUrl(profileFlag)!} 
+                          alt="profile" 
+                          className="navbar-avatar"
+                          style={{ borderRadius: '50%' }}
+                        />
+                      ) : user?.photoURL ? (
                         <img src={user.photoURL} alt="avatar" className="navbar-avatar" />
+                      ) : (
+                        <div className="navbar-avatar-placeholder">
+                          {user?.displayName?.[0]?.toUpperCase() || '?'}
+                        </div>
                       )}
                       <span className="navbar-username">{user?.displayName}</span>
                     </span>
@@ -173,8 +188,19 @@ export function Navbar() {
                       handleNavClick('/settings');
                     }}
                   >
-                    {user?.photoURL && (
+                    {profileFlag && getFlagUrl(profileFlag) ? (
+                      <img 
+                        src={getFlagUrl(profileFlag)!} 
+                        alt="profile" 
+                        className="mobile-avatar"
+                        style={{ borderRadius: '50%' }}
+                      />
+                    ) : user?.photoURL ? (
                       <img src={user.photoURL} alt="avatar" className="mobile-avatar" />
+                    ) : (
+                      <div className="mobile-avatar-placeholder">
+                        {user?.displayName?.[0]?.toUpperCase() || '?'}
+                      </div>
                     )}
                     <span>{user?.displayName}</span>
                   </button>

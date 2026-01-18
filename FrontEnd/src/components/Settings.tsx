@@ -4,15 +4,21 @@ import { useNavigate } from 'react-router-dom';
 import { db } from '../firebase';
 import { useAuth } from '../contexts/AuthContext';
 import { BackButton } from './BackButton';
+import { FlagSelector, getFlagUrl } from './FlagSelector';
 import './Settings.css';
 
 export const Settings = () => {
-  const { user, setNickname, deleteAccount, refreshUser } = useAuth();
+  const { user, setNickname, setProfileFlag: saveProfileFlag, deleteAccount, refreshUser } = useAuth();
   const navigate = useNavigate();
   const [username, setUsername] = useState('');
   const [avatarUrl, setAvatarUrl] = useState('');
+  const [selectedFlag, setSelectedFlag] = useState<string | null>(null);
+  const [tempSelectedFlag, setTempSelectedFlag] = useState('us');
+  const [showFlagModal, setShowFlagModal] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [profileError, setProfileError] = useState('');
+  const [profileSuccess, setProfileSuccess] = useState('');
   const [loading, setLoading] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteConfirmText, setDeleteConfirmText] = useState('');
@@ -24,6 +30,11 @@ export const Settings = () => {
     if (user) {
       setUsername(user.displayName || '');
       setAvatarUrl(user.photoURL || '');
+      // Use profile flag from context (already cached)
+      if (user.profileFlag) {
+        setSelectedFlag(user.profileFlag);
+        setTempSelectedFlag(user.profileFlag);
+      }
     }
   }, [user]);
 
@@ -78,6 +89,33 @@ export const Settings = () => {
     }
   };
 
+  const handleSaveFlag = async () => {
+    if (!user) return;
+    
+    setProfileError('');
+    setProfileSuccess('');
+    setLoading(true);
+
+    try {
+      await saveProfileFlag(tempSelectedFlag);
+      setSelectedFlag(tempSelectedFlag);
+      setShowFlagModal(false);
+      // Show success message after modal closes
+      setTimeout(() => {
+        setProfileSuccess('Profile flag updated successfully!');
+      }, 300);
+    } catch (err: any) {
+      setProfileError(err.message || 'Failed to update profile flag');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleOpenFlagModal = () => {
+    setTempSelectedFlag(selectedFlag || 'us');
+    setShowFlagModal(true);
+  };
+
   const handleDeleteAccount = async () => {
     if (deleteConfirmText !== 'DELETE') {
       setError('Please type DELETE to confirm');
@@ -124,9 +162,20 @@ export const Settings = () => {
           {/* Profile Picture Section */}
           <div className="settings-section">
             <h3>Profile Picture</h3>
+            {profileError && <div className="settings-error">{profileError}</div>}
+            {profileSuccess && <div className="settings-success">{profileSuccess}</div>}
+            
             <div className="profile-picture-container">
-              {avatarUrl ? (
+              {avatarUrl && !selectedFlag ? (
                 <img src={avatarUrl} alt="Profile" className="profile-picture-preview" />
+              ) : selectedFlag && getFlagUrl(selectedFlag) ? (
+                <div className="profile-flag-wrapper">
+                  <img 
+                    src={getFlagUrl(selectedFlag)!}
+                    alt={selectedFlag.toUpperCase()}
+                    style={{ width: '100%', height: '100%', borderRadius: '50%' }}
+                  />
+                </div>
               ) : (
                 <div className="profile-picture-placeholder">
                   {user?.displayName?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || '?'}
@@ -134,10 +183,18 @@ export const Settings = () => {
               )}
               <div className="profile-picture-info">
                 <p className="profile-picture-note">
-                  {user?.photoURL 
-                    ? 'Your profile picture is managed by Google'
-                    : 'Profile pictures coming soon!'}
+                  {selectedFlag 
+                    ? 'You have selected a flag as your profile picture'
+                    : avatarUrl 
+                    ? 'Your profile picture is from Google'
+                    : 'No profile picture set'}
                 </p>
+                <button 
+                  onClick={handleOpenFlagModal}
+                  className="change-flag-button"
+                >
+                  Change Flag
+                </button>
               </div>
             </div>
           </div>
@@ -294,6 +351,47 @@ export const Settings = () => {
           </div>
         </div>
       </div>
+
+      {/* Flag Selection Modal */}
+      {showFlagModal && (
+        <div className="flag-modal-overlay" onClick={() => setShowFlagModal(false)}>
+          <div className="flag-modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="flag-modal-header">
+              <h2>Select Your Flag</h2>
+              <button 
+                className="flag-modal-close"
+                onClick={() => setShowFlagModal(false)}
+                aria-label="Close"
+              >
+                ×
+              </button>
+            </div>
+            
+            <div className="flag-modal-body">
+              <FlagSelector 
+                selectedFlag={tempSelectedFlag}
+                onFlagSelect={setTempSelectedFlag}
+              />
+            </div>
+            
+            <div className="flag-modal-footer">
+              <button 
+                onClick={() => setShowFlagModal(false)}
+                className="flag-modal-cancel"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={handleSaveFlag}
+                className="flag-modal-save"
+                disabled={loading}
+              >
+                {loading ? 'Saving...' : 'Save Flag'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -26,6 +26,7 @@ export interface User {
   photoURL: string | null;
   emailVerified: boolean;
   createdAt: string | null;
+  profileFlag: string | null; // Country code for profile picture flag
 }
 
 interface AuthContextType {
@@ -36,6 +37,7 @@ interface AuthContextType {
   loginWithGoogle: () => Promise<void>;
   logout: () => Promise<void>;
   setNickname: (username: string) => Promise<void>;
+  setProfileFlag: (flag: string | null) => Promise<void>;
   refreshUser: () => Promise<void>;
   sendVerificationEmail: () => Promise<void>;
   deleteAccount: (password?: string) => Promise<void>;
@@ -94,6 +96,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           }
         }
         
+        // Load profile flag from Firestore or localStorage cache
+        let profileFlag: string | null = null;
+        const cachedFlag = localStorage.getItem(`profileFlag_${firebaseUser.uid}`);
+        
+        if (cachedFlag) {
+          profileFlag = cachedFlag;
+        }
+        
+        // Fetch from Firestore (in background if cached)
+        try {
+          const userDocRef = doc(db, 'users', firebaseUser.uid);
+          const userDocSnap = await getDoc(userDocRef);
+          if (userDocSnap.exists()) {
+            const userData = userDocSnap.data();
+            if (userData.profileFlag) {
+              profileFlag = userData.profileFlag;
+              localStorage.setItem(`profileFlag_${firebaseUser.uid}`, userData.profileFlag);
+            } else if (cachedFlag) {
+              // Flag was removed, clear cache
+              localStorage.removeItem(`profileFlag_${firebaseUser.uid}`);
+              profileFlag = null;
+            }
+          }
+        } catch (error) {
+          console.error('Error loading profile flag:', error);
+          // Use cached value if fetch fails
+        }
+        
         const formattedUser: User = {
           uid: firebaseUser.uid,
           displayName: firebaseUser.displayName,
@@ -101,6 +131,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           photoURL: firebaseUser.photoURL,
           emailVerified: firebaseUser.emailVerified,
           createdAt: firebaseUser.metadata.creationTime || null,
+          profileFlag,
         };
         setUser(formattedUser);
       } else {
@@ -232,6 +263,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await auth.currentUser?.reload();
     const firebaseUser = auth.currentUser;
     if (firebaseUser) {
+      // Preserve existing profileFlag from current user state or localStorage
+      const cachedFlag = localStorage.getItem(`profileFlag_${firebaseUser.uid}`);
       const formattedUser: User = {
         uid: firebaseUser.uid,
         displayName: firebaseUser.displayName,
@@ -239,6 +272,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         photoURL: firebaseUser.photoURL,
         emailVerified: firebaseUser.emailVerified,
         createdAt: firebaseUser.metadata.creationTime || null,
+        profileFlag: user?.profileFlag || cachedFlag || null,
       };
       setUser(formattedUser);
     } else {
@@ -320,6 +354,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const setProfileFlag = async (flag: string | null) => {
+    const currentUser = auth.currentUser;
+    if (!currentUser) {
+      throw new Error('No user is currently signed in.');
+    }
+
+    try {
+      const userDocRef = doc(db, 'users', currentUser.uid);
+      await setDoc(userDocRef, { profileFlag: flag }, { merge: true });
+      
+      // Update localStorage cache
+      if (flag) {
+        localStorage.setItem(`profileFlag_${currentUser.uid}`, flag);
+      } else {
+        localStorage.removeItem(`profileFlag_${currentUser.uid}`);
+      }
+      
+      // Update user state immediately
+      if (user) {
+        setUser({ ...user, profileFlag: flag });
+      }
+    } catch (error: any) {
+      throw new Error(getFirebaseErrorMessage(error));
+    }
+  };
+
   const deleteAccount = async (password?: string) => {
     const currentUser = auth.currentUser;
     if (!currentUser) {
@@ -387,6 +447,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         loginWithGoogle,
         refreshUser,
         setNickname,
+        setProfileFlag,
         sendVerificationEmail,
         deleteAccount,
         logout,
