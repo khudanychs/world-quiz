@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BACK_BUTTON_STYLE, BACK_BUTTON_HOVER } from '../utils/sharedStyles';
 
 interface BackButtonProps {
@@ -7,6 +7,7 @@ interface BackButtonProps {
   icon?: React.ReactNode;
   style?: React.CSSProperties;
   className?: string;
+  enableEscapeKey?: boolean;
 }
 
 /**
@@ -18,8 +19,24 @@ export const BackButton: React.FC<BackButtonProps> = ({
   label = "Back", 
   icon,
   style, 
-  className 
+  className,
+  enableEscapeKey = true
 }) => {
+  //ESC handler
+  useEffect(() => {
+    if(!enableEscapeKey) return;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape'){
+        onClick();
+      }
+    };
+    
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [onClick, enableEscapeKey]);
   // Default modern arrow icon if none provided
   const defaultIcon = (
     <svg 
