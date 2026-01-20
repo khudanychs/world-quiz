@@ -62,7 +62,6 @@ export default function WorldMap() {
           flags: { svg?: string; png?: string };
           capital?: string[];
           independent?: boolean;
-          unMember?: boolean;
         }>;
         
         // Use shared function to build lookup with all variations

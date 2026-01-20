@@ -18,20 +18,28 @@ import {
   GREEN_BUTTON_HOVER,
 } from "../utils/sharedStyles";
 import { getTodayDateString } from "../utils/dateUtils";
+import "./FlagMatchGame.css";
 
 export default function FlagMatchGame() {
   const { user } = useAuth();
   const navigate = useNavigate();
 
+  // Region selection state
+  const [selectedRegion, setSelectedRegion] = useState<string | null>(null);
+  const [showRegionSelector, setShowRegionSelector] = useState(true);
+  const [showRegionalIndicator, setShowRegionalIndicator] = useState(true);
+  const [hasUserSelected, setHasUserSelected] = useState(false);
+
   // Use custom hook for game logic
-  const game = useFlagMatchGame();
+  const game = useFlagMatchGame(selectedRegion, hasUserSelected);
 
   // Track if streak has been saved to avoid duplicates
   const streakSavedRef = useRef(false);
 
   // Function to save streak to both all-time and daily collections
   const saveStreak = useCallback(async (streak: number) => {
-    if (streakSavedRef.current || streak <= 0 || !user) {
+    // Only save to leaderboard for World mode (no region filter)
+    if (streakSavedRef.current || streak <= 0 || !user || selectedRegion !== null) {
       return;
     }
     
@@ -76,7 +84,7 @@ export default function FlagMatchGame() {
       console.error("Error saving streak:", error);
       streakSavedRef.current = false; // Allow retry on error
     }
-  }, [user]);
+  }, [user, selectedRegion]);
 
   // Handle back navigation with streak save
   const handleBack = useCallback(() => {
@@ -94,9 +102,33 @@ export default function FlagMatchGame() {
   const INNER_W = OUTER_W - FRAME * 2;
   const INNER_H = OUTER_H - FRAME * 2;
 
+  // Region zoom configurations - coordinates are [longitude, latitude]
+  const REGION_ZOOMS: Record<string, { coordinates: [number, number]; zoom: number }> = {
+    Europe: { coordinates: [15, 54], zoom: 3.5 },
+    Asia: { coordinates: [90, 30], zoom: 2 },
+    Africa: { coordinates: [20, 0], zoom: 2.5 },
+    Oceania: { coordinates: [135, -25], zoom: 2.5 },
+    Americas: { coordinates: [-60, -10], zoom: 1.8 }, // All Americas combined
+  };
+
   const [pos, setPos] = useState<{ coordinates: [number, number]; zoom: number }>(
     { coordinates: [0, 0], zoom: 1 }
   );
+
+  // Update zoom when region is selected
+  useEffect(() => {
+    if (selectedRegion && REGION_ZOOMS[selectedRegion]) {
+      const regionZoom = REGION_ZOOMS[selectedRegion];
+      console.log(`[FlagMatchGame] Setting zoom for ${selectedRegion}:`, regionZoom);
+      setPos(regionZoom);
+      setShowRegionalIndicator(true); // Show indicator when region changes
+    } else if (!selectedRegion) {
+      // Reset to world view
+      console.log('[FlagMatchGame] Resetting to world view');
+      setPos({ coordinates: [0, 0], zoom: 1 });
+      setShowRegionalIndicator(false);
+    }
+  }, [selectedRegion]);
 
   // prevent page scroll on wheel over map
   const wrapperRef = useRef<HTMLDivElement>(null);
@@ -120,24 +152,105 @@ export default function FlagMatchGame() {
 
   return (
     <>
-      <style>
-        {`
-          @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-          }
-          @keyframes scaleIn {
-            from { transform: scale(0.5); opacity: 0; }
-            to { transform: scale(1); opacity: 1; }
-          }
-          @keyframes streakPop {
-            0% { transform: translate(-50%, -50%) scale(0.8); opacity: 0; }
-            40% { transform: translate(-50%, -50%) scale(1.15); opacity: 1; }
-            60% { transform: translate(-50%, -50%) scale(1.05); opacity: 1; }
-            100% { transform: translate(-50%, -50%) scale(0.95); opacity: 0; }
-          }
-        `}
-      </style>
+      {/* Region Selector Modal */}
+      {showRegionSelector && (
+        <div className="region-selector-overlay">
+          <div className="region-selector-content">
+            <h1 className="region-selector-title">
+              🌍 Flag Match Game
+            </h1>
+            <p className="region-selector-subtitle">
+              Choose your region or play worldwide
+            </p>
+
+            <div className={`region-button-grid ${isPortrait ? 'portrait' : 'landscape'}`}>
+              {/* World (no filter) */}
+              <button
+                onClick={() => {
+                  setSelectedRegion(null);
+                  setHasUserSelected(true);
+                  setShowRegionSelector(false);
+                }}
+                className="region-btn-world"
+                style={{
+                  ...GREEN_BUTTON_STYLE,
+                }}
+                {...GREEN_BUTTON_HOVER}
+              >
+                🌎 World (All Countries)
+              </button>
+
+              {/* Europe */}
+              <button
+                onClick={() => {
+                  setSelectedRegion("Europe");
+                  setHasUserSelected(true);
+                  setShowRegionSelector(false);
+                }}
+                className="region-btn region-btn-europe"
+              >
+                🇪🇺 Europe
+              </button>
+
+              {/* Asia */}
+              <button
+                onClick={() => {
+                  setSelectedRegion("Asia");
+                  setHasUserSelected(true);
+                  setShowRegionSelector(false);
+                }}
+                className="region-btn region-btn-asia"
+              >
+                🌏 Asia
+              </button>
+
+              {/* Africa */}
+              <button
+                onClick={() => {
+                  setSelectedRegion("Africa");
+                  setHasUserSelected(true);
+                  setShowRegionSelector(false);
+                }}
+                className="region-btn region-btn-africa"
+              >
+                🌍 Africa
+              </button>
+
+              {/* Americas */}
+              <button
+                onClick={() => {
+                  setSelectedRegion("Americas");
+                  setHasUserSelected(true);
+                  setShowRegionSelector(false);
+                }}
+                className="region-btn region-btn-americas"
+              >
+                🌎 Americas
+              </button>
+
+              {/* Oceania */}
+              <button
+                onClick={() => {
+                  setSelectedRegion("Oceania");
+                  setHasUserSelected(true);
+                  setShowRegionSelector(false);
+                }}
+                className="region-btn region-btn-oceania"
+              >
+                🌏 Oceania
+              </button>
+            </div>
+
+            <button
+              onClick={() => navigate("/")}
+              className="region-selector-back-btn"
+            >
+              ← Back to Menu
+            </button>
+          </div>
+        </div>
+      )}
+
       <div
         style={{
           ...PAGE_CONTAINER_STYLE,
@@ -171,6 +284,7 @@ export default function FlagMatchGame() {
           backdropFilter: "blur(8px)",
           boxShadow: "0 4px 12px rgba(0,0,0,0.4)",
           maxWidth: isPortrait ? "94vw" : "96vw",
+          overflow: "hidden",
         }}
       >
         <GameHUD
@@ -186,96 +300,96 @@ export default function FlagMatchGame() {
           targetsLength={game.targets.length}
           currentStreak={game.currentStreak}
           showNamePanel={game.showNamePanel}
-          onStartNewGame={game.startNewGame}
+          onStartNewGame={() => {
+            game.startNewGame();
+          }}
           onToggleNamePanel={() => game.setShowNamePanel((v) => !v)}
           onSkip={game.skipCurrentFlag}
           isPortrait={isPortrait}
         />
+        
+        {/* Regional Mode Indicator */}
+        {selectedRegion && showRegionalIndicator && !game.gameOver && (
+          <div 
+            style={{
+              fontSize: "clamp(10px, 2vw, 13px)",
+              padding: "clamp(4px, 1vw, 6px) clamp(8px, 2vw, 12px)",
+              background: "rgba(245, 158, 11, 0.15)",
+              border: "1px solid rgba(245, 158, 11, 0.3)",
+              borderRadius: "6px",
+              color: "#fbbf24",
+              fontWeight: 600,
+              display: "flex",
+              alignItems: "center",
+              gap: "clamp(4px, 1vw, 8px)",
+              flexShrink: 1,
+              minWidth: 0,
+              marginLeft: "clamp(4px, 1vw, 8px)",
+              marginRight: "clamp(4px, 1vw, 8px)",
+            }}
+          >
+            <span style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>Practice Mode</span>
+            <button
+              onClick={() => setShowRegionalIndicator(false)}
+              style={{
+                background: "none",
+                border: "none",
+                color: "#fbbf24",
+                cursor: "pointer",
+                padding: "0 2px",
+                fontSize: "clamp(12px, 2.5vw, 16px)",
+                lineHeight: 1,
+                opacity: 0.7,
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.opacity = "1"}
+              onMouseLeave={(e) => e.currentTarget.style.opacity = "0.7"}
+            >
+              ✕
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Win Animation */}
       {game.showWinAnimation && (
-        <div
-          style={{
-            position: "fixed",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            zIndex: 999,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            background: "rgba(0, 0, 0, 0.85)",
-            animation: "fadeIn 0.3s ease-out",
-          }}
-        >
-          <div
-            style={{
-              textAlign: "center",
-              animation: "scaleIn 0.5s ease-out",
-              position: "relative",
-            }}
-          >
-            <div style={{ fontSize: "clamp(60px, 15vw, 120px)", marginBottom: 20 }}>
+        <div className="win-animation-overlay">
+          <div className="win-animation-content">
+            <div className="win-emoji">
               {game.bestStreak === 25 ? "🏆" : "🎉"}
             </div>
-            <h1 style={{ fontSize: "clamp(32px, 8vw, 64px)", margin: "0 0 20px", color: game.bestStreak === 25 ? "#fbbf24" : "#10b981" }}>
+            <h1 className={`win-title ${game.bestStreak === 25 ? 'legendary' : 'perfect'}`}>
               {game.bestStreak === 25 ? "LEGENDARY!" : "Perfect!"}
             </h1>
-            <p style={{ fontSize: "clamp(18px, 4.5vw, 32px)", margin: "0 0 16px", opacity: 0.9 }}>
+            <p className="win-message">
               {game.bestStreak === 25 
                 ? "25 flags, 25 streak! Flawless victory! 🔥" 
                 : "All 25 flags matched! 🌍"}
             </p>
             {game.bestStreak < 25 && (
-              <p style={{ fontSize: "clamp(14px, 3.5vw, 24px)", margin: "0 0 40px", opacity: 0.7 }}>
+              <p className="win-streak">
                 Best streak: {game.bestStreak} 🔥
               </p>
             )}
             {game.bestStreak === 25 && (
-              <p style={{ fontSize: "clamp(12px, 3vw, 18px)", margin: "0 0 40px", opacity: 0.6, fontStyle: "italic" }}>
+              <p className="win-quote">
                 "Is it possible to learn this power?" — Everyone else
               </p>
             )}
-            <div
-              style={{
-                display: "flex",
-                gap: "clamp(12px, 3vw, 20px)",
-                justifyContent: "center",
-                flexWrap: "wrap",
-              }}
-            >
+            <div className="win-buttons">
               <button
                 onClick={() => navigate("/")}
-                style={{
-                  padding: "clamp(10px, 2.5vw, 14px) clamp(20px, 5vw, 32px)",
-                  borderRadius: "clamp(8px, 2vw, 12px)",
-                  border: "2px solid rgba(255, 255, 255, 0.3)",
-                  background: "rgba(255, 255, 255, 0.1)",
-                  color: "#fff",
-                  fontSize: "clamp(14px, 3.5vw, 18px)",
-                  fontWeight: 600,
-                  cursor: "pointer",
-                  transition: "all 0.2s",
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = "rgba(255, 255, 255, 0.2)";
-                  e.currentTarget.style.transform = "scale(1.05)";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = "rgba(255, 255, 255, 0.1)";
-                  e.currentTarget.style.transform = "scale(1)";
-                }}
+                className="win-home-btn"
               >
                 🏠 Home
               </button>
               <button
-                onClick={() => game.startNewGame()}
+                onClick={() => {
+                  setShowRegionSelector(true);
+                  setSelectedRegion(null);
+                }}
+                className="win-new-game-btn"
                 style={{
                   ...GREEN_BUTTON_STYLE,
-                  padding: "clamp(10px, 2.5vw, 14px) clamp(20px, 5vw, 32px)",
-                  fontSize: "clamp(14px, 3.5vw, 18px)",
                 }}
                 {...GREEN_BUTTON_HOVER}
               >
@@ -288,42 +402,13 @@ export default function FlagMatchGame() {
 
       {/* Streak Animation - displayed in the center of the map */}
       {game.showStreakAnimation && game.currentStreak >= 5 && wrapperRef.current && (
-        <div
-          style={{
-            position: "absolute",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-            zIndex: 10,
-            fontSize: "clamp(32px, 8vw, 64px)",
-            fontWeight: "bold",
-            color: "#fb923c",
-            textShadow: "0 0 20px rgba(251, 146, 60, 0.8), 0 0 40px rgba(251, 146, 60, 0.4)",
-            animation: "streakPop 1.2s ease-in-out",
-            pointerEvents: "none",
-          }}
-        >
+        <div className="streak-animation">
           {game.currentStreak} 🔥
         </div>
       )}
 
       {game.showNamePanel && game.currentTarget && (
-        <div
-          style={{
-            position: "absolute",
-            bottom: 16,
-            left: "50%",
-            transform: "translateX(-50%)",
-            padding: "8px 12px",
-            background: "rgba(0,0,0,0.5)",
-            borderRadius: 10,
-            border: "1px solid rgba(255,255,255,0.25)",
-            zIndex: 4,
-            maxWidth: "92vw",
-            fontSize: "clamp(12px, 3vw, 16px)",
-            textAlign: "center",
-          }}
-        >
+        <div className="name-panel">
           {normalizeCountryName(game.currentTarget.name)}
         </div>
       )}
@@ -344,9 +429,12 @@ export default function FlagMatchGame() {
           zoom={pos.zoom}
           coordinates={pos.coordinates}
           isDesktop={!isPortrait && window.innerWidth >= 768}
-          onMoveEnd={({ zoom, coordinates }: { zoom: number; coordinates: [number, number] }) =>
-            setPos({ zoom, coordinates })
-          }
+          onMoveEnd={({ zoom, coordinates }: { zoom: number; coordinates: [number, number] }) => {
+            // Lock map position when region is selected
+            if (!selectedRegion) {
+              setPos({ zoom, coordinates });
+            }
+          }}
           onCountryClick={(nameRaw: string) => {
             game.onCountryClick(nameRaw);
           }}

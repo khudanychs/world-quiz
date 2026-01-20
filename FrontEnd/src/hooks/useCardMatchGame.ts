@@ -119,8 +119,6 @@ export function useCardMatchGame(pair: { first: CardKind; second: CardKind }) {
           cca2: string;
           flags: { svg?: string; png?: string };
           capital?: string[];
-          independent?: boolean;
-          unMember?: boolean;
         }>;
 
         const lookup = buildRestLookup(restData);

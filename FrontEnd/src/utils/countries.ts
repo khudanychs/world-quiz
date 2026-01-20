@@ -214,16 +214,15 @@ export function buildRestLookup(
     name: { common: string };
     cca2: string;
     flags: { svg?: string; png?: string };
-    independent?: boolean;
-    unMember?: boolean;
+    region?: string;
   }>
-): Record<string, { name: string; cca2: string; flag: string }> {
+): Record<string, { name: string; cca2: string; flag: string; region?: string }> {
   // Initialize the game-eligible cache on first load
   initializeGameEligibleCountries(countries);
   
-  const lookup: Record<string, { name: string; cca2: string; flag: string }> = {};
+  const lookup: Record<string, { name: string; cca2: string; flag: string; region?: string }> = {};
 
-  const set = (key: string, val: { name: string; cca2: string; flag: string }) => {
+  const set = (key: string, val: { name: string; cca2: string; flag: string; region?: string }) => {
     const k1 = normalizeApos(key);
     const k2 = stripDiacritics(k1);
     lookup[k1] = val;
@@ -234,7 +233,7 @@ export function buildRestLookup(
     const common = c.name.common;
     // Use local flag files instead of external URLs for reliability and speed
     const flag = `/flags-v2/${c.cca2.toLowerCase()}.svg`;
-    const val = { name: common, cca2: c.cca2, flag };
+    const val = { name: common, cca2: c.cca2, flag, region: c.region };
     set(common, val);
 
     // Also store aliases we know (map short names to REST names)
@@ -248,7 +247,7 @@ export function buildRestLookup(
     for (const [displayName, restName] of Object.entries(NORMALIZED_TO_REST)) {
       if (restName === common) {
         // Use displayName for the name property so it shows correctly in UI
-        const displayVal = { name: displayName, cca2: c.cca2, flag };
+        const displayVal = { name: displayName, cca2: c.cca2, flag, region: c.region };
         set(displayName, displayVal);
       }
     }

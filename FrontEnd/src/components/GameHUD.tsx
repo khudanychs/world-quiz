@@ -58,7 +58,7 @@ export default function GameHUD({
           <>
             <strong style={{ fontSize: "clamp(16px, 3.5vw, 24px)", color: "#fbbf24" }}>🏆 LEGENDARY! 🏆</strong>
             <span style={{ opacity: 0.9, fontSize: "clamp(14px, 3vw, 18px)" }}>
-              25/25 flags, 25 streak! You're a geography god! 🌍👑
+              {targetsLength}/{targetsLength} flags, {targetsLength} streak! You're a geography god! 🌍👑
             </span>
           </>
         ) : hasWon ? (
@@ -75,7 +75,7 @@ export default function GameHUD({
           <>
             <strong style={{ fontSize: "clamp(14px, 3.2vw, 20px)" }}>Round finished</strong>
             <span style={{ opacity: 0.8, fontSize: "clamp(12px, 2.8vw, 16px)" }}>
-              Matched: {score}/25 {skippedCount > 0 && `(${skippedCount} skipped)`}
+              Matched: {score}/{targetsLength} {skippedCount > 0 && `(${skippedCount} skipped)`}
             </span>
             {bestStreak > 0 && (
               <span style={{ opacity: 0.8, fontSize: "clamp(11px, 2.6vw, 14px)" }}>
@@ -123,9 +123,10 @@ export default function GameHUD({
         style={{
           height: "clamp(44px, 10vw, 70px)",
           width: "auto",
+          maxWidth: "min(20vw, 100px)",
           borderRadius: 2,
           boxShadow: "0 2px 6px rgba(0,0,0,0.4)",
-          flexShrink: 0,
+          flexShrink: 1,
         }}
       />
       <div style={{ display: "flex", flexDirection: "column", minWidth: "clamp(100px, 24vw, 150px)" }}>
@@ -200,7 +201,7 @@ export default function GameHUD({
           whiteSpace: "nowrap",
         }}
       >
-        Score: {score}/25
+        Score: {score}/{targetsLength}
       </span>
     </>
   );

@@ -1,0 +1,313 @@
+/* Region Selector Modal */
+.region-selector-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.9);
+  animation: fadeIn 0.2s ease-out;
+}
+
+.region-selector-content {
+  text-align: center;
+  animation: scaleIn 0.3s ease-out;
+  max-width: min(90vw, 600px);
+  padding: clamp(20px, 4vw, 40px);
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: clamp(16px, 3vw, 24px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.region-selector-title {
+  font-size: clamp(28px, 6vw, 48px);
+  margin: 0 0 12px;
+  color: #10b981;
+  font-weight: 700;
+}
+
+.region-selector-subtitle {
+  color: rgba(255, 255, 255, 0.85);
+  font-size: clamp(15px, 3vw, 19px);
+  margin: 0 0 32px;
+  font-weight: 500;
+}
+
+.region-button-grid {
+  display: grid;
+  gap: clamp(12px, 2.5vw, 16px);
+  margin-bottom: 24px;
+}
+
+.region-button-grid.portrait {
+  grid-template-columns: 1fr;
+}
+
+.region-button-grid.landscape {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+/* World Button */
+.region-btn-world {
+  padding: clamp(14px, 3vw, 18px) clamp(18px, 4vw, 24px);
+  font-size: clamp(15px, 3.2vw, 18px);
+}
+
+.region-button-grid.landscape .region-btn-world {
+  grid-column: 1 / -1;
+}
+
+/* Region Buttons - Base Style */
+.region-btn {
+  padding: clamp(12px, 2.8vw, 16px) clamp(16px, 3.5vw, 20px);
+  border-radius: clamp(8px, 2vw, 12px);
+  border: 2px solid;
+  color: #fff;
+  font-size: clamp(14px, 3vw, 16px);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.region-btn:hover {
+  transform: scale(1.03);
+}
+
+.region-btn:active {
+  transform: scale(0.98);
+}
+
+/* Region-specific colors */
+.region-btn-europe {
+  border-color: rgba(59, 130, 246, 0.6);
+  background: rgba(59, 130, 246, 0.2);
+}
+
+.region-btn-europe:hover {
+  background: rgba(59, 130, 246, 0.35);
+  border-color: rgba(59, 130, 246, 0.8);
+}
+
+.region-btn-asia {
+  border-color: rgba(245, 158, 11, 0.6);
+  background: rgba(245, 158, 11, 0.2);
+}
+
+.region-btn-asia:hover {
+  background: rgba(245, 158, 11, 0.35);
+  border-color: rgba(245, 158, 11, 0.8);
+}
+
+.region-btn-africa {
+  border-color: rgba(239, 68, 68, 0.6);
+  background: rgba(239, 68, 68, 0.2);
+}
+
+.region-btn-africa:hover {
+  background: rgba(239, 68, 68, 0.35);
+  border-color: rgba(239, 68, 68, 0.8);
+}
+
+.region-btn-americas {
+  border-color: rgba(139, 92, 246, 0.6);
+  background: rgba(139, 92, 246, 0.2);
+}
+
+.region-btn-americas:hover {
+  background: rgba(139, 92, 246, 0.35);
+  border-color: rgba(139, 92, 246, 0.8);
+}
+
+.region-btn-oceania {
+  border-color: rgba(6, 182, 212, 0.6);
+  background: rgba(6, 182, 212, 0.2);
+}
+
+.region-btn-oceania:hover {
+  background: rgba(6, 182, 212, 0.35);
+  border-color: rgba(6, 182, 212, 0.8);
+}
+
+/* Back button */
+.region-selector-back-btn {
+  padding: clamp(10px, 2.2vw, 12px) clamp(18px, 3.8vw, 22px);
+  border-radius: clamp(6px, 1.5vw, 10px);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  font-size: clamp(13px, 2.8vw, 15px);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.region-selector-back-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+/* Animations - Simplified for performance */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scaleIn {
+  from { transform: scale(0.9); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+@keyframes streakPop {
+  0%, 100% { transform: translate(-50%, -50%) scale(0.9); opacity: 0; }
+  50% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; }
+}
+
+/* Win Animation Overlay */
+.win-animation-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.92);
+  animation: fadeIn 0.2s ease-out;
+}
+
+.win-animation-content {
+  text-align: center;
+  animation: scaleIn 0.3s ease-out;
+  position: relative;
+  padding: clamp(20px, 4vw, 40px);
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: clamp(16px, 3vw, 24px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.win-emoji {
+  font-size: clamp(60px, 15vw, 120px);
+  margin-bottom: 20px;
+}
+
+.win-title {
+  font-size: clamp(32px, 8vw, 64px);
+  margin: 0 0 20px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+.win-title.legendary {
+  color: #fbbf24;
+}
+
+.win-title.perfect {
+  color: #10b981;
+}
+
+.win-message {
+  font-size: clamp(18px, 4.5vw, 32px);
+  margin: 0 0 16px;
+  opacity: 0.95;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.win-streak {
+  font-size: clamp(14px, 3.5vw, 24px);
+  margin: 0 0 40px;
+  opacity: 0.85;
+  color: rgba(255, 255, 255, 0.85);
+  font-weight: 500;
+}
+
+.win-quote {
+  font-size: clamp(12px, 3vw, 18px);
+  margin: 0 0 40px;
+  opacity: 0.75;
+  font-style: italic;
+  color: rgba(255, 255, 255, 0.75);
+  font-weight: 400;
+}
+
+.win-buttons {
+  display: flex;
+  gap: clamp(12px, 3vw, 20px);
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.win-home-btn {
+  padding: clamp(10px, 2.5vw, 14px) clamp(20px, 5vw, 32px);
+  border-radius: clamp(8px, 2vw, 12px);
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  font-size: clamp(14px, 3.5vw, 18px);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.win-home-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: scale(1.03);
+  border-color: rgba(255, 255, 255, 0.6);
+}
+
+.win-home-btn:active {
+  transform: scale(0.98);
+}
+
+.win-new-game-btn {
+  padding: clamp(10px, 2.5vw, 14px) clamp(20px, 5vw, 32px);
+  font-size: clamp(14px, 3.5vw, 18px);
+  transition: all 0.2s ease;
+}
+
+.win-new-game-btn:hover {
+  transform: scale(1.03);
+}
+
+.win-new-game-btn:active {
+  transform: scale(0.98);
+}
+
+/* Streak Animation - Optimized */
+.streak-animation {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 10;
+  font-size: clamp(32px, 8vw, 64px);
+  font-weight: 800;
+  color: #fb923c;
+  animation: streakPop 1s ease-in-out;
+  pointer-events: none;
+  letter-spacing: 0.05em;
+}
+
+/* Name Panel - Optimized */
+.name-panel {
+  position: absolute;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: clamp(8px, 1.8vw, 12px) clamp(12px, 2.5vw, 18px);
+  background: rgba(0, 0, 0, 0.7);
+  border-radius: clamp(8px, 1.8vw, 12px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  z-index: 4;
+  max-width: 92vw;
+  font-size: clamp(12px, 3vw, 16px);
+  font-weight: 600;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.95);
+}

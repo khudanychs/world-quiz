@@ -8,15 +8,22 @@ import {
 } from "../utils/countries";
 import { SMALL_ISLAND_MARKERS} from "../utils/markerPositions";
 
-type CountryInfo = { name: string; cca2: string; flag: string };
+type CountryInfo = { name: string; cca2: string; flag: string; region?: string };
 
-export function useFlagMatchGame() {
+export function useFlagMatchGame(selectedRegion: string | null = null, hasUserSelected: boolean = false) {
   // Selection state
   const [correctSet, setCorrectSet] = useState<Set<string>>(new Set());
   const [skippedSet, setSkippedSet] = useState<Set<string>>(new Set());
 
   // REST Countries lookup for flags and codes
   const [restLookup, setRestLookup] = useState<Record<string, CountryInfo>>({});
+  const [allCountriesData, setAllCountriesData] = useState<Array<{
+    name: { common: string };
+    cca2: string;
+    flags: { svg?: string; png?: string };
+    independent?: boolean;
+    region?: string;
+  }>>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [loadError, setLoadError] = useState<string>("");
 
@@ -73,11 +80,12 @@ export function useFlagMatchGame() {
           cca2: string;
           flags: { svg?: string; png?: string };
           independent?: boolean;
-          unMember?: boolean;
+          region?: string;
         }>;
         const lookup = buildRestLookup(data);
         if (!alive) return;
         setRestLookup(lookup);
+        setAllCountriesData(data);
       } catch (e: any) {
         if (!alive) return;
         setLoadError(e?.message || "Failed to load countries");
@@ -90,6 +98,18 @@ export function useFlagMatchGame() {
     };
   }, []);
 
+  // Restart game when region changes (after user makes initial selection)
+  useEffect(() => {
+    // Don't start game until user makes their first selection
+    if (!hasUserSelected) {
+      return;
+    }
+    
+    if (!loading && allCountriesData.length > 0 && Object.keys(restLookup).length > 0) {
+      startNewGame();
+    }
+  }, [selectedRegion, hasUserSelected, loading, allCountriesData.length]);
+
   // Clear timers on unmount
   useEffect(() => {
     return () => {
@@ -100,45 +120,46 @@ export function useFlagMatchGame() {
   }, []);
 
   function startNewGame() {
-    const geos = geosRef.current || [];
     const playable: CountryInfo[] = [];
     
-    // Add countries from map polygons
-    for (const geo of geos) {
-      const nameRaw = (geo.properties?.name as string) ?? "Unknown";
-      const norm = normalizeCountryName(nameRaw);
-      const key1 = normalizeApos(norm);
-      const key2 = stripDiacritics(key1);
-      const info = restLookup[key1] || restLookup[key2];
-      
-      // If we have info and flag, add to playable
-      if (info && info.flag) {
-        // Check if country is not on the blacklist
-        if (!isGameEligibleCountry(nameRaw)) continue;
-        playable.push(info);
-      }
-    }
+    console.log('[FlagMatchGame] Starting new game with region filter:', selectedRegion);
     
-    // Add countries from markers (small island nations and microstates)
-    const allMarkers = { ...SMALL_ISLAND_MARKERS};
-    for (const markerName of Object.keys(allMarkers)) {
-      const norm = normalizeCountryName(markerName);
+    // Special territories that should be included
+    const specialTerritories = new Set(['TW']); // Taiwan
+    
+    // Filter countries from the full dataset, matching CountryIndex logic
+    for (const country of allCountriesData) {
+      // Only include independent countries or special territories
+      if (!(country.independent === true || specialTerritories.has(country.cca2))) {
+        continue;
+      }
+      
+      // Filter by region if specified
+      if (selectedRegion && country.region !== selectedRegion) {
+        continue;
+      }
+      
+      const norm = country.name.common;
       const key1 = normalizeApos(norm);
       const key2 = stripDiacritics(key1);
       const info = restLookup[key1] || restLookup[key2];
       
-      if (info && info.flag && isGameEligibleCountry(markerName)) {
+      if (info && info.flag) {
         playable.push(info);
       }
     }
     
     const unique = Array.from(new Map(playable.map((c) => [c.cca2, c])).values());
     
+    console.log(`[FlagMatchGame] Found ${unique.length} countries for region:`, selectedRegion || 'World');
+    
     for (let i = unique.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [unique[i], unique[j]] = [unique[j], unique[i]];
     }
-    const round = unique.slice(0, Math.min(25, unique.length));
+    // World mode: 25 flags (ranked), Regional modes: all flags (practice)
+    const maxFlags = selectedRegion ? unique.length : 25;
+    const round = unique.slice(0, Math.min(maxFlags, unique.length));
     setTargets(round);
     setCurrentIdx(0);
     setScore(0);
@@ -218,7 +239,8 @@ export function useFlagMatchGame() {
       }
       
       correctTimerRef.current = window.setTimeout(() => {
-        if (newScore === 25) {
+        // Check if all flags have been matched (works for any region size)
+        if (newScore === targets.length) {
           setHasWon(true);
           setShowWinAnimation(true);
         } else {
