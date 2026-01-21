@@ -24,7 +24,8 @@
 
 #### **Flag Match Game**
 Test your knowledge by identifying countries on an interactive world map
-- 🎯 25 countries per session covering 250+ territories
+- 🎯 **World Mode**: All 195+ countries - unlimited challenge for geography masters
+- 🌍 **Regional Practice**: Focus on Europe, Asia, Africa, Americas, or Oceania
 - 🏆 Streak tracking with personal best records
 - 🗺️ Interactive zoom and pan controls
 - 📍 Visual markers for microstates (Vatican, Monaco, etc.)
@@ -56,7 +57,6 @@ Browse and explore detailed information about 195+ sovereign nations
 Explore the world with an intuitive, touch-friendly interface
 - 🔎 Zoom and pan capabilities
 - 🖱️ Hover for country information
-- 📍 Capital city markers
 - 🎯 Optimized for both mobile and desktop
 - ⚡ High-performance rendering
 
@@ -81,7 +81,7 @@ Personalize your gaming identity
 ### 🏆 Global Leaderboards
 
 Compete with players worldwide across multiple game modes
-- 🗺️ **Flag Match Rankings** - Best streaks (25 countries in a row)
+- 🗺️ **Flag Match Rankings** - Best streaks (guess as many flags as you can!)
 - 🎮 **Shape Match Rankings** - Highest scores (60-second challenges)
 - 📅 **Daily Leaderboards** - Today's best performances
 - 🌟 **All-Time Rankings** - Overall champions

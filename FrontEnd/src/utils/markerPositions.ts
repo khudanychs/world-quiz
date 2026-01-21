@@ -5,6 +5,8 @@ export const SMALL_ISLAND_MARKERS: Record<string, [number, number]> = {
   "Monaco": [7.42, 43.73],
   "San Marino": [12.45, 43.94],
   "Liechtenstein": [9.55, 47.14],
+  "Malta": [14.5, 35.9],
+  "Andorra": [1.52, 42.5],
   
   // Caribbean - UN Members only
   "Saint Lucia": [-60.98, 13.9],
@@ -33,8 +35,11 @@ export const SMALL_ISLAND_MARKERS: Record<string, [number, number]> = {
   
   // Africa - UN Members only
   "São Tomé and Príncipe": [6.6, 0.2],
+  "Cape Verde": [-23.6, 16.5],
   
   // Middle East - UN Members only
   "Bahrain": [50.6, 26.1],
   "Palestine": [35.2, 31.9],
+  // Asia 
+  "Singapore": [103.8, 1.35],
 };

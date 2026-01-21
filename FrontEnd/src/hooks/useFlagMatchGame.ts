@@ -1,12 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import {
   buildRestLookup,
-  isGameEligibleCountry,
   normalizeApos,
   normalizeCountryName,
   stripDiacritics,
 } from "../utils/countries";
-import { SMALL_ISLAND_MARKERS} from "../utils/markerPositions";
 
 type CountryInfo = { name: string; cca2: string; flag: string; region?: string };
 
@@ -122,10 +120,8 @@ export function useFlagMatchGame(selectedRegion: string | null = null, hasUserSe
   function startNewGame() {
     const playable: CountryInfo[] = [];
     
-    console.log('[FlagMatchGame] Starting new game with region filter:', selectedRegion);
-    
     // Special territories that should be included
-    const specialTerritories = new Set(['TW']); // Taiwan
+    const specialTerritories = new Set(['TW', 'EH', 'XK', 'AQ']); // Taiwan, Western Sahara, Kosovo, Antarctica
     
     // Filter countries from the full dataset, matching CountryIndex logic
     for (const country of allCountriesData) {
@@ -151,15 +147,14 @@ export function useFlagMatchGame(selectedRegion: string | null = null, hasUserSe
     
     const unique = Array.from(new Map(playable.map((c) => [c.cca2, c])).values());
     
-    console.log(`[FlagMatchGame] Found ${unique.length} countries for region:`, selectedRegion || 'World');
-    
+    // Shuffle the array
     for (let i = unique.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [unique[i], unique[j]] = [unique[j], unique[i]];
     }
-    // World mode: 25 flags (ranked), Regional modes: all flags (practice)
-    const maxFlags = selectedRegion ? unique.length : 25;
-    const round = unique.slice(0, Math.min(maxFlags, unique.length));
+    // For World mode (no region), use ALL countries for unlimited tryhard mode
+    // For regional mode, use all countries in that region
+    const round = unique;
     setTargets(round);
     setCurrentIdx(0);
     setScore(0);
@@ -192,6 +187,24 @@ export function useFlagMatchGame(selectedRegion: string | null = null, hasUserSe
     // Ignore clicks on already correctly guessed countries (don't break streak)
     if (correctSet.has(norm)) {
       return;
+    }
+    
+    // If region is selected, only allow clicks on countries in that region
+    if (selectedRegion) {
+      const k1 = normalizeApos(norm);
+      const k2 = stripDiacritics(k1);
+      const clickedCountry = restLookup[k1] || restLookup[k2];
+      
+      // Find the clicked country in allCountriesData to check its region
+      const countryData = allCountriesData.find(c => {
+        const cName = normalizeCountryName(c.name.common);
+        return cName === norm || c.cca2 === clickedCountry?.cca2;
+      });
+      
+      // Ignore click if country is not in the selected region
+      if (countryData && countryData.region !== selectedRegion) {
+        return;
+      }
     }
     
     if (correctTimerRef.current) {

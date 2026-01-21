@@ -23,7 +23,7 @@ export async function saveShapeMatchScore(user: any, score: number) {
         createdAt: serverTimestamp(),
         gameType: "ShapeMatch",
       });
-      console.log("New all-time best score saved:", score);
+      // New all-time best score saved
     }
 
     // 2. Save to DAILY scores (dailyShapeMatchScores/{date}_{userId})
@@ -42,7 +42,7 @@ export async function saveShapeMatchScore(user: any, score: number) {
         createdAt: serverTimestamp(),
         gameType: "ShapeMatch",
       });
-      console.log("New daily best score saved:", score);
+      // New daily best score saved
     }
   } catch (error) {
     console.error("Error saving shape match score:", error);
@@ -72,7 +72,7 @@ export async function saveCardsMatchScore(user: any, score: number) {
         createdAt: serverTimestamp(),
         gameType: "CardsMatch",
       });
-      console.log("New all-time CardsMatch best score saved:", score);
+      // New all-time CardsMatch best score saved
     }
 
     // 2. Save to DAILY scores (dailyCardsMatchScores/{date}_{userId})
@@ -91,7 +91,7 @@ export async function saveCardsMatchScore(user: any, score: number) {
         createdAt: serverTimestamp(),
         gameType: "CardsMatch",
       });
-      console.log("New daily CardsMatch best score saved:", score);
+      // New daily CardsMatch best score saved
     }
   } catch (error) {
     console.error("Error saving cards match score:", error);

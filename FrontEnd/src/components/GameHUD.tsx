@@ -50,7 +50,7 @@ export default function GameHUD({
   }
 
   if (gameOver) {
-    const isPerfectStreak = bestStreak === 25;
+    const isPerfectStreak = bestStreak === targetsLength;
     
     return (
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 12, padding: "8px 0" }}>
@@ -58,7 +58,7 @@ export default function GameHUD({
           <>
             <strong style={{ fontSize: "clamp(16px, 3.5vw, 24px)", color: "#fbbf24" }}>🏆 LEGENDARY! 🏆</strong>
             <span style={{ opacity: 0.9, fontSize: "clamp(14px, 3vw, 18px)" }}>
-              {targetsLength}/{targetsLength} flags, {targetsLength} streak! You're a geography god! 🌍👑
+              {targetsLength} flags, perfect streak! You're a geography god! 🌍👑
             </span>
           </>
         ) : hasWon ? (
@@ -122,11 +122,10 @@ export default function GameHUD({
         alt="Flag to match"
         style={{
           height: "clamp(44px, 10vw, 70px)",
-          width: "auto",
-          maxWidth: "min(20vw, 100px)",
           borderRadius: 2,
           boxShadow: "0 2px 6px rgba(0,0,0,0.4)",
-          flexShrink: 1,
+          flexShrink: 0,
+          objectFit: "contain",
         }}
       />
       <div style={{ display: "flex", flexDirection: "column", minWidth: "clamp(100px, 24vw, 150px)" }}>

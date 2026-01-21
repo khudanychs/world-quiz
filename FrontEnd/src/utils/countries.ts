@@ -312,7 +312,7 @@ export function buildCountryLookupWithCapitals(
   
   // Add special territories not in REST Countries or too small for map
   const specialTerritories: CountryInfoWithCapitals[] = [
-    { name: "Western Sahara", cca2: "EH", flag: "/flags-v2/eh.svg", capitals: ["El Aaiún (disputed)"] },
+    { name: "Western Sahara", cca2: "EH", flag: "/flags-v2/eh.svg", capitals: ["El Aaiún"] },
     { name: "Kosovo", cca2: "XK", flag: "/flags-v2/xk.svg", capitals: ["Pristina"] },
     { name: "Taiwan", cca2: "TW", flag: "/flags-v2/tw.svg", capitals: ["Taipei"] },
     { name: "Antarctica", cca2: "AQ", flag: "/flags-v2/aq.svg", capitals: [] },

@@ -114,21 +114,38 @@ export default function FlagMatchGame() {
   const [pos, setPos] = useState<{ coordinates: [number, number]; zoom: number }>(
     { coordinates: [0, 0], zoom: 1 }
   );
+  
+  // Key for forcing InteractiveMap remount when dimensions change (for regional mode)
+  // This solves the issue where react-simple-maps internal state gets corrupted on resize
+  const [mapKey, setMapKey] = useState(0);
+  const lastDimensionsRef = useRef({ width: dimensions.width, height: dimensions.height });
 
   // Update zoom when region is selected
   useEffect(() => {
     if (selectedRegion && REGION_ZOOMS[selectedRegion]) {
       const regionZoom = REGION_ZOOMS[selectedRegion];
-      console.log(`[FlagMatchGame] Setting zoom for ${selectedRegion}:`, regionZoom);
       setPos(regionZoom);
-      setShowRegionalIndicator(true); // Show indicator when region changes
+      setShowRegionalIndicator(true);
     } else if (!selectedRegion) {
-      // Reset to world view
-      console.log('[FlagMatchGame] Resetting to world view');
       setPos({ coordinates: [0, 0], zoom: 1 });
       setShowRegionalIndicator(false);
     }
   }, [selectedRegion]);
+  
+  // When dimensions change in regional mode, force remount the map to reset internal state
+  useEffect(() => {
+    const lastDims = lastDimensionsRef.current;
+    const dimsChanged = lastDims.width !== dimensions.width || lastDims.height !== dimensions.height;
+    
+    if (dimsChanged) {
+      lastDimensionsRef.current = { width: dimensions.width, height: dimensions.height };
+      
+      // In regional mode, force remount the map to prevent coordinate drift
+      if (selectedRegion) {
+        setMapKey(k => k + 1);
+      }
+    }
+  }, [dimensions.width, dimensions.height, selectedRegion]);
 
   // prevent page scroll on wheel over map
   const wrapperRef = useRef<HTMLDivElement>(null);
@@ -355,22 +372,22 @@ export default function FlagMatchGame() {
         <div className="win-animation-overlay">
           <div className="win-animation-content">
             <div className="win-emoji">
-              {game.bestStreak === 25 ? "🏆" : "🎉"}
+              {game.bestStreak === game.targets.length ? "🏆" : "🎉"}
             </div>
-            <h1 className={`win-title ${game.bestStreak === 25 ? 'legendary' : 'perfect'}`}>
-              {game.bestStreak === 25 ? "LEGENDARY!" : "Perfect!"}
+            <h1 className={`win-title ${game.bestStreak === game.targets.length ? 'legendary' : 'perfect'}`}>
+              {game.bestStreak === game.targets.length ? "LEGENDARY!" : "Perfect!"}
             </h1>
             <p className="win-message">
-              {game.bestStreak === 25 
-                ? "25 flags, 25 streak! Flawless victory! 🔥" 
-                : "All 25 flags matched! 🌍"}
+              {game.bestStreak === game.targets.length 
+                ? `${game.targets.length} flags, perfect streak! Flawless victory! 🔥` 
+                : `All ${game.targets.length} flags matched! 🌍`}
             </p>
-            {game.bestStreak < 25 && (
+            {game.bestStreak < game.targets.length && (
               <p className="win-streak">
                 Best streak: {game.bestStreak} 🔥
               </p>
             )}
-            {game.bestStreak === 25 && (
+            {game.bestStreak === game.targets.length && (
               <p className="win-quote">
                 "Is it possible to learn this power?" — Everyone else
               </p>
@@ -422,6 +439,7 @@ export default function FlagMatchGame() {
         aria-label="Flag match game map"
       >
         <InteractiveMap
+          key={selectedRegion ? `region-${selectedRegion}-${mapKey}` : 'world'}
           width={INNER_W}
           height={INNER_H}
           scale={Math.max(1, Math.round(INNER_W * 0.32))}
@@ -430,7 +448,8 @@ export default function FlagMatchGame() {
           coordinates={pos.coordinates}
           isDesktop={!isPortrait && window.innerWidth >= 768}
           onMoveEnd={({ zoom, coordinates }: { zoom: number; coordinates: [number, number] }) => {
-            // Lock map position when region is selected
+            // Only allow manual position changes in World mode
+            // For regional mode, map is remounted on resize so position stays correct
             if (!selectedRegion) {
               setPos({ zoom, coordinates });
             }

@@ -123,7 +123,7 @@ export function useCardMatchGame(pair: { first: CardKind; second: CardKind }) {
 
         const lookup = buildRestLookup(restData);
         const caps = buildCountryLookupWithCapitals(restData);
-        console.log("Loaded REST Countries:", Object.keys(lookup).length);
+        // REST Countries loaded successfully
 
         // Load TopoJSON for country shapes
         const topoRes = await fetch("/countries-110m.json");
@@ -482,7 +482,7 @@ export function useCardMatchGame(pair: { first: CardKind; second: CardKind }) {
   useEffect(() => {
     if (state.gameStarted && !state.gameOver && state.matchedPairs.size === GRID_SIZE / 2 && state.cards.length > 0) {
       // All pairs matched! Generate new set immediately
-      console.log("All pairs matched! Generating new set...");
+      // All pairs matched - generate new set
       generateNewCardSet();
     }
   }, [state.matchedPairs.size, state.gameStarted, state.gameOver, topoData, restLookup]);
