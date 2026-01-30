@@ -103,8 +103,7 @@ Compete with players worldwide across multiple game modes
 | [React Router](https://reactrouter.com/) | 7.9 | Client-side routing |
 | [react-simple-maps](https://www.react-simple-maps.io/) | 3.0 | SVG map rendering |
 | [d3-geo](https://github.com/d3/d3-geo) | 3.1 | Geographic projections |
-| [circle-flags](https://github.com/HatScripts/circle-flags) | 1.0 | Circular SVG country flags |
-| [Bootstrap](https://getbootstrap.com/) | 5.3 | UI components |
+| [circle-flags](https://github.com/HatScripts/circle-flags) | 2.8 | Circular SVG country flags (lazy-loaded) |
 | [Axios](https://axios-http.com/) | 1.13 | HTTP client |
 
 ### **Backend (Firebase)**
@@ -178,6 +177,8 @@ world-quiz/
 │   │   │   ├── countries.ts      # Country data helpers
 │   │   │   ├── dateUtils.ts      # Date formatting
 │   │   │   ├── firebaseErrors.ts # Error message mapping
+│   │   │   ├── flagUtils.ts      # Lazy flag loading utilities
+│   │   │   ├── leaderboardUtils.ts # Score saving functions
 │   │   │   ├── mapConstants.ts   # Map configuration
 │   │   │   ├── markerPositions.ts # Small country markers
 │   │   │   └── sharedStyles.ts   # Reusable styles
@@ -416,17 +417,42 @@ match /shapeMatchScores/{userId} {
 
 ## ⚡ Performance Optimizations
 
+### Bundle Optimization
+
+| Technique | Impact |
+|-----------|--------|
+| **Dynamic Firebase Imports** | Firebase SDK (670KB) loads asynchronously, not blocking initial render |
+| **Lazy Route Loading** | All routes use `React.lazy()` - only loads code when navigating |
+| **Lazy Flag Loading** | 400+ flag SVGs load on-demand (77KB initial → individual ~0.5KB chunks) |
+| **Code Splitting** | Vite splits maps (129KB), vendor (166KB), and Firebase into separate chunks |
+| **Tree Shaking** | Terser minification removes unused code |
+| **Optimized Images** | Logo PNGs compressed 78% (366KB → 81KB) |
+
+### Runtime Optimization
+
 | Optimization | Benefit |
-|-------------|---------|
+|-------------|--------|
 | **Local Country Data** | Core features work completely offline |
-| **Local Flag SVGs** | No external requests, instant loading |
-| **Smart API Usage** | External APIs only for enhanced features |
-| **Leaderboard Caching** | 1-minute cache reduces database reads by ~95% |
-| **Lazy Loading** | Code-splitting for faster initial load |
-| **SVG Rendering** | Lightweight vector graphics |
-| **Service Worker Ready** | PWA support for offline capabilities |
-| **CDN Hosting** | Firebase Hosting global edge network |
+| **Local Flag SVGs** | No external CDN requests, instant loading |
+| **Smart API Usage** | External APIs only for enhanced features (country details, currency) |
+| **Leaderboard Caching** | 5-minute cache reduces database reads by ~95% |
+| **Streak Data Caching** | 10-minute cache for user stats |
+| **60-second Refresh Cooldown** | Prevents API abuse on free Firebase tier |
+| **SVG Rendering** | Lightweight vector graphics with `loading="lazy"` |
+| **Service Worker Ready** | PWA manifest for offline capabilities |
+| **CDN Hosting** | Firebase Hosting with 1-year cache headers |
 | **Debounced Search** | Reduces re-renders during user input |
+
+### Build Output
+
+```
+Main bundle:     ~77KB (18KB gzipped)  - React, Router, App shell
+Vendor chunk:   ~166KB (55KB gzipped)  - Third-party libraries  
+Maps chunk:     ~129KB (41KB gzipped)  - react-simple-maps, d3-geo
+Firebase Auth:  ~123KB (34KB gzipped)  - Loaded on auth actions
+Firestore:      ~343KB (101KB gzipped) - Loaded when saving data
+Flags:          ~0.5KB each            - 400+ individual chunks
+```
 
 ---
 
@@ -491,7 +517,7 @@ If you'd like to contribute:
 
 ## 📄 License
 
-**Copyright © 2025 Sergio Gyarab. All Rights Reserved.**
+**Copyright © 2025-2026 Sergio Gyarab. All Rights Reserved.**
 
 This software is proprietary and confidential. Unauthorized copying, distribution, modification, 
 or use of this software, via any medium, is strictly prohibited without the express written 

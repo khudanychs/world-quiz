@@ -1,19 +1,35 @@
-import { useState } from 'react';
+import { useState, lazy, Suspense } from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { Navbar } from './components/Navbar';
-import { Auth } from './components/Auth';
-import { SetNickname } from './components/SetNickname';
-import { Settings } from './components/Settings';
-import WorldMap from './WorldMap';
-import FlagMatchGame from './components/FlagMatchGame';
-import CardMatchGame from './components/CardMatchGame';
-import MainMenu from './components/MainMenu';
-import LeaderboardsPage from './pages/LeaderboardsPage';
-import CountryIndex from './pages/CountryIndex';
-import PrivacyPolicy from './pages/PrivacyPolicy';
-import TermsConditions from './pages/TermsConditions';
 import { useAuth } from './contexts/AuthContext';
 import './App.css';
+
+// Lazy load all route components for code splitting
+const Auth = lazy(() => import('./components/Auth').then(m => ({ default: m.Auth })));
+const SetNickname = lazy(() => import('./components/SetNickname').then(m => ({ default: m.SetNickname })));
+const Settings = lazy(() => import('./components/Settings').then(m => ({ default: m.Settings })));
+const WorldMap = lazy(() => import('./WorldMap'));
+const FlagMatchGame = lazy(() => import('./components/FlagMatchGame'));
+const CardMatchGame = lazy(() => import('./components/CardMatchGame'));
+const MainMenu = lazy(() => import('./components/MainMenu'));
+const LeaderboardsPage = lazy(() => import('./pages/LeaderboardsPage'));
+const CountryIndex = lazy(() => import('./pages/CountryIndex'));
+const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'));
+const TermsConditions = lazy(() => import('./pages/TermsConditions'));
+
+// Loading fallback component
+const LoadingFallback = () => (
+  <div style={{
+    height: '100vh',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    background: '#0b1020',
+    color: '#fff'
+  }}>
+    <div>Loading...</div>
+  </div>
+);
 
 // Route that shows verification screen for unverified users, but allows guests
 function VerifiedOrGuestRoute({ children }: { children: React.ReactNode }) {
@@ -198,26 +214,28 @@ export default function App() {
           overflowY: isMapRoute ? 'hidden' : 'auto',
         }}
       >
-        <Routes>
-          <Route path='/auth' element={<GuestRoute><Auth /></GuestRoute>} />
-          <Route
-            path='/set-nickname'
-            element={
-              <ProtectedRoute>
-                <SetNickname />
-              </ProtectedRoute>
-            }
-          />
-          <Route path='/' element={<VerifiedOrGuestRoute><MainMenu /></VerifiedOrGuestRoute>} />
-          <Route path='/leaderboards' element={<VerifiedOrGuestRoute><LeaderboardsPage /></VerifiedOrGuestRoute>} />
-          <Route path='/countries' element={<VerifiedOrGuestRoute><CountryIndex /></VerifiedOrGuestRoute>} />
-          <Route path='/map' element={<VerifiedOrGuestRoute><WorldMap /></VerifiedOrGuestRoute>} />
-          <Route path='/game/flags' element={<VerifiedOrGuestRoute><FlagMatchGame /></VerifiedOrGuestRoute>} />
-          <Route path='/settings' element={<ProtectedRoute><Settings /></ProtectedRoute>} />
-          <Route path='/terms' element={<TermsConditions />} />
-          <Route path='/game/shape-match' element={<VerifiedOrGuestRoute><CardMatchGame /></VerifiedOrGuestRoute>} />
-          <Route path='/privacy' element={<PrivacyPolicy />} />
-        </Routes>
+        <Suspense fallback={<LoadingFallback />}>
+          <Routes>
+            <Route path='/auth' element={<GuestRoute><Auth /></GuestRoute>} />
+            <Route
+              path='/set-nickname'
+              element={
+                <ProtectedRoute>
+                  <SetNickname />
+                </ProtectedRoute>
+              }
+            />
+            <Route path='/' element={<VerifiedOrGuestRoute><MainMenu /></VerifiedOrGuestRoute>} />
+            <Route path='/leaderboards' element={<VerifiedOrGuestRoute><LeaderboardsPage /></VerifiedOrGuestRoute>} />
+            <Route path='/countries' element={<VerifiedOrGuestRoute><CountryIndex /></VerifiedOrGuestRoute>} />
+            <Route path='/map' element={<VerifiedOrGuestRoute><WorldMap /></VerifiedOrGuestRoute>} />
+            <Route path='/game/flags' element={<VerifiedOrGuestRoute><FlagMatchGame /></VerifiedOrGuestRoute>} />
+            <Route path='/settings' element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+            <Route path='/terms' element={<TermsConditions />} />
+            <Route path='/game/shape-match' element={<VerifiedOrGuestRoute><CardMatchGame /></VerifiedOrGuestRoute>} />
+            <Route path='/privacy' element={<PrivacyPolicy />} />
+          </Routes>
+        </Suspense>
       </div>
     </>
   );

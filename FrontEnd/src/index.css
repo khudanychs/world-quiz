@@ -78,3 +78,25 @@ button:focus-visible {
     background-color: #f9f9f9;
   }
 }
+
+/* Bootstrap replacement utilities */
+.container-fluid {
+  width: 100%;
+  padding-right: 0;
+  padding-left: 0;
+  margin-right: auto;
+  margin-left: auto;
+}
+
+.p-0 {
+  padding: 0 !important;
+}
+
+.m-0 {
+  margin: 0 !important;
+}
+
+/* Global loading spinner animation */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}

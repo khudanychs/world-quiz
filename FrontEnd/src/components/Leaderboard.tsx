@@ -1,6 +1,4 @@
 import { useState, useEffect, useCallback } from 'react';
-import { collection, query, orderBy, limit, getDocs, where } from "firebase/firestore";
-import { db } from "../firebase";
 import { useAuth } from "../contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import './Leaderboard.css';
@@ -45,7 +43,7 @@ const leaderboardCache: {
   }
 };
 
-const CACHE_DURATION = 60 * 1000; // 1 minute cache
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minute cache to reduce Firebase reads
 
 // Hook for leaderboard data - fetches top 10 with caching
 function useLeaderboard(gameMode: GameMode, timeFilter: 'today' | 'allTime') {
@@ -66,6 +64,12 @@ function useLeaderboard(gameMode: GameMode, timeFilter: 'today' | 'allTime') {
     setLoading(true);
     
     try {
+      // Dynamically import Firebase to avoid blocking initial load
+      const [{ collection, query, orderBy, limit, getDocs, where }, { db }] = await Promise.all([
+        import('firebase/firestore'),
+        import('../firebase')
+      ]);
+      
       let q;
       
       if (gameMode === 'flag-match') {
@@ -128,8 +132,13 @@ function useLeaderboard(gameMode: GameMode, timeFilter: 'today' | 'allTime') {
       }
       
       setEntries(topEntries as any);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error fetching leaderboard: ", error);
+      // On quota exceeded or network error, use cached data if available (even if expired)
+      const fallbackCache = leaderboardCache[gameMode][timeFilter];
+      if (fallbackCache) {
+        setEntries(fallbackCache.data as any);
+      }
     } finally {
       setLoading(false);
     }
@@ -138,16 +147,16 @@ function useLeaderboard(gameMode: GameMode, timeFilter: 'today' | 'allTime') {
   useEffect(() => {
     fetchLeaderboard();
     
-    // Auto-refresh every 5 minutes (force refresh to bypass cache)
-    const interval = setInterval(() => fetchLeaderboard(true), 5 * 60 * 1000);
+    // Auto-refresh every 10 minutes (force refresh to bypass cache) - optimized for Firebase free tier
+    const interval = setInterval(() => fetchLeaderboard(true), 10 * 60 * 1000);
     return () => clearInterval(interval);
   }, [fetchLeaderboard]);
 
   return { entries, loading, refetch: () => fetchLeaderboard(true) };
 }
 
-// Refresh cooldown in milliseconds (30 seconds)
-const REFRESH_COOLDOWN = 30 * 1000;
+// Refresh cooldown in milliseconds (60 seconds) - optimized for Firebase free tier
+const REFRESH_COOLDOWN = 60 * 1000;
 
 interface LeaderboardProps {
   gameMode: GameMode;

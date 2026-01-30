@@ -1,14 +1,11 @@
 // src/WorldMap.tsx - Explore Map mode with country info panel
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, lazy, Suspense } from "react";
 import { useNavigate } from 'react-router-dom';
 import { BackButton } from './components/BackButton';
-import InteractiveMap from './components/InteractiveMap';
-import { useAuth } from './contexts/AuthContext';
 import {
   PAGE_CONTAINER_STYLE,
   getMapWrapperStyle,
 } from './utils/sharedStyles';
-import { getTodayDateString } from './utils/dateUtils';
 import { useMapDimensions } from './hooks/useMapDimensions';
 import { usePreventWheelScroll } from './hooks/usePreventWheelScroll';
 import { 
@@ -19,6 +16,9 @@ import {
   type CountryInfoWithCapitals 
 } from './utils/countries';
 import { FRAME, FRAME_COLOR } from './utils/mapConstants';
+
+// Lazy load the heavy InteractiveMap component
+const InteractiveMap = lazy(() => import('./components/InteractiveMap'));
 
 export default function WorldMap() {
   const navigate = useNavigate();
@@ -302,19 +302,47 @@ export default function WorldMap() {
         style={getMapWrapperStyle(OUTER_W, OUTER_H, FRAME, FRAME_COLOR)}
         aria-label="World map in rounded rectangle (pan & zoom)"
       >
-        <InteractiveMap
-          width={INNER_W}
-          height={INNER_H}
-          scale={FIT_SCALE}
-          center={[0, 15]}
-          zoom={pos.zoom}
-          coordinates={pos.coordinates}
-          onMoveEnd={({ zoom, coordinates }) => setPos({ zoom, coordinates })}
-          onCountryClick={(name) => setSelected(name)}
-          onCountryHover={setHovered}
-          selectedCountry={selected}
-          isDesktop={isDesktop}
-        />
+        <Suspense fallback={
+          <div style={{
+            width: INNER_W,
+            height: INNER_H,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)',
+            borderRadius: 'inherit',
+          }}>
+            <div style={{
+              textAlign: 'center',
+              color: 'rgba(255,255,255,0.7)',
+            }}>
+              <div style={{
+                width: 40,
+                height: 40,
+                border: '3px solid rgba(255,255,255,0.2)',
+                borderTopColor: '#667eea',
+                borderRadius: '50%',
+                animation: 'spin 0.8s linear infinite',
+                margin: '0 auto 16px',
+              }} />
+              <div>Loading map...</div>
+            </div>
+          </div>
+        }>
+          <InteractiveMap
+            width={INNER_W}
+            height={INNER_H}
+            scale={FIT_SCALE}
+            center={[0, 15]}
+            zoom={pos.zoom}
+            coordinates={pos.coordinates}
+            onMoveEnd={({ zoom, coordinates }) => setPos({ zoom, coordinates })}
+            onCountryClick={(name) => setSelected(name)}
+            onCountryHover={setHovered}
+            selectedCountry={selected}
+            isDesktop={isDesktop}
+          />
+        </Suspense>
       </div>
     </div>
   );

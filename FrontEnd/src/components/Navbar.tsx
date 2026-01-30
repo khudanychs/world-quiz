@@ -1,18 +1,28 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { getFlagUrl } from './FlagSelector';
+import { getFlagUrlAsync } from '../utils/flagUtils';
 import './Navbar.css';
 
 export function Navbar() {
   const { user, isAuthenticated, logout } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 1000);
+  const [flagUrl, setFlagUrl] = useState<string | null>(null);
   const navigate = useNavigate();
   const location = useLocation();
 
   // Profile flag comes directly from user context now (cached in localStorage)
   const profileFlag = user?.profileFlag || null;
+  
+  // Load flag URL lazily
+  useEffect(() => {
+    if (profileFlag) {
+      getFlagUrlAsync(profileFlag).then(url => setFlagUrl(url));
+    } else {
+      setFlagUrl(null);
+    }
+  }, [profileFlag]);
 
   useEffect(() => {
     const handleResize = () => {
@@ -98,9 +108,9 @@ export function Navbar() {
                     title="Settings"
                   >
                     <span className="navbar-user">
-                      {profileFlag && getFlagUrl(profileFlag) ? (
+                      {profileFlag && flagUrl ? (
                         <img 
-                          src={getFlagUrl(profileFlag)!} 
+                          src={flagUrl} 
                           alt="profile" 
                           className="navbar-avatar"
                           style={{ borderRadius: '50%' }}
@@ -188,9 +198,9 @@ export function Navbar() {
                       handleNavClick('/settings');
                     }}
                   >
-                    {profileFlag && getFlagUrl(profileFlag) ? (
+                    {profileFlag && flagUrl ? (
                       <img 
-                        src={getFlagUrl(profileFlag)!} 
+                        src={flagUrl} 
                         alt="profile" 
                         className="mobile-avatar"
                         style={{ borderRadius: '50%' }}

@@ -1,11 +1,8 @@
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState, useCallback, lazy, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
 import { BackButton } from "./BackButton";
-import InteractiveMap from "./InteractiveMap";
 import GameHUD from "./GameHUD";
 import { useAuth } from "../contexts/AuthContext";
-import { db } from "../firebase";
-import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
 import { normalizeCountryName } from "../utils/countries";
 import { FRAME } from "../utils/mapConstants";
 import { useFlagMatchGame } from "../hooks/useFlagMatchGame";
@@ -19,6 +16,9 @@ import {
 } from "../utils/sharedStyles";
 import { getTodayDateString } from "../utils/dateUtils";
 import "./FlagMatchGame.css";
+
+// Lazy load the heavy InteractiveMap component
+const InteractiveMap = lazy(() => import("./InteractiveMap"));
 
 export default function FlagMatchGame() {
   const { user } = useAuth();
@@ -45,6 +45,12 @@ export default function FlagMatchGame() {
     
     try {
       streakSavedRef.current = true;
+      
+      // Dynamically import Firebase to avoid blocking initial load
+      const [{ doc, getDoc, setDoc, serverTimestamp }, { db }] = await Promise.all([
+        import('firebase/firestore'),
+        import('../firebase')
+      ]);
       
       // 1. Save to ALL-TIME streaks (streaks/{userId})
       const allTimeDocRef = doc(db, "streaks", user.uid);
@@ -438,45 +444,59 @@ export default function FlagMatchGame() {
         }}
         aria-label="Flag match game map"
       >
-        <InteractiveMap
-          key={selectedRegion ? `region-${selectedRegion}-${mapKey}` : 'world'}
-          width={INNER_W}
-          height={INNER_H}
-          scale={Math.max(1, Math.round(INNER_W * 0.32))}
-          center={[0, 15]}
-          zoom={pos.zoom}
-          coordinates={pos.coordinates}
-          isDesktop={!isPortrait && window.innerWidth >= 768}
-          onMoveEnd={({ zoom, coordinates }: { zoom: number; coordinates: [number, number] }) => {
-            // Only allow manual position changes in World mode
-            // For regional mode, map is remounted on resize so position stays correct
-            if (!selectedRegion) {
-              setPos({ zoom, coordinates });
-            }
-          }}
-          onCountryClick={(nameRaw: string) => {
-            game.onCountryClick(nameRaw);
-          }}
-          onGeographiesLoaded={(geographies) => {
-            game.handleGeographiesLoaded(geographies);
-          }}
-          getCountryFill={(nameRaw: string) => {
-            const norm = normalizeCountryName(nameRaw);
-            
-            const isCorrect = game.correctSet.has(norm);
-            const isSkipped = game.skippedSet.has(norm);
-            const defaultFill = "#e0d8c2";
-            const isLastWrong = game.lastClicked?.name === norm && game.lastClicked?.status === "wrong";
-            
-            return isCorrect
-              ? "#10b981"
-              : isSkipped
-              ? "#ff8c00"
-              : isLastWrong
-              ? "#ef4444"
-              : defaultFill;
-          }}
-        />
+        <Suspense fallback={
+          <div style={{
+            width: INNER_W,
+            height: INNER_H,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            background: "#e0d8c2"
+          }}>
+            <div className="map-loading-spinner" />
+          </div>
+        }>
+          <InteractiveMap
+            key={selectedRegion ? `region-${selectedRegion}-${mapKey}` : 'world'}
+            width={INNER_W}
+            height={INNER_H}
+            scale={Math.max(1, Math.round(INNER_W * 0.32))}
+            center={[0, 15]}
+            zoom={pos.zoom}
+            coordinates={pos.coordinates}
+            isDesktop={!isPortrait && window.innerWidth >= 768}
+            gameMode={true}
+            onMoveEnd={({ zoom, coordinates }: { zoom: number; coordinates: [number, number] }) => {
+              // Only allow manual position changes in World mode
+              // For regional mode, map is remounted on resize so position stays correct
+              if (!selectedRegion) {
+                setPos({ zoom, coordinates });
+              }
+            }}
+            onCountryClick={(nameRaw: string) => {
+              game.onCountryClick(nameRaw);
+            }}
+            onGeographiesLoaded={(geographies) => {
+              game.handleGeographiesLoaded(geographies);
+            }}
+            getCountryFill={(nameRaw: string) => {
+              const norm = normalizeCountryName(nameRaw);
+              
+              const isCorrect = game.correctSet.has(norm);
+              const isSkipped = game.skippedSet.has(norm);
+              const defaultFill = "#e0d8c2";
+              const isLastWrong = game.lastClicked?.name === norm && game.lastClicked?.status === "wrong";
+              
+              return isCorrect
+                ? "#10b981"
+                : isSkipped
+                ? "#ff8c00"
+                : isLastWrong
+                ? "#ef4444"
+                : defaultFill;
+            }}
+          />
+        </Suspense>
       </div>
     </div>
     </>

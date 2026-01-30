@@ -30,6 +30,16 @@ export function getFirebaseErrorMessage(error: any): string {
     case 'auth/network-request-failed':
       return 'Network error. Please check your connection and try again.';
     
+    // Firestore quota/billing errors (free tier limits)
+    case 'resource-exhausted':
+      return 'Server is busy. Please try again in a few minutes.';
+    case 'quota-exceeded':
+      return 'Daily limit reached. Please try again tomorrow.';
+    case 'unavailable':
+      return 'Service temporarily unavailable. Please try again later.';
+    case 'permission-denied':
+      return 'Access denied. Please log in again.';
+    
     // Default fallback
     default:
       // Return the error message if it exists, otherwise a generic message

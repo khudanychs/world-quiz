@@ -1,7 +1,8 @@
 // Shared interactive map component used by both WorldMap and FlagMatchGame
+import { memo, useRef, useEffect } from "react";
 import { ComposableMap, Geographies, Geography, ZoomableGroup } from "react-simple-maps";
 import { geoNaturalEarth1 } from "d3-geo";
-import { normalizeCountryName } from "../utils/countries";
+import { normalizeCountryName, isClickableInGameMode, isHiddenTerritory } from "../utils/countries";
 import { SMALL_ISLAND_MARKERS } from "../utils/markerPositions";
 
 const PROJECTION = "geoNaturalEarth1" as const;
@@ -40,17 +41,6 @@ const ZOOM_CONFIG = {
 };
 
 /* ============================================================================ */
-
-/** Territories to completely hide from the map */
-const HIDDEN_TERRITORIES = new Set([
-  "Fr. S. Antarctic Lands",
-  "French Southern Territories",
-]);
-
-/** Check if a territory should be completely hidden */
-function isHiddenTerritory(nameRaw: string): boolean {
-  return HIDDEN_TERRITORIES.has(nameRaw) || HIDDEN_TERRITORIES.has(normalizeCountryName(nameRaw));
-}
 
 /** Check if a country has a custom marker */
 function hasCustomMarker(countryName: string): boolean {
@@ -112,9 +102,11 @@ interface InteractiveMapProps {
   selectedCountry?: string | null;
   onGeographiesLoaded?: (geographies: RSMGeography[]) => void;
   isDesktop?: boolean;
+  /** When true, unclickable game territories will have visual cues (no pointer cursor) */
+  gameMode?: boolean;
 }
 
-export default function InteractiveMap({
+export default memo(function InteractiveMap({
   width,
   height,
   scale,
@@ -128,7 +120,11 @@ export default function InteractiveMap({
   selectedCountry,
   onGeographiesLoaded,
   isDesktop = true,
+  gameMode = false,
 }: InteractiveMapProps) {
+  
+  // Track if we've already notified parent about geographies
+  const hasNotifiedRef = useRef(false);
   
   // Create projection function for coordinate transformation
   const projection = geoNaturalEarth1()
@@ -165,9 +161,11 @@ export default function InteractiveMap({
       >
         <Geographies geography={geoUrl}>
           {({ geographies }: GeographiesArgs) => {
-            // Notify parent about loaded geographies
-            if (onGeographiesLoaded && geographies.length > 0) {
-              onGeographiesLoaded(geographies as RSMGeography[]);
+            // Notify parent about loaded geographies (only once)
+            if (onGeographiesLoaded && geographies.length > 0 && !hasNotifiedRef.current) {
+              hasNotifiedRef.current = true;
+              // Use setTimeout to avoid calling during render
+              setTimeout(() => onGeographiesLoaded(geographies as RSMGeography[]), 0);
             }
 
             return geographies.map((geo: RSMGeography) => {
@@ -183,6 +181,12 @@ export default function InteractiveMap({
 
               // Hide countries that have custom markers
               const hideForMarker = hasCustomMarker(nameRaw);
+              
+              // In game mode, check if territory should be unclickable
+              const isUnclickableInGame = gameMode && !isClickableInGameMode(nameRaw);
+              
+              // Determine if this geography should not be interactive
+              const notInteractive = hideForMarker || isUnclickableInGame;
 
               // Get fill color
               const fill = getCountryFill 
@@ -210,10 +214,10 @@ export default function InteractiveMap({
                       strokeLinecap: "round",
                       outline: "none",
                       transition: "fill 0.15s ease-out",
-                      cursor: hideForMarker ? "default" : "pointer",
+                      cursor: notInteractive ? "default" : "pointer",
                       pointerEvents: hideForMarker ? "none" : "visibleFill",
                     },
-                    hover: !hideForMarker
+                    hover: !notInteractive
                       ? {
                           fill: displayFill,
                           stroke: "#2d3748",
@@ -229,7 +233,7 @@ export default function InteractiveMap({
                           cursor: "default",
                           outline: "none",
                         },
-                    pressed: !hideForMarker
+                    pressed: !notInteractive
                       ? {
                           fill: fill,
                           stroke: "#2d3748",
@@ -293,4 +297,4 @@ export default function InteractiveMap({
       </ZoomableGroup>
     </ComposableMap>
   );
-}
+});

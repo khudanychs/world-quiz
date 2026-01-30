@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import CountryDetails from './CountryDetails';
+import { FLAG_MATCH_SPECIAL_TERRITORIES } from '../utils/countries';
 import './CountryIndex.css';
 
 interface Country {
@@ -37,9 +38,8 @@ export default function CountryIndex() {
         };
         
         // Filter only independent sovereign states + special territories
-        const specialTerritories = new Set(['TW']); // Taiwan
         const formattedCountries: Country[] = data
-          .filter((c: any) => c.independent === true || specialTerritories.has(c.cca2))
+          .filter((c: any) => c.independent === true || FLAG_MATCH_SPECIAL_TERRITORIES.has(c.cca2))
           .map((c: any) => {
             const commonName = c.name?.common || c.name;
             const officialName = c.name?.official || c.name?.common || c.name;

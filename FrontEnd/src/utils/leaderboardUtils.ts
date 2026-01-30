@@ -1,6 +1,13 @@
-import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
-import { db } from "../firebase";
 import { getTodayDateString } from "./dateUtils";
+
+// Lazy load Firebase modules
+async function getFirebaseModules() {
+  const [firestore, firebase] = await Promise.all([
+    import('firebase/firestore'),
+    import('../firebase')
+  ]);
+  return { ...firestore, db: firebase.db };
+}
 
 /**
  * Saves the user's Shape Match score to Firestore (All-Time and Daily leaderboards).
@@ -10,6 +17,8 @@ export async function saveShapeMatchScore(user: any, score: number) {
   if (!user || score <= 0) return;
 
   try {
+    const { doc, getDoc, setDoc, serverTimestamp, db } = await getFirebaseModules();
+    
     // 1. Save to ALL-TIME scores (shapeMatchScores/{userId})
     const allTimeDocRef = doc(db, "shapeMatchScores", user.uid);
     const allTimeDoc = await getDoc(allTimeDocRef);
@@ -59,6 +68,8 @@ export async function saveCardsMatchScore(user: any, score: number) {
   if (!user || score <= 0) return;
 
   try {
+    const { doc, getDoc, setDoc, serverTimestamp, db } = await getFirebaseModules();
+    
     // 1. Save to ALL-TIME scores (cardsMatchScores/{userId})
     const allTimeDocRef = doc(db, "cardsMatchScores", user.uid);
     const allTimeDoc = await getDoc(allTimeDocRef);

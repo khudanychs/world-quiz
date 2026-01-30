@@ -4,6 +4,11 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     
+    <!-- Preconnect to external domains for faster loading -->
+    <link rel="preconnect" href="https://firebaseapp.com" crossorigin />
+    <link rel="preconnect" href="https://www.googleapis.com" crossorigin />
+    <link rel="dns-prefetch" href="https://firebaseapp.com" />
+    
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="/newtablogo.png" />
     <link rel="apple-touch-icon" sizes="180x180" href="/newtablogo.png" />
@@ -39,9 +44,47 @@
     <!-- Theme Color -->
     <meta name="theme-color" content="#1a1a2e" />
     <meta name="msapplication-TileColor" content="#1a1a2e" />
+    
+    <!-- Critical CSS for instant first paint -->
+    <style>
+      html, body, #root {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        width: 100%;
+        background-color: #0b1020;
+        color: #fff;
+        font-family: system-ui, -apple-system, sans-serif;
+      }
+      .initial-loader {
+        height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        gap: 16px;
+      }
+      .initial-loader-spinner {
+        width: 40px;
+        height: 40px;
+        border: 3px solid rgba(255,255,255,0.2);
+        border-top-color: #667eea;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+      }
+      @keyframes spin {
+        to { transform: rotate(360deg); }
+      }
+    </style>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <!-- Initial loader shown before React hydrates -->
+      <div class="initial-loader">
+        <div class="initial-loader-spinner"></div>
+        <div style="opacity: 0.7; font-size: 14px;">Loading World Quiz...</div>
+      </div>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

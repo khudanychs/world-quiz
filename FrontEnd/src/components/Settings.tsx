@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
-import { doc, getDoc } from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
-import { db } from '../firebase';
 import { useAuth } from '../contexts/AuthContext';
 import { BackButton } from './BackButton';
 import { FlagSelector, getFlagUrl } from './FlagSelector';
 import './Settings.css';
+
+// Cache for user streak data (survives component remounts)
+const streakCache: { [userId: string]: { streak: number; timestamp: number } } = {};
+const STREAK_CACHE_DURATION = 10 * 60 * 1000; // 10 minutes - optimized for Firebase free tier
 
 export const Settings = () => {
   const { user, setNickname, setProfileFlag: saveProfileFlag, deleteAccount, refreshUser } = useAuth();
@@ -38,24 +40,47 @@ export const Settings = () => {
     }
   }, [user]);
 
-  // Fetch user's highest streak when component mounts
+  // Fetch user's highest streak when component mounts (with caching)
   useEffect(() => {
     if (user) {
       const fetchHighestStreak = async () => {
+        // Check cache first
+        const cached = streakCache[user.uid];
+        const now = Date.now();
+        
+        if (cached && (now - cached.timestamp) < STREAK_CACHE_DURATION) {
+          setHighestStreak(cached.streak);
+          return;
+        }
+        
         setStreakLoading(true);
         try {
+          // Dynamically import Firebase to avoid blocking initial load
+          const [{ doc, getDoc }, { db }] = await Promise.all([
+            import('firebase/firestore'),
+            import('../firebase')
+          ]);
+          
           // Document ID is user.uid (one record per user)
           const streakDocRef = doc(db, 'streaks', user.uid);
           const streakDoc = await getDoc(streakDocRef);
           if (streakDoc.exists()) {
             const data = streakDoc.data();
             setHighestStreak(data.streak);
+            // Update cache
+            streakCache[user.uid] = { streak: data.streak, timestamp: now };
           } else {
             setHighestStreak(0);
+            streakCache[user.uid] = { streak: 0, timestamp: now };
           }
         } catch (err) {
           console.error('Error fetching highest streak:', err);
-          setHighestStreak(null);
+          // Use cached value if available, even if expired
+          if (cached) {
+            setHighestStreak(cached.streak);
+          } else {
+            setHighestStreak(null);
+          }
         } finally {
           setStreakLoading(false);
         }

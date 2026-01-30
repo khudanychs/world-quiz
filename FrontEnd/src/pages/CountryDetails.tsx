@@ -208,8 +208,8 @@ export default function CountryDetails({ country, onClose, onCountryClick }: Cou
             <section className="country-detail-section">
               <h2>Languages</h2>
               <div className="detail-list">
-                {stats.officialLanguages.map((lang, idx) => (
-                  <span key={idx} className="detail-chip">{lang}</span>
+                {stats.officialLanguages.map((lang) => (
+                  <span key={lang} className="detail-chip">{lang}</span>
                 ))}
               </div>
             </section>
@@ -220,8 +220,8 @@ export default function CountryDetails({ country, onClose, onCountryClick }: Cou
             <section className="country-detail-section">
               <h2>Timezones</h2>
               <div className="detail-list">
-                {stats.timezones.map((tz, idx) => (
-                  <span key={idx} className="detail-chip">{tz}</span>
+                {stats.timezones.map((tz) => (
+                  <span key={tz} className="detail-chip">{tz}</span>
                 ))}
               </div>
             </section>

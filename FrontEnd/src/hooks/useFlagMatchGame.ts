@@ -4,6 +4,8 @@ import {
   normalizeApos,
   normalizeCountryName,
   stripDiacritics,
+  FLAG_MATCH_SPECIAL_TERRITORIES,
+  isClickableInGameMode,
 } from "../utils/countries";
 
 type CountryInfo = { name: string; cca2: string; flag: string; region?: string };
@@ -120,13 +122,10 @@ export function useFlagMatchGame(selectedRegion: string | null = null, hasUserSe
   function startNewGame() {
     const playable: CountryInfo[] = [];
     
-    // Special territories that should be included
-    const specialTerritories = new Set(['TW', 'EH', 'XK', 'AQ']); // Taiwan, Western Sahara, Kosovo, Antarctica
-    
     // Filter countries from the full dataset, matching CountryIndex logic
     for (const country of allCountriesData) {
-      // Only include independent countries or special territories
-      if (!(country.independent === true || specialTerritories.has(country.cca2))) {
+      // Only include independent countries or special territories from FLAG_MATCH_SPECIAL_TERRITORIES
+      if (!(country.independent === true || FLAG_MATCH_SPECIAL_TERRITORIES.has(country.cca2))) {
         continue;
       }
       
@@ -183,6 +182,12 @@ export function useFlagMatchGame(selectedRegion: string | null = null, hasUserSe
     if (!currentTarget) return;
     
     const norm = normalizeCountryName(nameRaw);
+    
+    // Ignore clicks on territories that shouldn't be clickable in game modes
+    // (e.g., Puerto Rico, New Caledonia, Falkland Islands)
+    if (!isClickableInGameMode(nameRaw)) {
+      return;
+    }
     
     // Ignore clicks on already correctly guessed countries (don't break streak)
     if (correctSet.has(norm)) {
