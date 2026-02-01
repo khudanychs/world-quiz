@@ -70,7 +70,7 @@ interface CountryInfo {
 }
 
 const GAME_DURATION = 60; // 60 seconds
-const BASE_POINTS = 1000;
+const BASE_POINTS = 1500;
 const GRID_SIZE = 16; // 4x4 grid = 8 pairs
 
 // Streak multiplier logic
@@ -103,6 +103,11 @@ export function useCardMatchGame(pair: { first: CardKind; second: CardKind }) {
   const [topoData, setTopoData] = useState<Topology | null>(null);
   const timerRef = useRef<number | null>(null);
   const [feedbackCard, setFeedbackCard] = useState<string | null>(null);
+  const matchStartTimeRef = useRef<number | null>(null);
+  const [matchTimeElapsed, setMatchTimeElapsed] = useState<number>(0);
+  const matchTimerRef = useRef<number | null>(null);
+  const [currentMatchPoints, setCurrentMatchPoints] = useState<number>(0);
+  const [matchCount, setMatchCount] = useState<number>(0);
 
   // Load countries data and topology
   useEffect(() => {
@@ -443,7 +448,11 @@ export function useCardMatchGame(pair: { first: CardKind; second: CardKind }) {
         // Correct match!
         const newStreak = state.streak + 1;
         const multiplier = getStreakMultiplier(newStreak);
-        const points = Math.round(BASE_POINTS * multiplier);
+        // Use current match points (from TimeBar) and apply streak multiplier
+        const points = Math.round(currentMatchPoints * multiplier);
+        
+        // Increment match count to reset TimeBar
+        setMatchCount(prev => prev + 1);
 
         // Update state immediately - clear selections so user can click next card instantly
         setState((s) => ({
@@ -496,6 +505,10 @@ export function useCardMatchGame(pair: { first: CardKind; second: CardKind }) {
     restLookup,
     topoData,
     feedbackCard,
+    matchTimeElapsed,
+    currentMatchPoints,
+    matchCount,
+    setCurrentMatchPoints,
     startNewGame,
     handleCardClick,
     getStreakMultiplier,

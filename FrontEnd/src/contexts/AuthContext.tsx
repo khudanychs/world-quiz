@@ -305,12 +305,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const refreshUser = useCallback(async () => {
-    const { authInstance } = await getFirebaseModules();
+    const { authInstance, firestore, db } = await getFirebaseModules();
     await authInstance.currentUser?.reload();
     const firebaseUser = authInstance.currentUser;
     if (firebaseUser) {
-      // Preserve existing profileFlag from current user state or localStorage
-      const cachedFlag = localStorage.getItem(`profileFlag_${firebaseUser.uid}`);
+      // Fetch fresh data from Firestore
+      let profileFlag: string | null = null;
+      
+      try {
+        const userDocRef = firestore.doc(db, 'users', firebaseUser.uid);
+        const userDocSnap = await firestore.getDoc(userDocRef);
+        if (userDocSnap.exists()) {
+          const userData = userDocSnap.data();
+          if (userData.profileFlag) {
+            profileFlag = userData.profileFlag;
+            localStorage.setItem(`profileFlag_${firebaseUser.uid}`, userData.profileFlag);
+          } else {
+            // Flag was removed, clear cache
+            localStorage.removeItem(`profileFlag_${firebaseUser.uid}`);
+            profileFlag = null;
+          }
+        }
+      } catch (error) {
+        console.error('Error loading profile flag:', error);
+        // Fallback to localStorage cache if fetch fails
+        const cachedFlag = localStorage.getItem(`profileFlag_${firebaseUser.uid}`);
+        profileFlag = cachedFlag;
+      }
+      
       const formattedUser: User = {
         uid: firebaseUser.uid,
         displayName: firebaseUser.displayName,
@@ -318,13 +340,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         photoURL: firebaseUser.photoURL,
         emailVerified: firebaseUser.emailVerified,
         createdAt: firebaseUser.metadata.creationTime || null,
-        profileFlag: user?.profileFlag || cachedFlag || null,
+        profileFlag,
       };
       setUser(formattedUser);
     } else {
       setUser(null);
     }
-  }, [user?.profileFlag]);
+  }, []);
 
   const sendVerificationEmail = useCallback(async () => {
     const { auth, authInstance } = await getFirebaseModules();

@@ -116,7 +116,11 @@ export function Navbar() {
                           style={{ borderRadius: '50%' }}
                         />
                       ) : user?.photoURL ? (
-                        <img src={user.photoURL} alt="avatar" className="navbar-avatar" />
+                        <img 
+                          src={user.photoURL} 
+                          alt="avatar" 
+                          className="navbar-avatar"
+                        />
                       ) : (
                         <div className="navbar-avatar-placeholder">
                           {user?.displayName?.[0]?.toUpperCase() || '?'}
@@ -206,7 +210,11 @@ export function Navbar() {
                         style={{ borderRadius: '50%' }}
                       />
                     ) : user?.photoURL ? (
-                      <img src={user.photoURL} alt="avatar" className="mobile-avatar" />
+                      <img 
+                        src={user.photoURL} 
+                        alt="avatar" 
+                        className="mobile-avatar"
+                      />
                     ) : (
                       <div className="mobile-avatar-placeholder">
                         {user?.displayName?.[0]?.toUpperCase() || '?'}

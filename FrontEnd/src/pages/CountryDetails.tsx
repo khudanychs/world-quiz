@@ -167,7 +167,8 @@ export default function CountryDetails({ country, onClose, onCountryClick }: Cou
               <div className="stat-box">
                 <span className="stat-box-label">Density</span>
                 <p className="stat-box-value">
-                  {(stats.population / stats.area).toFixed(1)}
+                  {stats.population / stats.area > 1 ? (stats.population / stats.area).toFixed(1)
+                  : (stats.population / stats.area).toPrecision(2)}
                 </p>
                 <p className="stat-box-subtext">people per km²</p>
               </div>

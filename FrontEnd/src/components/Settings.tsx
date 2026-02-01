@@ -36,6 +36,9 @@ export const Settings = () => {
       if (user.profileFlag) {
         setSelectedFlag(user.profileFlag);
         setTempSelectedFlag(user.profileFlag);
+      } else {
+        // Clear flag if user doesn't have one
+        setSelectedFlag(null);
       }
     }
   }, [user]);
@@ -141,6 +144,41 @@ export const Settings = () => {
     setShowFlagModal(true);
   };
 
+  const handleUseGooglePhoto = async () => {
+    if (!user?.photoURL) {
+      setProfileError('No Google profile picture available');
+      return;
+    }
+
+    setProfileError('');
+    setProfileSuccess('');
+    setLoading(true);
+
+    try {
+      // Update local state immediately for instant UI update
+      setSelectedFlag(null);
+      setTempSelectedFlag('us');
+      setAvatarUrl(user.photoURL);
+      
+      // Then save to database
+      await saveProfileFlag(null);
+      
+      // Refresh user context to update navbar and other components
+      await refreshUser();
+      
+      setProfileSuccess('Now using Google profile picture');
+    } catch (err: any) {
+      setProfileError(err.message || 'Failed to update profile picture');
+      // Revert on error
+      if (user?.profileFlag) {
+        setSelectedFlag(user.profileFlag);
+        setTempSelectedFlag(user.profileFlag);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleDeleteAccount = async () => {
     if (deleteConfirmText !== 'DELETE') {
       setError('Please type DELETE to confirm');
@@ -214,12 +252,27 @@ export const Settings = () => {
                     ? 'Your profile picture is from Google'
                     : 'No profile picture set'}
                 </p>
-                <button 
-                  onClick={handleOpenFlagModal}
-                  className="change-flag-button"
-                >
-                  Change Flag
-                </button>
+                <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                  <button 
+                    onClick={handleOpenFlagModal}
+                    className="change-flag-button"
+                  >
+                    Change Flag
+                  </button>
+                  {user?.photoURL && selectedFlag && (
+                    <button 
+                      onClick={handleUseGooglePhoto}
+                      className="change-flag-button"
+                      style={{ 
+                        background: 'linear-gradient(135deg, #4285f4, #34a853)',
+                        border: 'none'
+                      }}
+                      disabled={loading}
+                    >
+                      Use Google Photo
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
           </div>
