@@ -84,8 +84,8 @@ export default function PhysicalGeoHUD({
 
   const catInfo = CATEGORY_INFO[currentFeature.type];
 
-  // Result feedback
-  if (showingResult && lastResult) {
+  // Result feedback (skip silently shows highlighted answer without banner)
+  if (showingResult && lastResult && lastResult.clickedName !== "") {
     return (
       <>
         <strong

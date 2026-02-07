@@ -98,7 +98,7 @@ export const FEATURE_FILL_OPACITY: Record<FeatureCategory, number> = {
 
 /** Categories that are water bodies — rendered UNDER land so land masks them */
 export const WATER_TYPES: ReadonlySet<FeatureCategory> = new Set([
-  "ocean", "sea", "gulf", "bay", "channel", "passage", "strait", "canal",
+  "ocean", "sea", "gulf", "bay", "channel", "passage",
 ]);
 
 /** Check if a feature should be rendered as a water underlay (behind land) */
@@ -107,7 +107,6 @@ export function isWaterFeature(f: PhysicalFeature): boolean {
 }
 
 export const CATEGORY_GROUPS: { key: string; label: string; emoji: string; types: FeatureCategory[] }[] = [
-  { key: "all",       label: "All Features",          emoji: "🌍",  types: [] },
   { key: "mountains", label: "Mountains & Volcanoes",  emoji: "⛰️",  types: ["mountain", "mountain_range", "volcano"] },
   { key: "rivers",    label: "Rivers & Lakes",         emoji: "🏞️", types: ["river", "lake"] },
   { key: "deserts",   label: "Deserts",                emoji: "🏜️", types: ["desert"] },
@@ -377,17 +376,17 @@ const FEATURES: PhysicalFeature[] = [
   { name: "The North Western Passages", type: "passage", difficulty: "hard", shape: { kind: "ellipse", center: [-98.8, 73.8], rx: 15, ry: 5, rotation: 0 }},
   { name: "Viscount Melville Sound", type: "passage", difficulty: "hard", shape: { kind: "ellipse", center: [-109.6, 73.8], rx: 4, ry: 2, rotation: 0 }},
 
-  // ─── STRAITS (now rendered as water underlay with cross-hatch) ─────
-  { name: "Strait of Gibraltar", type: "strait", difficulty: "easy",   shape: { kind: "ellipse", center: [-5.6, 35.9],  rx: 1.5, ry: 0.8 }},
-  { name: "Strait of Malacca",  type: "strait", difficulty: "medium", shape: { kind: "ellipse", center: [100.0, 3.5],  rx: 4, ry: 2, rotation: -30 }},
-  { name: "Strait of Hormuz",   type: "strait", difficulty: "medium", shape: { kind: "ellipse", center: [56.0, 26.7],  rx: 2, ry: 1 }},
-  { name: "English Channel",    type: "strait", difficulty: "medium", shape: { kind: "ellipse", center: [-2.0, 50.2],  rx: 4, ry: 1.5 }},
-  { name: "Bosphorus",          type: "strait", difficulty: "medium", shape: { kind: "ellipse", center: [29.0, 41.1],  rx: 0.5, ry: 1 }},
-  { name: "Strait of Magellan", type: "strait", difficulty: "hard",   shape: { kind: "ellipse", center: [-71.5, -53.0], rx: 4, ry: 1.5 }},
+  // ─── STRAITS (rendered as dot markers on the map) ─────────────────
+  { name: "Strait of Gibraltar", type: "strait", difficulty: "easy",   shape: { kind: "marker", center: [-5.6, 35.9] }},
+  { name: "Strait of Malacca",  type: "strait", difficulty: "medium", shape: { kind: "marker", center: [100.0, 3.5] }},
+  { name: "Strait of Hormuz",   type: "strait", difficulty: "medium", shape: { kind: "marker", center: [56.0, 26.7] }},
+  { name: "English Channel",    type: "strait", difficulty: "medium", shape: { kind: "marker", center: [-2.0, 50.2] }},
+  { name: "Bosphorus",          type: "strait", difficulty: "medium", shape: { kind: "marker", center: [29.0, 41.1] }},
+  { name: "Strait of Magellan", type: "strait", difficulty: "hard",   shape: { kind: "marker", center: [-71.5, -53.0] }},
 
-  // ─── CANALS (rendered as water underlay with cross-hatch) ──────────
-  { name: "Suez Canal",  type: "canal", difficulty: "easy", shape: { kind: "ellipse", center: [32.4, 30.5], rx: 0.5, ry: 1.5 }},
-  { name: "Panama Canal", type: "canal", difficulty: "easy", shape: { kind: "ellipse", center: [-79.7, 9.1], rx: 0.5, ry: 0.5 }},
+  // ─── CANALS (rendered as dot markers on the map) ───────────────────
+  { name: "Suez Canal",  type: "canal", difficulty: "easy", shape: { kind: "marker", center: [32.4, 30.5] }},
+  { name: "Panama Canal", type: "canal", difficulty: "easy", shape: { kind: "marker", center: [-79.7, 9.1] }},
 
   // ─── NEW SEAS from Natural Earth 10m ───────────────────────────────
   { name: "Sea of Azov",         type: "sea", difficulty: "medium", shape: { kind: "ellipse", center: [37.2, 46.3], rx: 3, ry: 2 }},
@@ -429,18 +428,18 @@ const FEATURES: PhysicalFeature[] = [
   { name: "Bight of Biafra",     type: "bay",  difficulty: "hard",   shape: { kind: "ellipse", center: [8.5, 4.2], rx: 3, ry: 2 }},
 
   // ─── NEW STRAITS & PASSAGES from Natural Earth 10m ────────────────
-  { name: "Bass Strait",         type: "strait", difficulty: "hard",   shape: { kind: "ellipse", center: [146.2, -39.6], rx: 3, ry: 1.5 }},
-  { name: "Cook Strait",         type: "strait", difficulty: "hard",   shape: { kind: "ellipse", center: [174.5, -41.3], rx: 3, ry: 1.5 }},
-  { name: "Denmark Strait",      type: "strait", difficulty: "medium", shape: { kind: "ellipse", center: [-24.6, 66.0], rx: 3, ry: 1.5 }},
-  { name: "Torres Strait",       type: "strait", difficulty: "hard",   shape: { kind: "ellipse", center: [142.3, -9.8], rx: 3, ry: 1.5 }},
-  { name: "Yucatan Channel",     type: "strait", difficulty: "hard",   shape: { kind: "ellipse", center: [-84.9, 21.9], rx: 3, ry: 1.5 }},
-  { name: "Dardanelles",         type: "strait", difficulty: "hard",   shape: { kind: "ellipse", center: [26.4, 40.2], rx: 3, ry: 1.5 }},
-  { name: "Bab el Mandeb",       type: "strait", difficulty: "hard",   shape: { kind: "ellipse", center: [43.9, 12.6], rx: 3, ry: 1.5 }},
-  { name: "Palk Strait",         type: "strait", difficulty: "hard",   shape: { kind: "ellipse", center: [79.8, 9.6], rx: 3, ry: 1.5 }},
-  { name: "Tsugaru Strait",      type: "strait", difficulty: "hard",   shape: { kind: "ellipse", center: [140.8, 41.3], rx: 3, ry: 1.5 }},
-  { name: "La Pérouse Strait",   type: "strait", difficulty: "hard",   shape: { kind: "ellipse", center: [142.1, 45.9], rx: 3, ry: 1.5 }},
-  { name: "Bransfield Strait",   type: "strait", difficulty: "hard",   shape: { kind: "ellipse", center: [-59.9, -63.4], rx: 3, ry: 1.5 }},
-  { name: "Tatar Strait",        type: "strait", difficulty: "hard",   shape: { kind: "ellipse", center: [141.4, 52.6], rx: 3, ry: 1.5 }},
+  { name: "Bass Strait",         type: "strait", difficulty: "hard",   shape: { kind: "marker", center: [146.2, -39.6] }},
+  { name: "Cook Strait",         type: "strait", difficulty: "hard",   shape: { kind: "marker", center: [174.5, -41.3] }},
+  { name: "Denmark Strait",      type: "strait", difficulty: "medium", shape: { kind: "marker", center: [-24.6, 66.0] }},
+  { name: "Torres Strait",       type: "strait", difficulty: "hard",   shape: { kind: "marker", center: [142.3, -9.8] }},
+  { name: "Yucatan Channel",     type: "strait", difficulty: "hard",   shape: { kind: "marker", center: [-84.9, 21.9] }},
+  { name: "Dardanelles",         type: "strait", difficulty: "hard",   shape: { kind: "marker", center: [26.4, 40.2] }},
+  { name: "Bab el Mandeb",       type: "strait", difficulty: "hard",   shape: { kind: "marker", center: [43.9, 12.6] }},
+  { name: "Palk Strait",         type: "strait", difficulty: "hard",   shape: { kind: "marker", center: [79.8, 9.6] }},
+  { name: "Tsugaru Strait",      type: "strait", difficulty: "hard",   shape: { kind: "marker", center: [140.8, 41.3] }},
+  { name: "La Pérouse Strait",   type: "strait", difficulty: "hard",   shape: { kind: "marker", center: [142.1, 45.9] }},
+  { name: "Bransfield Strait",   type: "strait", difficulty: "hard",   shape: { kind: "marker", center: [-59.9, -63.4] }},
+  { name: "Tatar Strait",        type: "strait", difficulty: "hard",   shape: { kind: "marker", center: [141.4, 52.6] }},
 ];
 
 // Deduplicate

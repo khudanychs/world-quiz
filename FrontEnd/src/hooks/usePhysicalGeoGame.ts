@@ -116,7 +116,17 @@ export function usePhysicalGeoGame(categoryKey: string = "all"): PhysicalGeoGame
     if (gameOver || showingResult || !currentFeature) return;
     setSkippedCount(s => s + 1);
     setCurrentStreak(0);
-    advanceToNext(currentIdx, features.length, score);
+
+    // Show the correct answer highlighted (yellow glow) for 1.5s
+    setLastResult({ clickedName: "", correct: false });
+    setShowingResult(true);
+
+    if (resultTimerRef.current) clearTimeout(resultTimerRef.current);
+    resultTimerRef.current = window.setTimeout(() => {
+      setShowingResult(false);
+      setLastResult(null);
+      advanceToNext(currentIdx, features.length, score);
+    }, 1500);
   }, [gameOver, showingResult, currentFeature, currentIdx, features.length, score, advanceToNext]);
 
   const startNewGame = useCallback(

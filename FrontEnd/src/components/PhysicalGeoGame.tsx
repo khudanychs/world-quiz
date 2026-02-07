@@ -1,6 +1,8 @@
 import { useState, useRef, useMemo, useEffect, useCallback, lazy, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
-import { geoPath as d3GeoPath, geoNaturalEarth1, geoArea, type GeoPermissibleObjects } from "d3-geo";
+import { geoPath as d3GeoPath, geoNaturalEarth1, type GeoPermissibleObjects } from "d3-geo";
+import { feature as topoFeature } from "topojson-client";
+import type { Topology, GeometryCollection } from "topojson-specification";
 import { BackButton } from "./BackButton";
 import PhysicalGeoHUD from "./PhysicalGeoHUD";
 import { usePhysicalGeoGame } from "../hooks/usePhysicalGeoGame";
@@ -29,9 +31,9 @@ const InteractiveMap = lazy(() => import("./InteractiveMap"));
 
 type Proj = (coords: [number, number]) => [number, number] | null;
 
-// Lighter land map for performance (water shapes use 10m/50m marine polygons)
-const GEO_URL = "/countries-110m.json";
-const MARINE_URL = "/marine-polys.json";
+// Single merged file: countries (50m land) + marine polygons (50m/10m)
+// Loaded once → InteractiveMap renders land, we extract marine features for water game
+const MERGED_URL = "/world-marine.json";
 const RIVERS_URL = "/rivers.json";
 
 // GeoJSON types for marine polygon data and river line data
@@ -53,7 +55,7 @@ export default function PhysicalGeoGame() {
   const [showSelector, setShowSelector] = useState(true);
 
   // ── Game hook ────────────────────────────────────────────
-  const game = usePhysicalGeoGame(categoryKey ?? "all");
+  const game = usePhysicalGeoGame(categoryKey ?? "mountains");
 
   // ── Layout ───────────────────────────────────────────────
   const { dimensions, isPortrait } = useMapDimensions();
@@ -69,41 +71,39 @@ export default function PhysicalGeoGame() {
     zoom: 1,
   });
 
-  // ── Marine polygon data (real ocean/sea shapes) ──────────
-  // Only load when the selected category includes water types
+  // ── Single fetch of merged TopoJSON ───────────────────────
+  // Fetched once, then passed as an object to InteractiveMap (avoids re-fetch)
+  // and used to extract marine polygon features for the water category.
+  const topoCache = useRef<Topology | null>(null);
+  const [topology, setTopology] = useState<Topology | null>(topoCache.current);
   const [marineData, setMarineData] = useState<GeoFeatureCollection | null>(null);
-  const needsMarine = !showSelector && (categoryKey === "all" || categoryKey === "waters");
+  const needsMarine = !showSelector && categoryKey === "waters";
+
+  // Fetch topology once when we first need it (any category)
+  useEffect(() => {
+    if (showSelector) return;
+    if (topoCache.current) { setTopology(topoCache.current); return; }
+    fetch(MERGED_URL)
+      .then(r => r.json())
+      .then((topo: Topology) => {
+        topoCache.current = topo;
+        setTopology(topo);
+      })
+      .catch(() => {/* fallback: InteractiveMap will fetch via URL */});
+  }, [showSelector]);
+
+  // Extract marine features from the cached topology
   useEffect(() => {
     if (!needsMarine) { setMarineData(null); return; }
-    fetch(MARINE_URL)
-      .then(r => r.json())
-      .then((data: GeoFeatureCollection) => {
-        // Fix inverted polygons using d3-geo's spherical area calculation.
-        // If geoArea > 2π steradians, the polygon covers more than half the
-        // globe — meaning its winding is inverted. Reverse all outer rings.
-        const TWO_PI = 2 * Math.PI;
-        for (const feat of data.features) {
-          const area = geoArea(feat as Parameters<typeof geoArea>[0]);
-          if (area > TWO_PI) {
-            const geom = feat.geometry as { type: string; coordinates: number[][][] | number[][][][] };
-            if (geom.type === "Polygon") {
-              (geom.coordinates as number[][][])[0].reverse();
-            } else if (geom.type === "MultiPolygon") {
-              for (const poly of geom.coordinates as number[][][][]) {
-                poly[0].reverse();
-              }
-            }
-          }
-        }
-        setMarineData(data);
-      })
-      .catch(() => {/* fallback to ellipses if fetch fails */});
-  }, [needsMarine]);
+    if (!topology) return;
+    const geo = topoFeature(topology, topology.objects.marine as GeometryCollection) as unknown as GeoFeatureCollection;
+    setMarineData(geo);
+  }, [needsMarine, topology]);
 
   // ── River line data (real river geometries) ──────────────
   // Only load when the selected category includes rivers
   const [riverData, setRiverData] = useState<GeoFeatureCollection | null>(null);
-  const needsRivers = !showSelector && (categoryKey === "all" || categoryKey === "rivers");
+  const needsRivers = !showSelector && categoryKey === "rivers";
   useEffect(() => {
     if (!needsRivers) { setRiverData(null); return; }
     fetch(RIVERS_URL)
@@ -112,43 +112,69 @@ export default function PhysicalGeoGame() {
       .catch(() => {/* fallback to hand-drawn paths */});
   }, [needsRivers]);
 
-  // ── Pre-compute SVG path strings (expensive — only recompute on resize) ──
-  // Create same projection as InteractiveMap to pre-compute d3GeoPath strings.
-  // Zoom/pan is handled by SVG transform, so the projection is stable.
-  // Build a set of feature names we actually need marine polygons for
-  // (excludes straits/canals which always use ellipse rendering)
-  const neededNames = useMemo(() => {
-    const s = new Set<string>();
-    for (const f of game.features) {
-      if (f.type !== "strait" && f.type !== "canal") s.add(f.name);
+  // ── Pan map to feature location (called on skip) ─────────
+  const panToFeature = useCallback((feature: PhysicalFeature) => {
+    let center: [number, number];
+    if (feature.shape.kind === "marker") {
+      center = feature.shape.center;
+    } else if (feature.shape.kind === "ellipse") {
+      center = feature.shape.center;
+    } else if (feature.shape.kind === "path") {
+      // For paths, use the midpoint
+      const points = feature.shape.points;
+      const midIdx = Math.floor(points.length / 2);
+      center = points[midIdx];
+    } else {
+      return;
     }
-    return s;
-  }, [game.features]);
+    setPos({ coordinates: center, zoom: 4 });
+  }, []);
 
-  const precomputedPaths = useMemo(() => {
+  // ── Lazy-compute SVG path strings (expensive — only compute per-feature on demand) ──
+  // Uses a stable projection matching InteractiveMap. Zoom/pan via SVG transform.
+  // Paths are cached after first computation; cache is invalidated on resize or data change.
+  const pathCacheRef = useRef<{ key: string; cache: Map<string, string | null> }>({ key: "", cache: new Map() });
+
+  const getPrecomputedPath = useMemo(() => {
+    // Include data presence in key so cache clears when marine/river data loads
+    const cacheKey = `${FIT_SCALE}-${INNER_W}-${INNER_H}-${marineData ? 'm' : ''}-${riverData ? 'r' : ''}`;
+    // Invalidate cache on resize or when data arrives
+    if (pathCacheRef.current.key !== cacheKey) {
+      pathCacheRef.current = { key: cacheKey, cache: new Map() };
+    }
+    const cache = pathCacheRef.current.cache;
+
     const proj = geoNaturalEarth1()
       .scale(FIT_SCALE)
       .translate([INNER_W / 2, INNER_H / 2])
       .center([0, 15]);
     const pathGen = d3GeoPath(proj);
-    const paths = new Map<string, string>();
+
+    // Build lookup maps once when source data changes
+    const marineLookup = new Map<string, GeoFeature>();
     if (marineData) {
-      // Only precompute paths for features in the current game
       for (const feat of marineData.features) {
-        if (!neededNames.has(feat.properties.name)) continue;
-        const d = pathGen(feat.geometry);
-        if (d) paths.set(feat.properties.name, d);
+        marineLookup.set(feat.properties.name, feat);
       }
     }
+    const riverLookup = new Map<string, GeoFeature>();
     if (riverData) {
       for (const feat of riverData.features) {
-        if (!neededNames.has(feat.properties.name)) continue;
-        const d = pathGen(feat.geometry);
-        if (d) paths.set("river:" + feat.properties.name, d);
+        riverLookup.set(feat.properties.name, feat);
       }
     }
-    return paths;
-  }, [marineData, riverData, neededNames, FIT_SCALE, INNER_W, INNER_H]);
+
+    return (name: string, isRiver = false): string | null => {
+      const key = isRiver ? `river:${name}` : name;
+      if (cache.has(key)) return cache.get(key)!;
+      const lookup = isRiver ? riverLookup : marineLookup;
+      const feat = lookup.get(name);
+      if (!feat) { cache.set(key, null); return null; }
+      const d = pathGen(feat.geometry) || null;
+      cache.set(key, d);
+      return d;
+    };
+  }, [marineData, riverData, FIT_SCALE, INNER_W, INNER_H]);
 
   // ── Streak milestone animation (shows at 5, 10, 15, …) ───
   const [streakMilestone, setStreakMilestone] = useState<number | null>(null);
@@ -177,27 +203,17 @@ export default function PhysicalGeoGame() {
   };
 
   // ── Split features into water (underlay) and land (overlay) ───
-  // Small straits/canals also get a marker in the overlay for visibility
-  const { waterFeatures, landFeatures, markerWaterFeatures } = useMemo(() => {
+  const { waterFeatures, landFeatures } = useMemo(() => {
     const water: PhysicalFeature[] = [];
     const land: PhysicalFeature[] = [];
-    const markerWater: PhysicalFeature[] = [];
     for (const f of game.features) {
       if (isWaterFeature(f)) {
         water.push(f);
-        // Small straits/canals need a visible marker on top of land
-        if (
-          (f.type === "strait" || f.type === "canal") &&
-          f.shape.kind === "ellipse" &&
-          f.shape.rx * f.shape.ry < 5
-        ) {
-          markerWater.push(f);
-        }
       } else {
         land.push(f);
       }
     }
-    return { waterFeatures: water, landFeatures: land, markerWaterFeatures: markerWater };
+    return { waterFeatures: water, landFeatures: land };
   }, [game.features]);
 
   // ── Visual state for a feature ───────────────────────────
@@ -251,11 +267,7 @@ export default function PhysicalGeoGame() {
     return (
       <g>
         {waterFeatures.map((feature) => {
-          // For straits/canals, always use ellipse
-          let d: string | null = null;
-          if (feature.type !== "strait" && feature.type !== "canal") {
-            d = precomputedPaths.get(feature.name) ?? null;
-          }
+          let d: string | null = getPrecomputedPath(feature.name) ?? null;
 
           if (!d && feature.shape.kind === "ellipse") {
             const { center, rx, ry, rotation = 0 } = feature.shape;
@@ -313,57 +325,17 @@ export default function PhysicalGeoGame() {
         })}
       </g>
     );
-  }, [waterFeatures, precomputedPaths, game.showingResult, game.lastResult, game.currentFeature, game.correctSet, game.gameOver]);
+  }, [waterFeatures, getPrecomputedPath, game.showingResult, game.lastResult, game.currentFeature, game.correctSet, game.gameOver]);
 
   // ═════════════════════════════════════════════════════════
   //  LAND OVERLAY — rendered AFTER land geographies
   //  Mountains, rivers, deserts, lakes, straits, canals, etc.
   // ═════════════════════════════════════════════════════════
   const renderLandOverlay = useCallback((projection: Proj, zoom: number, _isDesktop: boolean) => {
-    if (landFeatures.length === 0 && markerWaterFeatures.length === 0) return null;
+    if (landFeatures.length === 0) return null;
 
     return (
       <g>
-        {/* Markers for small straits/canals that are too small to see as water polygons */}
-        {markerWaterFeatures.map((feature) => {
-          if (feature.shape.kind !== "ellipse") return null;
-          const pt = projection(feature.shape.center);
-          if (!pt) return null;
-          const vis = getFeatureVisual(feature);
-          const clickable = canClick(feature);
-          const handleClick = clickable
-            ? () => game.handleFeatureClick(feature.name)
-            : undefined;
-          const r = Math.max(3, 6 / Math.pow(zoom, 0.4));
-          return (
-            <g key={`marker-${feature.name}`}>
-              <circle
-                cx={pt[0]} cy={pt[1]} r={r * 2.5}
-                fill="transparent"
-                style={{ cursor: clickable ? "pointer" : "default", pointerEvents: clickable ? "all" : "none" }}
-                onClick={handleClick}
-              />
-              <circle
-                cx={pt[0]} cy={pt[1]} r={r}
-                fill={vis.color} stroke="#fff"
-                strokeWidth={Math.max(0.5, 1 / Math.pow(zoom, 0.4))}
-                opacity={vis.opacity}
-                style={{ pointerEvents: "none" }}
-              />
-              {vis.glow && (
-                <circle
-                  cx={pt[0]} cy={pt[1]} r={r * 1.8}
-                  fill="none" stroke={vis.color} strokeWidth={2} opacity={0.5}
-                  style={{ pointerEvents: "none" }}
-                >
-                  <animate attributeName="r" from={r * 1.3} to={r * 2.5} dur="0.8s" repeatCount="indefinite" />
-                  <animate attributeName="opacity" from="0.6" to="0" dur="0.8s" repeatCount="indefinite" />
-                </circle>
-              )}
-            </g>
-          );
-        })}
-
         {landFeatures.map((feature) => {
           const vis = getFeatureVisual(feature);
           const clickable = canClick(feature);
@@ -421,7 +393,7 @@ export default function PhysicalGeoGame() {
               let d: string | null = null;
 
               if (feature.type === "river") {
-                d = precomputedPaths.get("river:" + feature.name) ?? null;
+                d = getPrecomputedPath(feature.name, true) ?? null;
               }
               if (!d) {
                 d = projectPath(feature.shape.points, projection);
@@ -515,7 +487,7 @@ export default function PhysicalGeoGame() {
       </g>
     );
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [landFeatures, markerWaterFeatures, precomputedPaths, game.showingResult, game.lastResult, game.currentFeature, game.correctSet, game.gameOver]);
+  }, [landFeatures, getPrecomputedPath, game.showingResult, game.lastResult, game.currentFeature, game.correctSet, game.gameOver]);
 
   // ═══════════════════════════════════════════════════════════
   //  RENDER
@@ -531,20 +503,15 @@ export default function PhysicalGeoGame() {
             <p className="phys-category-subtitle">Choose a category to start</p>
 
             <div className={`phys-category-grid ${isPortrait ? "portrait" : "landscape"}`}>
-              {CATEGORY_GROUPS.map((group) => {
-                const isAll = group.key === "all";
-                return (
-                  <button
-                    key={group.key}
-                    onClick={() => selectCategory(group.key)}
-                    className={`phys-cat-btn phys-cat-btn-${group.key} ${isAll ? "phys-btn-all" : ""}`}
-                    style={isAll ? { ...GREEN_BUTTON_STYLE } : undefined}
-                    {...(isAll ? GREEN_BUTTON_HOVER : {})}
-                  >
-                    {group.emoji} {group.label}
-                  </button>
-                );
-              })}
+              {CATEGORY_GROUPS.map((group) => (
+                <button
+                  key={group.key}
+                  onClick={() => selectCategory(group.key)}
+                  className={`phys-cat-btn phys-cat-btn-${group.key}`}
+                >
+                  {group.emoji} {group.label}
+                </button>
+              ))}
             </div>
 
             <button onClick={() => navigate("/")} className="phys-category-back-btn">
@@ -604,7 +571,10 @@ export default function PhysicalGeoGame() {
             onStartNewGame={() => {
               setShowSelector(true);
             }}
-            onSkip={game.skipCurrent}
+            onSkip={() => {
+              if (game.currentFeature) panToFeature(game.currentFeature);
+              game.skipCurrent();
+            }}
             isPortrait={isPortrait}
           />
         </div>
@@ -661,7 +631,7 @@ export default function PhysicalGeoGame() {
         )}
 
         {/* ── Result flash badge ────────────────────── */}
-        {game.showingResult && game.lastResult && (
+        {game.showingResult && game.lastResult && game.lastResult.clickedName !== "" && (
           <div className="phys-result-flash">
             <div className={`phys-result-badge ${game.lastResult.correct ? "correct" : "wrong"}`}>
               {game.lastResult.correct ? "✓ Correct!" : "✗ Wrong"}
@@ -703,7 +673,7 @@ export default function PhysicalGeoGame() {
               coordinates={pos.coordinates}
               isDesktop={!isPortrait && window.innerWidth >= 768}
               borderless
-              geoUrl={GEO_URL}
+              geoUrl={topology ?? MERGED_URL}
               onMoveEnd={({ zoom, coordinates }: { zoom: number; coordinates: [number, number] }) => {
                 setPos({ zoom, coordinates });
               }}

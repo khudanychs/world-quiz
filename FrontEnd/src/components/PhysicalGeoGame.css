@@ -65,16 +65,6 @@
   grid-template-columns: repeat(2, 1fr);
 }
 
-/* "All Features" button */
-.phys-btn-all {
-  padding: clamp(14px, 3vw, 18px) clamp(18px, 4vw, 24px);
-  font-size: clamp(15px, 3.2vw, 18px);
-}
-
-.phys-category-grid.landscape .phys-btn-all {
-  grid-column: 1 / -1;
-}
-
 /* Category Buttons - Base Style */
 .phys-cat-btn {
   padding: clamp(12px, 2.8vw, 16px) clamp(16px, 3.5vw, 20px);

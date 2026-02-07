@@ -106,8 +106,8 @@ interface InteractiveMapProps {
   gameMode?: boolean;
   /** When true, render map with no country borders and uniform land fill */
   borderless?: boolean;
-  /** Custom TopoJSON URL (e.g. higher-res map) */
-  geoUrl?: string;
+  /** Custom TopoJSON URL or pre-fetched topology object */
+  geoUrl?: string | object;
   /** Render SVG BEFORE land geographies (water features that should be masked by land) */
   renderUnderlay?: (projection: (coords: [number, number]) => [number, number] | null, zoom: number, isDesktop: boolean) => React.ReactNode;
   /** Render SVG AFTER land geographies (mountains, rivers, etc. drawn on top) */
