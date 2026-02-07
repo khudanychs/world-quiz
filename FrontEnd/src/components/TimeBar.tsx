@@ -7,6 +7,8 @@ interface TimeBarProps {
   graceTimeMs?: number;
   onTimeUp?: () => void;
   onPointsChange?: (points: number) => void;
+  initialElapsedMs?: number;
+  onElapsedChange?: (elapsed: number) => void;
 }
 
 export function TimeBar({ 
@@ -15,15 +17,17 @@ export function TimeBar({
   isRunning, 
   graceTimeMs = 0,
   onTimeUp, 
-  onPointsChange 
+  onPointsChange,
+  initialElapsedMs = 0,
+  onElapsedChange
 }: TimeBarProps) {
   const totalDurationMs = durationSeconds * 1000;
-  const [elapsedMs, setElapsedMs] = useState(0);
+  const [elapsedMs, setElapsedMs] = useState(initialElapsedMs);
   const intervalRef = useRef<number | null>(null);
 
   useEffect(() => {
-    setElapsedMs(0);
-  }, [durationSeconds, maxPoints]);
+    setElapsedMs(initialElapsedMs);
+  }, [initialElapsedMs]);
 
   useEffect(() => {
     if (!isRunning) {
@@ -37,7 +41,6 @@ export function TimeBar({
         
         if (newElapsed >= totalDurationMs) {
           if (intervalRef.current) clearInterval(intervalRef.current);
-          onTimeUp?.();
           return totalDurationMs;
         }
         
@@ -48,7 +51,17 @@ export function TimeBar({
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
-  }, [isRunning, totalDurationMs, onTimeUp]);
+  }, [isRunning, totalDurationMs]);
+
+  // Notify parent about elapsed changes OUTSIDE the state updater
+  useEffect(() => {
+    if (elapsedMs > 0 && elapsedMs < totalDurationMs) {
+      onElapsedChange?.(elapsedMs);
+    }
+    if (elapsedMs >= totalDurationMs) {
+      onTimeUp?.();
+    }
+  }, [elapsedMs, totalDurationMs, onElapsedChange, onTimeUp]);
 
   let currentPoints = maxPoints;
   let percentage = 100;
@@ -67,8 +80,13 @@ export function TimeBar({
   if (currentPoints < 0) currentPoints = 0;
   if (percentage < 0) percentage = 0;
 
+  // Track previous points to avoid redundant callbacks
+  const prevPointsRef = useRef(currentPoints);
   useEffect(() => {
-    onPointsChange?.(currentPoints);
+    if (currentPoints !== prevPointsRef.current) {
+      prevPointsRef.current = currentPoints;
+      onPointsChange?.(currentPoints);
+    }
   }, [currentPoints, onPointsChange]);
 
   // Gradient colors based on percentage

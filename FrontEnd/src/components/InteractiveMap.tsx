@@ -6,7 +6,7 @@ import { normalizeCountryName, isClickableInGameMode, isHiddenTerritory } from "
 import { SMALL_ISLAND_MARKERS } from "../utils/markerPositions";
 
 const PROJECTION = "geoNaturalEarth1" as const;
-const geoUrl = "/countries-110m.json";
+const DEFAULT_GEO_URL = "/countries-110m.json";
 
 /* ============================================================================
    MARKER CONFIGURATION - Edit these values to customize marker appearance
@@ -104,6 +104,14 @@ interface InteractiveMapProps {
   isDesktop?: boolean;
   /** When true, unclickable game territories will have visual cues (no pointer cursor) */
   gameMode?: boolean;
+  /** When true, render map with no country borders and uniform land fill */
+  borderless?: boolean;
+  /** Custom TopoJSON URL (e.g. higher-res map) */
+  geoUrl?: string;
+  /** Render SVG BEFORE land geographies (water features that should be masked by land) */
+  renderUnderlay?: (projection: (coords: [number, number]) => [number, number] | null, zoom: number, isDesktop: boolean) => React.ReactNode;
+  /** Render SVG AFTER land geographies (mountains, rivers, etc. drawn on top) */
+  renderOverlay?: (projection: (coords: [number, number]) => [number, number] | null, zoom: number, isDesktop: boolean) => React.ReactNode;
 }
 
 export default memo(function InteractiveMap({
@@ -121,7 +129,12 @@ export default memo(function InteractiveMap({
   onGeographiesLoaded,
   isDesktop = true,
   gameMode = false,
+  borderless = false,
+  geoUrl: customGeoUrl,
+  renderUnderlay,
+  renderOverlay,
 }: InteractiveMapProps) {
+  const geoUrl = customGeoUrl ?? DEFAULT_GEO_URL;
   
   // Track if we've already notified parent about geographies
   const hasNotifiedRef = useRef(false);
@@ -144,6 +157,8 @@ export default memo(function InteractiveMap({
     }
   };
 
+
+
   return (
     <ComposableMap
       projection={PROJECTION}
@@ -159,6 +174,9 @@ export default memo(function InteractiveMap({
         maxZoom={ZOOM_CONFIG.maxZoom}
         onMoveEnd={onMoveEnd}
       >
+        {/* Water feature underlays — rendered BEFORE land so land masks them */}
+        {renderUnderlay && renderUnderlay(projection, zoom, isDesktop)}
+
         <Geographies geography={geoUrl}>
           {({ geographies }: GeographiesArgs) => {
             // Notify parent about loaded geographies (only once)
@@ -186,14 +204,21 @@ export default memo(function InteractiveMap({
               const isUnclickableInGame = gameMode && !isClickableInGameMode(nameRaw);
               
               // Determine if this geography should not be interactive
-              const notInteractive = hideForMarker || isUnclickableInGame;
+              const notInteractive = hideForMarker || isUnclickableInGame || borderless;
+
+              // Borderless mode: uniform land color, fully invisible borders
+              const landFill = borderless ? "#c4b99a" : undefined;
+              const strokeColor = borderless ? "transparent" : "#2d3748";
+              const strokeW = borderless ? 0 : 0.65;
 
               // Get fill color
-              const fill = getCountryFill 
-                ? getCountryFill(name)
-                : isSelected 
-                  ? "#3b82f6" 
-                  : "#e0d8c2";
+              const fill = borderless
+                ? (landFill!)
+                : getCountryFill 
+                  ? getCountryFill(name)
+                  : isSelected 
+                    ? "#3b82f6" 
+                    : "#e0d8c2";
               
               const displayFill = hideForMarker ? "transparent" : fill;
 
@@ -208,20 +233,20 @@ export default memo(function InteractiveMap({
                   style={{
                     default: {
                       fill: displayFill,
-                      stroke: hideForMarker ? "transparent" : "#2d3748",
-                      strokeWidth: 0.65,
+                      stroke: hideForMarker ? "transparent" : strokeColor,
+                      strokeWidth: strokeW,
                       strokeLinejoin: "round",
                       strokeLinecap: "round",
                       outline: "none",
                       transition: "fill 0.15s ease-out",
-                      cursor: notInteractive ? "default" : "pointer",
+                      cursor: borderless ? "crosshair" : (notInteractive ? "default" : "pointer"),
                       pointerEvents: hideForMarker ? "none" : "visibleFill",
                     },
                     hover: !notInteractive
                       ? {
                           fill: displayFill,
-                          stroke: "#2d3748",
-                          strokeWidth: 0.65,
+                          stroke: strokeColor,
+                          strokeWidth: strokeW,
                           outline: "none",
                           cursor: "pointer",
                           pointerEvents: "visibleFill",
@@ -230,14 +255,15 @@ export default memo(function InteractiveMap({
                         }
                       : {
                           fill: displayFill,
-                          cursor: "default",
+                          cursor: borderless ? "crosshair" : "default",
                           outline: "none",
+                          pointerEvents: "visibleFill",
                         },
                     pressed: !notInteractive
                       ? {
                           fill: fill,
-                          stroke: "#2d3748",
-                          strokeWidth: 0.65,
+                          stroke: strokeColor,
+                          strokeWidth: strokeW,
                           outline: "none",
                           cursor: "pointer",
                           pointerEvents: "visibleFill",
@@ -245,21 +271,22 @@ export default memo(function InteractiveMap({
                         }
                       : {
                           fill: displayFill,
-                          cursor: "default",
+                          cursor: borderless ? "crosshair" : "default",
                           outline: "none",
+                          pointerEvents: "visibleFill",
                         },
                   }}
-                  onMouseEnter={!hideForMarker ? () => handleCountryHover(name) : undefined}
-                  onMouseLeave={!hideForMarker ? () => handleCountryHover(null) : undefined}
-                  onClick={!hideForMarker ? () => handleCountryClick(name) : undefined}
+                  onMouseEnter={(!hideForMarker && !borderless) ? () => handleCountryHover(name) : undefined}
+                  onMouseLeave={(!hideForMarker && !borderless) ? () => handleCountryHover(null) : undefined}
+                  onClick={(!hideForMarker && !borderless) ? () => handleCountryClick(name) : undefined}
                 />
               );
             });
           }}
         </Geographies>
         
-        {/* Visual markers for very small island nations */}
-        {Object.entries(SMALL_ISLAND_MARKERS).map(([countryName, [lon, lat]]) => {
+        {/* Visual markers for very small island nations (hidden in borderless mode) */}
+        {!borderless && Object.entries(SMALL_ISLAND_MARKERS).map(([countryName, [lon, lat]]) => {
           const norm = normalizeCountryName(countryName);
           const isSelected = selectedCountry === norm;
           
@@ -294,6 +321,9 @@ export default memo(function InteractiveMap({
             />
           );
         })}
+
+        {/* Physical geography feature overlays */}
+        {renderOverlay && renderOverlay(projection, zoom, isDesktop)}
       </ZoomableGroup>
     </ComposableMap>
   );

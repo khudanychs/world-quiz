@@ -97,20 +97,7 @@ export default function GameHUD({
 
   if (!currentTarget) {
     return (
-      <button
-        onClick={onStartNewGame}
-        style={{
-          padding: "clamp(8px, 2vw, 12px) clamp(16px, 4vw, 20px)",
-          borderRadius: "clamp(8px, 2vw, 10px)",
-          border: "1px solid rgba(255,255,255,0.3)",
-          background: "rgba(255,255,255,0.08)",
-          color: "#fff",
-          fontSize: "clamp(13px, 3vw, 16px)",
-          cursor: "pointer",
-        }}
-      >
-        Start round
-      </button>
+      <span style={{ fontSize: "clamp(12px, 2.8vw, 16px)" }}>Loading…</span>
     );
   }
   

@@ -11,12 +11,13 @@ const Settings = lazy(() => import('./components/Settings').then(m => ({ default
 const WorldMap = lazy(() => import('./WorldMap'));
 const FlagMatchGame = lazy(() => import('./components/FlagMatchGame'));
 const CardMatchGame = lazy(() => import('./components/CardMatchGame'));
+const PhysicalGeoGame = lazy(() => import('./components/PhysicalGeoGame'));
 const MainMenu = lazy(() => import('./components/MainMenu'));
 const LeaderboardsPage = lazy(() => import('./pages/LeaderboardsPage'));
 const CountryIndex = lazy(() => import('./pages/CountryIndex'));
 const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'));
 const TermsConditions = lazy(() => import('./pages/TermsConditions'));
-
+  
 // Loading fallback component
 const LoadingFallback = () => (
   <div style={{
@@ -230,6 +231,7 @@ export default function App() {
             <Route path='/countries' element={<VerifiedOrGuestRoute><CountryIndex /></VerifiedOrGuestRoute>} />
             <Route path='/map' element={<VerifiedOrGuestRoute><WorldMap /></VerifiedOrGuestRoute>} />
             <Route path='/game/flags' element={<VerifiedOrGuestRoute><FlagMatchGame /></VerifiedOrGuestRoute>} />
+            <Route path='/game/physical-geo' element={<VerifiedOrGuestRoute><PhysicalGeoGame /></VerifiedOrGuestRoute>} />
             <Route path='/settings' element={<ProtectedRoute><Settings /></ProtectedRoute>} />
             <Route path='/terms' element={<TermsConditions />} />
             <Route path='/game/shape-match' element={<VerifiedOrGuestRoute><CardMatchGame /></VerifiedOrGuestRoute>} />

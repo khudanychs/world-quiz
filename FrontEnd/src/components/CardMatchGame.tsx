@@ -496,12 +496,14 @@ export default function CardMatchGame() {
           {/* TimeBar */}
           <div style={{ width: "100%" }}>
             <TimeBar
-              key={game.matchCount}
+              key={`${game.gameSessionId}-${game.matchCount}`}
               durationSeconds={11}
               maxPoints={1500}
               isRunning={game.gameStarted && !game.gameOver}
               graceTimeMs={0}
+              initialElapsedMs={game.matchElapsedMs}
               onPointsChange={(points) => game.setCurrentMatchPoints(points)}
+              onElapsedChange={(elapsed) => game.setMatchElapsedMs(elapsed)}
             />
           </div>
   
@@ -577,12 +579,14 @@ export default function CardMatchGame() {
       {/* TimeBar */}
       <div style={{ marginBottom: "clamp(8px, 2vw, 12px)" }}>
         <TimeBar
-          key={game.matchCount}
+          key={`${game.gameSessionId}-${game.matchCount}`}
           durationSeconds={11}
           maxPoints={1500}
           isRunning={game.gameStarted && !game.gameOver}
           graceTimeMs={0}
+          initialElapsedMs={game.matchElapsedMs}
           onPointsChange={(points) => game.setCurrentMatchPoints(points)}
+          onElapsedChange={(elapsed) => game.setMatchElapsedMs(elapsed)}
         />
       </div>
 

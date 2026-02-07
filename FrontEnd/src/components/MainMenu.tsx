@@ -11,13 +11,13 @@ export default function MainMenu() {
       </header>
 
       <section className="menu-grid">
-        <div className="menu-card disabled">
+        <button className="menu-card" onClick={() => navigate('/game/physical-geo')}>
           <div className="menu-card-body">
-            <h3>Capital Quiz</h3>
-            <p>Guess the capital city for each country.</p>
-            <span className="menu-tag">Coming soon</span>
+            <h3>Physical Geography</h3>
+            <p>Locate mountains, rivers, deserts, seas and more!</p>
+            <span className="menu-tag" style={{background:'#f59e0b'}}>New</span>
           </div>
-        </div>
+        </button>
         <button className="menu-card" onClick={() => navigate('/game/flags')}>
           <div className="menu-card-body">
             <h3>Flag Match</h3>
@@ -28,7 +28,6 @@ export default function MainMenu() {
           <div className="menu-card-body">
             <h3>Cards Match</h3>
             <p>Match Flags, Countries, Capitals, or Shapes on a timer!</p>
-            <span className="menu-tag" style={{background:'#22c55e'}}>New</span>
           </div>
         </button>
         <div className="menu-card disabled">

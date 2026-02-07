@@ -108,6 +108,8 @@ export function useCardMatchGame(pair: { first: CardKind; second: CardKind }) {
   const matchTimerRef = useRef<number | null>(null);
   const [currentMatchPoints, setCurrentMatchPoints] = useState<number>(0);
   const [matchCount, setMatchCount] = useState<number>(0);
+  const [gameSessionId, setGameSessionId] = useState<string>(() => Math.random().toString(36));
+  const [matchElapsedMs, setMatchElapsedMs] = useState<number>(0);
 
   // Load countries data and topology
   useEffect(() => {
@@ -392,6 +394,10 @@ export function useCardMatchGame(pair: { first: CardKind; second: CardKind }) {
       loadError: "",
     });
     
+    // Generate new session ID for this game
+    setGameSessionId(Math.random().toString(36));
+    setMatchCount(0);
+    
     // Generate first card set
     generateNewCardSet();
   }
@@ -453,6 +459,7 @@ export function useCardMatchGame(pair: { first: CardKind; second: CardKind }) {
         
         // Increment match count to reset TimeBar
         setMatchCount(prev => prev + 1);
+        setMatchElapsedMs(0);
 
         // Update state immediately - clear selections so user can click next card instantly
         setState((s) => ({
@@ -508,7 +515,10 @@ export function useCardMatchGame(pair: { first: CardKind; second: CardKind }) {
     matchTimeElapsed,
     currentMatchPoints,
     matchCount,
+    gameSessionId,
+    matchElapsedMs,
     setCurrentMatchPoints,
+    setMatchElapsedMs,
     startNewGame,
     handleCardClick,
     getStreakMultiplier,

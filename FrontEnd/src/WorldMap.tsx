@@ -267,7 +267,7 @@ export default function WorldMap() {
                 opacity: 0.6,
               }}
             >
-              Click on any country to see its flag and capital
+              Click on any country to see details
             </div>
           </div>
         )}
