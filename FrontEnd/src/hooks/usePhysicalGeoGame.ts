@@ -18,6 +18,7 @@ export interface PhysicalGeoGameState {
   bestStreak: number;
   skippedCount: number;
   correctSet: Set<string>;
+  skippedSet: Set<string>;
 
   // Game state
   gameOver: boolean;
@@ -47,6 +48,7 @@ export function usePhysicalGeoGame(categoryKey: string = "all"): PhysicalGeoGame
   const [bestStreak, setBestStreak] = useState(0);
   const [skippedCount, setSkippedCount] = useState(0);
   const [correctSet, setCorrectSet] = useState<Set<string>>(new Set());
+  const [skippedSet, setSkippedSet] = useState<Set<string>>(new Set());
   const [gameOver, setGameOver] = useState(false);
   const [hasWon, setHasWon] = useState(false);
   const [showWinAnimation, setShowWinAnimation] = useState(false);
@@ -116,6 +118,7 @@ export function usePhysicalGeoGame(categoryKey: string = "all"): PhysicalGeoGame
     if (gameOver || showingResult || !currentFeature) return;
     setSkippedCount(s => s + 1);
     setCurrentStreak(0);
+    setSkippedSet(prev => new Set(prev).add(currentFeature.name));
 
     // Show the correct answer highlighted (yellow glow) for 1.5s
     setLastResult({ clickedName: "", correct: false });
@@ -139,6 +142,7 @@ export function usePhysicalGeoGame(categoryKey: string = "all"): PhysicalGeoGame
       setBestStreak(0);
       setSkippedCount(0);
       setCorrectSet(new Set());
+      setSkippedSet(new Set());
       setGameOver(false);
       setHasWon(false);
       setShowWinAnimation(false);
@@ -160,6 +164,7 @@ export function usePhysicalGeoGame(categoryKey: string = "all"): PhysicalGeoGame
     bestStreak,
     skippedCount,
     correctSet,
+    skippedSet,
     gameOver,
     hasWon,
     showWinAnimation,

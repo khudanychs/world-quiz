@@ -242,7 +242,11 @@ export default function PhysicalGeoGame() {
     }
 
     if (isCorrect) {
-      return { color: "#4caf50", opacity: 0.5, fillOpacity: baseFillOpacity * 0.4, glow: false };
+      return { color: "#4caf50", opacity: 0.7, fillOpacity: baseFillOpacity * 0.5, glow: false };
+    }
+
+    if (game.skippedSet.has(feature.name)) {
+      return { color: "#f59e0b", opacity: 0.7, fillOpacity: baseFillOpacity * 0.5, glow: false };
     }
 
     return { color: baseColor, opacity: 1, fillOpacity: baseFillOpacity, glow: false };
@@ -250,61 +254,84 @@ export default function PhysicalGeoGame() {
 
   // ── Shared click guard ───────────────────────────────────
   const canClick = (feature: PhysicalFeature) =>
-    !game.correctSet.has(feature.name) && !game.showingResult && !game.gameOver;
+    !game.correctSet.has(feature.name) && !game.skippedSet.has(feature.name) && !game.showingResult && !game.gameOver;
 
   // ═════════════════════════════════════════════════════════
   //  WATER UNDERLAY — rendered BEFORE land geographies
   //  Uses real GeoJSON polygons from Natural Earth marine data
   //  Land covers overlapping areas → only real water shows
-  //  Normal state: outline only (no fill) so ocean stays dark
-  //  State colors appear on correct/wrong/highlight
+  //  No ellipse fallback — only real marine polygons are used.
+  //  Features without a polygon are rendered as marker dots.
   // ═════════════════════════════════════════════════════════
   const renderWaterUnderlay = useCallback((projection: Proj, zoom: number, _isDesktop: boolean) => {
     if (waterFeatures.length === 0) return null;
 
     const sw = Math.max(0.5, 1.2 / Math.pow(zoom, 0.5));
+    const markerR = Math.max(4, 8 / Math.pow(zoom, 0.4));
 
     return (
-      <g>
+      <g shapeRendering="optimizeSpeed">
         {waterFeatures.map((feature) => {
-          let d: string | null = getPrecomputedPath(feature.name) ?? null;
-
-          if (!d && feature.shape.kind === "ellipse") {
-            const { center, rx, ry, rotation = 0 } = feature.shape;
-            d = projectEllipse(center, rx, ry, rotation, projection, 48);
-          }
-          if (!d) return null;
+          const d: string | null = getPrecomputedPath(feature.name) ?? null;
 
           const clickable = canClick(feature);
           const handleClick = clickable
             ? () => game.handleFeatureClick(feature.name)
             : undefined;
 
-          // Default: transparent fill, subtle outline
-          let fillColor = "transparent";
-          let strokeColor = "rgba(140,200,255,0.35)";
+          // ── Determine visual state ──
+          let fillColor = "#0f2a4a";
+          let strokeColor = "rgba(100,160,220,0.45)";
           let strokeW = sw;
-          let showGlow = false;
 
           if (game.showingResult && game.lastResult) {
             if (game.lastResult.correct && feature.name === game.currentFeature?.name) {
-              fillColor = "rgba(76,175,80,0.30)";
+              fillColor = "#2e7d32";
               strokeColor = "#4caf50";
               strokeW = sw * 2;
-              showGlow = true;
             } else if (!game.lastResult.correct && feature.name === game.lastResult.clickedName) {
-              fillColor = "rgba(239,68,68,0.25)";
+              fillColor = "#7f1d1d";
               strokeColor = "#ef4444";
               strokeW = sw * 2;
             } else if (!game.lastResult.correct && feature.name === game.currentFeature?.name) {
-              fillColor = "rgba(255,193,7,0.30)";
+              fillColor = "#7c6300";
               strokeColor = "#ffc107";
               strokeW = sw * 2;
-              showGlow = true;
             }
           } else if (game.correctSet.has(feature.name)) {
-            fillColor = "rgba(76,175,80,0.12)";
-            strokeColor = "rgba(76,175,80,0.4)";
+            // Permanently green after correct guess
+            fillColor = "#1b5e20";
+            strokeColor = "#4caf50";
+          } else if (game.skippedSet.has(feature.name)) {
+            // Permanently yellow/orange after skip
+            fillColor = "#5c4800";
+            strokeColor = "#f59e0b";
+          }
+
+          // ── No marine polygon? Render as a marker dot ──
+          if (!d) {
+            const center = feature.shape.kind === "ellipse" ? feature.shape.center
+              : feature.shape.kind === "marker" ? feature.shape.center
+              : null;
+            if (!center) return null;
+            const pt = projection(center);
+            if (!pt) return null;
+            return (
+              <circle
+                key={feature.name}
+                cx={pt[0]}
+                cy={pt[1]}
+                r={markerR}
+                fill={fillColor}
+                stroke={strokeColor}
+                strokeWidth={Math.max(0.5, 1 / Math.pow(zoom, 0.4))}
+                style={{
+                  cursor: clickable ? "pointer" : "default",
+                  pointerEvents: clickable ? "all" : "none",
+                }}
+                onClick={handleClick}
+              />
+            );
           }
 
           return (
@@ -325,7 +352,7 @@ export default function PhysicalGeoGame() {
         })}
       </g>
     );
-  }, [waterFeatures, getPrecomputedPath, game.showingResult, game.lastResult, game.currentFeature, game.correctSet, game.gameOver]);
+  }, [waterFeatures, getPrecomputedPath, game.showingResult, game.lastResult, game.currentFeature, game.correctSet, game.skippedSet, game.gameOver]);
 
   // ═════════════════════════════════════════════════════════
   //  LAND OVERLAY — rendered AFTER land geographies
@@ -645,6 +672,8 @@ export default function PhysicalGeoGame() {
           style={{
             ...getMapWrapperStyle(OUTER_W, OUTER_H, FRAME, "#5b8cff"),
             position: "relative",
+            // Waters mode: muted dark background = non-playable; marine features drawn dark blue on top
+            ...(categoryKey === "waters" ? { background: "#2a1520" } : {}),
           }}
           aria-label="Physical geography game map"
         >
