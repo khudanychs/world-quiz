@@ -24,6 +24,7 @@ a:hover {
 
 html, body, #root {
   height: 100%;
+  height: 100dvh;
   width: 100%;
   margin: 0;
   padding: 0;
@@ -35,6 +36,7 @@ body {
   display: block;
   min-width: 320px;
   min-height: 100vh;
+  min-height: 100dvh;
   box-sizing: border-box;
 }
 

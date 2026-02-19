@@ -317,7 +317,6 @@ const FEATURES: PhysicalFeature[] = [
   { name: "Laccadive Sea",       type: "sea", difficulty: "hard",   shape: { kind: "ellipse", center: [75.9, 10.2],    rx: 3,  ry: 5,   rotation: 0 }},
   { name: "Laptev Sea",          type: "sea", difficulty: "hard",   shape: { kind: "ellipse", center: [115.4, 75.7],   rx: 8,  ry: 4,   rotation: 0 }},
   { name: "Molucca Sea",         type: "sea", difficulty: "hard",   shape: { kind: "ellipse", center: [126.1, 0.6],    rx: 2,  ry: 3,   rotation: 0 }},
-  { name: "Scotia Sea",          type: "sea", difficulty: "hard",   shape: { kind: "ellipse", center: [-55.0, -61.1],  rx: 5,  ry: 3,   rotation: 0 }},
   { name: "Solomon Sea",         type: "sea", difficulty: "hard",   shape: { kind: "ellipse", center: [154.3, -7.7],   rx: 4,  ry: 3,   rotation: 0 }},
   { name: "Sulu Sea",            type: "sea", difficulty: "hard",   shape: { kind: "ellipse", center: [120.2, 8.8],    rx: 3,  ry: 4,   rotation: 0 }},
   { name: "Timor Sea",           type: "sea", difficulty: "hard",   shape: { kind: "ellipse", center: [128.7, -11.1],  rx: 4,  ry: 3,   rotation: 0 }},
@@ -365,7 +364,7 @@ const FEATURES: PhysicalFeature[] = [
 
   // ─── PASSAGES & WIDER STRAITS (from Natural Earth 50m) ─────────────
   { name: "Davis Strait",        type: "passage", difficulty: "medium", shape: { kind: "ellipse", center: [-57.3, 65.7],  rx: 5, ry: 5,  rotation: 0 }},
-  { name: "Drake Passage",       type: "passage", difficulty: "medium", shape: { kind: "ellipse", center: [-64.6, -63.4], rx: 6, ry: 3,  rotation: 0 }},
+  { name: "Drake Passage",       type: "passage", difficulty: "medium", shape: { kind: "ellipse", center: [-65, -59],     rx: 8, ry: 4,  rotation: 20 }},
   { name: "Straits of Florida",  type: "passage", difficulty: "medium", shape: { kind: "ellipse", center: [-80.3, 24.5],  rx: 3, ry: 2,  rotation: 0 }},
   { name: "Hudson Strait",       type: "passage", difficulty: "hard",   shape: { kind: "ellipse", center: [-71.6, 62.6],  rx: 5, ry: 2,  rotation: 0 }},
   { name: "Korea Strait",        type: "passage", difficulty: "hard",   shape: { kind: "ellipse", center: [128.7, 34.2],  rx: 3, ry: 1,  rotation: 0 }},

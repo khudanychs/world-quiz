@@ -113,21 +113,45 @@ export default function PhysicalGeoGame() {
   }, [needsRivers]);
 
   // ── Pan map to feature location (called on skip) ─────────
+  // Zoom level is based on feature size: large features (oceans) get a wide
+  // view, small features (bays, straits) get a closer zoom.
   const panToFeature = useCallback((feature: PhysicalFeature) => {
     let center: [number, number];
+    let extent = 5; // default for markers
+
     if (feature.shape.kind === "marker") {
       center = feature.shape.center;
+      extent = 1; // very small — zoom in close
     } else if (feature.shape.kind === "ellipse") {
       center = feature.shape.center;
+      extent = Math.max(feature.shape.rx, feature.shape.ry);
     } else if (feature.shape.kind === "path") {
-      // For paths, use the midpoint
       const points = feature.shape.points;
       const midIdx = Math.floor(points.length / 2);
       center = points[midIdx];
+      // Compute bounding box diagonal as extent proxy
+      const lons = points.map(p => p[0]);
+      const lats = points.map(p => p[1]);
+      extent = Math.max(
+        Math.max(...lons) - Math.min(...lons),
+        Math.max(...lats) - Math.min(...lats),
+      );
     } else {
       return;
     }
-    setPos({ coordinates: center, zoom: 4 });
+
+    // Map extent → zoom: bigger feature → lower zoom (wider view)
+    let zoom: number;
+    if (extent >= 40)      zoom = 1.2;  // oceans
+    else if (extent >= 25) zoom = 1.6;
+    else if (extent >= 15) zoom = 2.0;
+    else if (extent >= 10) zoom = 2.5;
+    else if (extent >= 6)  zoom = 3.0;
+    else if (extent >= 3)  zoom = 4.0;
+    else if (extent >= 1.5) zoom = 5.5;
+    else                   zoom = 7.0;  // small straits / markers
+
+    setPos({ coordinates: center, zoom });
   }, []);
 
   // ── Lazy-compute SVG path strings (expensive — only compute per-feature on demand) ──
@@ -193,6 +217,25 @@ export default function PhysicalGeoGame() {
   const wrapperRef = useRef<HTMLDivElement>(null);
   usePreventWheelScroll(wrapperRef);
 
+  // ── Stable refs for sets so render callbacks don't re-create ──
+  const correctSetRef = useRef(game.correctSet);
+  correctSetRef.current = game.correctSet;
+  const skippedSetRef = useRef(game.skippedSet);
+  skippedSetRef.current = game.skippedSet;
+
+  // ── Wrap click handler: zoom to correct feature on wrong answer ──
+  const handleFeatureClickWithZoom = useCallback(
+    (featureName: string) => {
+      if (!game.currentFeature) return;
+      const isCorrect = featureName === game.currentFeature.name;
+      game.handleFeatureClick(featureName);
+      if (!isCorrect) {
+        panToFeature(game.currentFeature);
+      }
+    },
+    [game.currentFeature, game.handleFeatureClick, panToFeature]
+  );
+
   const handleBack = () => navigate("/");
 
   // ── Select category & start ──────────────────────────────
@@ -223,7 +266,7 @@ export default function PhysicalGeoGame() {
     const baseColor = FEATURE_COLORS[feature.type];
     const baseFillOpacity = FEATURE_FILL_OPACITY[feature.type];
 
-    const isCorrect = game.correctSet.has(feature.name);
+    const isCorrect = correctSetRef.current.has(feature.name);
     const isCurrentTarget = feature.name === game.currentFeature?.name;
 
     // During result display
@@ -245,16 +288,16 @@ export default function PhysicalGeoGame() {
       return { color: "#4caf50", opacity: 0.7, fillOpacity: baseFillOpacity * 0.5, glow: false };
     }
 
-    if (game.skippedSet.has(feature.name)) {
+    if (skippedSetRef.current.has(feature.name)) {
       return { color: "#f59e0b", opacity: 0.7, fillOpacity: baseFillOpacity * 0.5, glow: false };
     }
 
     return { color: baseColor, opacity: 1, fillOpacity: baseFillOpacity, glow: false };
   };
 
-  // ── Shared click guard ───────────────────────────────────
+  // ── Shared click guard (uses refs for stable identity) ───
   const canClick = (feature: PhysicalFeature) =>
-    !game.correctSet.has(feature.name) && !game.skippedSet.has(feature.name) && !game.showingResult && !game.gameOver;
+    !correctSetRef.current.has(feature.name) && !skippedSetRef.current.has(feature.name) && !game.showingResult && !game.gameOver;
 
   // ═════════════════════════════════════════════════════════
   //  WATER UNDERLAY — rendered BEFORE land geographies
@@ -267,7 +310,7 @@ export default function PhysicalGeoGame() {
     if (waterFeatures.length === 0) return null;
 
     const sw = Math.max(0.5, 1.2 / Math.pow(zoom, 0.5));
-    const markerR = Math.max(4, 8 / Math.pow(zoom, 0.4));
+    const markerR = Math.max(2, 4 / Math.pow(zoom, 0.4));
 
     return (
       <g shapeRendering="optimizeSpeed">
@@ -276,7 +319,7 @@ export default function PhysicalGeoGame() {
 
           const clickable = canClick(feature);
           const handleClick = clickable
-            ? () => game.handleFeatureClick(feature.name)
+            ? () => handleFeatureClickWithZoom(feature.name)
             : undefined;
 
           // ── Determine visual state ──
@@ -298,21 +341,42 @@ export default function PhysicalGeoGame() {
               strokeColor = "#ffc107";
               strokeW = sw * 2;
             }
-          } else if (game.correctSet.has(feature.name)) {
+          } else if (correctSetRef.current.has(feature.name)) {
             // Permanently green after correct guess
             fillColor = "#1b5e20";
             strokeColor = "#4caf50";
-          } else if (game.skippedSet.has(feature.name)) {
+          } else if (skippedSetRef.current.has(feature.name)) {
             // Permanently yellow/orange after skip
             fillColor = "#5c4800";
             strokeColor = "#f59e0b";
           }
 
-          // ── No marine polygon? Render as a marker dot ──
+          // ── No marine polygon? Render shape from feature definition ──
           if (!d) {
-            const center = feature.shape.kind === "ellipse" ? feature.shape.center
-              : feature.shape.kind === "marker" ? feature.shape.center
-              : null;
+            // Ellipse shapes → render as proper projected ellipse polygon
+            if (feature.shape.kind === "ellipse") {
+              const { center, rx, ry, rotation: rot = 0 } = feature.shape;
+              const ellipseD = projectEllipse(center, rx, ry, rot, projection, 48);
+              if (!ellipseD) return null;
+              return (
+                <path
+                  key={feature.name}
+                  d={ellipseD}
+                  fill={fillColor}
+                  stroke={strokeColor}
+                  strokeWidth={sw}
+                  vectorEffect="non-scaling-stroke"
+                  style={{
+                    cursor: clickable ? "pointer" : "default",
+                    pointerEvents: clickable ? "all" : "none",
+                  }}
+                  onClick={handleClick}
+                />
+              );
+            }
+
+            // Marker / other shapes → render as a dot
+            const center = feature.shape.kind === "marker" ? feature.shape.center : null;
             if (!center) return null;
             const pt = projection(center);
             if (!pt) return null;
@@ -352,7 +416,7 @@ export default function PhysicalGeoGame() {
         })}
       </g>
     );
-  }, [waterFeatures, getPrecomputedPath, game.showingResult, game.lastResult, game.currentFeature, game.correctSet, game.skippedSet, game.gameOver]);
+  }, [waterFeatures, getPrecomputedPath, game.showingResult, game.lastResult, game.currentFeature, game.gameOver, handleFeatureClickWithZoom]);
 
   // ═════════════════════════════════════════════════════════
   //  LAND OVERLAY — rendered AFTER land geographies
@@ -367,7 +431,7 @@ export default function PhysicalGeoGame() {
           const vis = getFeatureVisual(feature);
           const clickable = canClick(feature);
           const handleClick = clickable
-            ? () => game.handleFeatureClick(feature.name)
+            ? () => handleFeatureClickWithZoom(feature.name)
             : undefined;
           const cursor = clickable ? "pointer" : "default";
 
@@ -375,13 +439,13 @@ export default function PhysicalGeoGame() {
             case "marker": {
               const pt = projection(feature.shape.center);
               if (!pt) return null;
-              const r = Math.max(3, 6 / Math.pow(zoom, 0.4));
+              const r = Math.max(1.5, 3 / Math.pow(zoom, 0.4));
               return (
                 <g key={feature.name}>
                   <circle
                     cx={pt[0]}
                     cy={pt[1]}
-                    r={r * 2.5}
+                    r={r * 2}
                     fill="transparent"
                     style={{ cursor, pointerEvents: clickable ? "all" : "none" }}
                     onClick={handleClick}
@@ -514,7 +578,7 @@ export default function PhysicalGeoGame() {
       </g>
     );
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [landFeatures, getPrecomputedPath, game.showingResult, game.lastResult, game.currentFeature, game.correctSet, game.gameOver]);
+  }, [landFeatures, getPrecomputedPath, game.showingResult, game.lastResult, game.currentFeature, game.gameOver, handleFeatureClickWithZoom]);
 
   // ═══════════════════════════════════════════════════════════
   //  RENDER
@@ -659,7 +723,7 @@ export default function PhysicalGeoGame() {
 
         {/* ── Result flash badge ────────────────────── */}
         {game.showingResult && game.lastResult && game.lastResult.clickedName !== "" && (
-          <div className="phys-result-flash">
+          <div className={`phys-result-flash ${game.lastResult.correct ? "flash-correct" : ""}`}>
             <div className={`phys-result-badge ${game.lastResult.correct ? "correct" : "wrong"}`}>
               {game.lastResult.correct ? "✓ Correct!" : "✗ Wrong"}
             </div>

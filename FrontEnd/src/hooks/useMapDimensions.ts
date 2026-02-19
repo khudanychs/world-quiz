@@ -19,7 +19,13 @@ export function useMapDimensions() {
 
     update();
     window.addEventListener("resize", update);
-    return () => window.removeEventListener("resize", update);
+    // Also listen to visualViewport resize (fires when mobile omnibox shows/hides)
+    const vv = window.visualViewport;
+    if (vv) vv.addEventListener("resize", update);
+    return () => {
+      window.removeEventListener("resize", update);
+      if (vv) vv.removeEventListener("resize", update);
+    };
   }, []);
 
   // Detect if we're on desktop (width >= 768px)

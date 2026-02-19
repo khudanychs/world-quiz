@@ -149,18 +149,35 @@
   color: #fff;
 }
 
-/* Result feedback flash */
+/* Result feedback flash — placed near top so it doesn't overlap the
+   yellow-highlighted answer when the map zooms to it on wrong guess */
 .phys-result-flash {
   position: absolute;
-  top: 50%;
+  bottom: clamp(12px, 3vh, 24px);
   left: 50%;
-  transform: translate(-50%, -50%);
+  transform: translateX(-50%);
   z-index: 20;
   pointer-events: none;
   animation: physResultPop 0.4s ease-out;
 }
 
+.phys-result-flash.flash-correct {
+  top: 50%;
+  bottom: auto;
+  transform: translate(-50%, -50%);
+}
+
 @keyframes physResultPop {
+  0% { transform: translateX(-50%) scale(0.5); opacity: 0; }
+  50% { transform: translateX(-50%) scale(1.2); opacity: 1; }
+  100% { transform: translateX(-50%) scale(1); opacity: 1; }
+}
+
+.phys-result-flash.flash-correct {
+  animation: physResultPopCenter 0.4s ease-out;
+}
+
+@keyframes physResultPopCenter {
   0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
   50% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
   100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
