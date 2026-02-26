@@ -35,6 +35,7 @@ type Proj = (coords: [number, number]) => [number, number] | null;
 // Loaded once → InteractiveMap renders land, we extract marine features for water game
 const MERGED_URL = "/world-marine.json";
 const RIVERS_URL = "/rivers.json";
+const LAKES_URL = "/lakes.json";
 
 // GeoJSON types for marine polygon data and river line data
 interface GeoFeature {
@@ -112,6 +113,17 @@ export default function PhysicalGeoGame() {
       .catch(() => {/* fallback to hand-drawn paths */});
   }, [needsRivers]);
 
+  // ── Lake polygon data (real lake shapes) ──────────────────
+  const [lakeData, setLakeData] = useState<GeoFeatureCollection | null>(null);
+  const needsLakes = !showSelector && categoryKey === "rivers";
+  useEffect(() => {
+    if (!needsLakes) { setLakeData(null); return; }
+    fetch(LAKES_URL)
+      .then(r => r.json())
+      .then((data: GeoFeatureCollection) => setLakeData(data))
+      .catch(() => {/* fallback to ellipses */});
+  }, [needsLakes]);
+
   // ── Pan map to feature location (called on skip) ─────────
   // Zoom level is based on feature size: large features (oceans) get a wide
   // view, small features (bays, straits) get a closer zoom.
@@ -160,8 +172,8 @@ export default function PhysicalGeoGame() {
   const pathCacheRef = useRef<{ key: string; cache: Map<string, string | null> }>({ key: "", cache: new Map() });
 
   const getPrecomputedPath = useMemo(() => {
-    // Include data presence in key so cache clears when marine/river data loads
-    const cacheKey = `${FIT_SCALE}-${INNER_W}-${INNER_H}-${marineData ? 'm' : ''}-${riverData ? 'r' : ''}`;
+    // Include data presence in key so cache clears when marine/river/lake data loads
+    const cacheKey = `${FIT_SCALE}-${INNER_W}-${INNER_H}-${marineData ? 'm' : ''}-${riverData ? 'r' : ''}-${lakeData ? 'l' : ''}`;
     // Invalidate cache on resize or when data arrives
     if (pathCacheRef.current.key !== cacheKey) {
       pathCacheRef.current = { key: cacheKey, cache: new Map() };
@@ -187,18 +199,24 @@ export default function PhysicalGeoGame() {
         riverLookup.set(feat.properties.name, feat);
       }
     }
+    const lakeLookup = new Map<string, GeoFeature>();
+    if (lakeData) {
+      for (const feat of lakeData.features) {
+        lakeLookup.set(feat.properties.name, feat);
+      }
+    }
 
-    return (name: string, isRiver = false): string | null => {
-      const key = isRiver ? `river:${name}` : name;
+    return (name: string, kind: "marine" | "river" | "lake" = "marine"): string | null => {
+      const key = kind === "marine" ? name : `${kind}:${name}`;
       if (cache.has(key)) return cache.get(key)!;
-      const lookup = isRiver ? riverLookup : marineLookup;
+      const lookup = kind === "river" ? riverLookup : kind === "lake" ? lakeLookup : marineLookup;
       const feat = lookup.get(name);
       if (!feat) { cache.set(key, null); return null; }
       const d = pathGen(feat.geometry) || null;
       cache.set(key, d);
       return d;
     };
-  }, [marineData, riverData, FIT_SCALE, INNER_W, INNER_H]);
+  }, [marineData, riverData, lakeData, FIT_SCALE, INNER_W, INNER_H]);
 
   // ── Streak milestone animation (shows at 5, 10, 15, …) ───
   const [streakMilestone, setStreakMilestone] = useState<number | null>(null);
@@ -250,12 +268,20 @@ export default function PhysicalGeoGame() {
     const water: PhysicalFeature[] = [];
     const land: PhysicalFeature[] = [];
     for (const f of game.features) {
-      if (isWaterFeature(f)) {
+      // Water features render UNDER land (only real water areas show through).
+      // Marker-shaped water features (dots for narrow straits, canals) must render
+      // ON TOP of land so land doesn't fully cover the dot.
+      if (isWaterFeature(f) && f.shape.kind !== "marker") {
         water.push(f);
       } else {
         land.push(f);
       }
     }
+    // Sort land features so lakes render AFTER rivers in SVG.
+    // SVG paints later elements on top, so lakes will be clickable
+    // where they overlap with rivers.
+    const typeOrder: Record<string, number> = { river: 0, lake: 1 };
+    land.sort((a, b) => (typeOrder[a.type] ?? 0.5) - (typeOrder[b.type] ?? 0.5));
     return { waterFeatures: water, landFeatures: land };
   }, [game.features]);
 
@@ -306,16 +332,19 @@ export default function PhysicalGeoGame() {
   //  No ellipse fallback — only real marine polygons are used.
   //  Features without a polygon are rendered as marker dots.
   // ═════════════════════════════════════════════════════════
-  const renderWaterUnderlay = useCallback((projection: Proj, zoom: number, _isDesktop: boolean) => {
+  const renderWaterUnderlay = useCallback((projection: Proj, zoom: number, isDesktop: boolean) => {
     if (waterFeatures.length === 0) return null;
 
     const sw = Math.max(0.5, 1.2 / Math.pow(zoom, 0.5));
-    const markerR = Math.max(2, 4 / Math.pow(zoom, 0.4));
+    const markerR = Math.max(isDesktop ? 5 : 2, (isDesktop ? 9 : 4) / Math.pow(zoom, 0.4));
 
     return (
       <g shapeRendering="optimizeSpeed">
         {waterFeatures.map((feature) => {
-          const d: string | null = getPrecomputedPath(feature.name) ?? null;
+          const rawD: string | null = getPrecomputedPath(feature.name, "marine") ?? null;
+          // Skip marine polygons that are too tiny to be visible/clickable
+          // (e.g. narrow straits whose polygons collapse to < 200 chars of path data)
+          const d = rawD && rawD.length > 200 ? rawD : null;
 
           const clickable = canClick(feature);
           const handleClick = clickable
@@ -422,7 +451,7 @@ export default function PhysicalGeoGame() {
   //  LAND OVERLAY — rendered AFTER land geographies
   //  Mountains, rivers, deserts, lakes, straits, canals, etc.
   // ═════════════════════════════════════════════════════════
-  const renderLandOverlay = useCallback((projection: Proj, zoom: number, _isDesktop: boolean) => {
+  const renderLandOverlay = useCallback((projection: Proj, zoom: number, isDesktop: boolean) => {
     if (landFeatures.length === 0) return null;
 
     return (
@@ -439,7 +468,7 @@ export default function PhysicalGeoGame() {
             case "marker": {
               const pt = projection(feature.shape.center);
               if (!pt) return null;
-              const r = Math.max(1.5, 3 / Math.pow(zoom, 0.4));
+              const r = Math.max(isDesktop ? 4 : 1.5, (isDesktop ? 8 : 3) / Math.pow(zoom, 0.4));
               return (
                 <g key={feature.name}>
                   <circle
@@ -484,7 +513,7 @@ export default function PhysicalGeoGame() {
               let d: string | null = null;
 
               if (feature.type === "river") {
-                d = getPrecomputedPath(feature.name, true) ?? null;
+                d = getPrecomputedPath(feature.name, "river") ?? null;
               }
               if (!d) {
                 d = projectPath(feature.shape.points, projection);
@@ -538,8 +567,15 @@ export default function PhysicalGeoGame() {
 
             case "ellipse": {
               // Non-water ellipses (deserts, lakes) — rendered on top of land
-              const { center, rx, ry, rotation = 0 } = feature.shape;
-              const d = projectEllipse(center, rx, ry, rotation, projection, 48);
+              // For lakes, try real polygon geometry first
+              let d: string | null = null;
+              if (feature.type === "lake") {
+                d = getPrecomputedPath(feature.name, "lake") ?? null;
+              }
+              if (!d) {
+                const { center, rx, ry, rotation = 0 } = feature.shape;
+                d = projectEllipse(center, rx, ry, rotation, projection, 48);
+              }
               if (!d) return null;
               return (
                 <g key={feature.name}>

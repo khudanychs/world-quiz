@@ -41,6 +41,16 @@ Fast-paced card matching challenge combining flags and country shapes
 - 🏆 Separate leaderboard with daily and all-time high scores
 - ⚡ Ultra-responsive gameplay - click instantly without delays
 
+#### **Physical Geography Game** *(NEW)*
+Identify 400+ physical features on a borderless world map
+- 🏔️ **Mountains & Volcanoes** (103 features) — Everest, Kilimanjaro, Fuji, and more
+- 🌊 **Rivers & Lakes** (117 features) — Real river geometries from Natural Earth 10m data
+- 🏜️ **Deserts** (26 features) — Sahara, Gobi, Atacama, and beyond
+- 🌊 **Seas, Straits & Oceans** (163 features) — Rendered with real marine polygons under a borderless landmass
+- 🗺️ Borderless map with crosshair cursor for clean geographic focus
+- 🎯 Three feature shapes: markers (peaks/volcanoes), paths (rivers/ranges), and polygons (lakes/seas/deserts)
+- 📊 Score tracking, streak system, and skip functionality
+
 ### 📚 Comprehensive Country Encyclopedia
 
 Browse and explore detailed information about 195+ sovereign nations
@@ -103,6 +113,7 @@ Compete with players worldwide across multiple game modes
 | [React Router](https://reactrouter.com/) | 7.9 | Client-side routing |
 | [react-simple-maps](https://www.react-simple-maps.io/) | 3.0 | SVG map rendering |
 | [d3-geo](https://github.com/d3/d3-geo) | 3.1 | Geographic projections |
+| [topojson-client](https://github.com/topojson/topojson-client) | 3.1 | TopoJSON → GeoJSON conversion |
 | [circle-flags](https://github.com/HatScripts/circle-flags) | 2.8 | Circular SVG country flags (lazy-loaded) |
 | [Axios](https://axios-http.com/) | 1.13 | HTTP client |
 
@@ -122,6 +133,14 @@ Compete with players worldwide across multiple game modes
   - ISO2 (cca2) and ISO3 (cca3) codes for mapping
 - **Map Topology**: `countries-110m.json` - [world-atlas](https://github.com/topojson/world-atlas)
   - TopoJSON format for efficient map rendering
+- **Marine Topology**: `world-marine.json` - Merged countries + marine polygon data
+  - TopoJSON with `countries`, `land`, and `marine` objects for Physical Geography game
+  - Built from Natural Earth marine region data via `merge-marine-countries.mjs`
+- **River Geometries**: `rivers.json` - [Natural Earth 10m](https://www.naturalearthdata.com/)
+  - 105 rivers with real line geometries, built from dual NE datasets
+  - Geographic splitting for same-name rivers (Paraná/Paraguay, Red River, Negro, etc.)
+- **Lake Polygons**: `lakes.json` - [Natural Earth 10m](https://www.naturalearthdata.com/)
+  - Real lake polygon geometries for the Physical Geography game
 - **Flag Images**: `/flags-v2/*.svg` - [flag-icons](https://github.com/lipis/flag-icons)
   - High-quality SVG flags (~270 flags)
 
@@ -144,35 +163,53 @@ world-quiz/
 │   ├── public/
 │   │   ├── countries-full.json   # Complete country dataset (250+ countries)
 │   │   ├── countries-110m.json   # TopoJSON world map topology
+│   │   ├── countries-50m.json    # Higher-res topology for Physical Geography
+│   │   ├── world-marine.json     # Merged countries + marine polygons (TopoJSON)
+│   │   ├── rivers.json           # River line geometries (105 rivers, NE 10m)
+│   │   ├── lakes.json            # Lake polygon geometries (NE 10m)
+│   │   ├── FinalMarine10m.json   # Source marine polygons (10m) ─┐ build inputs for
+│   │   ├── FinalMarine50m.json   # Source marine polygons (50m) ─┘ world-marine.json
 │   │   ├── flags-v2/             # SVG flag assets (~270 files)
-│   │   ├── newlogo.png           # Application logo
 │   │   ├── robots.txt            # Search engine directives
 │   │   ├── sitemap.xml           # SEO sitemap
 │   │   └── site.webmanifest      # PWA manifest
+│   ├── scripts/                   # Data build scripts
+│   │   ├── build-rivers.mjs      # Fetches NE 10m rivers → rivers.json
+│   │   ├── build-lakes.mjs       # Fetches NE 10m lakes → lakes.json
+│   │   ├── merge-marine-countries.mjs  # Merges countries + marine → world-marine.json
+│   │   ├── fix-crimea-final.mjs  # Moves Crimea polygon to Ukraine
+│   │   ├── merge-cyprus.mjs      # Merges Northern Cyprus into Cyprus
+│   │   └── merge-somaliland.mjs  # Merges Somaliland into Somalia
 │   ├── src/
 │   │   ├── components/           # React components
 │   │   │   ├── Auth.tsx          # Unified auth component
 │   │   │   ├── CardMatchGame.tsx # Shape matching game
 │   │   │   ├── FlagMatchGame.tsx # Flag identification game
 │   │   │   ├── FlagSelector.tsx  # Profile flag picker (370+ flags)
-│   │   │   ├── GameHUD.tsx       # Game UI overlay
-│   │   │   ├── InteractiveMap.tsx # Map component
+│   │   │   ├── GameHUD.tsx       # Flag game UI overlay
+│   │   │   ├── Globe.tsx         # Orthographic globe preview
+│   │   │   ├── InteractiveMap.tsx # Shared map component (normal + borderless)
 │   │   │   ├── Leaderboard.tsx   # Leaderboard display
 │   │   │   ├── MainMenu.tsx      # Home screen menu
 │   │   │   ├── Navbar.tsx        # Navigation bar
+│   │   │   ├── PhysicalGeoGame.tsx   # Physical geography game
+│   │   │   ├── PhysicalGeoHUD.tsx    # Physical geography UI overlay
 │   │   │   ├── Settings.tsx      # User settings page
 │   │   ├── contexts/
 │   │   │   └── AuthContext.tsx   # Firebase authentication context
 │   │   ├── hooks/                # Custom React hooks
 │   │   │   ├── useCardMatchGame.ts    # Card game logic
+│   │   │   ├── useCountryStats.ts     # Country statistics
 │   │   │   ├── useFlagMatchGame.ts    # Flag game logic
 │   │   │   ├── useMapDimensions.ts    # Responsive layout
+│   │   │   ├── usePhysicalGeoGame.ts  # Physical geography game logic
 │   │   │   └── usePreventWheelScroll.ts # Scroll prevention
 │   │   ├── pages/                # Page components
 │   │   │   ├── CountryDetails.tsx     # Country detail view
 │   │   │   ├── CountryIndex.tsx       # Country browser
 │   │   │   ├── LeaderboardsPage.tsx   # Leaderboard page
-│   │   │   └── PrivacyPolicy.tsx      # Privacy policy
+│   │   │   ├── PrivacyPolicy.tsx      # Privacy policy
+│   │   │   └── TermsConditions.tsx    # Terms & conditions
 │   │   ├── utils/                # Utility functions
 │   │   │   ├── countries.ts      # Country data helpers
 │   │   │   ├── dateUtils.ts      # Date formatting
@@ -181,6 +218,12 @@ world-quiz/
 │   │   │   ├── leaderboardUtils.ts # Score saving functions
 │   │   │   ├── mapConstants.ts   # Map configuration
 │   │   │   ├── markerPositions.ts # Small country markers
+│   │   │   ├── physicalFeatures.ts    # Hub re-export for all features
+│   │   │   ├── physicalFeaturesTypes.ts # Types, constants, categories
+│   │   │   ├── mountainFeatures.ts    # 103 mountains/volcanoes/ranges
+│   │   │   ├── riverFeatures.ts       # 117 rivers & lakes
+│   │   │   ├── desertFeatures.ts      # 26 deserts
+│   │   │   ├── waterFeatures.ts       # 163 seas/oceans/straits/gulfs
 │   │   │   └── sharedStyles.ts   # Reusable styles
 │   │   ├── App.tsx               # Main app component
 │   │   ├── firebase.ts           # Firebase configuration
@@ -537,6 +580,7 @@ This project stands on the shoulders of giants. Special thanks to:
 - **[Fawaz Ahmed](https://github.com/fawazahmed0/exchange-api)** - Free currency exchange rate API
 - **[Panayiotis Lipiridis](https://github.com/lipis/flag-icons)** - Beautiful SVG flag collection
 - **[Mike Bostock](https://github.com/topojson/world-atlas)** - World Atlas TopoJSON data
+- **[Natural Earth](https://www.naturalearthdata.com/)** - 10m river, lake, and marine polygon datasets
 - **[react-simple-maps Team](https://www.react-simple-maps.io/)** - Excellent SVG mapping library
 
 ### Open Source Libraries
@@ -544,7 +588,7 @@ This project stands on the shoulders of giants. Special thanks to:
 Built with these amazing open-source projects:
 - React, TypeScript, Vite, React Router
 - Firebase (Auth, Firestore, Hosting, Functions)
-- D3.js (d3-geo), TopoJSON, Bootstrap, Axios
+- D3.js (d3-geo), TopoJSON (topojson-client), Bootstrap, Axios
 
 ---
 

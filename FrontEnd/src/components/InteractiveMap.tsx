@@ -204,23 +204,50 @@ export default memo(function InteractiveMap({
               const isUnclickableInGame = gameMode && !isClickableInGameMode(nameRaw);
               
               // Determine if this geography should not be interactive
-              const notInteractive = hideForMarker || isUnclickableInGame || borderless;
+              const notInteractive = hideForMarker || isUnclickableInGame;
 
-              // Borderless mode: uniform land color, fully invisible borders
-              const landFill = borderless ? "#c4b99a" : undefined;
-              const strokeColor = borderless ? "transparent" : "#2d3748";
-              const strokeW = borderless ? 0 : 0.65;
+              const strokeColor = "#2d3748";
+              const strokeW = 0.65;
 
               // Get fill color
-              const fill = borderless
-                ? (landFill!)
-                : getCountryFill 
+              const fill = getCountryFill 
                   ? getCountryFill(name)
                   : isSelected 
                     ? "#3b82f6" 
-                    : "#e0d8c2";
+                    : "#d4cab0";
               
               const displayFill = hideForMarker ? "transparent" : fill;
+
+              // Borderless style: completely inert land shapes with no visible
+              // borders and no hover/pressed changes at all.  A fill-colored
+              // stroke painted BEHIND the fill (paintOrder) seals the
+              // anti-aliasing gaps between adjacent country polygons.
+              if (borderless) {
+                const bStyle = {
+                  fill: displayFill,
+                  stroke: displayFill,
+                  strokeWidth: 1,
+                  strokeLinejoin: "round" as const,
+                  strokeLinecap: "round" as const,
+                  paintOrder: "stroke",
+                  outline: "none",
+                  cursor: "crosshair",
+                  // visibleFill (not "none") so the land blocks expensive SVG
+                  // hit-testing on the complex marine polygon paths underneath.
+                  pointerEvents: "visibleFill" as const,
+                };
+                return (
+                  <Geography
+                    key={geo.rsmKey}
+                    geography={geo}
+                    vectorEffect="non-scaling-stroke"
+                    fillRule="evenodd"
+                    clipRule="evenodd"
+                    shapeRendering="geometricPrecision"
+                    style={{ default: bStyle, hover: bStyle, pressed: bStyle }}
+                  />
+                );
+              }
 
               return (
                 <Geography
@@ -239,7 +266,7 @@ export default memo(function InteractiveMap({
                       strokeLinecap: "round",
                       outline: "none",
                       transition: "fill 0.15s ease-out",
-                      cursor: borderless ? "crosshair" : (notInteractive ? "default" : "pointer"),
+                      cursor: notInteractive ? "default" : "pointer",
                       pointerEvents: hideForMarker ? "none" : "visibleFill",
                     },
                     hover: !notInteractive
@@ -255,7 +282,7 @@ export default memo(function InteractiveMap({
                         }
                       : {
                           fill: displayFill,
-                          cursor: borderless ? "crosshair" : "default",
+                          cursor: "default",
                           outline: "none",
                           pointerEvents: "visibleFill",
                         },
@@ -271,14 +298,14 @@ export default memo(function InteractiveMap({
                         }
                       : {
                           fill: displayFill,
-                          cursor: borderless ? "crosshair" : "default",
+                          cursor: "default",
                           outline: "none",
                           pointerEvents: "visibleFill",
                         },
                   }}
-                  onMouseEnter={(!hideForMarker && !borderless) ? () => handleCountryHover(name) : undefined}
-                  onMouseLeave={(!hideForMarker && !borderless) ? () => handleCountryHover(null) : undefined}
-                  onClick={(!hideForMarker && !borderless) ? () => handleCountryClick(name) : undefined}
+                  onMouseEnter={!hideForMarker ? () => handleCountryHover(name) : undefined}
+                  onMouseLeave={!hideForMarker ? () => handleCountryHover(null) : undefined}
+                  onClick={!hideForMarker ? () => handleCountryClick(name) : undefined}
                 />
               );
             });

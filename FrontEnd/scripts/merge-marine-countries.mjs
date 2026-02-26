@@ -66,14 +66,16 @@ const GAME_WATER_NAMES = new Set([
   // Passages
   "Davis Strait", "Drake Passage", "Straits of Florida", "Hudson Strait",
   "Korea Strait", "Luzon Strait", "Makassar Strait", "Strait of Singapore",
-  "Taiwan Strait", "The North Western Passages", "Viscount Melville Sound",
-]);
+  "Taiwan Strait", "The North Western Passages", "Viscount Melville Sound",  // Straits (10m-only)
+  "Strait of Malacca", "Bass Strait", "Tsugaru Strait",
+  "English Channel", "Denmark Strait", "Strait of Magellan", "Bransfield Strait",]);
 
 // Name normalization map (marine file name → game name)
 // Marine files use "INDIAN OCEAN" and "SOUTHERN OCEAN" in caps
 const NAME_NORMALIZE = {
   "INDIAN OCEAN": "Indian Ocean",
   "SOUTHERN OCEAN": "Southern Ocean",
+  "Estrecho de Magellanes": "Strait of Magellan",
 };
 
 function normalizeName(name) {
