@@ -39,7 +39,7 @@ export const SMALL_ISLAND_MARKERS: Record<string, [number, number]> = {
   
   // Middle East - UN Members only
   "Bahrain": [50.6, 26.1],
-  "Palestine": [35.2, 31.9],
+  // Palestine has a real polygon in the map topology (West Bank + Gaza) - rendered as land
   // Asia 
   "Singapore": [103.8, 1.35],
 };

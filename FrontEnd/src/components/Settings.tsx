@@ -27,6 +27,11 @@ export const Settings = () => {
   const [deletePassword, setDeletePassword] = useState('');
   const [highestStreak, setHighestStreak] = useState<number | null>(null);
   const [streakLoading, setStreakLoading] = useState(false);
+  const [nickChangeStatus, setNickChangeStatus] = useState<{
+    changesThisMonth: number;
+    changesLeft: number;
+    cooldownDaysLeft: number | null;
+  } | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -41,6 +46,44 @@ export const Settings = () => {
         setSelectedFlag(null);
       }
     }
+  }, [user]);
+
+  // Fetch nick change rate-limit status from Firestore
+  useEffect(() => {
+    if (!user) return;
+    const fetchNickChangeStatus = async () => {
+      try {
+        const [{ doc, getDoc }, { db }] = await Promise.all([
+          import('firebase/firestore'),
+          import('../firebase'),
+        ]);
+        const usernameDoc = await getDoc(doc(db, 'usernames', user.uid));
+        const now = new Date();
+        const currentMonthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+        if (!usernameDoc.exists()) {
+          setNickChangeStatus({ changesThisMonth: 0, changesLeft: 2, cooldownDaysLeft: null });
+          return;
+        }
+        const data = usernameDoc.data();
+        const storedMonthKey: string = data.nickChangesMonthKey ?? '';
+        const storedCount: number = typeof data.nickChangesCount === 'number' ? data.nickChangesCount : 0;
+        const lastChangedAt: Date | null = data.lastNickChangeAt?.toDate?.() ?? null;
+        const changesThisMonth = storedMonthKey === currentMonthKey ? storedCount : 0;
+        const changesLeft = Math.max(0, 2 - changesThisMonth);
+        let cooldownDaysLeft: number | null = null;
+        if (lastChangedAt) {
+          const COOLDOWN_MS = 7 * 24 * 60 * 60 * 1000;
+          const elapsed = now.getTime() - lastChangedAt.getTime();
+          if (elapsed < COOLDOWN_MS) {
+            cooldownDaysLeft = Math.ceil((COOLDOWN_MS - elapsed) / (24 * 60 * 60 * 1000));
+          }
+        }
+        setNickChangeStatus({ changesThisMonth, changesLeft, cooldownDaysLeft });
+      } catch (err) {
+        console.error('Error fetching nick change status:', err);
+      }
+    };
+    fetchNickChangeStatus();
   }, [user]);
 
   // Fetch user's highest streak when component mounts (with caching)
@@ -280,6 +323,24 @@ export const Settings = () => {
           {/* Nickname Section */}
           <div className="settings-section">
             <h3>Nickname</h3>
+            <div className="nick-change-limit-info">
+              {nickChangeStatus !== null ? (
+                nickChangeStatus.cooldownDaysLeft !== null ? (
+                  <p className="nick-change-warning">
+                    Cooldown active — next change available in {nickChangeStatus.cooldownDaysLeft} day{nickChangeStatus.cooldownDaysLeft !== 1 ? 's' : ''}.
+                  </p>
+                ) : nickChangeStatus.changesLeft === 0 ? (
+                  <p className="nick-change-warning">
+                    Monthly limit reached (2/2 used). Resets on the 1st of next month.
+                  </p>
+                ) : (
+                  <p className="nick-change-ok">
+                    {nickChangeStatus.changesLeft} of 2 nickname change{nickChangeStatus.changesLeft !== 1 ? 's' : ''} remaining this month.
+                  </p>
+                )
+              ) : null}
+              <small>Limited to 2 changes per month, with a 7-day cooldown between changes.</small>
+            </div>
             <form onSubmit={handleSubmit}>
               {error && <div className="settings-error">{error}</div>}
               {success && <div className="settings-success">{success}</div>}

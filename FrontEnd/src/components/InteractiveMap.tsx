@@ -25,8 +25,8 @@ const DESKTOP_MARKER = {
 
 // Mobile marker settings (screens < 900px)
 const MOBILE_MARKER = {
-  baseRadius: 4,    // Starting size at zoom=1
-  minRadius: 2.5,     // Smallest allowed size  
+  baseRadius: 3.5,  // Starting size at zoom=1
+  minRadius: 1.5,   // Smallest allowed size (smaller for easier selection of tiny islands)
   zoomExponent: 0.5,  // Shrinks faster than desktop
   strokeColor: "#2d3748",
   baseStrokeWidth: 0.8,

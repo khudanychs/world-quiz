@@ -25,7 +25,8 @@ export type FeatureCategory =
 export type FeatureShape =
   | { kind: "marker"; center: [number, number] }
   | { kind: "path"; points: [number, number][] }
-  | { kind: "ellipse"; center: [number, number]; rx: number; ry: number; rotation?: number };
+  | { kind: "ellipse"; center: [number, number]; rx: number; ry: number; rotation?: number }
+  | { kind: "polygon"; points: [number, number][] };
 
 export interface PhysicalFeature {
   name: string;

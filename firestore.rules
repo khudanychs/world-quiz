@@ -24,13 +24,44 @@ service cloud.firestore {
     match /usernames/{userId} {
       // Anyone can read to check if username is taken (even before registration)
       allow read: if true;
-      // User can create/update their own username record
-      // Create: during registration (no email verification required yet)
-      // Update: after login (any authenticated user can change their username)
-      allow create, update: if request.auth != null 
-                            && request.auth.uid == userId
-                            && request.resource.data.username is string
-                            && request.resource.data.username_lower is string;
+      // User can create their own username record (initial setup, no rate limit)
+      allow create: if request.auth != null 
+                    && request.auth.uid == userId
+                    && request.resource.data.username is string
+                    && request.resource.data.username_lower is string;
+      // User can update their own username record - enforce rate limiting when nick changes
+      allow update: if request.auth != null 
+                    && request.auth.uid == userId
+                    && request.resource.data.username is string
+                    && request.resource.data.username_lower is string
+                    && (
+                      // Username not changing: no rate-limit checks needed
+                      request.resource.data.username == resource.data.username
+                      || (
+                        // Username is changing: require tracking fields
+                        request.resource.data.nickChangesCount is number
+                        && request.resource.data.nickChangesMonthKey is string
+                        && (
+                          // New month: count resets to 1
+                          (
+                            request.resource.data.nickChangesMonthKey != resource.data.get('nickChangesMonthKey', '')
+                            && request.resource.data.nickChangesCount == 1
+                          )
+                          ||
+                          // Same month: count increments by exactly 1, max 2
+                          (
+                            request.resource.data.nickChangesMonthKey == resource.data.get('nickChangesMonthKey', '')
+                            && request.resource.data.nickChangesCount == resource.data.get('nickChangesCount', 0) + 1
+                            && request.resource.data.nickChangesCount <= 2
+                          )
+                        )
+                        // Cooldown: last change must be at least 7 days ago
+                        && (
+                          !('lastNickChangeAt' in resource.data)
+                          || request.time > resource.data.lastNickChangeAt + duration.value(7, 'd')
+                        )
+                      )
+                    );
       // Authenticated users can delete their username
       allow delete: if request.auth != null && request.auth.uid == userId;
     }

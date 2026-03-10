@@ -135,7 +135,10 @@ const RIVERS_HARD: PhysicalFeature[] = [
     [16.5, -12.5], [17.5, -14.0], [19.0, -16.0], [20.5, -18.0], [22.0, -19.0], [22.5, -20.0],
   ]}},
   { name: "Ubangi", type: "river", difficulty: "hard", shape: { kind: "path", points: [
-    [29.0, 3.5], [27.0, 3.5], [25.0, 4.0], [22.0, 4.0], [19.5, 3.0], [18.0, 2.5],
+    [27.08, 4.32], [26.10, 4.25], [25.30, 4.60], [24.20, 5.05], [23.10, 4.75],
+    [22.50, 4.35], [21.50, 4.30], [20.50, 4.15], [19.50, 3.90], [19.10, 4.05],
+    [18.70, 4.20], [18.60, 3.68], [18.39, 2.71], [18.07, 2.16], [17.87, 1.02],
+    [17.94, 0.38], [17.72, -0.20], [17.75, -0.52],
   ]}},
   { name: "Kasai", type: "river", difficulty: "hard", shape: { kind: "path", points: [
     [20.0, -10.5], [19.5, -8.5], [19.0, -6.5], [18.5, -5.0], [17.5, -4.0],
@@ -168,7 +171,7 @@ const RIVERS_HARD: PhysicalFeature[] = [
     [100.0, 17.0], [100.5, 15.5], [100.5, 14.5], [100.5, 13.5],
   ]}},
   { name: "Pearl River", type: "river", difficulty: "hard", shape: { kind: "path", points: [
-    [107.0, 24.5], [109.0, 23.5], [111.0, 23.0], [113.0, 22.5], [113.5, 22.3],
+    [104.5, 24.5], [107.0, 23.5], [109.0, 23.0], [111.0, 23.0], [113.0, 22.5], [113.5, 22.0],
   ]}},
   { name: "Kolyma", type: "river", difficulty: "hard", shape: { kind: "path", points: [
     [151.0, 62.0], [153.0, 64.0], [155.0, 66.0], [158.0, 68.0], [162.0, 69.0],
@@ -225,7 +228,7 @@ const RIVERS_HARD: PhysicalFeature[] = [
     [-106.0, 39.0], [-103.0, 38.0], [-100.0, 37.5], [-97.0, 37.0], [-95.0, 36.0], [-92.0, 34.5], [-91.0, 34.0],
   ]}},
   { name: "Snake River", type: "river", difficulty: "hard", shape: { kind: "path", points: [
-    [-110.5, 44.0], [-112.0, 43.5], [-114.0, 43.0], [-115.0, 43.5], [-117.0, 47.0],
+    [-110.5, 44.0], [-112.0, 43.0], [-114.0, 42.8], [-115.5, 43.5], [-116.5, 44.8], [-117.0, 46.4], [-118.0, 46.2], [-119.0, 46.2],
   ]}},
   { name: "Saskatchewan", type: "river", difficulty: "hard", shape: { kind: "path", points: [
     [-116.0, 52.0], [-113.0, 52.5], [-109.0, 52.0], [-106.0, 52.5], [-103.0, 53.0], [-100.0, 53.5],
@@ -237,7 +240,7 @@ const RIVERS_HARD: PhysicalFeature[] = [
     [-83.5, 36.0], [-84.0, 35.5], [-86.0, 35.0], [-88.0, 35.0], [-88.0, 36.0], [-87.5, 37.0],
   ]}},
   { name: "Nelson", type: "river", difficulty: "hard", shape: { kind: "path", points: [
-    [-97.0, 50.0], [-96.0, 53.0], [-94.5, 55.0], [-93.5, 57.0],
+    [-96.7, 54.5], [-95.5, 55.5], [-94.5, 56.5], [-94.0, 57.0],
   ]}},
   { name: "Peace River", type: "river", difficulty: "hard", shape: { kind: "path", points: [
     [-122.5, 56.0], [-120.0, 56.5], [-118.0, 56.5], [-116.0, 56.0], [-114.0, 56.0],
@@ -300,8 +303,13 @@ const RIVERS_HARD: PhysicalFeature[] = [
     [-79.0, 46.0], [-77.0, 45.5], [-76.0, 45.5], [-75.5, 45.5],
   ]}},
   { name: "Negro", type: "river", difficulty: "hard", shape: { kind: "path", points: [
-    [-67.0, 2.0], [-65.0, 0.5], [-63.0, -1.0], [-61.0, -2.5], [-60.0, -3.0],
+    [-70.3, 2.1], [-68.0, 2.7], [-67.1, 1.9], [-66.9, 0.4], [-65.3, -0.4],
+    [-63.0, -1.0], [-61.9, -1.4], [-60.6, -2.9], [-59.9, -3.2],
   ]}},
+  { name: "Guaviare", type: "river", difficulty: "hard", shape: { kind: "path", points: [
+    [-74.4, 3.8], [-73.8, 3.8], [-72.8, 2.7], [-71.1, 2.8], [-69.0, 3.6], [-67.7, 4.1],
+  ]}},
+
   { name: "Putumayo", type: "river", difficulty: "hard", shape: { kind: "path", points: [
     [-76.0, 0.5], [-73.0, -1.0], [-71.0, -2.0], [-69.0, -2.5], [-67.5, -3.0],
   ]}},
@@ -311,8 +319,11 @@ const RIVERS_HARD: PhysicalFeature[] = [
   { name: "Indigirka", type: "river", difficulty: "hard", shape: { kind: "path", points: [
     [140.0, 62.5], [143.0, 64.0], [147.0, 66.0], [150.0, 68.0], [150.5, 70.0],
   ]}},
-  { name: "Xi River", type: "river", difficulty: "hard", shape: { kind: "path", points: [
-    [104.5, 24.5], [107.0, 23.5], [109.5, 23.0], [111.0, 23.5], [113.0, 23.0],
+  // Casiquiare canal — the natural bifurcation linking the Orinoco and Amazon basins (Venezuela)
+  // Real geometry loaded from rivers.json; this path is a fallback
+  { name: "Casiquiare", type: "river", difficulty: "hard", shape: { kind: "path", points: [
+    [-67.1, 2.0], [-66.9, 2.0], [-66.5, 2.1], [-66.2, 2.4], [-66.1, 2.7],
+    [-65.9, 2.9], [-65.9, 3.1],
   ]}},
 ];
 
@@ -328,7 +339,13 @@ const LAKES: PhysicalFeature[] = [
   { name: "Great Salt Lake", type: "lake", difficulty: "hard",   shape: { kind: "ellipse", center: [-112.5, 41],  rx: 1,   ry: 0.7, rotation: 0 }},
   { name: "Lake Tanganyika", type: "lake", difficulty: "hard",   shape: { kind: "ellipse", center: [29.5, -6],   rx: 0.5, ry: 3.5, rotation: -5 }},
   { name: "Lake Chad",       type: "lake", difficulty: "hard",   shape: { kind: "ellipse", center: [14, 13],     rx: 1.5, ry: 1.5, rotation: 0 }},
-  { name: "Aral Sea",        type: "lake", difficulty: "hard",   shape: { kind: "ellipse", center: [59, 45],     rx: 2,   ry: 2,   rotation: 0 }},
+  { name: "Aral Sea",        type: "lake", difficulty: "hard",   shape: { kind: "polygon", points: [
+    // Historical extent ~1960 (before shrinkage), going clockwise
+    [59.0, 46.9], [59.8, 46.9], [60.7, 46.6], [61.2, 46.1], [61.5, 45.4],
+    [61.3, 44.8], [60.6, 44.2], [59.7, 43.8], [58.8, 43.6], [58.2, 43.9],
+    [57.8, 44.5], [57.8, 45.3], [58.1, 46.1], [58.7, 46.7], [59.0, 46.9],
+  ]}},
+  { name: "Lake Tana",       type: "lake", difficulty: "hard",   shape: { kind: "ellipse", center: [37.3, 12.0], rx: 0.55, ry: 0.5, rotation: 0 }},
   { name: "Lake Michigan",   type: "lake", difficulty: "hard",   shape: { kind: "ellipse", center: [-87, 44],    rx: 1.5, ry: 3,   rotation: -5 }},
   { name: "Lake Malawi",     type: "lake", difficulty: "hard",   shape: { kind: "ellipse", center: [34.5, -12],  rx: 0.5, ry: 3,   rotation: -5 }},
   { name: "Lake Turkana",    type: "lake", difficulty: "hard",   shape: { kind: "ellipse", center: [36.0, 3.5],  rx: 0.5, ry: 1.5, rotation: 0 }},

@@ -83,7 +83,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const { auth, firestore, authInstance, db } = await getFirebaseModules();
         setFirebaseReady(true);
         
-        unsubscribe = auth.onAuthStateChanged(authInstance, async (firebaseUser: FirebaseUser | null) => {
+        unsubscribe = auth.onAuthStateChanged(authInstance, async (firebaseUser) => {
           if (firebaseUser) {
             // Check if username exists in Firestore, if not create it
             // This is a fallback in case registration failed to create it
@@ -364,6 +364,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  const NICK_CHANGE_LIMIT = 2;
+  const NICK_COOLDOWN_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
+
   const setNickname = useCallback(async (username: string) => {
     const { auth, firestore, authInstance, db } = await getFirebaseModules();
     const currentUser = authInstance.currentUser;
@@ -384,19 +387,52 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           }
         }
         
-        // Get old username document to delete it
-        const oldUsernameDoc = await firestore.getDoc(firestore.doc(db, 'usernames', currentUser.uid));
+        // Get current username document for rate limit enforcement
+        const usernameDocRef = firestore.doc(db, 'usernames', currentUser.uid);
+        const currentUsernameDoc = await firestore.getDoc(usernameDocRef);
+
+        const now = new Date();
+        const currentMonthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+        let newNickChangesCount = 1;
+
+        if (currentUsernameDoc.exists()) {
+          const data = currentUsernameDoc.data();
+          const storedMonthKey: string = data.nickChangesMonthKey ?? '';
+          const storedCount: number = typeof data.nickChangesCount === 'number' ? data.nickChangesCount : 0;
+          const lastChangedAt: Date | null = data.lastNickChangeAt?.toDate?.() ?? null;
+
+          // Enforce monthly limit
+          if (storedMonthKey === currentMonthKey && storedCount >= NICK_CHANGE_LIMIT) {
+            throw new Error(`You can only change your nickname ${NICK_CHANGE_LIMIT} times per month. Try again next month.`);
+          }
+
+          // Enforce cooldown between changes
+          if (lastChangedAt) {
+            const elapsed = now.getTime() - lastChangedAt.getTime();
+            if (elapsed < NICK_COOLDOWN_MS) {
+              const daysLeft = Math.ceil((NICK_COOLDOWN_MS - elapsed) / (24 * 60 * 60 * 1000));
+              throw new Error(
+                `Please wait ${daysLeft} more day${daysLeft !== 1 ? 's' : ''} before changing your nickname again.`
+              );
+            }
+          }
+
+          newNickChangesCount = storedMonthKey === currentMonthKey ? storedCount + 1 : 1;
+        }
         
         // Update Firebase Auth profile
         await auth.updateProfile(currentUser, { displayName: username });
         
-        // Update or create username document in Firestore
-        await firestore.setDoc(firestore.doc(db, 'usernames', currentUser.uid), {
+        // Update username document in Firestore with rate-limit tracking
+        await firestore.setDoc(usernameDocRef, {
           username: username,
           username_lower: username.toLowerCase(),
           userId: currentUser.uid,
-          updatedAt: new Date()
-        });
+          updatedAt: firestore.serverTimestamp(),
+          nickChangesCount: newNickChangesCount,
+          nickChangesMonthKey: currentMonthKey,
+          lastNickChangeAt: firestore.serverTimestamp(),
+        }, { merge: true });
         
         // Update username in user's all-time streak record (document ID = user.uid)
         const streakDocRef = firestore.doc(db, 'streaks', currentUser.uid);

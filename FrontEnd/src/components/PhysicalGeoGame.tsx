@@ -21,6 +21,7 @@ import {
   FEATURE_FILL_OPACITY,
   projectPath,
   projectEllipse,
+  projectPolygon,
   isWaterFeature,
   type PhysicalFeature,
 } from "../utils/physicalFeatures";
@@ -137,6 +138,18 @@ export default function PhysicalGeoGame() {
     } else if (feature.shape.kind === "ellipse") {
       center = feature.shape.center;
       extent = Math.max(feature.shape.rx, feature.shape.ry);
+    } else if (feature.shape.kind === "polygon") {
+      const points = feature.shape.points;
+      const lons = points.map(p => p[0]);
+      const lats = points.map(p => p[1]);
+      center = [
+        (Math.min(...lons) + Math.max(...lons)) / 2,
+        (Math.min(...lats) + Math.max(...lats)) / 2,
+      ];
+      extent = Math.max(
+        Math.max(...lons) - Math.min(...lons),
+        Math.max(...lats) - Math.min(...lats),
+      );
     } else if (feature.shape.kind === "path") {
       const points = feature.shape.points;
       const midIdx = Math.floor(points.length / 2);
@@ -278,8 +291,8 @@ export default function PhysicalGeoGame() {
       }
     }
     // Sort land features so lakes render AFTER rivers in SVG.
-    // SVG paints later elements on top, so lakes will be clickable
-    // where they overlap with rivers.
+    // SVG paints later elements on top, so lakes visually cover rivers.
+    // Lakes also have pointerEvents:all so they block clicks on rivers beneath them.
     const typeOrder: Record<string, number> = { river: 0, lake: 1 };
     land.sort((a, b) => (typeOrder[a.type] ?? 0.5) - (typeOrder[b.type] ?? 0.5));
     return { waterFeatures: water, landFeatures: land };
@@ -577,6 +590,9 @@ export default function PhysicalGeoGame() {
                 d = projectEllipse(center, rx, ry, rotation, projection, 48);
               }
               if (!d) return null;
+              // Lakes always absorb pointer events (even when not the current question)
+              // so rivers underneath are not clickable.
+              const lakePointerEvents = feature.type === "lake" ? "all" : (clickable ? "all" : "none");
               return (
                 <g key={feature.name}>
                   <path
@@ -587,7 +603,65 @@ export default function PhysicalGeoGame() {
                     strokeWidth={1.5}
                     strokeOpacity={vis.opacity * 0.6}
                     vectorEffect="non-scaling-stroke"
-                    style={{ cursor, pointerEvents: clickable ? "all" : "none" }}
+                    style={{ cursor, pointerEvents: lakePointerEvents }}
+                    onClick={handleClick}
+                  />
+                  {vis.glow && (
+                    <path
+                      d={d}
+                      fill="none"
+                      stroke={vis.color}
+                      strokeWidth={3}
+                      vectorEffect="non-scaling-stroke"
+                      opacity={0.5}
+                      style={{ pointerEvents: "none" }}
+                    >
+                      <animate attributeName="opacity" values="0.6;0.2;0.6" dur="1s" repeatCount="indefinite" />
+                    </path>
+                  )}
+                </g>
+              );
+            }
+
+            case "polygon": {
+              // Polygon lakes / areas — try real GeoJSON geometry first
+              let d: string | null = null;
+              if (feature.type === "lake") {
+                d = getPrecomputedPath(feature.name, "lake") ?? null;
+              }
+              // Ghost outline: the polygon points show the historical extent
+              // when real (current) geometry is available (e.g. Aral Sea)
+              const ghostD = (feature.name === "Aral Sea" && d)
+                ? projectPolygon(feature.shape.points, projection)
+                : null;
+              if (!d) {
+                d = projectPolygon(feature.shape.points, projection);
+              }
+              if (!d) return null;
+              return (
+                <g key={feature.name}>
+                  {/* Dashed ghost outline showing the Aral Sea's original historical extent */}
+                  {ghostD && (
+                    <path
+                      d={ghostD}
+                      fill="none"
+                      stroke={vis.color}
+                      strokeWidth={1}
+                      strokeDasharray="5,4"
+                      strokeOpacity={0.5}
+                      vectorEffect="non-scaling-stroke"
+                      style={{ pointerEvents: "none" }}
+                    />
+                  )}
+                  <path
+                    d={d}
+                    fill={vis.color}
+                    fillOpacity={vis.fillOpacity}
+                    stroke={vis.color}
+                    strokeWidth={1.5}
+                    strokeOpacity={vis.opacity * 0.6}
+                    vectorEffect="non-scaling-stroke"
+                    style={{ cursor, pointerEvents: "all" }}
                     onClick={handleClick}
                   />
                   {vis.glow && (

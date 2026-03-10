@@ -147,3 +147,16 @@ export function projectEllipse(
   if (projected.length < 3) return "";
   return `M${projected.map(p => `${p[0]},${p[1]}`).join(" L")} Z`;
 }
+
+/** Project geo polygon points -> closed SVG polygon d */
+export function projectPolygon(
+  points: [number, number][],
+  projection: Proj,
+): string | null {
+  const projected = points
+    .map(p => projection(p))
+    .filter((p): p is [number, number] => p !== null);
+  if (projected.length < 3) return null;
+  return `M${projected.map(p => `${p[0]},${p[1]}`).join(" L")} Z`;
+}
+

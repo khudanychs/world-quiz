@@ -250,6 +250,31 @@
   transform: none;
 }
 
+/* Nick change rate-limit info */
+.nick-change-limit-info {
+  margin-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.nick-change-limit-info small {
+  color: #94a3b8;
+  font-size: 12px;
+}
+
+.nick-change-ok {
+  font-size: 13px;
+  color: #86efac;
+  margin: 0 0 2px 0;
+}
+
+.nick-change-warning {
+  font-size: 13px;
+  color: #fca5a5;
+  margin: 0 0 2px 0;
+}
+
 .settings-error, .settings-success {
   padding: 16px;
   border-radius: 12px;
