@@ -41,12 +41,140 @@ const LAKES_URL = "/lakes.json";
 // GeoJSON types for marine polygon data and river line data
 interface GeoFeature {
   type: "Feature";
-  properties: { name: string };
-  geometry: GeoPermissibleObjects;
+  properties?: Record<string, unknown>;
+  geometry: GeoPermissibleObjects | null;
 }
 interface GeoFeatureCollection {
   type: "FeatureCollection";
   features: GeoFeature[];
+}
+
+const FEATURE_NAME_KEYS = new Set([
+  "name",
+  "displayName",
+  "featureName",
+  "label",
+  "title",
+]);
+
+const GEOJSON_NAME_ALIASES: Record<"marine" | "river" | "lake", Record<string, string[]>> = {
+  marine: {},
+  river: {
+    Nile: ["White Nile", "Blue Nile"],
+  },
+  lake: {},
+};
+
+function getStringAtPath(value: unknown, path: string[]): string | null {
+  let current = value;
+  for (const key of path) {
+    if (!current || typeof current !== "object" || !(key in current)) {
+      return null;
+    }
+    current = (current as Record<string, unknown>)[key];
+  }
+  return typeof current === "string" && current.trim() ? current.trim() : null;
+}
+
+function findNestedFeatureName(value: unknown, depth = 0): string | null {
+  if (!value || typeof value !== "object" || depth > 4) {
+    return null;
+  }
+
+  for (const [rawKey, rawChild] of Object.entries(value)) {
+    const key = rawKey.trim();
+    if (FEATURE_NAME_KEYS.has(key) && typeof rawChild === "string" && rawChild.trim()) {
+      return rawChild.trim();
+    }
+  }
+
+  for (const child of Object.values(value)) {
+    const nested = findNestedFeatureName(child, depth + 1);
+    if (nested) {
+      return nested;
+    }
+  }
+
+  return null;
+}
+
+function getGeoFeatureName(feature: GeoFeature): string | null {
+  const candidatePaths = [
+    ["name"],
+    ["Name"],
+    ["NAME"],
+    ["displayName"],
+    ["featureName"],
+    ["label"],
+    ["title"],
+    ["fields", "name"],
+    ["fields", "Name"],
+    ["attributes", "name"],
+    ["attributes", "Name"],
+    ["meta", "name"],
+    ["tags", "name"],
+    ["properties", "name"],
+  ];
+
+  for (const path of candidatePaths) {
+    const match = getStringAtPath(feature.properties, path);
+    if (match) {
+      return match;
+    }
+  }
+
+  return findNestedFeatureName(feature.properties);
+}
+
+function buildGeoFeatureLookup(data: GeoFeatureCollection | null): Map<string, GeoFeature> {
+  const grouped = new Map<string, GeoPermissibleObjects[]>();
+
+  for (const feature of data?.features ?? []) {
+    const name = getGeoFeatureName(feature);
+    if (!name || !feature.geometry) {
+      continue;
+    }
+
+    const existing = grouped.get(name);
+    if (existing) {
+      existing.push(feature.geometry);
+    } else {
+      grouped.set(name, [feature.geometry]);
+    }
+  }
+
+  const lookup = new Map<string, GeoFeature>();
+  for (const [name, geometries] of grouped) {
+    const geometry = geometries.length === 1
+      ? geometries[0]
+      : ({ type: "GeometryCollection", geometries } as GeoPermissibleObjects);
+
+    lookup.set(name, {
+      type: "Feature",
+      properties: { name },
+      geometry,
+    });
+  }
+
+  return lookup;
+}
+
+function mergeGeoFeatureGeometries(features: GeoFeature[]): GeoFeature | null {
+  const geometries = features
+    .map((feature) => feature.geometry)
+    .filter((geometry): geometry is GeoPermissibleObjects => geometry !== null);
+
+  if (geometries.length === 0) {
+    return null;
+  }
+
+  return {
+    type: "Feature",
+    properties: features[0]?.properties,
+    geometry: geometries.length === 1
+      ? geometries[0]
+      : ({ type: "GeometryCollection", geometries } as GeoPermissibleObjects),
+  };
 }
 
 export default function PhysicalGeoGame() {
@@ -200,31 +328,21 @@ export default function PhysicalGeoGame() {
     const pathGen = d3GeoPath(proj);
 
     // Build lookup maps once when source data changes
-    const marineLookup = new Map<string, GeoFeature>();
-    if (marineData) {
-      for (const feat of marineData.features) {
-        marineLookup.set(feat.properties.name, feat);
-      }
-    }
-    const riverLookup = new Map<string, GeoFeature>();
-    if (riverData) {
-      for (const feat of riverData.features) {
-        riverLookup.set(feat.properties.name, feat);
-      }
-    }
-    const lakeLookup = new Map<string, GeoFeature>();
-    if (lakeData) {
-      for (const feat of lakeData.features) {
-        lakeLookup.set(feat.properties.name, feat);
-      }
-    }
+    const marineLookup = buildGeoFeatureLookup(marineData);
+    const riverLookup = buildGeoFeatureLookup(riverData);
+    const lakeLookup = buildGeoFeatureLookup(lakeData);
 
     return (name: string, kind: "marine" | "river" | "lake" = "marine"): string | null => {
       const key = kind === "marine" ? name : `${kind}:${name}`;
       if (cache.has(key)) return cache.get(key)!;
       const lookup = kind === "river" ? riverLookup : kind === "lake" ? lakeLookup : marineLookup;
-      const feat = lookup.get(name);
-      if (!feat) { cache.set(key, null); return null; }
+      const aliasNames = GEOJSON_NAME_ALIASES[kind][name] ?? [];
+      const feat = mergeGeoFeatureGeometries(
+        [name, ...aliasNames]
+          .map((lookupName) => lookup.get(lookupName))
+          .filter((feature): feature is GeoFeature => Boolean(feature))
+      );
+      if (!feat || !feat.geometry) { cache.set(key, null); return null; }
       const d = pathGen(feat.geometry) || null;
       cache.set(key, d);
       return d;
