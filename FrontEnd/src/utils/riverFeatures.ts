@@ -4,7 +4,7 @@
 import type { PhysicalFeature } from "./physicalFeaturesTypes";
 
 // ═══════════════════════════════════════════════════════════════════
-//  RIVERS  (paths — ~99 rivers, real geometries in rivers.json)
+//  RIVERS  (paths — fallback shapes, real geometries in fixed_rivers.geojson)
 // ═══════════════════════════════════════════════════════════════════
 
 // ─── Easy ───
@@ -142,6 +142,9 @@ const RIVERS_HARD: PhysicalFeature[] = [
   ]}},
   { name: "Kasai", type: "river", difficulty: "hard", shape: { kind: "path", points: [
     [20.0, -10.5], [19.5, -8.5], [19.0, -6.5], [18.5, -5.0], [17.5, -4.0],
+  ]}},
+  { name: "Shebelle", type: "river", difficulty: "hard", shape: { kind: "path", points: [
+    [38.8, 6.9], [39.9, 7.4], [41.5, 8.1], [42.2, 7.2], [42.1, 5.8], [43.2, 5.1], [45.0, 4.9], [45.6, 3.2], [44.8, 1.8],
   ]}},
   { name: "Jubba", type: "river", difficulty: "hard", shape: { kind: "path", points: [
     [40.0, 4.5], [42.0, 3.0], [43.5, 1.0], [44.5, 0.0],
@@ -320,7 +323,7 @@ const RIVERS_HARD: PhysicalFeature[] = [
     [140.0, 62.5], [143.0, 64.0], [147.0, 66.0], [150.0, 68.0], [150.5, 70.0],
   ]}},
   // Casiquiare canal — the natural bifurcation linking the Orinoco and Amazon basins (Venezuela)
-  // Real geometry loaded from rivers.json; this path is a fallback
+  // Real geometry loaded from fixed_rivers.geojson; this path is a fallback
   { name: "Casiquiare", type: "river", difficulty: "hard", shape: { kind: "path", points: [
     [-67.1, 2.0], [-66.9, 2.0], [-66.5, 2.1], [-66.2, 2.4], [-66.1, 2.7],
     [-65.9, 2.9], [-65.9, 3.1],

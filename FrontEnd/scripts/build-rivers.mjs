@@ -471,7 +471,7 @@ async function main() {
   };
 
   const json = JSON.stringify(output);
-  const outPath = PUBLIC + "rivers.json";
+  const outPath = PUBLIC + "fixed_rivers.json";
   writeFileSync(outPath, json);
   console.log(`\n✓ Written: ${outPath}`);
   console.log(`  Features: ${outputFeatures.length}`);
