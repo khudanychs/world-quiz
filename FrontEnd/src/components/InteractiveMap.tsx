@@ -106,6 +106,8 @@ interface InteractiveMapProps {
   gameMode?: boolean;
   /** When true, render map with no country borders and uniform land fill */
   borderless?: boolean;
+  /** Pre-projected SVG path string for unified land background (D3 geoPath output). */
+  geoLandPath?: string | null;
   /** Custom TopoJSON URL or pre-fetched topology object */
   geoUrl?: string | object;
   /** Render SVG BEFORE land geographies (water features that should be masked by land) */
@@ -130,6 +132,7 @@ export default memo(function InteractiveMap({
   isDesktop = true,
   gameMode = false,
   borderless = false,
+  geoLandPath,
   geoUrl: customGeoUrl,
   renderUnderlay,
   renderOverlay,
@@ -176,6 +179,19 @@ export default memo(function InteractiveMap({
       >
         {/* Water feature underlays — rendered BEFORE land so land masks them */}
         {renderUnderlay && renderUnderlay(projection, zoom, isDesktop)}
+
+        {geoLandPath && (
+          <path
+            d={geoLandPath}
+            fill="#d4cab0"
+            stroke="#d4cab0"
+            strokeWidth={0.5}
+            strokeLinejoin="round"
+            paintOrder="stroke"
+            pointerEvents="none"
+            shapeRendering="optimizeSpeed"
+          />
+        )}
 
         <Geographies geography={geoUrl}>
           {({ geographies }: GeographiesArgs) => {
