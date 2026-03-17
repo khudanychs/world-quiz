@@ -3,6 +3,37 @@
  */
 import type { PhysicalFeature } from "./physicalFeaturesTypes";
 
+const PLAYABLE_WATER_FEATURE_NAMES = new Set([
+  "Arctic Ocean", "Atlantic Ocean", "INDIAN OCEAN", "Pacific Ocean", "SOUTHERN OCEAN",
+  "Mediterranean Sea", "Caribbean Sea", "Bering Sea", "South China Sea",
+  "Sea of Okhotsk", "East China Sea", "Yellow Sea", "Philippine Sea",
+  "Arabian Sea", "Tasman Sea", "Black Sea", "Red Sea", "Baltic Sea",
+  "North Sea", "Andaman Sea", "Chukchi Sea", "Beaufort Sea", "Labrador Sea",
+  "Coral Sea", "Sea of Japan", "Sargasso Sea", "Tyrrhenian Sea", "Ionian Sea",
+  "Adriatic Sea", "Sea of Azov", "White Sea", "Sea of Marmara", "Java Sea",
+  "Celebes Sea", "Banda Sea", "Flores Sea", "Sulu Sea", "Molucca Sea",
+  "Arafura Sea", "Timor Sea", "Laccadive Sea", "Sea of Crete",
+  "Amundsen Sea", "Bellingshausen Sea", "Weddell Sea", "Ross Sea", "Davis Sea",
+  "Gulf of Mexico", "Bay of Bengal", "Hudson Bay", "Baffin Bay",
+  "Gulf of Saint Lawrence", "Gulf of Carpentaria", "Gulf of Thailand",
+  "Persian Gulf", "Gulf of Oman", "Gulf of Aden", "Gulf of Suez",
+  "Gulf of Aqaba", "Bay of Biscay", "Gulf of Bothnia", "Gulf of Finland",
+  "Golfo de California", "Golfo de Panamá", "Gulf of Anadyr'", "Gulf of Ob",
+  "Bay of Fundy", "James Bay", "Gulf of Guinea", "Gulf of Tonkin",
+  "Bight of Benin", "Great Australian Bight", "San Francisco Bay",
+  "Chesapeake Bay", "Massachusetts Bay", "Bahía de Campeche", "Bo Hai",
+  "Gulf of Honduras", "Monterey Bay", "Gulf of Sidra",
+  "Strait of Gibraltar", "Bosphorus", "Dardanelles", "Bab el Mandeb",
+  "Strait of Hormuz", "Luzon Strait",
+  "Denmark Strait", "Drake Passage", "English Channel", "Korea Strait",
+  "Taiwan Strait", "Straits of Florida", "Yucatan Channel", "Strait of Malacca",
+  "Strait of Singapore", "Torres Strait", "Cook Strait", "Bass Strait",
+  "Estrecho de Magellanes", "The North Western Passages", "Davis Strait",
+  "Skagerrak", "Kattegat",
+  "Great Barrier Reef", "Saint Lawrence River", "Amazon River",
+  "Long Island Sound", "Lago de Maracaibo", "Delaware Bay",
+].map((name) => name.toLowerCase()));
+
 // ═══════════════════════════════════════════════════════════════════
 //  OCEANS
 // ═══════════════════════════════════════════════════════════════════
@@ -30,6 +61,7 @@ const MAJOR_SEAS: PhysicalFeature[] = [
   { name: "Sea of Japan",       type: "sea", difficulty: "medium", shape: { kind: "ellipse", center: [135, 40],   rx: 5,  ry: 8,  rotation: 20 }},
   { name: "Coral Sea",          type: "sea", difficulty: "hard",   shape: { kind: "ellipse", center: [155, -18],  rx: 10, ry: 8,  rotation: 0 }},
   { name: "Tasman Sea",         type: "sea", difficulty: "hard",   shape: { kind: "ellipse", center: [164, -38],  rx: 8,  ry: 8,  rotation: 0 }},
+  { name: "Great Barrier Reef", type: "sea", difficulty: "hard",   shape: { kind: "ellipse", center: [147.4, -17.2], rx: 4, ry: 6, rotation: 0 }},
 ];
 
 // ═══════════════════════════════════════════════════════════════════
@@ -76,7 +108,6 @@ const SEAS_50M: PhysicalFeature[] = [
   { name: "Celebes Sea",         type: "sea", difficulty: "hard",   shape: { kind: "ellipse", center: [121.3, 4.3],    rx: 4,  ry: 3,   rotation: 0 }},
   { name: "Ceram Sea",           type: "sea", difficulty: "hard",   shape: { kind: "ellipse", center: [130.9, -2.7],   rx: 3,  ry: 2,   rotation: 0 }},
   { name: "Chukchi Sea",         type: "sea", difficulty: "hard",   shape: { kind: "ellipse", center: [-168, 68],      rx: 6,  ry: 4,   rotation: 0 }},
-  { name: "Great Barrier Reef",  type: "sea", difficulty: "hard",   shape: { kind: "ellipse", center: [147.4, -17.2],  rx: 4,  ry: 6,   rotation: 0 }},
   { name: "Inner Sea",           type: "sea", difficulty: "hard",   shape: { kind: "ellipse", center: [133.0, 33.9],   rx: 2,  ry: 1.5, rotation: 0 }},
   { name: "Inner Seas",          type: "sea", difficulty: "hard",   shape: { kind: "ellipse", center: [-6.1, 56.4],    rx: 3,  ry: 2,   rotation: 0 }},
   { name: "Java Sea",            type: "sea", difficulty: "hard",   shape: { kind: "ellipse", center: [110.0, -5.0],   rx: 6,  ry: 2,   rotation: 0 }},
@@ -142,11 +173,11 @@ const CHANNELS_PASSAGES_50M: PhysicalFeature[] = [
   { name: "Bristol Channel",     type: "channel", difficulty: "hard",   shape: { kind: "ellipse", center: [-4.2, 51.2],   rx: 2, ry: 1,   rotation: 0 }},
 
   { name: "Davis Strait",        type: "passage", difficulty: "medium", shape: { kind: "ellipse", center: [-57.3, 65.7],  rx: 5, ry: 5,  rotation: 0 }},
-  { name: "Drake Passage",       type: "passage", difficulty: "medium", shape: { kind: "ellipse", center: [-65, -59],     rx: 8, ry: 4,  rotation: 20 }},
+  { name: "Drake Passage",       type: "passage", difficulty: "medium", shape: { kind: "marker", center: [-65, -59] }},
   { name: "Straits of Florida",  type: "passage", difficulty: "medium", shape: { kind: "ellipse", center: [-80.3, 24.5],  rx: 3, ry: 2,  rotation: 0 }},
   { name: "Hudson Strait",       type: "passage", difficulty: "hard",   shape: { kind: "ellipse", center: [-71.6, 62.6],  rx: 5, ry: 2,  rotation: 0 }},
   { name: "Korea Strait",        type: "passage", difficulty: "hard",   shape: { kind: "ellipse", center: [128.7, 34.2],  rx: 3, ry: 1,  rotation: 0 }},
-  { name: "Luzon Strait",        type: "passage", difficulty: "hard",   shape: { kind: "ellipse", center: [120.9, 22.1],  rx: 2, ry: 1,  rotation: 0 }},
+  { name: "Luzon Strait",        type: "passage", difficulty: "hard",   shape: { kind: "marker", center: [120.9, 20.5] }},
   { name: "Makassar Strait",     type: "passage", difficulty: "hard",   shape: { kind: "ellipse", center: [118.3, -1.5],  rx: 2, ry: 5,  rotation: 0 }},
   { name: "Strait of Singapore", type: "passage", difficulty: "hard",   shape: { kind: "ellipse", center: [104.0, 1.3],   rx: 2, ry: 1,  rotation: 0 }},
   { name: "Taiwan Strait",       type: "passage", difficulty: "hard",   shape: { kind: "ellipse", center: [118.9, 24.3],  rx: 2, ry: 3,  rotation: 0 }},
@@ -253,4 +284,4 @@ export const WATER_FEATURES: PhysicalFeature[] = [
   ...SEAS_10M,
   ...GULFS_BAYS_10M,
   ...STRAITS_10M,
-];
+].filter((feature) => PLAYABLE_WATER_FEATURE_NAMES.has(feature.name.toLowerCase()));

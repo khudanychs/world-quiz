@@ -2,6 +2,8 @@ import { geoBounds, geoCentroid, type GeoPermissibleObjects } from "d3-geo";
 
 export type GeoFeatureKind = "marine" | "river" | "lake";
 
+export const GEO_LAND_URL = "/Land10mForMarines.geojson";
+export const MARINE_URL = "/FinalMarines10m.json";
 export const MERGED_URL = "/world-marine.json";
 export const RIVERS_URL = "/fixed_rivers.geojson";
 export const LAKES_URL = "/lakes.json";
@@ -189,6 +191,7 @@ function getGeoFeatureName(feature: GeoFeature): string | null {
     ["name"],
     ["Name"],
     ["NAME"],
+    ["moje_nazvy"],
     ["displayName"],
     ["featureName"],
     ["label"],
@@ -242,11 +245,12 @@ function buildGeoFeatureLookup(data: GeoFeatureCollection | null, kind: GeoFeatu
       continue;
     }
 
-    const existing = grouped.get(name);
+    const key = name.toLowerCase();
+    const existing = grouped.get(key);
     if (existing) {
       existing.push(geometry);
     } else {
-      grouped.set(name, [geometry]);
+      grouped.set(key, [geometry]);
     }
   }
 
@@ -280,7 +284,7 @@ export function buildGeoFeatureGetter(
     const lookup = kind === "river" ? riverLookup : kind === "lake" ? lakeLookup : marineLookup;
     const aliasNames = GEOJSON_NAME_ALIASES[kind][name] ?? [];
     const features = [name, ...aliasNames]
-      .map((lookupName) => lookup.get(lookupName))
+      .map((lookupName) => lookup.get(lookupName.toLowerCase()))
       .filter((feature): feature is GeoFeature => Boolean(feature));
     const geometry = mergeGeometriesByKind(
       features

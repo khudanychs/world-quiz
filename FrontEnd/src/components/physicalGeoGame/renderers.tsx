@@ -32,6 +32,7 @@ interface SharedRenderArgs {
 
 interface WaterUnderlayArgs extends SharedRenderArgs {
   waterFeatures: PhysicalFeature[];
+  backgroundMarineNames?: string[];
   showingResult: boolean;
   lastResult: GameResult | null;
   currentFeatureName?: string;
@@ -57,6 +58,8 @@ const LAKE_CORE_STROKE_WIDTH = 0.5;
 const LAKE_OUTLINE_STROKE_WIDTH = 0.8;
 const LAKE_GLOW_STROKE_WIDTH = 1.2;
 const LAKE_OUTLINE_COLOR = "rgba(9, 43, 79, 0.6)";
+const MARINE_FILL_COLOR = "#0f2a4a";
+const MARINE_STROKE_COLOR = "rgba(148, 167, 190, 0.2)";
 
 function getLakeFillOpacity(fillOpacity: number): number {
   return Math.min(0.82, fillOpacity + LAKE_FILL_BOOST);
@@ -156,6 +159,7 @@ export function renderWaterUnderlay({
   zoom,
   isDesktop,
   waterFeatures,
+  backgroundMarineNames,
   getPrecomputedPath,
   canClick,
   onFeatureClick,
@@ -171,17 +175,38 @@ export function renderWaterUnderlay({
 
   const sw = Math.max(0.5, 1.2 / Math.pow(zoom, 0.5));
   const markerR = Math.max(isDesktop ? 5 : 2, (isDesktop ? 9 : 4) / Math.pow(zoom, 0.4));
+  const interactiveNames = new Set(waterFeatures.map((feature) => feature.name.toLowerCase()));
+  const backgroundNames = (backgroundMarineNames ?? []).filter((name) => !interactiveNames.has(name.toLowerCase()));
 
   return (
     <g shapeRendering="optimizeSpeed">
+      {backgroundNames.map((featureName) => {
+        const d = getPrecomputedPath(featureName, "marine");
+        if (!d) {
+          return null;
+        }
+
+        return (
+          <path
+            key={`bg-${featureName}`}
+            d={d}
+            fill={MARINE_FILL_COLOR}
+            stroke={MARINE_STROKE_COLOR}
+            strokeWidth={sw * 0.8}
+            vectorEffect="non-scaling-stroke"
+            style={{ pointerEvents: "none" }}
+          />
+        );
+      })}
+
       {waterFeatures.map((feature) => {
         const rawD = getPrecomputedPath(feature.name, "marine");
-        const d = rawD && rawD.length > 200 ? rawD : null;
+        const d = rawD || null;
         const clickable = canClick(feature);
         const handleClick = clickable ? () => onFeatureClick(feature.name) : undefined;
 
-        let fillColor = "#0f2a4a";
-        let strokeColor = "rgba(100,160,220,0.45)";
+        let fillColor = MARINE_FILL_COLOR;
+        let strokeColor = MARINE_STROKE_COLOR;
         let strokeW = sw;
 
         if (showingResult && lastResult) {

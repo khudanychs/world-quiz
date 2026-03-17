@@ -7,7 +7,7 @@ export const SMALL_ISLAND_MARKERS: Record<string, [number, number]> = {
   "Liechtenstein": [9.55, 47.14],
   "Malta": [14.5, 35.9],
   "Andorra": [1.52, 42.5],
-  
+
   // Caribbean - UN Members only
   "Saint Lucia": [-60.98, 13.9],
   "Grenada": [-61.68, 12.1],
@@ -16,7 +16,7 @@ export const SMALL_ISLAND_MARKERS: Record<string, [number, number]> = {
   "Dominica": [-61.37, 15.4],
   "Saint Kitts and Nevis": [-62.7, 17.3],
   "Barbados": [-59.5, 13.2],
-  
+
   // Pacific Islands - UN Members only
   "Tonga": [-175.2, -21.2],
   "Samoa": [-172.1, -13.8],
@@ -26,20 +26,34 @@ export const SMALL_ISLAND_MARKERS: Record<string, [number, number]> = {
   "Marshall Islands": [171.2, 7.1],
   "Kiribati": [-157.4, 1.9],
   "Micronesia": [158.2, 6.9],
-  
+
   // Indian Ocean - UN Members only
   "Maldives": [73.5, 3.2],
   "Seychelles": [55.5, -4.7],
   "Comoros": [43.9, -11.9],
   "Mauritius": [57.5, -20.3],
-  
+
   // Africa - UN Members only
   "São Tomé and Príncipe": [6.6, 0.2],
   "Cape Verde": [-23.6, 16.5],
-  
+
   // Middle East - UN Members only
   "Bahrain": [50.6, 26.1],
   // Palestine has a real polygon in the map topology (West Bank + Gaza) - rendered as land
-  // Asia 
+  // Asia
   "Singapore": [103.8, 1.35],
 };
+
+/**
+ * Subset of SMALL_ISLAND_MARKERS whose polygons are topologically carved *out*
+ * of their host country (mainland enclaves / coast-adjacent city-states).
+ * In borderless (physical-geo) mode these must be filled with land colour to
+ * prevent a visible hole in the surrounding country's polygon.
+ */
+export const MAINLAND_ENCLAVE_MARKERS = new Set([
+  "Vatican City",
+  "San Marino",
+  "Liechtenstein",
+  "Andorra",
+  "Monaco",
+]);

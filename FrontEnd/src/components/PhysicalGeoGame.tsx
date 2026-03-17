@@ -1,12 +1,14 @@
 import { useState, useRef, useMemo, useEffect, useCallback, lazy, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
-import { geoPath as d3GeoPath, geoNaturalEarth1, type GeoPermissibleObjects } from "d3-geo";
+import { geoPath as d3GeoPath, geoNaturalEarth1, geoArea, type GeoPermissibleObjects } from "d3-geo";
 import { feature as topoFeature } from "topojson-client";
 import type { Topology, GeometryCollection } from "topojson-specification";
 import { BackButton } from "./BackButton";
 import PhysicalGeoHUD from "./PhysicalGeoHUD";
 import {
+  GEO_LAND_URL,
   LAKES_URL,
+  MARINE_URL,
   MERGED_URL,
   RIVERS_URL,
   buildGeoFeatureGetter,
@@ -57,6 +59,9 @@ export default function PhysicalGeoGame() {
   const [topology, setTopology] = useState<Topology | null>(topoCache.current);
   const [marineData, setMarineData] = useState<GeoFeatureCollection | null>(null);
   const needsMarine = !showSelector && categoryKey === "waters";
+  const marineTopoCache = useRef<GeoFeatureCollection | null>(null);
+  const landGeoCache = useRef<GeoPermissibleObjects | null>(null);
+  const [landGeoRaw, setLandGeoRaw] = useState<GeoPermissibleObjects | null>(null);
 
   useEffect(() => {
     if (showSelector) return;
@@ -72,10 +77,85 @@ export default function PhysicalGeoGame() {
 
   useEffect(() => {
     if (!needsMarine) { setMarineData(null); return; }
-    if (!topology) return;
-    const geo = topoFeature(topology, topology.objects.marine as GeometryCollection) as unknown as GeoFeatureCollection;
-    setMarineData(geo);
-  }, [needsMarine, topology]);
+    const extract = (raw: unknown): GeoFeatureCollection | null => {
+      if (!raw || typeof raw !== "object") {
+        return null;
+      }
+
+      const maybeCollection = raw as { type?: string; features?: unknown[] };
+      if (maybeCollection.type === "FeatureCollection" && Array.isArray(maybeCollection.features)) {
+        return maybeCollection as GeoFeatureCollection;
+      }
+
+      const maybeTopo = raw as Topology & { objects?: Record<string, unknown> };
+      if (maybeTopo.type === "Topology" && maybeTopo.objects?.marine) {
+        return topoFeature(maybeTopo, maybeTopo.objects.marine as GeometryCollection) as unknown as GeoFeatureCollection;
+      }
+
+      return null;
+    };
+
+    if (marineTopoCache.current) {
+      setMarineData(marineTopoCache.current);
+      return;
+    }
+    fetch(MARINE_URL)
+      .then((r) => r.json())
+      .then((raw: unknown) => {
+        const extracted = extract(raw);
+        if (!extracted) {
+          setMarineData(null);
+          return;
+        }
+        marineTopoCache.current = extracted;
+        setMarineData(extracted);
+      })
+      .catch(() => {});
+  }, [needsMarine]);
+
+  useEffect(() => {
+    if (!needsMarine) { setLandGeoRaw(null); return; }
+    if (landGeoCache.current) { setLandGeoRaw(landGeoCache.current); return; }
+    fetch(GEO_LAND_URL)
+      .then((r) => r.json())
+      .then((raw: unknown) => {
+        const asGeometryCollection = raw as { type?: string; geometries?: GeoPermissibleObjects[] };
+        const asFeatureCollection = raw as { type?: string; features?: Array<{ geometry?: GeoPermissibleObjects | null }> };
+
+        let geom: GeoPermissibleObjects | null = null;
+        if (asGeometryCollection.type === "GeometryCollection" && Array.isArray(asGeometryCollection.geometries)) {
+          geom = asGeometryCollection.geometries[0] ?? null;
+        } else if (asFeatureCollection.type === "FeatureCollection" && Array.isArray(asFeatureCollection.features)) {
+          const geometries = asFeatureCollection.features
+            .map((f) => f.geometry ?? null)
+            .filter((g): g is GeoPermissibleObjects => g !== null);
+          if (geometries.length === 1) {
+            geom = geometries[0];
+          } else if (geometries.length > 1) {
+            geom = { type: "GeometryCollection", geometries } as unknown as GeoPermissibleObjects;
+          }
+        }
+
+        if (!geom) return;
+        type MultiPoly = { type: "MultiPolygon"; coordinates: number[][][][] };
+        if (geoArea(geom as unknown as Parameters<typeof geoArea>[0]) > 2 * Math.PI) {
+          geom = {
+            type: "MultiPolygon",
+            coordinates: (geom as unknown as MultiPoly).coordinates
+              .map((poly) => poly.map((ring) => [...ring].reverse())),
+          } as unknown as GeoPermissibleObjects;
+        }
+        landGeoCache.current = geom;
+        setLandGeoRaw(geom);
+      })
+      .catch(() => {});
+  }, [needsMarine]);
+
+  const landPathD = useMemo<string | null>(() => {
+    if (!landGeoRaw) return null;
+    const proj = geoNaturalEarth1().scale(FIT_SCALE).translate([INNER_W / 2, INNER_H / 2]).center([0, 15]);
+    return d3GeoPath(proj)(landGeoRaw) || null;
+  }, [landGeoRaw, FIT_SCALE, INNER_W, INNER_H]);
 
   const [riverData, setRiverData] = useState<GeoFeatureCollection | null>(null);
   const needsRivers = !showSelector && categoryKey === "rivers";
@@ -255,6 +335,27 @@ export default function PhysicalGeoGame() {
     return { waterFeatures: water, landFeatures: land };
   }, [game.features]);
 
+  const allMarineFeatureNames = useMemo(() => {
+    if (!needsMarine || !marineData) {
+      return [] as string[];
+    }
+
+    const names = new Set<string>();
+    for (const feature of marineData.features ?? []) {
+      const props = feature.properties as Record<string, unknown> | undefined;
+      const candidate = [
+        props?.name,
+        props?.Name,
+        props?.NAME,
+        props?.moje_nazvy,
+      ].find((value) => typeof value === "string" && value.trim().length > 0) as string | undefined;
+      if (candidate) {
+        names.add(candidate.trim());
+      }
+    }
+    return [...names];
+  }, [needsMarine, marineData]);
+
   const canClick = (feature: PhysicalFeature) =>
     !correctSetRef.current.has(feature.name) && !skippedSetRef.current.has(feature.name) && !game.showingResult && !game.gameOver;
 
@@ -268,6 +369,7 @@ export default function PhysicalGeoGame() {
         zoom,
         isDesktop,
         waterFeatures,
+        backgroundMarineNames: allMarineFeatureNames,
         getPrecomputedPath,
         canClick,
         onFeatureClick: handleFeatureClickWithZoom,
@@ -292,7 +394,7 @@ export default function PhysicalGeoGame() {
         skippedSet: skippedSetRef.current,
       })}
     </>
-  ), [waterFeatures, landFeatures, getPrecomputedPath, game.showingResult, game.lastResult, game.currentFeature, handleFeatureClickWithZoom]);
+  ), [waterFeatures, allMarineFeatureNames, landFeatures, getPrecomputedPath, game.showingResult, game.lastResult, game.currentFeature, handleFeatureClickWithZoom]);
 
   return (
     <>
@@ -465,7 +567,8 @@ export default function PhysicalGeoGame() {
               coordinates={pos.coordinates}
               isDesktop={!isPortrait && window.innerWidth >= 768}
               borderless
-              geoUrl={topology ?? MERGED_URL}
+              geoLandPath={needsMarine ? landPathD : null}
+              geoUrl={needsMarine ? undefined : (topology ?? MERGED_URL)}
               onMoveEnd={({ zoom, coordinates }: { zoom: number; coordinates: [number, number] }) => {
                 setPos({ zoom, coordinates });
               }}
