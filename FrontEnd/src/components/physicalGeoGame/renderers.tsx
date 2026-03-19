@@ -54,12 +54,27 @@ const RIVER_HIT_STROKE_WIDTH = 12;
 const RIVER_OUTLINE_EXTRA = 1.35;
 const RIVER_GLOW_EXTRA = 5;
 const LAKE_FILL_BOOST = 0.12;
-const LAKE_CORE_STROKE_WIDTH = 0.5;
-const LAKE_OUTLINE_STROKE_WIDTH = 0.8;
+const LAKE_CORE_STROKE_WIDTH = 0.13;
+const LAKE_OUTLINE_STROKE_WIDTH = 0.15;
 const LAKE_GLOW_STROKE_WIDTH = 1.2;
 const LAKE_OUTLINE_COLOR = "rgba(9, 43, 79, 0.6)";
 const MARINE_FILL_COLOR = "#0f2a4a";
 const MARINE_STROKE_COLOR = "rgba(148, 167, 190, 0.2)";
+const MOUNTAIN_RANGE_BAND_WIDTH = 10;
+const MOUNTAIN_RANGE_OUTLINE_WIDTH = 12;
+
+const TOPO_PATTERN_ID = "phys-topography-pattern";
+const TOPO_PATTERN_SIZE = 180;
+
+function getTopographyOverlayOpacity(featureType: PhysicalFeature["type"]): number {
+  if (featureType === "desert") {
+    return 0.5;
+  }
+  if (featureType === "mountain_range") {
+    return 0.5;
+  }
+  return 0;
+}
 
 function getLakeFillOpacity(fillOpacity: number): number {
   return Math.min(0.82, fillOpacity + LAKE_FILL_BOOST);
@@ -76,6 +91,7 @@ function getFeatureVisual(
   const baseColor = FEATURE_COLORS[feature.type];
   const baseFillOpacity = FEATURE_FILL_OPACITY[feature.type];
   const isCurrentTarget = feature.name === currentFeatureName;
+  const isDesert = feature.type === "desert";
 
   if (showingResult && lastResult) {
     if (lastResult.correct && isCurrentTarget) {
@@ -86,7 +102,12 @@ function getFeatureVisual(
         return { color: "#ef4444", opacity: 1, fillOpacity: 0.5, glow: false };
       }
       if (isCurrentTarget) {
-        return { color: "#ffc107", opacity: 1, fillOpacity: 0.55, glow: true };
+        return {
+          color: isDesert ? "#22d3ee" : "#ffc107",
+          opacity: 1,
+          fillOpacity: isDesert ? 0.62 : 0.55,
+          glow: true,
+        };
       }
     }
   }
@@ -96,7 +117,12 @@ function getFeatureVisual(
   }
 
   if (skippedSet.has(feature.name)) {
-    return { color: "#f59e0b", opacity: 0.7, fillOpacity: baseFillOpacity * 0.5, glow: false };
+    return {
+      color: isDesert ? "#60a5fa" : "#f59e0b",
+      opacity: 0.78,
+      fillOpacity: isDesert ? Math.max(baseFillOpacity * 0.65, 0.35) : baseFillOpacity * 0.5,
+      glow: false,
+    };
   }
 
   return { color: baseColor, opacity: 1, fillOpacity: baseFillOpacity, glow: false };
@@ -109,8 +135,6 @@ function renderLakeLayerStack(
   pointerEvents: "all" | "none",
   onClick?: () => void,
 ): JSX.Element {
-  // No vectorEffect — CSS-transform zoom doesn't honour non-scaling-stroke.
-  // Thin SVG-unit widths scale naturally with the geometry, staying proportional.
   const fillOpacity = feature.type === "lake" ? getLakeFillOpacity(vis.fillOpacity) : vis.fillOpacity;
   const strokeWidth = feature.type === "lake" ? LAKE_CORE_STROKE_WIDTH : 1.5;
   const strokeOpacity = feature.type === "lake" ? Math.min(1, vis.opacity * 0.95) : vis.opacity * 0.6;
@@ -148,6 +172,53 @@ function renderLakeLayerStack(
           style={{ pointerEvents: "none" }}
         >
           <animate attributeName="opacity" values="0.6;0.2;0.6" dur="1s" repeatCount="indefinite" />
+        </path>
+      )}
+    </g>
+  );
+}
+
+function renderTopographyAreaStack(
+  feature: PhysicalFeature,
+  d: string,
+  vis: FeatureVisual,
+  withTexture: boolean,
+  pointerEvents: "all" | "none",
+  onClick?: () => void,
+): JSX.Element {
+  const overlayOpacity = withTexture ? getTopographyOverlayOpacity(feature.type) : 0;
+
+  return (
+    <g key={feature.name}>
+      <path
+        d={d}
+        fill={vis.color}
+        fillOpacity={Math.min(0.72, vis.fillOpacity + 0.12)}
+        stroke={vis.color}
+        strokeWidth={1.1}
+        strokeOpacity={Math.min(1, vis.opacity * 0.9)}
+        style={{ cursor: pointerEvents === "all" ? "pointer" : "default", pointerEvents }}
+        onClick={onClick}
+      />
+      {withTexture && (
+        <path
+          d={d}
+          fill={`url(#${TOPO_PATTERN_ID})`}
+          fillOpacity={overlayOpacity}
+          stroke="none"
+          style={{ pointerEvents: "none" }}
+        />
+      )}
+      {vis.glow && (
+        <path
+          d={d}
+          fill="none"
+          stroke={vis.color}
+          strokeWidth={2.1}
+          opacity={0.35}
+          style={{ pointerEvents: "none" }}
+        >
+          <animate attributeName="opacity" values="0.45;0.16;0.45" dur="1s" repeatCount="indefinite" />
         </path>
       )}
     </g>
@@ -321,8 +392,28 @@ export function renderLandOverlay({
     return null;
   }
 
+  const usesTopography = landFeatures.some(
+    (feature) => feature.type === "desert" || feature.type === "mountain_range",
+  );
+  
+  const shouldTextureFeature = true;
+
   return (
     <g>
+      {usesTopography && (
+        <defs>
+          <pattern id={TOPO_PATTERN_ID} patternUnits="userSpaceOnUse" width={TOPO_PATTERN_SIZE} height={TOPO_PATTERN_SIZE}>
+            <image
+              href="/topography.svg"
+              x={0}
+              y={0}
+              width={TOPO_PATTERN_SIZE}
+              height={TOPO_PATTERN_SIZE}
+              preserveAspectRatio="xMidYMid slice"
+            />
+          </pattern>
+        </defs>
+      )}
       {landFeatures.map((feature) => {
         const vis = getFeatureVisual(feature, currentFeatureName, showingResult, lastResult, correctSet, skippedSet);
         const clickable = canClick(feature);
@@ -383,6 +474,74 @@ export function renderLandOverlay({
             }
             if (!d) {
               return null;
+            }
+
+            if (feature.type === "mountain_range") {
+              const withTexture = shouldTextureFeature;
+              return (
+                <g key={feature.name}>
+                  <path
+                    d={d}
+                    fill="none"
+                    stroke="transparent"
+                    strokeWidth={Math.max(RIVER_HIT_STROKE_WIDTH, MOUNTAIN_RANGE_OUTLINE_WIDTH + 4)}
+                    vectorEffect="non-scaling-stroke"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    style={{ cursor, pointerEvents: clickable ? "stroke" : "none" }}
+                    onClick={handleClick}
+                  />
+                  <path
+                    d={d}
+                    fill="none"
+                    stroke={vis.color}
+                    strokeWidth={MOUNTAIN_RANGE_BAND_WIDTH}
+                    strokeOpacity={Math.min(0.85, vis.opacity)}
+                    vectorEffect="non-scaling-stroke"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    style={{ pointerEvents: "none" }}
+                  />
+                  {withTexture && (
+                    <path
+                      d={d}
+                      fill="none"
+                      stroke={`url(#${TOPO_PATTERN_ID})`}
+                      strokeWidth={MOUNTAIN_RANGE_BAND_WIDTH - 1.2}
+                      strokeOpacity={getTopographyOverlayOpacity("mountain_range")}
+                      vectorEffect="non-scaling-stroke"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      style={{ pointerEvents: "none" }}
+                    />
+                  )}
+                  <path
+                    d={d}
+                    fill="none"
+                    stroke="rgba(56, 37, 27, 0.55)"
+                    strokeWidth={MOUNTAIN_RANGE_OUTLINE_WIDTH}
+                    vectorEffect="non-scaling-stroke"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    style={{ pointerEvents: "none" }}
+                  />
+                  {vis.glow && (
+                    <path
+                      d={d}
+                      fill="none"
+                      stroke={vis.color}
+                      strokeWidth={MOUNTAIN_RANGE_OUTLINE_WIDTH + 2}
+                      vectorEffect="non-scaling-stroke"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      opacity={0.24}
+                      style={{ pointerEvents: "none" }}
+                    >
+                      <animate attributeName="opacity" values="0.24;0.08;0.24" dur="1s" repeatCount="indefinite" />
+                    </path>
+                  )}
+                </g>
+              );
             }
 
             const strokeWidth = feature.type === "river" ? RIVER_STROKE_WIDTH : 3.5;
@@ -451,6 +610,18 @@ export function renderLandOverlay({
               return null;
             }
 
+            if (feature.type === "desert") {
+              const pointerEvents = clickable ? "all" : "none";
+              return renderTopographyAreaStack(
+                feature,
+                d,
+                vis,
+                shouldTextureFeature,
+                pointerEvents,
+                handleClick,
+              );
+            }
+
             const pointerEvents = feature.type === "lake" ? "all" : clickable ? "all" : "none";
             return renderLakeLayerStack(feature, d, vis, pointerEvents, handleClick);
           }
@@ -463,6 +634,17 @@ export function renderLandOverlay({
             }
             if (!d) {
               return null;
+            }
+
+            if (feature.type === "desert") {
+              return renderTopographyAreaStack(
+                feature,
+                d,
+                vis,
+                shouldTextureFeature,
+                clickable ? "all" : "none",
+                handleClick,
+              );
             }
 
             return (

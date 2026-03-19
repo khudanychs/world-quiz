@@ -526,7 +526,7 @@ export default function PhysicalGeoGame() {
         {streakMilestone !== null && (
           <div key={streakMilestone} className="phys-streak-animation">{streakMilestone} 🔥</div>
         )}
-        {game.showingResult && game.lastResult && game.lastResult.clickedName !== "" && (
+        {game.showingResult && game.lastResult && game.lastResult.clickedName !== "" && (!game.lastResult.correct || streakMilestone === null) && (
           <div className={`phys-result-flash ${game.lastResult.correct ? "flash-correct" : ""}`}>
             <div className={`phys-result-badge ${game.lastResult.correct ? "correct" : "wrong"}`}>
               {game.lastResult.correct ? "✓ Correct!" : "✗ Wrong"}

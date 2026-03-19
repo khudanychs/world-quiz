@@ -203,55 +203,69 @@ export default memo(function InteractiveMap({
             }
 
             return geographies.map((geo: RSMGeography) => {
-              const nameRaw = (geo.properties?.name as string) ?? "Unknown";
-              const name = normalizeCountryName(nameRaw);
-              
-              // Completely hide certain territories
-              if (isHiddenTerritory(nameRaw)) {
-                return null;
-              }
-              
-              const isSelected = selectedCountry === name;
+                const nameRaw = (geo.properties?.name as string) ?? "Unknown";
+                const name = normalizeCountryName(nameRaw);
 
-              // Hide countries that have custom markers
-              const hideForMarker = hasCustomMarker(nameRaw);
-              
-              // In game mode, check if territory should be unclickable
-              const isUnclickableInGame = gameMode && !isClickableInGameMode(nameRaw);
-              
-              // Determine if this geography should not be interactive
-              const notInteractive = hideForMarker || isUnclickableInGame;
+                // Completely hide certain territories
+                if (isHiddenTerritory(nameRaw)) {
+                  return null;
+                }
 
-              const strokeColor = "#2d3748";
-              const strokeW = 0.65;
+                const isSelected = selectedCountry === name;
 
-              // Get fill color
-              const fill = getCountryFill 
-                  ? getCountryFill(name)
-                  : isSelected 
-                    ? "#3b82f6" 
-                    : "#d4cab0";
-              
-              const displayFill = hideForMarker ? "transparent" : fill;
+                // Hide marker-backed tiny countries only when marker circles are rendered.
+                // In borderless mode markers are disabled, so keep these countries visible.
+                const hideForMarker = !borderless && hasCustomMarker(nameRaw);
 
-              // Borderless style: completely inert land shapes with no visible
-              // borders and no hover/pressed changes at all.  A fill-colored
-              // stroke painted BEHIND the fill (paintOrder) seals the
-              // anti-aliasing gaps between adjacent country polygons.
-              if (borderless) {
-                const bStyle = {
-                  fill: displayFill,
-                  stroke: displayFill,
-                  strokeWidth: 1,
-                  strokeLinejoin: "round" as const,
-                  strokeLinecap: "round" as const,
-                  paintOrder: "stroke",
-                  outline: "none",
-                  cursor: "crosshair",
-                  // visibleFill (not "none") so the land blocks expensive SVG
-                  // hit-testing on the complex marine polygon paths underneath.
-                  pointerEvents: "visibleFill" as const,
-                };
+                // In game mode, check if territory should be unclickable
+                const isUnclickableInGame = gameMode && !isClickableInGameMode(nameRaw);
+
+                // Determine if this geography should not be interactive
+                const notInteractive = hideForMarker || isUnclickableInGame;
+
+                const strokeColor = "#2d3748";
+                const strokeW = 0.65;
+
+                // Get fill color
+                const fill = getCountryFill
+                    ? getCountryFill(name)
+                    : isSelected
+                      ? "#3b82f6"
+                      : "#d4cab0";
+
+                const displayFill = hideForMarker ? "transparent" : fill;
+
+                // Borderless style: completely inert land shapes with no visible
+                // borders and no hover/pressed changes at all.  A fill-colored
+                // stroke painted BEHIND the fill (paintOrder) seals the
+                // anti-aliasing gaps between adjacent country polygons.
+                if (borderless) {
+                  const bStyle = {
+                    fill: displayFill,
+                    stroke: displayFill,
+                    strokeWidth: 1,
+                    strokeLinejoin: "round" as const,
+                    strokeLinecap: "round" as const,
+                    paintOrder: "stroke",
+                    outline: "none",
+                    cursor: "crosshair",
+                    // visibleFill (not "none") so the land blocks expensive SVG
+                    // hit-testing on the complex marine polygon paths underneath.
+                    pointerEvents: "visibleFill" as const,
+                  };
+                  return (
+                    <Geography
+                      key={geo.rsmKey}
+                      geography={geo}
+                      vectorEffect="non-scaling-stroke"
+                      fillRule="evenodd"
+                      clipRule="evenodd"
+                      shapeRendering="geometricPrecision"
+                      style={{ default: bStyle, hover: bStyle, pressed: bStyle }}
+                    />
+                  );
+                }
+
                 return (
                   <Geography
                     key={geo.rsmKey}
@@ -260,71 +274,58 @@ export default memo(function InteractiveMap({
                     fillRule="evenodd"
                     clipRule="evenodd"
                     shapeRendering="geometricPrecision"
-                    style={{ default: bStyle, hover: bStyle, pressed: bStyle }}
+                    style={{
+                      default: {
+                        fill: displayFill,
+                        stroke: hideForMarker ? "transparent" : strokeColor,
+                        strokeWidth: strokeW,
+                        strokeLinejoin: "round",
+                        strokeLinecap: "round",
+                        outline: "none",
+                        transition: "fill 0.15s ease-out",
+                        cursor: notInteractive ? "default" : "pointer",
+                        pointerEvents: hideForMarker ? "none" : "visibleFill",
+                      },
+                      hover: !notInteractive
+                        ? {
+                            fill: displayFill,
+                            stroke: strokeColor,
+                            strokeWidth: strokeW,
+                            outline: "none",
+                            cursor: "pointer",
+                            pointerEvents: "visibleFill",
+                            transition: "fill 0.15s ease-out",
+                            filter: "brightness(1.1)",
+                          }
+                        : {
+                            fill: displayFill,
+                            cursor: "default",
+                            outline: "none",
+                            pointerEvents: "visibleFill",
+                          },
+                      pressed: !notInteractive
+                        ? {
+                            fill: fill,
+                            stroke: strokeColor,
+                            strokeWidth: strokeW,
+                            outline: "none",
+                            cursor: "pointer",
+                            pointerEvents: "visibleFill",
+                            transition: "fill 0.05s ease-out",
+                          }
+                        : {
+                            fill: displayFill,
+                            cursor: "default",
+                            outline: "none",
+                            pointerEvents: "visibleFill",
+                          },
+                    }}
+                    onMouseEnter={!hideForMarker ? () => handleCountryHover(name) : undefined}
+                    onMouseLeave={!hideForMarker ? () => handleCountryHover(null) : undefined}
+                    onClick={!hideForMarker ? () => handleCountryClick(name) : undefined}
                   />
                 );
-              }
-
-              return (
-                <Geography
-                  key={geo.rsmKey}
-                  geography={geo}
-                  vectorEffect="non-scaling-stroke"
-                  fillRule="evenodd"
-                  clipRule="evenodd"
-                  shapeRendering="geometricPrecision"
-                  style={{
-                    default: {
-                      fill: displayFill,
-                      stroke: hideForMarker ? "transparent" : strokeColor,
-                      strokeWidth: strokeW,
-                      strokeLinejoin: "round",
-                      strokeLinecap: "round",
-                      outline: "none",
-                      transition: "fill 0.15s ease-out",
-                      cursor: notInteractive ? "default" : "pointer",
-                      pointerEvents: hideForMarker ? "none" : "visibleFill",
-                    },
-                    hover: !notInteractive
-                      ? {
-                          fill: displayFill,
-                          stroke: strokeColor,
-                          strokeWidth: strokeW,
-                          outline: "none",
-                          cursor: "pointer",
-                          pointerEvents: "visibleFill",
-                          transition: "fill 0.15s ease-out",
-                          filter: "brightness(1.1)",
-                        }
-                      : {
-                          fill: displayFill,
-                          cursor: "default",
-                          outline: "none",
-                          pointerEvents: "visibleFill",
-                        },
-                    pressed: !notInteractive
-                      ? {
-                          fill: fill,
-                          stroke: strokeColor,
-                          strokeWidth: strokeW,
-                          outline: "none",
-                          cursor: "pointer",
-                          pointerEvents: "visibleFill",
-                          transition: "fill 0.05s ease-out",
-                        }
-                      : {
-                          fill: displayFill,
-                          cursor: "default",
-                          outline: "none",
-                          pointerEvents: "visibleFill",
-                        },
-                  }}
-                  onMouseEnter={!hideForMarker ? () => handleCountryHover(name) : undefined}
-                  onMouseLeave={!hideForMarker ? () => handleCountryHover(null) : undefined}
-                  onClick={!hideForMarker ? () => handleCountryClick(name) : undefined}
-                />
-              );
-            });
+              });
           }}
         </Geographies>
         
