@@ -14,8 +14,8 @@ import {
   buildGeoFeatureGetter,
   getGeoFeatureFocus,
   type GeoFeatureCollection,
-  type GeoFeatureKind,
 } from "./physicalGeoGame/geo";
+import { getPhysicalGeoMode } from "./physicalGeoGame/modes";
 import {
   renderLandOverlay as renderLandOverlaySvg,
   renderWaterUnderlay as renderWaterUnderlaySvg,
@@ -33,7 +33,6 @@ import {
 } from "../utils/sharedStyles";
 import {
   CATEGORY_GROUPS,
-  isWaterFeature,
   type PhysicalFeature,
 } from "../utils/physicalFeatures";
 import "./PhysicalGeoGame.css";
@@ -45,6 +44,7 @@ export default function PhysicalGeoGame() {
   const [categoryKey, setCategoryKey] = useState<string | null>(null);
   const [showSelector, setShowSelector] = useState(true);
   const game = usePhysicalGeoGame(categoryKey ?? "mountains");
+  const activeMode = useMemo(() => getPhysicalGeoMode(categoryKey ?? "mountains"), [categoryKey]);
   const { dimensions, isPortrait } = useMapDimensions();
   const OUTER_W = dimensions.width;
   const OUTER_H = dimensions.height;
@@ -58,7 +58,8 @@ export default function PhysicalGeoGame() {
   const topoCache = useRef<Topology | null>(null);
   const [topology, setTopology] = useState<Topology | null>(topoCache.current);
   const [marineData, setMarineData] = useState<GeoFeatureCollection | null>(null);
-  const needsMarine = !showSelector && categoryKey === "waters";
+  const needsMarine = !showSelector && activeMode.dataNeeds.marine;
+  const needsLandMask = !showSelector && activeMode.dataNeeds.landMask;
   const marineTopoCache = useRef<GeoFeatureCollection | null>(null);
   const landGeoCache = useRef<GeoPermissibleObjects | null>(null);
   const [landGeoRaw, setLandGeoRaw] = useState<GeoPermissibleObjects | null>(null);
@@ -114,7 +115,7 @@ export default function PhysicalGeoGame() {
   }, [needsMarine]);
 
   useEffect(() => {
-    if (!needsMarine) { setLandGeoRaw(null); return; }
+    if (!needsLandMask) { setLandGeoRaw(null); return; }
     if (landGeoCache.current) { setLandGeoRaw(landGeoCache.current); return; }
     fetch(GEO_LAND_URL)
       .then((r) => r.json())
@@ -149,7 +150,7 @@ export default function PhysicalGeoGame() {
         setLandGeoRaw(geom);
       })
       .catch(() => {});
-  }, [needsMarine]);
+  }, [needsLandMask]);
 
   const landPathD = useMemo<string | null>(() => {
     if (!landGeoRaw) return null;
@@ -158,7 +159,7 @@ export default function PhysicalGeoGame() {
   }, [landGeoRaw, FIT_SCALE, INNER_W, INNER_H]);
 
   const [riverData, setRiverData] = useState<GeoFeatureCollection | null>(null);
-  const needsRivers = !showSelector && categoryKey === "rivers";
+  const needsRivers = !showSelector && activeMode.dataNeeds.rivers;
   useEffect(() => {
     if (!needsRivers) { setRiverData(null); return; }
     fetch(RIVERS_URL)
@@ -168,7 +169,7 @@ export default function PhysicalGeoGame() {
   }, [needsRivers]);
 
   const [lakeData, setLakeData] = useState<GeoFeatureCollection | null>(null);
-  const needsLakes = !showSelector && categoryKey === "rivers";
+  const needsLakes = !showSelector && activeMode.dataNeeds.lakes;
   useEffect(() => {
     if (!needsLakes) { setLakeData(null); return; }
     fetch(LAKES_URL)
@@ -183,13 +184,7 @@ export default function PhysicalGeoGame() {
   );
 
   const panToFeature = useCallback((feature: PhysicalFeature) => {
-    const geometryKind: GeoFeatureKind | null = feature.type === "river"
-      ? "river"
-      : feature.type === "lake"
-        ? "lake"
-        : isWaterFeature(feature)
-          ? "marine"
-          : null;
+    const geometryKind = activeMode.getGeoFeatureKind(feature);
 
     if (geometryKind) {
       const geoFocus = getGeoFeatureFocus(getGeoFeature(feature.name, geometryKind));
@@ -230,6 +225,18 @@ export default function PhysicalGeoGame() {
         Math.max(...lons) - Math.min(...lons),
         Math.max(...lats) - Math.min(...lats),
       );
+    } else if (feature.shape.kind === "polygon_collection") {
+      const allPoints = feature.shape.polygons.flat();
+      const lons = allPoints.map((p) => p[0]);
+      const lats = allPoints.map((p) => p[1]);
+      center = [
+        (Math.min(...lons) + Math.max(...lons)) / 2,
+        (Math.min(...lats) + Math.max(...lats)) / 2,
+      ];
+      extent = Math.max(
+        Math.max(...lons) - Math.min(...lons),
+        Math.max(...lats) - Math.min(...lats),
+      );
     } else if (feature.shape.kind === "path") {
       const points = feature.shape.points;
       const midIdx = Math.floor(points.length / 2);
@@ -255,7 +262,7 @@ export default function PhysicalGeoGame() {
     else                   zoom = 7.0;
 
     setPos({ coordinates: center, zoom });
-  }, [getGeoFeature]);
+  }, [activeMode, getGeoFeature]);
 
   const pathCacheRef = useRef<{ key: string; cache: Map<string, string | null> }>({ key: "", cache: new Map() });
 
@@ -320,23 +327,13 @@ export default function PhysicalGeoGame() {
     game.startNewGame(key);
   };
 
-  const { waterFeatures, landFeatures } = useMemo(() => {
-    const water: PhysicalFeature[] = [];
-    const land: PhysicalFeature[] = [];
-    for (const f of game.features) {
-      if (isWaterFeature(f) && f.shape.kind !== "marker") {
-        water.push(f);
-      } else {
-        land.push(f);
-      }
-    }
-    const typeOrder: Record<string, number> = { river: 0, lake: 1 };
-    land.sort((a, b) => (typeOrder[a.type] ?? 0.5) - (typeOrder[b.type] ?? 0.5));
-    return { waterFeatures: water, landFeatures: land };
-  }, [game.features]);
+  const { waterFeatures, landFeatures } = useMemo(
+    () => activeMode.splitFeatures(game.features),
+    [activeMode, game.features],
+  );
 
   const allMarineFeatureNames = useMemo(() => {
-    if (!needsMarine || !marineData) {
+    if (!activeMode.includeMarineBackground || !marineData) {
       return [] as string[];
     }
 
@@ -354,7 +351,7 @@ export default function PhysicalGeoGame() {
       }
     }
     return [...names];
-  }, [needsMarine, marineData]);
+  }, [activeMode.includeMarineBackground, marineData]);
 
   const canClick = (feature: PhysicalFeature) =>
     !correctSetRef.current.has(feature.name) && !skippedSetRef.current.has(feature.name) && !game.showingResult && !game.gameOver;
@@ -368,6 +365,7 @@ export default function PhysicalGeoGame() {
         projection,
         zoom,
         isDesktop,
+        modeStyleOverrides: activeMode.styleOverrides,
         waterFeatures,
         backgroundMarineNames: allMarineFeatureNames,
         getPrecomputedPath,
@@ -383,6 +381,7 @@ export default function PhysicalGeoGame() {
         projection,
         zoom,
         isDesktop,
+        modeStyleOverrides: activeMode.styleOverrides,
         landFeatures,
         getPrecomputedPath,
         canClick,
@@ -394,7 +393,7 @@ export default function PhysicalGeoGame() {
         skippedSet: skippedSetRef.current,
       })}
     </>
-  ), [waterFeatures, allMarineFeatureNames, landFeatures, getPrecomputedPath, game.showingResult, game.lastResult, game.currentFeature, handleFeatureClickWithZoom]);
+  ), [activeMode.styleOverrides, waterFeatures, allMarineFeatureNames, landFeatures, getPrecomputedPath, game.showingResult, game.lastResult, game.currentFeature, handleFeatureClickWithZoom]);
 
   return (
     <>
@@ -538,7 +537,7 @@ export default function PhysicalGeoGame() {
           style={{
             ...getMapWrapperStyle(OUTER_W, OUTER_H, FRAME, "#5b8cff"),
             position: "relative",
-            ...(categoryKey === "waters" ? { background: "#2a1520" } : {}),
+            ...(activeMode.key === "waters" ? { background: "#2a1520" } : {}),
           }}
           aria-label="Physical geography game map"
         >
@@ -568,7 +567,7 @@ export default function PhysicalGeoGame() {
               isDesktop={!isPortrait && window.innerWidth >= 768}
               borderless
               geoLandPath={needsMarine ? landPathD : null}
-              geoUrl={needsMarine ? undefined : (topology ?? MERGED_URL)}
+              geoUrl={needsLandMask ? undefined : (topology ?? MERGED_URL)}
               onMoveEnd={({ zoom, coordinates }: { zoom: number; coordinates: [number, number] }) => {
                 setPos({ zoom, coordinates });
               }}

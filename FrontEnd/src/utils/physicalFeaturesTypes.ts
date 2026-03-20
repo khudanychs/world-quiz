@@ -26,7 +26,8 @@ export type FeatureShape =
   | { kind: "marker"; center: [number, number] }
   | { kind: "path"; points: [number, number][] }
   | { kind: "ellipse"; center: [number, number]; rx: number; ry: number; rotation?: number }
-  | { kind: "polygon"; points: [number, number][] };
+  | { kind: "polygon"; points: [number, number][] }
+  | { kind: "polygon_collection"; polygons: [number, number][][] };
 
 export interface PhysicalFeature {
   name: string;
@@ -103,7 +104,7 @@ export function isWaterFeature(f: PhysicalFeature): boolean {
 }
 
 export const CATEGORY_GROUPS: { key: string; label: string; emoji: string; types: FeatureCategory[] }[] = [
-  { key: "mountains", label: "Mountains & Volcanoes",  emoji: "⛰️",  types: ["mountain", "mountain_range", "volcano"] },
+  { key: "mountains", label: "Elevation Extremes & Ranges",  emoji: "🏔️",  types: ["mountain", "mountain_range", "volcano"] },
   { key: "rivers",    label: "Rivers & Lakes",         emoji: "🏞️", types: ["river", "lake"] },
   { key: "deserts",   label: "Deserts",                emoji: "🏜️", types: ["desert"] },
   { key: "waters",    label: "Seas, Straits & Oceans", emoji: "🌊",  types: ["sea", "ocean", "gulf", "bay", "strait", "canal", "channel", "passage"] },

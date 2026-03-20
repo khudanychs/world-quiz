@@ -4,6 +4,10 @@ import {
   shuffleFeatures,
   type PhysicalFeature,
 } from "../utils/physicalFeatures";
+import {
+  loadDesertPolygonFeatures,
+  loadMountainElevationFeatures,
+} from "../utils/terrainGeoFeatures";
 
 export interface PhysicalGeoGameState {
   // Data
@@ -39,9 +43,8 @@ export interface PhysicalGeoGameState {
 }
 
 export function usePhysicalGeoGame(categoryKey: string = "all"): PhysicalGeoGameState {
-  const [features, setFeatures] = useState<PhysicalFeature[]>(() =>
-    shuffleFeatures(getFeaturesByCategory(categoryKey))
-  );
+  const [features, setFeatures] = useState<PhysicalFeature[]>([]);
+  const [loading, setLoading] = useState(false);
   const [currentIdx, setCurrentIdx] = useState(0);
   const [score, setScore] = useState(0);
   const [currentStreak, setCurrentStreak] = useState(0);
@@ -60,8 +63,69 @@ export function usePhysicalGeoGame(categoryKey: string = "all"): PhysicalGeoGame
 
   const resultTimerRef = useRef<number | null>(null);
   const winTimerRef = useRef<number | null>(null);
+  const requestIdRef = useRef(0);
 
   const currentFeature = features[currentIdx];
+
+  const loadCategoryFeatures = useCallback(async (key: string): Promise<PhysicalFeature[]> => {
+    if (key === "mountains") {
+      return loadMountainElevationFeatures();
+    }
+    if (key === "deserts") {
+      return loadDesertPolygonFeatures();
+    }
+    return getFeaturesByCategory(key);
+  }, []);
+
+  const initializeCategory = useCallback(async (key: string) => {
+    const requestId = ++requestIdRef.current;
+    setLoading(true);
+
+    try {
+      const loaded = await loadCategoryFeatures(key);
+      if (requestId !== requestIdRef.current) {
+        return;
+      }
+
+      const shuffled = shuffleFeatures(loaded);
+      setFeatures(shuffled);
+      setCurrentIdx(0);
+      setScore(0);
+      setCurrentStreak(0);
+      setBestStreak(0);
+      setSkippedCount(0);
+      setCorrectSet(new Set());
+      setSkippedSet(new Set());
+      setGameOver(false);
+      setHasWon(false);
+      setShowWinAnimation(false);
+      setShowingResult(false);
+      setLastResult(null);
+      setLoading(false);
+    } catch {
+      if (requestId !== requestIdRef.current) {
+        return;
+      }
+
+      const fallback = shuffleFeatures(getFeaturesByCategory(key));
+      setFeatures(fallback);
+      setCurrentIdx(0);
+      setScore(0);
+      setCurrentStreak(0);
+      setBestStreak(0);
+      setSkippedCount(0);
+      setCorrectSet(new Set());
+      setSkippedSet(new Set());
+      setGameOver(false);
+      setHasWon(false);
+      setShowWinAnimation(false);
+      setShowingResult(false);
+      setLastResult(null);
+      setLoading(false);
+    }
+  }, [loadCategoryFeatures]);
+
+  
 
   const advanceToNext = useCallback(
     (idx: number, total: number, wonSoFar: number) => {
@@ -135,30 +199,18 @@ export function usePhysicalGeoGame(categoryKey: string = "all"): PhysicalGeoGame
   const startNewGame = useCallback(
     (newCategoryKey?: string) => {
       const key = newCategoryKey ?? categoryKey;
-      setFeatures(shuffleFeatures(getFeaturesByCategory(key)));
-      setCurrentIdx(0);
-      setScore(0);
-      setCurrentStreak(0);
-      setBestStreak(0);
-      setSkippedCount(0);
-      setCorrectSet(new Set());
-      setSkippedSet(new Set());
-      setGameOver(false);
-      setHasWon(false);
-      setShowWinAnimation(false);
-      setShowingResult(false);
-      setLastResult(null);
       if (resultTimerRef.current) clearTimeout(resultTimerRef.current);
       if (winTimerRef.current) clearTimeout(winTimerRef.current);
+      void initializeCategory(key);
     },
-    [categoryKey]
+    [categoryKey, initializeCategory]
   );
 
   return {
     features,
     currentIdx,
     currentFeature,
-    loading: false,
+    loading,
     score,
     currentStreak,
     bestStreak,

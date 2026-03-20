@@ -160,3 +160,23 @@ export function projectPolygon(
   return `M${projected.map(p => `${p[0]},${p[1]}`).join(" L")} Z`;
 }
 
+/** Project multiple geo polygons -> single SVG path d (multi-subpath) */
+export function projectPolygonCollection(
+  polygons: [number, number][][],
+  projection: Proj,
+): string | null {
+  const parts: string[] = [];
+  for (const points of polygons) {
+    const d = projectPolygon(points, projection);
+    if (d) {
+      parts.push(d);
+    }
+  }
+
+  if (parts.length === 0) {
+    return null;
+  }
+
+  return parts.join(" ");
+}
+

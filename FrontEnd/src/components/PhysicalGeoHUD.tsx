@@ -1,5 +1,6 @@
 import { CATEGORY_INFO, type PhysicalFeature } from "../utils/physicalFeatures";
 import { GREEN_BUTTON_STYLE, GREEN_BUTTON_HOVER } from "../utils/sharedStyles";
+import { toPhysicalFeatureDisplayName } from "../utils/physicalFeatureNames";
 
 interface PhysicalGeoHUDProps {
   loading: boolean;
@@ -100,7 +101,7 @@ export default function PhysicalGeoHUD({
         </strong>
         {!lastResult.correct && (
           <span style={{ fontSize: "clamp(10px, 2.2vw, 13px)", opacity: 0.7 }}>
-            You clicked: {lastResult.clickedName}
+            You clicked: {toPhysicalFeatureDisplayName(lastResult.clickedName)}
           </span>
         )}
         <span style={{ opacity: 0.8, fontSize: "clamp(10px, 2.4vw, 14px)", whiteSpace: "nowrap" }}>
@@ -126,7 +127,7 @@ export default function PhysicalGeoHUD({
         <span style={{ fontSize: "clamp(24px, 5vw, 40px)" }}>{catInfo.emoji}</span>
         <div style={{ display: "flex", flexDirection: "column", minWidth: "clamp(100px, 24vw, 180px)" }}>
           <strong style={{ fontSize: "clamp(13px, 2.8vw, 18px)", lineHeight: 1.2 }}>
-            {currentFeature.name}
+            {toPhysicalFeatureDisplayName(currentFeature.name)}
           </strong>
           <span style={{ opacity: 0.6, fontSize: "clamp(9px, 2vw, 12px)" }}>
             {catInfo.label} — click it on the map
