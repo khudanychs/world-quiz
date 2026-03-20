@@ -1,5 +1,5 @@
-import { useState, useEffect, useMemo } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useState, useEffect, useMemo, useRef } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import CountryDetails from './CountryDetails';
 import { FLAG_MATCH_SPECIAL_TERRITORIES } from '../utils/countries';
 import './CountryIndex.css';
@@ -14,8 +14,52 @@ interface Country {
   subregion: string;
 }
 
+function LazyFlag({ code, name }: { code: string; name: string }) {
+  const [shouldLoad, setShouldLoad] = useState(false);
+  const [loaded, setLoaded] = useState(false);
+  const imageRef = useRef<HTMLImageElement | null>(null);
+
+  useEffect(() => {
+    const element = imageRef.current;
+    if (!element) {
+      setShouldLoad(true);
+      return;
+    }
+
+    if (!('IntersectionObserver' in window)) {
+      setShouldLoad(true);
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const [entry] = entries;
+        if (entry?.isIntersecting) {
+          setShouldLoad(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: '250px 0px' }
+    );
+
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, [code]);
+
+  return (
+    <img
+      ref={imageRef}
+      src={shouldLoad ? `/flags-v2/${code.toLowerCase()}.svg` : undefined}
+      alt={`${name} flag`}
+      className={`country-card-flag ${loaded ? 'is-loaded' : ''}`}
+      loading="lazy"
+      decoding="async"
+      onLoad={() => setLoaded(true)}
+    />
+  );
+}
+
 export default function CountryIndex() {
-  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [countries, setCountries] = useState<Country[]>([]);
   const [loading, setLoading] = useState(true);
@@ -188,12 +232,7 @@ export default function CountryIndex() {
                   className="country-card"
                   onClick={() => handleCountryClick(country)}
                 >
-                  <img
-                    src={`/flags-v2/${country.cca2.toLowerCase()}.svg`}
-                    alt={`${country.name} flag`}
-                    className="country-card-flag"
-                    loading="lazy"
-                  />
+                  <LazyFlag code={country.cca2} name={country.name} />
                   <div className="country-card-info">
                     <h2 className="country-card-name">{country.officialName}</h2>
                     <p className="country-card-capital">
