@@ -566,8 +566,11 @@ export function renderLandOverlay({
   }
 
   const modeStyle = resolveModeStyle(modeStyleOverrides);
-  const shouldTextureFeature = true;
   const orderedLandFeatures = sortFeaturesForRender(landFeatures);
+  const hasTexturedFeatures = orderedLandFeatures.some(
+    (feature) => feature.type === "desert" || feature.type === "mountain_range",
+  );
+  const shouldTextureFeature = hasTexturedFeatures;
 
   const topResultOverlays = orderedLandFeatures
     .map((feature) => {
@@ -582,7 +585,7 @@ export function renderLandOverlay({
 
   return (
     <g>
-      {TOPOGRAPHY_DEFS}
+      {hasTexturedFeatures ? TOPOGRAPHY_DEFS : null}
       {orderedLandFeatures.map((feature) => {
         const vis = getFeatureVisual(feature, currentFeatureName, showingResult, lastResult, correctSet, skippedSet);
         const clickable = canClick(feature);

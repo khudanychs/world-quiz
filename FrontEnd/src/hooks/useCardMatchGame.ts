@@ -72,6 +72,7 @@ interface CountryInfo {
 const GAME_DURATION = 60; // 60 seconds
 const BASE_POINTS = 1500;
 const GRID_SIZE = 16; // 4x4 grid = 8 pairs
+const WRONG_MATCH_PENALTY_SECONDS = 1;
 
 // Streak multiplier logic
 function getStreakMultiplier(streak: number): number {
@@ -478,12 +479,17 @@ export function useCardMatchGame(pair: { first: CardKind; second: CardKind }) {
           setFeedbackCard(null);
         }, 400);
       } else {
-        // Wrong match - reset streak and clear selections immediately
-        setState((s) => ({
-          ...s,
-          selectedCards: [],
-          streak: 0,
-        }));
+        // Wrong match - reset streak, clear selections, and apply time penalty
+        setState((s) => {
+          const newTimeLeft = Math.max(0, s.timeLeft - WRONG_MATCH_PENALTY_SECONDS);
+          return {
+            ...s,
+            selectedCards: [],
+            streak: 0,
+            timeLeft: newTimeLeft,
+            gameOver: newTimeLeft <= 0,
+          };
+        });
 
         // Show feedback animation (visual only, doesn't block interaction)
         setFeedbackCard(cardId);

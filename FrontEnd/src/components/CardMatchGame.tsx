@@ -172,6 +172,11 @@ function GameCard({
           ✓
         </div>
       )}
+
+      {/* Time penalty feedback on wrong match */}
+      {isWrongFeedback && (
+        <div className="game-card-time-penalty">-1s</div>
+      )}
     </button>
   );
 }
@@ -386,6 +391,7 @@ export default function CardMatchGame() {
             <ul className="card-match-instructions-list">
               <li>Match all pairs before time runs out (60 seconds)</li>
               <li>Base score: 1,000 points per match</li>
+              <li>Wrong match penalty: -1 second</li>
               <li>5 streak: 1.5x multiplier (1,500 pts)</li>
               <li>10 streak: 2x multiplier (2,000 pts)</li>
               <li>15 streak: 2.5x multiplier (2,500 pts)</li>

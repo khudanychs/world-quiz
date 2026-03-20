@@ -104,6 +104,8 @@ interface InteractiveMapProps {
   isDesktop?: boolean;
   /** When true, unclickable game territories will have visual cues (no pointer cursor) */
   gameMode?: boolean;
+  /** Optional additional interactivity gate for countries (e.g. region practice mode). */
+  isCountryInteractive?: (countryName: string) => boolean;
   /** When true, render map with no country borders and uniform land fill */
   borderless?: boolean;
   /** Pre-projected SVG path string for unified land background (D3 geoPath output). */
@@ -114,6 +116,8 @@ interface InteractiveMapProps {
   renderUnderlay?: (projection: (coords: [number, number]) => [number, number] | null, zoom: number, isDesktop: boolean) => React.ReactNode;
   /** Render SVG AFTER land geographies (mountains, rivers, etc. drawn on top) */
   renderOverlay?: (projection: (coords: [number, number]) => [number, number] | null, zoom: number, isDesktop: boolean) => React.ReactNode;
+  /** Disable built-in geography rendering and loading when custom overlays are sufficient */
+  renderGeographies?: boolean;
 }
 
 export default memo(function InteractiveMap({
@@ -131,11 +135,13 @@ export default memo(function InteractiveMap({
   onGeographiesLoaded,
   isDesktop = true,
   gameMode = false,
+  isCountryInteractive,
   borderless = false,
   geoLandPath,
   geoUrl: customGeoUrl,
   renderUnderlay,
   renderOverlay,
+  renderGeographies = true,
 }: InteractiveMapProps) {
   const geoUrl = customGeoUrl ?? DEFAULT_GEO_URL;
   
@@ -188,11 +194,12 @@ export default memo(function InteractiveMap({
             strokeWidth={0.5}
             strokeLinejoin="round"
             paintOrder="stroke"
-            pointerEvents="none"
+            pointerEvents="visibleFill"
             shapeRendering="optimizeSpeed"
           />
         )}
 
+        {renderGeographies && (
         <Geographies geography={geoUrl}>
           {({ geographies }: GeographiesArgs) => {
             // Notify parent about loaded geographies (only once)
@@ -220,8 +227,11 @@ export default memo(function InteractiveMap({
                 // In game mode, check if territory should be unclickable
                 const isUnclickableInGame = gameMode && !isClickableInGameMode(nameRaw);
 
+                const blockedByRegion = !!isCountryInteractive && !isCountryInteractive(nameRaw);
+
                 // Determine if this geography should not be interactive
-                const notInteractive = hideForMarker || isUnclickableInGame;
+                const notInteractive = hideForMarker || isUnclickableInGame || blockedByRegion;
+                const disabledCursor = blockedByRegion ? "not-allowed" : "default";
 
                 const strokeColor = "#2d3748";
                 const strokeW = 0.65;
@@ -283,7 +293,7 @@ export default memo(function InteractiveMap({
                         strokeLinecap: "round",
                         outline: "none",
                         transition: "fill 0.15s ease-out",
-                        cursor: notInteractive ? "default" : "pointer",
+                        cursor: notInteractive ? disabledCursor : "pointer",
                         pointerEvents: hideForMarker ? "none" : "visibleFill",
                       },
                       hover: !notInteractive
@@ -299,7 +309,7 @@ export default memo(function InteractiveMap({
                           }
                         : {
                             fill: displayFill,
-                            cursor: "default",
+                            cursor: disabledCursor,
                             outline: "none",
                             pointerEvents: "visibleFill",
                           },
@@ -315,19 +325,20 @@ export default memo(function InteractiveMap({
                           }
                         : {
                             fill: displayFill,
-                            cursor: "default",
+                            cursor: disabledCursor,
                             outline: "none",
                             pointerEvents: "visibleFill",
                           },
                     }}
                     onMouseEnter={!hideForMarker ? () => handleCountryHover(name) : undefined}
                     onMouseLeave={!hideForMarker ? () => handleCountryHover(null) : undefined}
-                    onClick={!hideForMarker ? () => handleCountryClick(name) : undefined}
+                    onClick={!notInteractive ? () => handleCountryClick(name) : undefined}
                   />
                 );
               });
           }}
         </Geographies>
+        )}
         
         {/* Visual markers for very small island nations (hidden in borderless mode) */}
         {!borderless && Object.entries(SMALL_ISLAND_MARKERS).map(([countryName, [lon, lat]]) => {
@@ -339,6 +350,10 @@ export default memo(function InteractiveMap({
             : isSelected 
               ? "#3b82f6" 
               : "#e0d8c2";
+
+          const blockedByRegion = !!isCountryInteractive && !isCountryInteractive(countryName);
+          const isUnclickableInGame = gameMode && !isClickableInGameMode(countryName);
+          const markerInteractive = !blockedByRegion && !isUnclickableInGame;
           
           // Project the coordinates to screen space
           const projected = projection([lon, lat]);
@@ -356,12 +371,12 @@ export default memo(function InteractiveMap({
               stroke={getMarkerStrokeColor(isDesktop)}
               strokeWidth={getMarkerStrokeWidth(zoom, isDesktop)}
               style={{
-                cursor: "pointer",
+                cursor: markerInteractive ? "pointer" : (blockedByRegion ? "not-allowed" : "default"),
                 transition: "none",
               }}
               onMouseEnter={() => handleCountryHover(norm)}
               onMouseLeave={() => handleCountryHover(null)}
-              onClick={() => handleCountryClick(countryName)}
+              onClick={markerInteractive ? () => handleCountryClick(countryName) : undefined}
             />
           );
         })}
