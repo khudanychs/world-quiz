@@ -1,5 +1,5 @@
 import { useState, useRef, useMemo, useEffect, useCallback, lazy, Suspense } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { geoPath as d3GeoPath, geoNaturalEarth1, geoArea, type GeoPermissibleObjects } from "d3-geo";
 import { feature as topoFeature } from "topojson-client";
 import type { Topology, GeometryCollection } from "topojson-specification";
@@ -41,8 +41,14 @@ const InteractiveMap = lazy(() => import("./InteractiveMap"));
 
 export default function PhysicalGeoGame() {
   const navigate = useNavigate();
-  const [categoryKey, setCategoryKey] = useState<string | null>(null);
-  const [showSelector, setShowSelector] = useState(true);
+  const { modeKey } = useParams<{ modeKey?: string }>();
+  const categoryKey = useMemo(() => {
+    if (!modeKey) {
+      return null;
+    }
+    return CATEGORY_GROUPS.some((group) => group.key === modeKey) ? modeKey : null;
+  }, [modeKey]);
+  const showSelector = categoryKey === null;
   const game = usePhysicalGeoGame(categoryKey ?? "mountains");
   const activeMode = useMemo(() => getPhysicalGeoMode(categoryKey ?? "mountains"), [categoryKey]);
   const { dimensions, isPortrait } = useMapDimensions();
@@ -55,26 +61,26 @@ export default function PhysicalGeoGame() {
     coordinates: [0, 0],
     zoom: 1,
   });
-  const topoCache = useRef<Topology | null>(null);
-  const [topology, setTopology] = useState<Topology | null>(topoCache.current);
   const [marineData, setMarineData] = useState<GeoFeatureCollection | null>(null);
-  const needsMarine = !showSelector && activeMode.dataNeeds.marine;
-  const needsLandMask = !showSelector && activeMode.dataNeeds.landMask;
+  const needsMarine = !!categoryKey && activeMode.dataNeeds.marine;
+  const hasActiveMode = !!categoryKey;
+  const needsDetailedLandMask = hasActiveMode && activeMode.dataNeeds.landMask;
+  const usesTopoLandBase = hasActiveMode && !needsDetailedLandMask;
   const marineTopoCache = useRef<GeoFeatureCollection | null>(null);
   const landGeoCache = useRef<GeoPermissibleObjects | null>(null);
+  const riverGeoCache = useRef<GeoFeatureCollection | null>(null);
+  const lakeGeoCache = useRef<GeoFeatureCollection | null>(null);
   const [landGeoRaw, setLandGeoRaw] = useState<GeoPermissibleObjects | null>(null);
+  const [geographiesReady, setGeographiesReady] = useState(false);
 
   useEffect(() => {
-    if (showSelector) return;
-    if (topoCache.current) { setTopology(topoCache.current); return; }
-    fetch(MERGED_URL)
-      .then(r => r.json())
-      .then((topo: Topology) => {
-        topoCache.current = topo;
-        setTopology(topo);
-      })
-      .catch(() => {});
-  }, [showSelector]);
+    if (!usesTopoLandBase) {
+      setGeographiesReady(false);
+      return;
+    }
+    // Reset readiness when switching to a mode that uses TopoJSON land geographies.
+    setGeographiesReady(false);
+  }, [categoryKey, usesTopoLandBase]);
 
   useEffect(() => {
     if (!needsMarine) { setMarineData(null); return; }
@@ -115,7 +121,7 @@ export default function PhysicalGeoGame() {
   }, [needsMarine]);
 
   useEffect(() => {
-    if (!needsLandMask) { setLandGeoRaw(null); return; }
+    if (!needsDetailedLandMask) { setLandGeoRaw(null); return; }
     if (landGeoCache.current) { setLandGeoRaw(landGeoCache.current); return; }
     fetch(GEO_LAND_URL)
       .then((r) => r.json())
@@ -150,7 +156,7 @@ export default function PhysicalGeoGame() {
         setLandGeoRaw(geom);
       })
       .catch(() => {});
-  }, [needsLandMask]);
+  }, [needsDetailedLandMask]);
 
   const landPathD = useMemo<string | null>(() => {
     if (!landGeoRaw) return null;
@@ -158,23 +164,39 @@ export default function PhysicalGeoGame() {
     return d3GeoPath(proj)(landGeoRaw) || null;
   }, [landGeoRaw, FIT_SCALE, INNER_W, INNER_H]);
 
+  // Base map is ready when either:
+  // - detailed land mask path exists, or
+  // - TopoJSON geographies have loaded.
+  const baseMapReady = needsDetailedLandMask ? !!landPathD : geographiesReady;
+
+  // Only draw clickable overlays once the land base is visible.
+  const canRenderFeatureOverlay = hasActiveMode && baseMapReady;
+
   const [riverData, setRiverData] = useState<GeoFeatureCollection | null>(null);
-  const needsRivers = !showSelector && activeMode.dataNeeds.rivers;
+  const needsRivers = !!categoryKey && activeMode.dataNeeds.rivers;
   useEffect(() => {
     if (!needsRivers) { setRiverData(null); return; }
+    if (riverGeoCache.current) { setRiverData(riverGeoCache.current); return; }
     fetch(RIVERS_URL)
       .then(r => r.json())
-      .then((data: GeoFeatureCollection) => setRiverData(data))
+      .then((data: GeoFeatureCollection) => {
+        riverGeoCache.current = data;
+        setRiverData(data);
+      })
         .catch(() => {});
   }, [needsRivers]);
 
   const [lakeData, setLakeData] = useState<GeoFeatureCollection | null>(null);
-  const needsLakes = !showSelector && activeMode.dataNeeds.lakes;
+  const needsLakes = !!categoryKey && activeMode.dataNeeds.lakes;
   useEffect(() => {
     if (!needsLakes) { setLakeData(null); return; }
+    if (lakeGeoCache.current) { setLakeData(lakeGeoCache.current); return; }
     fetch(LAKES_URL)
       .then(r => r.json())
-      .then((data: GeoFeatureCollection) => setLakeData(data))
+      .then((data: GeoFeatureCollection) => {
+        lakeGeoCache.current = data;
+        setLakeData(data);
+      })
       .catch(() => {});
   }, [needsLakes]);
 
@@ -320,12 +342,17 @@ export default function PhysicalGeoGame() {
     [game.currentFeature, game.handleFeatureClick, panToFeature]
   );
 
-  const handleBack = () => navigate("/");
-  const selectCategory = (key: string) => {
-    setCategoryKey(key);
-    setShowSelector(false);
-    game.startNewGame(key);
-  };
+  const handleBack = useCallback(() => navigate("/"), [navigate]);
+  const selectCategory = useCallback((key: string) => {
+    navigate(`/game/physical-geo/${key}`);
+  }, [navigate]);
+
+  useEffect(() => {
+    if (!categoryKey) {
+      return;
+    }
+    game.startNewGame(categoryKey);
+  }, [categoryKey]);
 
   const { waterFeatures, landFeatures } = useMemo(
     () => activeMode.splitFeatures(game.features),
@@ -353,8 +380,14 @@ export default function PhysicalGeoGame() {
     return [...names];
   }, [activeMode.includeMarineBackground, marineData]);
 
-  const canClick = (feature: PhysicalFeature) =>
-    !correctSetRef.current.has(feature.name) && !skippedSetRef.current.has(feature.name) && !game.showingResult && !game.gameOver;
+  const canClick = useCallback((feature: PhysicalFeature) => (
+    !correctSetRef.current.has(feature.name) &&
+    !skippedSetRef.current.has(feature.name) &&
+    !game.showingResult &&
+    !game.gameOver
+  ), [game.showingResult, game.gameOver]);
+
+  const currentFeatureName = game.currentFeature?.name;
 
   // Marine water bodies are rendered in the overlay (on top of land) so they aren't
   // covered by land polygons — this fixes bodies like the Gulf of St. Lawrence that
@@ -373,7 +406,7 @@ export default function PhysicalGeoGame() {
         onFeatureClick: handleFeatureClickWithZoom,
         showingResult: game.showingResult,
         lastResult: game.lastResult,
-        currentFeatureName: game.currentFeature?.name,
+        currentFeatureName,
         correctSet: correctSetRef.current,
         skippedSet: skippedSetRef.current,
       })}
@@ -388,12 +421,12 @@ export default function PhysicalGeoGame() {
         onFeatureClick: handleFeatureClickWithZoom,
         showingResult: game.showingResult,
         lastResult: game.lastResult,
-        currentFeatureName: game.currentFeature?.name,
+        currentFeatureName,
         correctSet: correctSetRef.current,
         skippedSet: skippedSetRef.current,
       })}
     </>
-  ), [activeMode.styleOverrides, waterFeatures, allMarineFeatureNames, landFeatures, getPrecomputedPath, game.showingResult, game.lastResult, game.currentFeature, handleFeatureClickWithZoom]);
+  ), [activeMode.styleOverrides, waterFeatures, allMarineFeatureNames, landFeatures, getPrecomputedPath, canClick, game.showingResult, game.lastResult, currentFeatureName, handleFeatureClickWithZoom]);
 
   return (
     <>
@@ -428,7 +461,7 @@ export default function PhysicalGeoGame() {
           gap: isPortrait ? "clamp(16px, 3vh, 32px)" : "0",
         }}
       >
-        <BackButton onClick={handleBack} />
+        <BackButton onClick={handleBack} label="Menu" />
         <div
           style={{
             position: isPortrait ? "relative" : "absolute",
@@ -467,7 +500,7 @@ export default function PhysicalGeoGame() {
             showingResult={game.showingResult}
             lastResult={game.lastResult}
             onStartNewGame={() => {
-              setShowSelector(true);
+              navigate("/game/physical-geo");
             }}
             onSkip={() => {
               if (game.currentFeature) panToFeature(game.currentFeature);
@@ -512,7 +545,7 @@ export default function PhysicalGeoGame() {
                   🏠 Home
                 </button>
                 <button
-                  onClick={() => setShowSelector(true)}
+                  onClick={() => navigate("/game/physical-geo")}
                   style={GREEN_BUTTON_STYLE}
                   {...GREEN_BUTTON_HOVER}
                 >
@@ -537,7 +570,7 @@ export default function PhysicalGeoGame() {
           style={{
             ...getMapWrapperStyle(OUTER_W, OUTER_H, FRAME, "#5b8cff"),
             position: "relative",
-            ...(activeMode.key === "waters" ? { background: "#2a1520" } : {}),
+            ...(activeMode.key === "waters" ? { background: "#0f2a4a" } : {}),
           }}
           aria-label="Physical geography game map"
         >
@@ -566,14 +599,23 @@ export default function PhysicalGeoGame() {
               coordinates={pos.coordinates}
               isDesktop={!isPortrait && window.innerWidth >= 768}
               borderless
-              geoLandPath={needsMarine ? landPathD : null}
-              geoUrl={needsLandMask ? undefined : (topology ?? MERGED_URL)}
+              renderGeographies={hasActiveMode && !needsDetailedLandMask}
+              geoLandPath={needsDetailedLandMask ? landPathD : null}
+              geoUrl={needsDetailedLandMask ? undefined : MERGED_URL}
+              onGeographiesLoaded={() => {
+                setGeographiesReady(true);
+              }}
               onMoveEnd={({ zoom, coordinates }: { zoom: number; coordinates: [number, number] }) => {
                 setPos({ zoom, coordinates });
               }}
-              renderOverlay={renderOverlay}
+              renderOverlay={canRenderFeatureOverlay ? renderOverlay : undefined}
             />
           </Suspense>
+          {hasActiveMode && !baseMapReady && (
+            <div className="phys-base-loading-veil" aria-live="polite" aria-label="Loading map base">
+              <div className="phys-map-loading-spinner" />
+            </div>
+          )}
         </div>
       </div>
     </>

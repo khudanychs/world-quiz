@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   buildRestLookup,
   normalizeApos,
@@ -64,6 +64,35 @@ export function useFlagMatchGame(selectedRegion: string | null = null, hasUserSe
   const streakTimerRef = useRef<number | null>(null);
 
   const geosRef = useRef<any[] | null>(null);
+
+  const countryRegionLookup = useMemo(() => {
+    const byName = new Map<string, string>();
+    const byCode = new Map<string, string>();
+
+    for (const country of allCountriesData) {
+      byName.set(normalizeCountryName(country.name.common), country.region || "");
+      byCode.set(country.cca2, country.region || "");
+    }
+
+    return { byName, byCode };
+  }, [allCountriesData]);
+
+  function isCountryInSelectedRegion(nameRaw: string) {
+    if (!selectedRegion) return true;
+
+    const norm = normalizeCountryName(nameRaw);
+    const k1 = normalizeApos(norm);
+    const k2 = stripDiacritics(k1);
+    const clickedCountry = restLookup[k1] || restLookup[k2];
+
+    const byNameRegion = countryRegionLookup.byName.get(norm);
+    const byCodeRegion = clickedCountry?.cca2
+      ? countryRegionLookup.byCode.get(clickedCountry.cca2)
+      : undefined;
+    const countryRegion = byNameRegion ?? byCodeRegion;
+
+    return countryRegion === selectedRegion;
+  }
 
   // Load REST Countries once (from local file - faster and more reliable)
   useEffect(() => {
@@ -194,22 +223,9 @@ export function useFlagMatchGame(selectedRegion: string | null = null, hasUserSe
       return;
     }
     
-    // If region is selected, only allow clicks on countries in that region
-    if (selectedRegion) {
-      const k1 = normalizeApos(norm);
-      const k2 = stripDiacritics(k1);
-      const clickedCountry = restLookup[k1] || restLookup[k2];
-      
-      // Find the clicked country in allCountriesData to check its region
-      const countryData = allCountriesData.find(c => {
-        const cName = normalizeCountryName(c.name.common);
-        return cName === norm || c.cca2 === clickedCountry?.cca2;
-      });
-      
-      // Ignore click if country is not in the selected region
-      if (countryData && countryData.region !== selectedRegion) {
-        return;
-      }
+    // In regional practice mode, only countries in selected region are interactive.
+    if (!isCountryInSelectedRegion(nameRaw)) {
+      return;
     }
     
     if (correctTimerRef.current) {
@@ -337,5 +353,6 @@ export function useFlagMatchGame(selectedRegion: string | null = null, hasUserSe
     onCountryClick,
     skipCurrentFlag,
     handleGeographiesLoaded,
+    isCountryInSelectedRegion,
   };
 }

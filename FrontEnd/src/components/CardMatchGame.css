@@ -224,6 +224,38 @@
   font-size: clamp(12px, 3vw, 14px);
 }
 
+.game-card-time-penalty {
+  position: absolute;
+  top: 10%;
+  right: 10%;
+  z-index: 8;
+  padding: 4px 8px;
+  border-radius: 999px;
+  font-size: clamp(11px, 1.6vw, 14px);
+  font-weight: 800;
+  color: #fff;
+  background: rgba(239, 68, 68, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  box-shadow: 0 4px 10px rgba(239, 68, 68, 0.35);
+  pointer-events: none;
+  animation: cardPenaltyFloat 460ms ease-out forwards;
+}
+
+@keyframes cardPenaltyFloat {
+  0% {
+    opacity: 0;
+    transform: translateY(4px) scale(0.92);
+  }
+  20% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-16px) scale(1.06);
+  }
+}
+
 .card-match-results-container {
   display: flex;
   align-items: center;

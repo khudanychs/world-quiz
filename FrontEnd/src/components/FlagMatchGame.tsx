@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState, useCallback, lazy, Suspense } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useRef, useState, useCallback, useMemo, lazy, Suspense } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import { BackButton } from "./BackButton";
 import GameHUD from "./GameHUD";
 import { useAuth } from "../contexts/AuthContext";
@@ -20,15 +20,32 @@ import "./FlagMatchGame.css";
 // Lazy load the heavy InteractiveMap component
 const InteractiveMap = lazy(() => import("./InteractiveMap"));
 
+const FLAG_REGION_ROUTES: Record<string, string | null> = {
+  world: null,
+  europe: "Europe",
+  asia: "Asia",
+  africa: "Africa",
+  americas: "Americas",
+  oceania: "Oceania",
+};
+
 export default function FlagMatchGame() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { regionKey } = useParams<{ regionKey?: string }>();
 
-  // Region selection state
-  const [selectedRegion, setSelectedRegion] = useState<string | null>(null);
-  const [showRegionSelector, setShowRegionSelector] = useState(true);
+  const routeRegionKey = regionKey?.toLowerCase();
+  const hasValidRegionRoute = !!routeRegionKey && routeRegionKey in FLAG_REGION_ROUTES;
+  const selectedRegion = useMemo<string | null>(() => {
+    if (!hasValidRegionRoute || !routeRegionKey) {
+      return null;
+    }
+    return FLAG_REGION_ROUTES[routeRegionKey];
+  }, [hasValidRegionRoute, routeRegionKey]);
+  const showRegionSelector = !regionKey || !hasValidRegionRoute;
+  const hasUserSelected = !showRegionSelector;
+
   const [showRegionalIndicator, setShowRegionalIndicator] = useState(true);
-  const [hasUserSelected, setHasUserSelected] = useState(false);
 
   // Use custom hook for game logic
   const game = useFlagMatchGame(selectedRegion, hasUserSelected);
@@ -190,9 +207,7 @@ export default function FlagMatchGame() {
               {/* World (no filter) */}
               <button
                 onClick={() => {
-                  setSelectedRegion(null);
-                  setHasUserSelected(true);
-                  setShowRegionSelector(false);
+                  navigate("/game/flags/world");
                 }}
                 className="region-btn-world"
                 style={{
@@ -206,9 +221,7 @@ export default function FlagMatchGame() {
               {/* Europe */}
               <button
                 onClick={() => {
-                  setSelectedRegion("Europe");
-                  setHasUserSelected(true);
-                  setShowRegionSelector(false);
+                  navigate("/game/flags/europe");
                 }}
                 className="region-btn region-btn-europe"
               >
@@ -218,9 +231,7 @@ export default function FlagMatchGame() {
               {/* Asia */}
               <button
                 onClick={() => {
-                  setSelectedRegion("Asia");
-                  setHasUserSelected(true);
-                  setShowRegionSelector(false);
+                  navigate("/game/flags/asia");
                 }}
                 className="region-btn region-btn-asia"
               >
@@ -230,9 +241,7 @@ export default function FlagMatchGame() {
               {/* Africa */}
               <button
                 onClick={() => {
-                  setSelectedRegion("Africa");
-                  setHasUserSelected(true);
-                  setShowRegionSelector(false);
+                  navigate("/game/flags/africa");
                 }}
                 className="region-btn region-btn-africa"
               >
@@ -242,9 +251,7 @@ export default function FlagMatchGame() {
               {/* Americas */}
               <button
                 onClick={() => {
-                  setSelectedRegion("Americas");
-                  setHasUserSelected(true);
-                  setShowRegionSelector(false);
+                  navigate("/game/flags/americas");
                 }}
                 className="region-btn region-btn-americas"
               >
@@ -254,9 +261,7 @@ export default function FlagMatchGame() {
               {/* Oceania */}
               <button
                 onClick={() => {
-                  setSelectedRegion("Oceania");
-                  setHasUserSelected(true);
-                  setShowRegionSelector(false);
+                  navigate("/game/flags/oceania");
                 }}
                 className="region-btn region-btn-oceania"
               >
@@ -280,7 +285,7 @@ export default function FlagMatchGame() {
           gap: isPortrait ? "clamp(16px, 3vh, 32px)" : "0",
         }}
       >
-      <BackButton onClick={handleBack} />
+      <BackButton onClick={handleBack} label="Menu" />
 
       {/* Top center panel */}
       <div
@@ -407,8 +412,7 @@ export default function FlagMatchGame() {
               </button>
               <button
                 onClick={() => {
-                  setShowRegionSelector(true);
-                  setSelectedRegion(null);
+                  navigate("/game/flags");
                 }}
                 className="win-new-game-btn"
                 style={{
@@ -466,6 +470,7 @@ export default function FlagMatchGame() {
             coordinates={pos.coordinates}
             isDesktop={!isPortrait && window.innerWidth >= 768}
             gameMode={true}
+            isCountryInteractive={selectedRegion ? game.isCountryInSelectedRegion : undefined}
             onMoveEnd={({ zoom, coordinates }: { zoom: number; coordinates: [number, number] }) => {
               // Only allow manual position changes in World mode
               // For regional mode, map is remounted on resize so position stays correct

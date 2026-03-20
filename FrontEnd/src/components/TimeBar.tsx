@@ -22,6 +22,9 @@ export function TimeBar({
   onElapsedChange
 }: TimeBarProps) {
   const totalDurationMs = durationSeconds * 1000;
+  const slowZoneThreshold = Math.min(500, maxPoints);
+  const slowZoneStepMs = 100; // -1 point every 100ms in slow zone
+  const shouldCapElapsed = typeof onTimeUp === 'function';
   const [elapsedMs, setElapsedMs] = useState(initialElapsedMs);
   const intervalRef = useRef<number | null>(null);
 
@@ -38,12 +41,12 @@ export function TimeBar({
     intervalRef.current = window.setInterval(() => {
       setElapsedMs((prev) => {
         const newElapsed = prev + 50;
-        
-        if (newElapsed >= totalDurationMs) {
+
+        if (shouldCapElapsed && newElapsed >= totalDurationMs) {
           if (intervalRef.current) clearInterval(intervalRef.current);
           return totalDurationMs;
         }
-        
+
         return newElapsed;
       });
     }, 50);
@@ -51,34 +54,37 @@ export function TimeBar({
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
-  }, [isRunning, totalDurationMs]);
+  }, [isRunning, totalDurationMs, shouldCapElapsed]);
 
   // Notify parent about elapsed changes OUTSIDE the state updater
   useEffect(() => {
-    if (elapsedMs > 0 && elapsedMs < totalDurationMs) {
+    if (elapsedMs > 0 && (!shouldCapElapsed || elapsedMs < totalDurationMs)) {
       onElapsedChange?.(elapsedMs);
     }
-    if (elapsedMs >= totalDurationMs) {
+    if (shouldCapElapsed && elapsedMs >= totalDurationMs) {
       onTimeUp?.();
     }
-  }, [elapsedMs, totalDurationMs, onElapsedChange, onTimeUp]);
+  }, [elapsedMs, totalDurationMs, shouldCapElapsed, onElapsedChange, onTimeUp]);
 
   let currentPoints = maxPoints;
-  let percentage = 100;
-
-  if (elapsedMs <= graceTimeMs) {
-    currentPoints = maxPoints;
-    percentage = 100;
-  } else {
-    const decayDuration = totalDurationMs - graceTimeMs;
+  if (elapsedMs > graceTimeMs) {
+    const decayDuration = Math.max(1, totalDurationMs - graceTimeMs);
+    const normalRatePerMs = maxPoints / decayDuration;
+    const normalZonePoints = Math.max(0, maxPoints - slowZoneThreshold);
+    const normalZoneDurationMs = normalZonePoints / Math.max(0.0001, normalRatePerMs);
     const decayElapsed = elapsedMs - graceTimeMs;
-    const ratio = 1 - (decayElapsed / decayDuration);
-    currentPoints = Math.ceil(maxPoints * ratio);
-    percentage = ratio * 100;
+
+    if (decayElapsed <= normalZoneDurationMs) {
+      currentPoints = Math.ceil(maxPoints - decayElapsed * normalRatePerMs);
+    } else {
+      const slowElapsed = decayElapsed - normalZoneDurationMs;
+      const slowPenalty = Math.floor(slowElapsed / slowZoneStepMs);
+      currentPoints = Math.max(0, slowZoneThreshold - slowPenalty);
+    }
   }
-  
+
   if (currentPoints < 0) currentPoints = 0;
-  if (percentage < 0) percentage = 0;
+  const percentage = (currentPoints / Math.max(1, maxPoints)) * 100;
 
   // Track previous points to avoid redundant callbacks
   const prevPointsRef = useRef(currentPoints);
@@ -105,15 +111,34 @@ export function TimeBar({
     glowColor = 'rgba(239, 68, 68, 0.4)';
   }
 
+  let badgeBg = "linear-gradient(135deg, rgba(16, 185, 129, 0.14), rgba(52, 211, 153, 0.16))";
+  let badgeBorder = "1px solid rgba(16, 185, 129, 0.32)";
+  let badgeGlow = "0 8px 32px rgba(0, 0, 0, 0.2), 0 0 10px rgba(16, 185, 129, 0.18)";
+  let dangerPulse = "none";
+
+  if (percentage < 70 && percentage >= 40) {
+    badgeBg = "linear-gradient(135deg, rgba(245, 158, 11, 0.16), rgba(251, 191, 36, 0.18))";
+    badgeBorder = "1px solid rgba(245, 158, 11, 0.36)";
+    badgeGlow = "0 8px 32px rgba(0, 0, 0, 0.2), 0 0 12px rgba(245, 158, 11, 0.22)";
+  } else if (percentage < 40) {
+    const redIntensity = Math.min(1, (40 - percentage) / 40);
+    badgeBg = `linear-gradient(135deg, rgba(239, 68, 68, ${0.16 + redIntensity * 0.14}), rgba(248, 113, 113, ${0.18 + redIntensity * 0.18}))`;
+    badgeBorder = `1px solid rgba(239, 68, 68, ${0.34 + redIntensity * 0.34})`;
+    badgeGlow = `0 8px 32px rgba(0, 0, 0, 0.2), 0 0 ${Math.round(12 + redIntensity * 16)}px rgba(239, 68, 68, ${0.2 + redIntensity * 0.2})`;
+    dangerPulse = currentPoints <= slowZoneThreshold ? "barDangerPulse 0.9s ease-in-out infinite" : "none";
+  }
+
   return (
     <div style={{ 
       width: '100%', 
       padding: 'clamp(8px, 2vw, 16px)',
-      background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.1))',
+      background: badgeBg,
       borderRadius: '12px',
-      border: '1px solid rgba(255, 255, 255, 0.1)',
+      border: badgeBorder,
       backdropFilter: 'blur(10px)',
-      boxShadow: '0 8px 32px rgba(0, 0, 0, 0.2)'
+      boxShadow: badgeGlow,
+      animation: dangerPulse,
+      transition: 'background 120ms linear, border-color 120ms linear, box-shadow 120ms linear'
     }}>
       <div style={{ 
         display: 'flex', 
@@ -197,6 +222,15 @@ export function TimeBar({
         @keyframes shine {
           0% { left: -100%; }
           50%, 100% { left: 200%; }
+        }
+
+        @keyframes barDangerPulse {
+          0%, 100% {
+            filter: saturate(1);
+          }
+          50% {
+            filter: saturate(1.12);
+          }
         }
       `}</style>
     </div>

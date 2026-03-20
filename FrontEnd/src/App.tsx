@@ -231,7 +231,9 @@ export default function App() {
             <Route path='/countries' element={<VerifiedOrGuestRoute><CountryIndex /></VerifiedOrGuestRoute>} />
             <Route path='/map' element={<VerifiedOrGuestRoute><WorldMap /></VerifiedOrGuestRoute>} />
             <Route path='/game/flags' element={<VerifiedOrGuestRoute><FlagMatchGame /></VerifiedOrGuestRoute>} />
+            <Route path='/game/flags/:regionKey' element={<VerifiedOrGuestRoute><FlagMatchGame /></VerifiedOrGuestRoute>} />
             <Route path='/game/physical-geo' element={<VerifiedOrGuestRoute><PhysicalGeoGame /></VerifiedOrGuestRoute>} />
+            <Route path='/game/physical-geo/:modeKey' element={<VerifiedOrGuestRoute><PhysicalGeoGame /></VerifiedOrGuestRoute>} />
             <Route path='/settings' element={<ProtectedRoute><Settings /></ProtectedRoute>} />
             <Route path='/terms' element={<TermsConditions />} />
             <Route path='/game/shape-match' element={<VerifiedOrGuestRoute><CardMatchGame /></VerifiedOrGuestRoute>} />

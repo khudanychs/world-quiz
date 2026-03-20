@@ -348,6 +348,17 @@
   animation: spin 1s linear infinite;
 }
 
+.phys-base-loading-veil {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 6;
+  background: radial-gradient(circle at center, rgba(15, 42, 74, 0.18) 0%, rgba(15, 42, 74, 0.08) 45%, rgba(15, 42, 74, 0) 75%);
+}
+
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
