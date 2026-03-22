@@ -1,6 +1,7 @@
 import { CATEGORY_INFO, type PhysicalFeature } from "../utils/physicalFeatures";
 import { GREEN_BUTTON_STYLE, GREEN_BUTTON_HOVER } from "../utils/sharedStyles";
 import { toPhysicalFeatureDisplayName } from "../utils/physicalFeatureNames";
+import { useTranslation } from 'react-i18next';
 
 interface PhysicalGeoHUDProps {
   loading: boolean;
@@ -36,8 +37,9 @@ export default function PhysicalGeoHUD({
   onStartNewGame,
   onSkip,
 }: PhysicalGeoHUDProps) {
+  const { t } = useTranslation();
   if (loading) {
-    return <span style={{ fontSize: "clamp(12px, 2.8vw, 16px)" }}>Loading…</span>;
+    return <span style={{ fontSize: "clamp(12px, 2.8vw, 16px)" }}>{t('physicalGeoHUD.loading')}</span>;
   }
 
   if (gameOver) {
@@ -48,39 +50,39 @@ export default function PhysicalGeoHUD({
           <>
             <strong style={{ fontSize: "clamp(16px, 3.5vw, 24px)", color: "#fbbf24" }}>🏆 LEGENDARY! 🏆</strong>
             <span style={{ opacity: 0.9, fontSize: "clamp(14px, 3vw, 18px)" }}>
-              {featuresLength} features, perfect streak! Geography master! 🌍👑
+              {t('physicalGeoHUD.legendaryMessage', { count: featuresLength })}
             </span>
           </>
         ) : hasWon ? (
           <>
             <strong style={{ fontSize: "clamp(16px, 3.5vw, 24px)", color: "#10b981" }}>🎉 Well Done! 🎉</strong>
             <span style={{ opacity: 0.9, fontSize: "clamp(14px, 3vw, 18px)" }}>
-              Located {score}/{featuresLength} features!
+              {t('physicalGeoHUD.locatedSummary', { score, total: featuresLength })}
             </span>
             {bestStreak > 0 && (
-              <span style={{ opacity: 0.8, fontSize: "clamp(12px, 2.8vw, 16px)" }}>Best streak: {bestStreak} 🔥</span>
+              <span style={{ opacity: 0.8, fontSize: "clamp(12px, 2.8vw, 16px)" }}>{t('physicalGeoHUD.bestStreak', { count: bestStreak })} 🔥</span>
             )}
           </>
         ) : (
           <>
-            <strong style={{ fontSize: "clamp(14px, 3.2vw, 20px)" }}>Round finished</strong>
+            <strong style={{ fontSize: "clamp(14px, 3.2vw, 20px)" }}>{t('physicalGeoHUD.roundFinished')}</strong>
             <span style={{ opacity: 0.8, fontSize: "clamp(12px, 2.8vw, 16px)" }}>
-              Located: {score}/{featuresLength} {skippedCount > 0 && `(${skippedCount} skipped)`}
+              {t('physicalGeoHUD.locatedLabel', { score, total: featuresLength })} {skippedCount > 0 && `(${skippedCount} ${t('physicalGeoHUD.skipped')})`}
             </span>
             {bestStreak > 0 && (
-              <span style={{ opacity: 0.8, fontSize: "clamp(11px, 2.6vw, 14px)" }}>Best streak: {bestStreak} 🔥</span>
+              <span style={{ opacity: 0.8, fontSize: "clamp(11px, 2.6vw, 14px)" }}>{t('physicalGeoHUD.bestStreak', { count: bestStreak })} 🔥</span>
             )}
           </>
         )}
         <button onClick={onStartNewGame} style={{ ...GREEN_BUTTON_STYLE, marginTop: 4 }} {...GREEN_BUTTON_HOVER}>
-          🎮 New Game
+          🎮 {t('physicalGeoHUD.newGame')}
         </button>
       </div>
     );
   }
 
   if (!currentFeature) {
-    return <span style={{ fontSize: "clamp(12px, 2.8vw, 16px)" }}>Loading…</span>;
+    return <span style={{ fontSize: "clamp(12px, 2.8vw, 16px)" }}>{t('physicalGeoHUD.loading')}</span>;
   }
 
   const catInfo = CATEGORY_INFO[currentFeature.type];
@@ -97,11 +99,11 @@ export default function PhysicalGeoHUD({
             textAlign: "center",
           }}
         >
-          {lastResult.correct ? "✓ Correct!" : "✗ Wrong!"}
+          {lastResult.correct ? t('physicalGeoHUD.correct') : t('physicalGeoHUD.wrong')}
         </strong>
         {!lastResult.correct && (
           <span style={{ fontSize: "clamp(10px, 2.2vw, 13px)", opacity: 0.7 }}>
-            You clicked: {toPhysicalFeatureDisplayName(lastResult.clickedName)}
+            {t('physicalGeoHUD.youClicked', { name: toPhysicalFeatureDisplayName(lastResult.clickedName) })}
           </span>
         )}
         <span style={{ opacity: 0.8, fontSize: "clamp(10px, 2.4vw, 14px)", whiteSpace: "nowrap" }}>
@@ -114,7 +116,7 @@ export default function PhysicalGeoHUD({
             fontSize: "clamp(12px, 2.8vw, 17px)", fontWeight: 600, color: "#60a5fa", whiteSpace: "nowrap",
           }}
         >
-          Score: {score}/{featuresLength}
+          {t('physicalGeoHUD.score', { score, total: featuresLength })}
         </span>
       </>
     );
@@ -130,7 +132,7 @@ export default function PhysicalGeoHUD({
             {toPhysicalFeatureDisplayName(currentFeature.name)}
           </strong>
           <span style={{ opacity: 0.6, fontSize: "clamp(9px, 2vw, 12px)" }}>
-            {catInfo.label} — click it on the map
+            {t('physicalGeoHUD.clickOnMap', { label: catInfo.label })}
           </span>
         </div>
       </div>
@@ -150,7 +152,7 @@ export default function PhysicalGeoHUD({
       )}
       <button
         onClick={onSkip}
-        title="Skip this feature"
+        title={t('physicalGeoHUD.skipThisFeature')}
         style={{
           marginLeft: 4,
           padding: "clamp(4px, 1.5vw, 6px) clamp(8px, 2vw, 10px)",
@@ -164,7 +166,7 @@ export default function PhysicalGeoHUD({
           fontWeight: 500,
         }}
       >
-        Skip
+        {t('physicalGeoHUD.skip')}
       </button>
       <span
         style={{
@@ -174,7 +176,7 @@ export default function PhysicalGeoHUD({
           fontSize: "clamp(12px, 2.8vw, 17px)", fontWeight: 600, color: "#60a5fa", whiteSpace: "nowrap",
         }}
       >
-        Score: {score}/{featuresLength}
+        {t('physicalGeoHUD.score', { score, total: featuresLength })}
       </span>
     </>
   );

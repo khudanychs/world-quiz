@@ -1,9 +1,11 @@
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { SEOHelmet } from './SEOHelmet';
 import { SEO_TRANSLATIONS, toCanonicalUrl, getSeoOgImage } from '../seo/seo-translations';
 import './MainMenu.css';
 
 export default function MainMenu() {
+  const { t } = useTranslation();
   const seo = SEO_TRANSLATIONS.routes.home;
   const navigate = useNavigate();
   const canonicalHome = toCanonicalUrl(seo.path);
@@ -27,42 +29,42 @@ export default function MainMenu() {
       />
       <div className="menu-wrap">
         <header className="menu-header">
-          <h2>Choose a Game Mode</h2>
-          <p>Pick a mode below, or explore the interactive world map.</p>
+          <h2>{t('mainMenu.title')}</h2>
+          <p>{t('mainMenu.subtitle')}</p>
         </header>
 
       <section className="menu-grid">
         <button className="menu-card" onClick={() => navigate('/game/physical-geo')}>
           <div className="menu-card-body">
-            <h3>Physical Geography</h3>
-            <p>Locate mountains, rivers, deserts, seas and more!</p>
-            <span className="menu-tag" style={{background:'#f59e0b'}}>New</span>
+            <h3>{t('mainMenu.games.physicalGeo.title')}</h3>
+            <p>{t('mainMenu.games.physicalGeo.description')}</p>
+            <span className="menu-tag" style={{background:'#f59e0b'}}>{t('mainMenu.games.physicalGeo.tag')}</span>
           </div>
         </button>
         <button className="menu-card" onClick={() => navigate('/game/flags')}>
           <div className="menu-card-body">
-            <h3>Flag Match</h3>
-            <p>Match countries to their flags.</p>
+            <h3>{t('mainMenu.games.flags.title')}</h3>
+            <p>{t('mainMenu.games.flags.description')}</p>
           </div>
         </button>
         <button className="menu-card" onClick={() => navigate('/game/shape-match')}>
           <div className="menu-card-body">
-            <h3>Cards Match</h3>
-            <p>Match Flags, Countries, Capitals, or Shapes on a timer!</p>
+            <h3>{t('mainMenu.games.shapeMatch.title')}</h3>
+            <p>{t('mainMenu.games.shapeMatch.description')}</p>
           </div>
         </button>
         <button className="menu-card" onClick={() => navigate('/game/guess-country')}>
           <div className="menu-card-body">
-            <h3>Guess the Country</h3>
-            <p>Guess the hidden country using distance and direction hints.</p>
-            <span className="menu-tag" style={{background:'#0ea5e9'}}>New</span>
+            <h3>{t('mainMenu.games.guessCountry.title')}</h3>
+            <p>{t('mainMenu.games.guessCountry.description')}</p>
+            <span className="menu-tag" style={{background:'#0ea5e9'}}>{t('mainMenu.games.guessCountry.tag')}</span>
           </div>
         </button>
       </section>
 
         <footer className="menu-footer">
           <button className="menu-primary" onClick={() => navigate('/map')}>
-            🗺️ Explore Map
+            {t('mainMenu.exploreMap')}
           </button>
         </footer>
       </div>

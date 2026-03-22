@@ -1,6 +1,7 @@
 // src/WorldMap.tsx - Explore Map mode with country info panel
 import { useEffect, useRef, useState, lazy, Suspense, useCallback } from "react";
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { BackButton } from './components/BackButton';
 import { SEOHelmet } from './components/SEOHelmet';
 import {
@@ -23,6 +24,7 @@ import { SEO_TRANSLATIONS, toCanonicalUrl, getSeoOgImage } from './seo/seo-trans
 const InteractiveMap = lazy(() => import('./components/InteractiveMap'));
 
 export default function WorldMap() {
+  const { t } = useTranslation();
   const seo = SEO_TRANSLATIONS.routes.map;
   const navigate = useNavigate();
   
@@ -171,7 +173,7 @@ export default function WorldMap() {
             fontSize: isPortrait ? "clamp(14px, 4vw, 18px)" : "clamp(12px, 1.4vw, 16px)",
             opacity: 0.7 
           }}>
-            Loading...
+            {t('worldMap.loading')}
           </div>
         ) : selectedInfo && selectedInfo.flag ? (
           <>
@@ -215,7 +217,7 @@ export default function WorldMap() {
                   }}
                 >
                   <span style={{ opacity: 0.6 }}>
-                    {selectedInfo.capitals.length > 1 ? "Capitals: " : "Capital: "}
+                    {selectedInfo.capitals.length > 1 ? t('worldMap.capitalsLabel') : t('worldMap.capitalLabel')}
                   </span>
                   {selectedInfo.capitals.join(", ")}
                 </div>
@@ -227,7 +229,7 @@ export default function WorldMap() {
                     fontStyle: "italic",
                   }}
                 >
-                  Capital unknown
+                  {t('worldMap.capitalUnknown')}
                 </div>
               )}
             </div>
@@ -258,7 +260,7 @@ export default function WorldMap() {
                 }}
               >
                 <span style={{ opacity: 0.6 }}>
-                  {selectedInfo.capitals.length > 1 ? "Capitals: " : "Capital: "}
+                  {selectedInfo.capitals.length > 1 ? t('worldMap.capitalsLabel') : t('worldMap.capitalLabel')}
                 </span>
                 {selectedInfo.capitals.join(", ")}
               </div>
@@ -282,7 +284,7 @@ export default function WorldMap() {
                 opacity: 0.9,
               }}
             >
-              🌍 Explore the World
+              🌍 {t('worldMap.exploreWorld')}
             </div>
             <div
               style={{
@@ -290,7 +292,7 @@ export default function WorldMap() {
                 opacity: 0.6,
               }}
             >
-              Click on any country to see details
+              {t('worldMap.clickCountryHint')}
             </div>
           </div>
         )}
@@ -348,7 +350,7 @@ export default function WorldMap() {
                 animation: 'spin 0.8s linear infinite',
                 margin: '0 auto 16px',
               }} />
-              <div>Loading map...</div>
+              <div>{t('worldMap.loadingMap')}</div>
             </div>
           </div>
         }>

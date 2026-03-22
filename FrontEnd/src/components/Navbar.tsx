@@ -1,10 +1,13 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { getFlagUrlAsync } from '../utils/flagUtils';
+import { buildLocalizedPath, stripLocalePrefix } from '../utils/localeRouting';
 import './Navbar.css';
 
 export function Navbar() {
+  const { t, i18n } = useTranslation();
   const { user, isAuthenticated, logout } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 1000);
@@ -42,10 +45,10 @@ export function Navbar() {
     setIsMobileMenuOpen(false);
   }, [location.pathname]);
 
-  const isActive = (path: string) => location.pathname === path;
+  const isActive = (path: string) => stripLocalePrefix(location.pathname) === path;
 
   const handleNavClick = (path: string) => {
-    navigate(path);
+    navigate(buildLocalizedPath(path, i18n.language));
     setIsMobileMenuOpen(false);
   };
 
@@ -62,37 +65,37 @@ export function Navbar() {
           {/* Desktop Navigation Links */}
           {!isMobile && (
             <div className="navbar-nav-links">
-              <button 
+              <button
                 className={`nav-link ${isActive('/') ? 'active' : ''}`}
                 onClick={() => handleNavClick('/')}
               >
-                Home
+                {t('nav.home')}
               </button>
-              <button 
+              <button
                 className={`nav-link ${isActive('/countries') ? 'active' : ''}`}
                 onClick={() => handleNavClick('/countries')}
               >
-                Countries
+                {t('nav.countries')}
               </button>
-              <button 
+              <button
                 className={`nav-link ${isActive('/leaderboards') ? 'active' : ''}`}
                 onClick={() => handleNavClick('/leaderboards')}
               >
-                Leaderboards
+                {t('nav.leaderboards')}
               </button>
-              <button 
+              <button
                 className={`nav-link ${isActive('/privacy') ? 'active' : ''}`}
                 onClick={() => handleNavClick('/privacy')}
                 style={{ fontSize: '0.85em', opacity: 0.8 }}
               >
-                Privacy
+                {t('nav.privacy')}
               </button>
-              <button 
+              <button
                 className={`nav-link ${isActive('/terms') ? 'active' : ''}`}
                 onClick={() => handleNavClick('/terms')}
                 style={{ fontSize: '0.85em', opacity: 0.8 }}
               >
-                Terms
+                {t('nav.terms')}
               </button>
             </div>
           )}
@@ -102,10 +105,10 @@ export function Navbar() {
             <div className="navbar-menu">
               {isAuthenticated ? (
                 <>
-                  <button 
+                  <button
                     className={`navbar-user-button ${isActive('/settings') ? 'active' : ''}`}
                     onClick={() => handleNavClick('/settings')}
-                    title="Settings"
+                    title={t('nav.settings')}
                   >
                     <span className="navbar-user">
                       {profileFlag && flagUrl ? (
@@ -130,16 +133,16 @@ export function Navbar() {
                     </span>
                   </button>
                   <button onClick={logout} className="navbar-button">
-                    Logout
+                    {t('nav.logout')}
                   </button>
                 </>
               ) : (
                 <>
                   <a href="/auth?mode=login" className="navbar-button-secondary">
-                    Login
+                    {t('nav.login')}
                   </a>
                   <a href="/auth?mode=register" className="navbar-button">
-                    Join us
+                    {t('nav.join')}
                   </a>
                 </>
               )}
@@ -172,23 +175,23 @@ export function Navbar() {
           <div className="mobile-menu-content">
             {/* Navigation Links */}
             <div className="mobile-nav-section">
-              <button 
+              <button
                 className={`mobile-nav-link ${isActive('/') ? 'active' : ''}`}
                 onClick={() => handleNavClick('/')}
               >
-                🏠 Home
+                🏠 {t('nav.home')}
               </button>
-              <button 
+              <button
                 className={`mobile-nav-link ${isActive('/countries') ? 'active' : ''}`}
                 onClick={() => handleNavClick('/countries')}
               >
-                🌍 Countries
+                🌍 {t('nav.countries')}
               </button>
-              <button 
+              <button
                 className={`mobile-nav-link ${isActive('/leaderboards') ? 'active' : ''}`}
                 onClick={() => handleNavClick('/leaderboards')}
               >
-                🏆 Leaderboards
+                🏆 {t('nav.leaderboards')}
               </button>
             </div>
 
@@ -223,25 +226,25 @@ export function Navbar() {
                     <span>{user?.displayName}</span>
                   </button>
                   <button onClick={() => { logout(); setIsMobileMenuOpen(false); }} className="mobile-logout-button">
-                    Logout
+                    {t('nav.logout')}
                   </button>
                 </>
               ) : (
                 <>
                   <a href="/auth?mode=login" className="mobile-auth-button secondary">
-                    Login
+                    {t('nav.login')}
                   </a>
                   <a href="/auth?mode=register" className="mobile-auth-button primary">
-                    Join us
+                    {t('nav.join')}
                   </a>
                 </>
               )}
 
               {/* Footer Links */}
               <div className="mobile-footer">
-                <a href="/privacy" className="footer-link">Privacy Policy</a>
+                <button className="footer-link" onClick={() => handleNavClick('/privacy')}>{t('nav.privacyPolicy')}</button>
                 <span className="footer-separator">•</span>
-                <a href="/terms" className="footer-link">Terms & Conditions</a>
+                <button className="footer-link" onClick={() => handleNavClick('/terms')}>{t('nav.termsConditions')}</button>
               </div>
             </div>
           </div>

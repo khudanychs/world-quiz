@@ -72,6 +72,46 @@
   margin: 0 0 20px 0;
 }
 
+.settings-language-note {
+  margin: 0 0 14px 0;
+  color: rgba(224, 231, 255, 0.7);
+  font-size: 14px;
+}
+
+.settings-language-switcher {
+  display: inline-flex;
+  gap: 8px;
+  padding: 6px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.settings-lang-btn {
+  min-width: 62px;
+  border: none;
+  border-radius: 9px;
+  padding: 10px 16px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  color: rgba(255, 255, 255, 0.75);
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.settings-lang-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.settings-lang-btn.active {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(118, 75, 162, 0.35);
+}
+
 /* Profile Picture */
 .profile-picture-container {
   display: flex;

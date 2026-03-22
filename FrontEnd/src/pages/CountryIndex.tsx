@@ -1,14 +1,21 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { SEOHelmet } from '../components/SEOHelmet';
 import { SEO_TRANSLATIONS, toCanonicalUrl, getSeoOgImage } from '../seo/seo-translations';
 import CountryDetails from './CountryDetails';
 import { FLAG_MATCH_SPECIAL_TERRITORIES } from '../utils/countries';
+import { getLocalizedName } from '../utils/i18nUtils';
+import { buildLocalizedPath } from '../utils/localeRouting';
 import './CountryIndex.css';
 
 interface Country {
   name: string;
+  name_cs?: string;
+  name_de?: string;
   officialName: string;
+  officialName_cs?: string;
+  officialName_de?: string;
   cca2: string;
   cca3: string;
   capital: string[];
@@ -63,6 +70,8 @@ function LazyFlag({ code, name }: { code: string; name: string }) {
 
 export default function CountryIndex() {
   const seo = SEO_TRANSLATIONS.routes.countries;
+  const { i18n, t } = useTranslation();
+  const currentLanguage = i18n.language.split('-')[0];
   const navigate = useNavigate();
   const { countryCode } = useParams<{ countryCode?: string }>();
   const [countries, setCountries] = useState<Country[]>([]);
@@ -92,10 +101,24 @@ export default function CountryIndex() {
           .map((c: any) => {
             const commonName = c.name?.common || c.name;
             const officialName = c.name?.official || c.name?.common || c.name;
+            const localizedCommonNameProps = {
+              name: commonName,
+              name_cs: c.name_cs || c.translations?.ces?.common,
+              name_de: c.name_de || c.translations?.deu?.common,
+            };
+            const localizedOfficialNameProps = {
+              officialName,
+              officialName_cs: c.official_name_cs || c.translations?.ces?.official,
+              officialName_de: c.official_name_de || c.translations?.deu?.official,
+            };
             
             return {
-              name: commonName,
+              name: getLocalizedName(localizedCommonNameProps, currentLanguage, 'name'),
+              name_cs: localizedCommonNameProps.name_cs,
+              name_de: localizedCommonNameProps.name_de,
               officialName: useOfficialName[c.cca2] ? officialName : commonName,
+              officialName_cs: localizedOfficialNameProps.officialName_cs,
+              officialName_de: localizedOfficialNameProps.officialName_de,
               cca2: c.cca2,
               cca3: c.cca3,
               capital: Array.isArray(c.capital) ? c.capital : [c.capital || 'N/A'],
@@ -116,7 +139,7 @@ export default function CountryIndex() {
     };
 
     loadCountries();
-  }, []);
+  }, [currentLanguage]);
 
 
 
@@ -153,12 +176,12 @@ export default function CountryIndex() {
 
   const handleCountryClick = (country: Country) => {
     setSelectedCountry(country);
-    navigate(`/countries/${country.cca2.toLowerCase()}`);
+    navigate(buildLocalizedPath(`/countries/${country.cca2.toLowerCase()}`, i18n.language));
   };
 
   const handleCloseDetails = () => {
     setSelectedCountry(null);
-    navigate('/countries');
+    navigate(buildLocalizedPath('/countries', i18n.language));
   };
 
   // Handle URL param for selected country from /countries/:countryCode
@@ -180,13 +203,13 @@ export default function CountryIndex() {
     }
 
     setSelectedCountry(null);
-    navigate('/countries', { replace: true });
-  }, [countryCode, countries, navigate]);
+    navigate(buildLocalizedPath('/countries', i18n.language), { replace: true });
+  }, [countryCode, countries, i18n.language, navigate]);
 
   if (loading) {
     return (
       <div className="country-index-wrap">
-        <div className="country-loading">Loading countries...</div>
+        <div className="country-loading">{t('countryIndex.loading')}</div>
       </div>
     );
   }
@@ -204,19 +227,19 @@ export default function CountryIndex() {
           <div className="country-index-container">
             {/* Header */}
             <header className="country-index-header">
-              <h1>Country Encyclopedia</h1>
-              <p>Explore detailed information about {countries.length} countries around the world</p>
+              <h1>{t('countryIndex.title')}</h1>
+              <p>{t('countryIndex.subtitle', { count: countries.length })}</p>
             </header>
 
             {/* Stats Summary */}
             <div className="country-stats-summary">
               <div className="stat-card">
                 <h3>{countries.length}</h3>
-                <p>Countries</p>
+                <p>{t('countryIndex.stats.countries')}</p>
               </div>
               <div className="stat-card">
                 <h3>{filteredCountries.length}</h3>
-                <p>Showing</p>
+                <p>{t('countryIndex.stats.showing')}</p>
               </div>
             </div>
 
@@ -225,7 +248,7 @@ export default function CountryIndex() {
               <input
                 type="text"
                 className="country-search-input"
-                placeholder="Search by country or capital..."
+                placeholder={t('countryIndex.searchPlaceholder')}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
@@ -234,7 +257,7 @@ export default function CountryIndex() {
                 value={selectedRegion}
                 onChange={(e) => setSelectedRegion(e.target.value)}
               >
-                <option value="all">All Regions</option>
+                <option value="all">{t('countryIndex.allRegions')}</option>
                 {regions.filter(r => r !== 'all').map(region => (
                   <option key={region} value={region}>{region}</option>
                 ))}
@@ -244,8 +267,8 @@ export default function CountryIndex() {
             {/* Country Grid */}
             {filteredCountries.length === 0 ? (
               <div className="country-empty">
-                <h3>No countries found</h3>
-                <p>Try adjusting your search or filters</p>
+                <h3>{t('countryIndex.noCountriesFound')}</h3>
+                <p>{t('countryIndex.tryAdjustingFilters')}</p>
               </div>
             ) : (
               <div className="country-grid">
@@ -257,7 +280,17 @@ export default function CountryIndex() {
                   >
                     <LazyFlag code={country.cca2} name={country.name} />
                     <div className="country-card-info">
-                      <h2 className="country-card-name">{country.officialName}</h2>
+                      <h2 className="country-card-name">
+                        {getLocalizedName(
+                          {
+                            officialName: country.officialName,
+                            officialName_cs: country.officialName_cs,
+                            officialName_de: country.officialName_de,
+                          },
+                          currentLanguage,
+                          'officialName'
+                        )}
+                      </h2>
                       <p className="country-card-capital">
                         {country.capital[0] || 'N/A'}
                       </p>
@@ -279,7 +312,7 @@ export default function CountryIndex() {
             const borderCountry = countries.find(c => c.cca2 === cca2);
             if (borderCountry) {
               setSelectedCountry(borderCountry);
-              navigate(`/countries/${borderCountry.cca2.toLowerCase()}`);
+              navigate(buildLocalizedPath(`/countries/${borderCountry.cca2.toLowerCase()}`, i18n.language));
             }
           }}
         />

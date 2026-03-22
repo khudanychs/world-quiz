@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
 import { BackButton } from './BackButton';
 import { FlagSelector, getFlagUrl } from './FlagSelector';
 import { SEOHelmet } from './SEOHelmet';
 import { SEO_TRANSLATIONS, toCanonicalUrl, getSeoOgImage } from '../seo/seo-translations';
+import { buildLocalizedPath, getBaseLanguage } from '../utils/localeRouting';
 import './Settings.css';
 
 // Cache for user streak data (survives component remounts)
@@ -13,8 +15,11 @@ const STREAK_CACHE_DURATION = 10 * 60 * 1000; // 10 minutes - optimized for Fire
 
 export const Settings = () => {
   const seo = SEO_TRANSLATIONS.routes.settings;
+  const { t, i18n } = useTranslation();
   const { user, setNickname, setProfileFlag: saveProfileFlag, deleteAccount, refreshUser } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const currentLanguage = getBaseLanguage(i18n.language);
   const [username, setUsername] = useState('');
   const [avatarUrl, setAvatarUrl] = useState('');
   const [selectedFlag, setSelectedFlag] = useState<string | null>(null);
@@ -210,18 +215,18 @@ export const Settings = () => {
 
     // Check if username is the same as current
     if (username === user?.displayName) {
-      setError('Nickname is the same as your current one');
+      setError(t('settings.messages.nicknameSame'));
       setLoading(false);
       return;
     }
 
     try {
       await setNickname(username);
-      setSuccess('Nickname updated successfully!');
+      setSuccess(t('settings.messages.nicknameUpdated'));
       // Refresh user data to show new nickname immediately
       await refreshUser();
     } catch (err: any) {
-      setError(err.message || 'Failed to update nickname');
+      setError(err.message || t('settings.messages.nicknameUpdateFailed'));
     } finally {
       setLoading(false);
     }
@@ -240,10 +245,10 @@ export const Settings = () => {
       setShowFlagModal(false);
       // Show success message after modal closes
       setTimeout(() => {
-        setProfileSuccess('Profile flag updated successfully!');
+        setProfileSuccess(t('settings.messages.profileFlagUpdated'));
       }, 300);
     } catch (err: any) {
-      setProfileError(err.message || 'Failed to update profile flag');
+      setProfileError(err.message || t('settings.messages.profileFlagUpdateFailed'));
     } finally {
       setLoading(false);
     }
@@ -256,7 +261,7 @@ export const Settings = () => {
 
   const handleUseGooglePhoto = async () => {
     if (!user?.photoURL) {
-      setProfileError('No Google profile picture available');
+      setProfileError(t('settings.messages.noGooglePhoto'));
       return;
     }
 
@@ -276,9 +281,9 @@ export const Settings = () => {
       // Refresh user context to update navbar and other components
       await refreshUser();
       
-      setProfileSuccess('Now using Google profile picture');
+      setProfileSuccess(t('settings.messages.usingGooglePhoto'));
     } catch (err: any) {
-      setProfileError(err.message || 'Failed to update profile picture');
+      setProfileError(err.message || t('settings.messages.profilePictureUpdateFailed'));
       // Revert on error
       if (user?.profileFlag) {
         setSelectedFlag(user.profileFlag);
@@ -291,7 +296,7 @@ export const Settings = () => {
 
   const handleDeleteAccount = async () => {
     if (deleteConfirmText !== 'DELETE') {
-      setError('Please type DELETE to confirm');
+      setError(t('settings.messages.typeDeleteToConfirm'));
       return;
     }
 
@@ -299,7 +304,7 @@ export const Settings = () => {
     const isGoogleUser = user?.photoURL !== null;
     
     if (!isGoogleUser && !deletePassword) {
-      setError('Please enter your password to confirm account deletion.');
+      setError(t('settings.messages.passwordRequiredForDelete'));
       return;
     }
 
@@ -310,9 +315,16 @@ export const Settings = () => {
       await deleteAccount(deletePassword || undefined);
       // User will be logged out automatically and redirected by protected route
     } catch (err: any) {
-      setError(err.message || 'Failed to delete account');
+      setError(err.message || t('settings.messages.deleteAccountFailed'));
       setLoading(false);
     }
+  };
+
+  const handleLanguageChange = async (nextLanguage: 'en' | 'cs' | 'de') => {
+    if (nextLanguage !== currentLanguage) {
+      await i18n.changeLanguage(nextLanguage);
+    }
+    navigate(buildLocalizedPath(location.pathname, nextLanguage));
   };
 
   return (
@@ -336,13 +348,41 @@ export const Settings = () => {
               marginRight: '24px',
             }}
           />
-          <h2>Settings</h2>
+          <h2>{t('settings.title')}</h2>
         </div>
 
         <div className="settings-content">
+          <div className="settings-section">
+            <h3>{t('settings.language.title')}</h3>
+            <p className="settings-language-note">{t('settings.language.note')}</p>
+            <div className="settings-language-switcher" role="group" aria-label="Language switcher">
+              <button
+                type="button"
+                className={`settings-lang-btn ${currentLanguage === 'en' ? 'active' : ''}`}
+                onClick={() => handleLanguageChange('en')}
+              >
+                EN
+              </button>
+              <button
+                type="button"
+                className={`settings-lang-btn ${currentLanguage === 'cs' ? 'active' : ''}`}
+                onClick={() => handleLanguageChange('cs')}
+              >
+                CZ
+              </button>
+              <button
+                type="button"
+                className={`settings-lang-btn ${currentLanguage === 'de' ? 'active' : ''}`}
+                onClick={() => handleLanguageChange('de')}
+              >
+                DE
+              </button>
+            </div>
+          </div>
+
           {/* Profile Picture Section */}
           <div className="settings-section">
-            <h3>Profile Picture</h3>
+            <h3>{t('settings.profile.title')}</h3>
             {profileError && <div className="settings-error">{profileError}</div>}
             {profileSuccess && <div className="settings-success">{profileSuccess}</div>}
             
@@ -365,17 +405,17 @@ export const Settings = () => {
               <div className="profile-picture-info">
                 <p className="profile-picture-note">
                   {selectedFlag 
-                    ? 'You have selected a flag as your profile picture'
+                    ? t('settings.profile.selectedFlag')
                     : avatarUrl 
-                    ? 'Your profile picture is from Google'
-                    : 'No profile picture set'}
+                    ? t('settings.profile.googlePhoto')
+                    : t('settings.profile.none')}
                 </p>
                 <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
                   <button 
                     onClick={handleOpenFlagModal}
                     className="change-flag-button"
                   >
-                    Change Flag
+                    {t('settings.profile.changeFlag')}
                   </button>
                   {user?.photoURL && selectedFlag && (
                     <button 
@@ -387,7 +427,7 @@ export const Settings = () => {
                       }}
                       disabled={loading}
                     >
-                      Use Google Photo
+                      {t('settings.profile.useGooglePhoto')}
                     </button>
                   )}
                 </div>
@@ -397,45 +437,45 @@ export const Settings = () => {
 
           {/* Nickname Section */}
           <div className="settings-section">
-            <h3>Nickname</h3>
+            <h3>{t('settings.nickname.title')}</h3>
             <div className="nick-change-limit-info">
               {nickChangeStatus !== null ? (
                 nickChangeStatus.cooldownDaysLeft !== null ? (
                   <p className="nick-change-warning">
-                    Cooldown active — next change available in {nickChangeStatus.cooldownDaysLeft} day{nickChangeStatus.cooldownDaysLeft !== 1 ? 's' : ''}.
+                    {t('settings.nickname.cooldownActive', { count: nickChangeStatus.cooldownDaysLeft })}
                   </p>
                 ) : nickChangeStatus.changesLeft === 0 ? (
                   <p className="nick-change-warning">
-                    Monthly limit reached (2/2 used). Resets on the 1st of next month.
+                    {t('settings.nickname.monthlyLimitReached')}
                   </p>
                 ) : (
                   <p className="nick-change-ok">
-                    {nickChangeStatus.changesLeft} of 2 nickname change{nickChangeStatus.changesLeft !== 1 ? 's' : ''} remaining this month.
+                    {t('settings.nickname.changesRemaining', { count: nickChangeStatus.changesLeft })}
                   </p>
                 )
               ) : null}
-              <small>Limited to 2 changes per month, with a 7-day cooldown between changes.</small>
+              <small>{t('settings.nickname.limitInfo')}</small>
             </div>
             <form onSubmit={handleSubmit}>
               {error && <div className="settings-error">{error}</div>}
               {success && <div className="settings-success">{success}</div>}
               
               <div className="form-group">
-                <label htmlFor="settings-username">Username</label>
+                <label htmlFor="settings-username">{t('settings.nickname.usernameLabel')}</label>
                 <input
                   type="text"
                   id="settings-username"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  placeholder="Enter your username"
+                  placeholder={t('settings.nickname.usernamePlaceholder')}
                   required
                   minLength={3}
                   maxLength={50}
                   pattern="[a-zA-Z0-9_\-]+"
-                  title="Username can only contain letters, numbers, underscores, and hyphens"
+                  title={t('settings.nickname.usernameTitle')}
                   autoComplete="off"
                 />
-                <small>3-50 characters, letters, numbers, underscores, and hyphens only</small>
+                <small>{t('settings.nickname.usernameHelp')}</small>
               </div>
 
               <button 
@@ -443,29 +483,29 @@ export const Settings = () => {
                 className="settings-save-button"
                 disabled={loading || username.length < 3}
               >
-                {loading ? 'Saving...' : 'Save Changes'}
+                {loading ? t('settings.saving') : t('settings.saveChanges')}
               </button>
             </form>
           </div>
 
           {/* Account Info */}
           <div className="settings-section">
-            <h3>Account Information</h3>
+            <h3>{t('settings.account.title')}</h3>
             <div className="account-info">
               <div className="info-row">
-                <span className="info-label">Email:</span>
+                <span className="info-label">{t('settings.account.emailLabel')}</span>
                 <span className="info-value">{user?.email}</span>
               </div>
               <div className="info-row">
-                <span className="info-label">Account Type:</span>
+                <span className="info-label">{t('settings.account.accountTypeLabel')}</span>
                 <span className="info-value">
-                  {user?.photoURL ? 'Google Account' : 'Local Account'}
+                  {user?.photoURL ? t('settings.account.googleAccount') : t('settings.account.localAccount')}
                 </span>
               </div>
               <div className="info-row">
-                <span className="info-label">Member Since:</span>
+                <span className="info-label">{t('settings.account.memberSinceLabel')}</span>
                 <span className="info-value">
-                  {user?.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}
+                  {user?.createdAt ? new Date(user.createdAt).toLocaleDateString() : t('settings.account.notAvailable')}
                 </span>
               </div>
             </div>
@@ -473,24 +513,24 @@ export const Settings = () => {
 
           {/* Stats Section */}
           <div className="settings-section">
-            <h3>Your Stats</h3>
+            <h3>{t('settings.stats.title')}</h3>
             <div className="stats-container">
               <div className="stat-card">
                 <span className="stat-icon">🔥</span>
                 <div className="stat-content">
-                  <p><span style={{ fontWeight: 'bold', color: '#fff', fontSize: '22px' }}>Best Streak:&ensp; </span><span className="stat-value">{streakLoading ? '...' : (highestStreak ?? '—')}</span></p>
+                  <p><span style={{ fontWeight: 'bold', color: '#fff', fontSize: '22px' }}>{t('settings.stats.bestStreak')}:&ensp; </span><span className="stat-value">{streakLoading ? '...' : (highestStreak ?? '—')}</span></p>
                 </div>
               </div>
               <div className="stat-card">
                 <span className="stat-icon">🎴</span>
                 <div className="stat-content">
-                  <p><span style={{ fontWeight: 'bold', color: '#fff', fontSize: '22px' }}>Cards Match High Score:&ensp; </span><span className="stat-value">{cardsMatchLoading ? '...' : (cardsMatchHighScore !== null ? cardsMatchHighScore.toLocaleString() : '—')}</span></p>
+                  <p><span style={{ fontWeight: 'bold', color: '#fff', fontSize: '22px' }}>{t('settings.stats.cardsMatchHighScore')}:&ensp; </span><span className="stat-value">{cardsMatchLoading ? '...' : (cardsMatchHighScore !== null ? cardsMatchHighScore.toLocaleString() : '—')}</span></p>
                 </div>
               </div>
               <div className="stat-card">
                 <span className="stat-icon">🎯</span>
                 <div className="stat-content">
-                  <p><span style={{ fontWeight: 'bold', color: '#fff', fontSize: '22px' }}>Countries guessed:&ensp; </span><span className="stat-value">{guessCountryLoading ? '...' : (countriesGuessed ?? '—')}</span></p>
+                  <p><span style={{ fontWeight: 'bold', color: '#fff', fontSize: '22px' }}>{t('settings.stats.countriesGuessed')}:&ensp; </span><span className="stat-value">{guessCountryLoading ? '...' : (countriesGuessed ?? '—')}</span></p>
                 </div>
               </div>
             </div>
@@ -498,7 +538,7 @@ export const Settings = () => {
 
           {/* Danger Zone - Delete Account */}
           <div className="settings-section danger-zone" id="delete-section">
-            <h3>Danger Zone</h3>
+            <h3>{t('settings.dangerZone.title')}</h3>
             {!showDeleteConfirm ? (
               <button 
                 className="delete-account-button"
@@ -513,23 +553,23 @@ export const Settings = () => {
                   }, 100);
                 }}
               >
-                Delete My Account
+                {t('settings.dangerZone.deleteMyAccount')}
               </button>
             ) : (
               <div className="delete-confirm">
                 <p className="delete-warning">
-                  ⚠️ This action cannot be undone. All your data including scores and progress will be permanently deleted.
+                  {t('settings.dangerZone.warning')}
                 </p>
                 <div className="form-group">
                   <label htmlFor="delete-confirm">
-                    Type <strong>DELETE</strong> to confirm:
+                    {t('settings.dangerZone.typeDelete')}
                   </label>
                   <input
                     type="text"
                     id="delete-confirm"
                     value={deleteConfirmText}
                     onChange={(e) => setDeleteConfirmText(e.target.value)}
-                    placeholder="DELETE"
+                    placeholder={t('settings.dangerZone.deleteWord')}
                     autoComplete="off"
                   />
                 </div>
@@ -538,14 +578,14 @@ export const Settings = () => {
                 {user?.photoURL === null && (
                   <div className="form-group">
                     <label htmlFor="delete-password">
-                      Enter your password:
+                      {t('settings.dangerZone.passwordLabel')}
                     </label>
                     <input
                       type="password"
                       id="delete-password"
                       value={deletePassword}
                       onChange={(e) => setDeletePassword(e.target.value)}
-                      placeholder="Password"
+                      placeholder={t('settings.dangerZone.passwordPlaceholder')}
                       autoComplete="current-password"
                     />
                   </div>
@@ -562,14 +602,14 @@ export const Settings = () => {
                     }}
                     disabled={loading}
                   >
-                    Cancel
+                    {t('settings.cancel')}
                   </button>
                   <button 
                     className="confirm-delete-button"
                     onClick={handleDeleteAccount}
                     disabled={loading || deleteConfirmText !== 'DELETE'}
                   >
-                    {loading ? 'Deleting...' : 'Delete Account'}
+                    {loading ? t('settings.deleting') : t('settings.dangerZone.deleteAccount')}
                   </button>
                 </div>
               </div>
@@ -583,11 +623,11 @@ export const Settings = () => {
           <div className="flag-modal-overlay" onClick={() => setShowFlagModal(false)}>
             <div className="flag-modal-content" onClick={(e) => e.stopPropagation()}>
               <div className="flag-modal-header">
-                <h2>Select Your Flag</h2>
+                <h2>{t('settings.profile.selectFlag')}</h2>
                 <button 
                   className="flag-modal-close"
                   onClick={() => setShowFlagModal(false)}
-                  aria-label="Close"
+                  aria-label={t('settings.close')}
                 >
                   ×
                 </button>
@@ -605,14 +645,14 @@ export const Settings = () => {
                   onClick={() => setShowFlagModal(false)}
                   className="flag-modal-cancel"
                 >
-                  Cancel
+                  {t('settings.cancel')}
                 </button>
                 <button 
                   onClick={handleSaveFlag}
                   className="flag-modal-save"
                   disabled={loading}
                 >
-                  {loading ? 'Saving...' : 'Save Flag'}
+                  {loading ? t('settings.saving') : t('settings.profile.saveFlag')}
                 </button>
               </div>
             </div>

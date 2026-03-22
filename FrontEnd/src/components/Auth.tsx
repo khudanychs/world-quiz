@@ -1,12 +1,15 @@
 import { useState, useEffect, FormEvent } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
 import { SEOHelmet } from './SEOHelmet';
 import { SEO_TRANSLATIONS, toCanonicalUrl, getSeoOgImage } from '../seo/seo-translations';
+import { buildLocalizedPath } from '../utils/localeRouting';
 import './Auth.css';
 
 export function Auth() {
   const seo = SEO_TRANSLATIONS.routes.auth;
+  const { t, i18n } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
   const initialMode = searchParams.get('mode') === 'login' ? 'login' : 'register';
   const [mode, setMode] = useState<'register' | 'login'>(initialMode);
@@ -37,17 +40,17 @@ export function Auth() {
 
     if (mode === 'register') {
       if (password !== confirmPassword) {
-        setError('Passwords do not match');
+        setError(t('auth.errors.passwordsDoNotMatch'));
         return;
       }
 
       if (password.length < 8) {
-        setError('Password must be at least 8 characters');
+        setError(t('auth.errors.passwordMinLength'));
         return;
       }
 
       if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(password)) {
-        setError('Password must contain uppercase, lowercase, and number');
+        setError(t('auth.errors.passwordComplexity'));
         return;
       }
     }
@@ -57,7 +60,7 @@ export function Auth() {
     try {
       if (mode === 'register') {
         await register(username, email, password);
-        setSuccess('✅ Registration successful! Please check your email and click the verification link. Then you can log in.');
+        setSuccess(t('auth.messages.registrationSuccess'));
         // Clear form after successful registration
         setUsername('');
         setPassword('');
@@ -65,7 +68,7 @@ export function Auth() {
         setEmail('');
       } else {
         await login(email, password);
-        navigate('/', { replace: true });
+        navigate(buildLocalizedPath('/', i18n.language), { replace: true });
       }
     } catch (err: any) {
       setError(err.message);
@@ -77,7 +80,7 @@ export function Auth() {
   const handleGoogleLogin = async () => {
     try {
       await loginWithGoogle();
-      navigate('/', { replace: true });
+      navigate(buildLocalizedPath('/', i18n.language), { replace: true });
     } catch (err: any) {
       setError(err.message);
     }
@@ -94,7 +97,7 @@ export function Auth() {
       />
       <div className="auth-container">
         <div className="auth-card">
-        <h2>{mode === 'register' ? 'Join World Quiz' : 'Welcome Back'}</h2>
+        <h2>{mode === 'register' ? t('auth.joinTitle') : t('auth.welcomeBackTitle')}</h2>
 
         {error && <div className="error-message">{error}</div>}
         {success && <div className="success-message">{success}</div>}
@@ -102,7 +105,7 @@ export function Auth() {
         <form onSubmit={handleSubmit}>
           {mode === 'register' && (
             <div className="form-group">
-              <label htmlFor="username">Username</label>
+              <label htmlFor="username">{t('auth.usernameLabel')}</label>
               <input
                 id="username"
                 type="text"
@@ -111,27 +114,27 @@ export function Auth() {
                 required
                 minLength={3}
                 maxLength={50}
-                placeholder="johndoe"
+                placeholder={t('auth.usernamePlaceholder')}
                 pattern="[a-zA-Z0-9_\-]+"
-                title="Only letters, numbers, underscores, and hyphens"
+                title={t('auth.usernameTitle')}
               />
             </div>
           )}
 
           <div className="form-group">
-            <label htmlFor="email">Email</label>
+            <label htmlFor="email">{t('auth.emailLabel')}</label>
             <input
               id="email"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              placeholder="your@email.com"
+              placeholder={t('auth.emailPlaceholder')}
             />
           </div>
 
           <div className="form-group">
-            <label htmlFor="password">Password</label>
+            <label htmlFor="password">{t('auth.passwordLabel')}</label>
             <input
               id="password"
               type="password"
@@ -139,37 +142,37 @@ export function Auth() {
               onChange={(e) => setPassword(e.target.value)}
               required
               minLength={mode === 'register' ? 8 : undefined}
-              placeholder="••••••••"
+              placeholder={t('auth.passwordPlaceholder')}
             />
             {mode === 'register' && (
-              <small>Min 8 chars, uppercase, lowercase, number</small>
+              <small>{t('auth.passwordHelp')}</small>
             )}
           </div>
 
           {mode === 'register' && (
             <div className="form-group">
-              <label htmlFor="confirmPassword">Confirm Password</label>
+              <label htmlFor="confirmPassword">{t('auth.confirmPasswordLabel')}</label>
               <input
                 id="confirmPassword"
                 type="password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
-                placeholder="••••••••"
+                placeholder={t('auth.passwordPlaceholder')}
               />
             </div>
           )}
 
           <button type="submit" disabled={loading} className="btn-primary">
             {loading 
-              ? (mode === 'register' ? 'Creating account...' : 'Logging in...') 
-              : (mode === 'register' ? 'Sign Up' : 'Login')
+              ? (mode === 'register' ? t('auth.creatingAccount') : t('auth.loggingIn')) 
+              : (mode === 'register' ? t('auth.signUp') : t('auth.login'))
             }
           </button>
         </form>
 
         <div className="divider">
-          <span>OR</span>
+          <span>{t('auth.or')}</span>
         </div>
 
         <button onClick={handleGoogleLogin} className="btn-google">
@@ -179,21 +182,21 @@ export function Auth() {
             <path fill="#FBBC05" d="M3.964 10.707c-.18-.54-.282-1.117-.282-1.707s.102-1.167.282-1.707V4.961H.957C.347 6.175 0 7.55 0 9s.348 2.825.957 4.039l3.007-2.332z"/>
             <path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.961L3.964 7.293C4.672 5.163 6.656 3.58 9 3.58z"/>
           </svg>
-          Continue with Google
+          {t('auth.continueWithGoogle')}
         </button>
 
         {mode === 'register' && (
           <p className="privacy-consent">
-            By continuing, you agree to our{' '}
-            <Link to="/terms">Terms of Service</Link> and{' '}
-            <Link to="/privacy">Privacy Policy</Link>.
+            {t('auth.privacyConsentPrefix')}{' '}
+            <Link to={buildLocalizedPath('/terms', i18n.language)}>{t('auth.termsOfService')}</Link> {t('auth.and')}{' '}
+            <Link to={buildLocalizedPath('/privacy', i18n.language)}>{t('auth.privacyPolicy')}</Link>.
           </p>
         )}
 
         <p className="auth-footer">
           {mode === 'register' ? (
             <>
-              Already have an account?{' '}
+              {t('auth.alreadyHaveAccount')}{' '}
               <button 
                 type="button" 
                 onClick={() => {
@@ -204,12 +207,12 @@ export function Auth() {
                 }}
                 className="auth-link"
               >
-                Log in
+                {t('auth.logInLink')}
               </button>
             </>
           ) : (
             <>
-              Don't have an account?{' '}
+              {t('auth.noAccount')}{' '}
               <button 
                 type="button" 
                 onClick={() => {
@@ -220,7 +223,7 @@ export function Auth() {
                 }}
                 className="auth-link"
               >
-                Sign up
+                {t('auth.signUpLink')}
               </button>
             </>
           )}

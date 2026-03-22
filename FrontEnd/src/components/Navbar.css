@@ -584,6 +584,11 @@
 }
 
 .footer-link {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font: inherit;
   color: rgba(255, 255, 255, 0.6);
   text-decoration: none;
   font-size: 13px;

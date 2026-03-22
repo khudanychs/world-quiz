@@ -2,7 +2,9 @@
 import { memo, useRef, useEffect, useCallback, useMemo } from "react";
 import { ComposableMap, Geographies, Geography, ZoomableGroup } from "react-simple-maps";
 import { geoNaturalEarth1 } from "d3-geo";
+import { useTranslation } from 'react-i18next';
 import { normalizeCountryName, isClickableInGameMode, isHiddenTerritory } from "../utils/countries";
+import { getLocalizedName } from "../utils/i18nUtils";
 import { SMALL_ISLAND_MARKERS } from "../utils/markerPositions";
 
 const PROJECTION = "geoNaturalEarth1" as const;
@@ -154,6 +156,8 @@ export default memo(function InteractiveMap({
   renderGeographies = true,
   markerSizeMultiplier = 1,
 }: InteractiveMapProps) {
+  const { i18n } = useTranslation();
+  const currentLanguage = i18n.language.split('-')[0];
   const geoUrl = customGeoUrl ?? DEFAULT_GEO_URL;
   
   // Track if we've already notified parent about geographies
@@ -276,24 +280,36 @@ export default memo(function InteractiveMap({
             }
 
             return geographies.map((geo: RSMGeography) => {
-                const nameRaw = (geo.properties?.name as string) ?? "Unknown";
-                const name = normalizeCountryName(nameRaw);
+                const canonicalNameRaw = getLocalizedName(
+                  geo.properties || {},
+                  'en',
+                  'name'
+                );
+
+                // Display localized name if available (e.g. name_cs, name_de), fall back to name
+                const displayNameRaw = getLocalizedName(
+                  geo.properties || {},
+                  currentLanguage,
+                  'name'
+                );
+                const canonicalName = normalizeCountryName(canonicalNameRaw);
+                const displayName = normalizeCountryName(displayNameRaw);
 
                 // Completely hide certain territories
-                if (isHiddenTerritory(nameRaw)) {
+                if (isHiddenTerritory(canonicalNameRaw)) {
                   return null;
                 }
 
-                const isSelected = selectedCountry === name;
+                const isSelected = selectedCountry === canonicalName;
 
                 // Hide marker-backed tiny countries only when marker circles are rendered.
                 // In borderless mode markers are disabled, so keep these countries visible.
-                const hideForMarker = !borderless && hasCustomMarker(nameRaw);
+                const hideForMarker = !borderless && hasCustomMarker(canonicalNameRaw);
 
                 // In game mode, check if territory should be unclickable
-                const isUnclickableInGame = gameMode && !isClickableInGameMode(nameRaw);
+                const isUnclickableInGame = gameMode && !isClickableInGameMode(canonicalNameRaw);
 
-                const blockedByRegion = !!isCountryInteractive && !isCountryInteractive(nameRaw);
+                const blockedByRegion = !!isCountryInteractive && !isCountryInteractive(canonicalNameRaw);
 
                 // Determine if this geography should not be interactive
                 const notInteractive = hideForMarker || isUnclickableInGame || blockedByRegion;
@@ -304,7 +320,7 @@ export default memo(function InteractiveMap({
 
                 // Get fill color
                 const fill = getCountryFill
-                    ? getCountryFill(name)
+                    ? getCountryFill(canonicalName)
                     : isSelected
                       ? "#3b82f6"
                       : "#d4cab0";
@@ -396,9 +412,9 @@ export default memo(function InteractiveMap({
                             pointerEvents: "visibleFill",
                           },
                     }}
-                    onMouseEnter={!hideForMarker ? () => handleCountryHover(name) : undefined}
+                    onMouseEnter={!hideForMarker ? () => handleCountryHover(displayName) : undefined}
                     onMouseLeave={!hideForMarker ? () => handleCountryHover(null) : undefined}
-                    onClick={!notInteractive ? () => handleCountryClick(name) : undefined}
+                    onClick={!notInteractive ? () => handleCountryClick(canonicalName) : undefined}
                   />
                 );
               });

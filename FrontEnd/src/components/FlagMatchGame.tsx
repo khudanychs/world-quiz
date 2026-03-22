@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, useCallback, useMemo, lazy, Suspense } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { useTranslation } from 'react-i18next';
 import { BackButton } from "./BackButton";
 import GameHUD from "./GameHUD";
 import { useAuth } from "../contexts/AuthContext";
@@ -15,6 +16,7 @@ import {
   GREEN_BUTTON_HOVER,
 } from "../utils/sharedStyles";
 import { getTodayDateString } from "../utils/dateUtils";
+import { buildLocalizedPath } from '../utils/localeRouting';
 import "./FlagMatchGame.css";
 
 // Lazy load the heavy InteractiveMap component
@@ -30,6 +32,7 @@ const FLAG_REGION_ROUTES: Record<string, string | null> = {
 };
 
 export default function FlagMatchGame() {
+  const { t, i18n } = useTranslation();
   const { user } = useAuth();
   const navigate = useNavigate();
   const { regionKey } = useParams<{ regionKey?: string }>();
@@ -114,8 +117,8 @@ export default function FlagMatchGame() {
     if (game.bestStreak > 0 && user && !streakSavedRef.current) {
       saveStreak(game.bestStreak);
     }
-    navigate("/");
-  }, [game.bestStreak, user, saveStreak, navigate]);
+    navigate(buildLocalizedPath('/', i18n.language));
+  }, [game.bestStreak, user, saveStreak, navigate, i18n.language]);
 
   // Layout sizing using shared hook
   const { dimensions, isPortrait } = useMapDimensions();
@@ -210,17 +213,17 @@ export default function FlagMatchGame() {
         <div className="region-selector-overlay">
           <div className="region-selector-content">
             <h1 className="region-selector-title">
-              🌍 Flag Match Game
+              🌍 {t('flagMatch.regionSelectorTitle')}
             </h1>
             <p className="region-selector-subtitle">
-              Choose your region or play worldwide
+              {t('flagMatch.regionSelectorSubtitle')}
             </p>
 
             <div className={`region-button-grid ${isPortrait ? 'portrait' : 'landscape'}`}>
               {/* World (no filter) */}
               <button
                 onClick={() => {
-                  navigate("/game/flags/world");
+                  navigate(buildLocalizedPath('/game/flags/world', i18n.language));
                 }}
                 className="region-btn-world"
                 style={{
@@ -228,65 +231,65 @@ export default function FlagMatchGame() {
                 }}
                 {...GREEN_BUTTON_HOVER}
               >
-                🌎 World (All Countries)
+                🌎 {t('flagMatch.regionWorld')}
               </button>
 
               {/* Europe */}
               <button
                 onClick={() => {
-                  navigate("/game/flags/europe");
+                  navigate(buildLocalizedPath('/game/flags/europe', i18n.language));
                 }}
                 className="region-btn region-btn-europe"
               >
-                🇪🇺 Europe
+                🇪🇺 {t('flagMatch.regionEurope')}
               </button>
 
               {/* Asia */}
               <button
                 onClick={() => {
-                  navigate("/game/flags/asia");
+                  navigate(buildLocalizedPath('/game/flags/asia', i18n.language));
                 }}
                 className="region-btn region-btn-asia"
               >
-                🌏 Asia
+                🌏 {t('flagMatch.regionAsia')}
               </button>
 
               {/* Africa */}
               <button
                 onClick={() => {
-                  navigate("/game/flags/africa");
+                  navigate(buildLocalizedPath('/game/flags/africa', i18n.language));
                 }}
                 className="region-btn region-btn-africa"
               >
-                🌍 Africa
+                🌍 {t('flagMatch.regionAfrica')}
               </button>
 
               {/* Americas */}
               <button
                 onClick={() => {
-                  navigate("/game/flags/americas");
+                  navigate(buildLocalizedPath('/game/flags/americas', i18n.language));
                 }}
                 className="region-btn region-btn-americas"
               >
-                🌎 Americas
+                🌎 {t('flagMatch.regionAmericas')}
               </button>
 
               {/* Oceania */}
               <button
                 onClick={() => {
-                  navigate("/game/flags/oceania");
+                  navigate(buildLocalizedPath('/game/flags/oceania', i18n.language));
                 }}
                 className="region-btn region-btn-oceania"
               >
-                🌏 Oceania
+                🌏 {t('flagMatch.regionOceania')}
               </button>
             </div>
 
             <button
-              onClick={() => navigate("/")}
+              onClick={() => navigate(buildLocalizedPath('/', i18n.language))}
               className="region-selector-back-btn"
             >
-              ← Back to Menu
+              ← {t('flagMatch.backToMenu')}
             </button>
           </div>
         </div>
@@ -298,7 +301,7 @@ export default function FlagMatchGame() {
           gap: isPortrait ? "clamp(16px, 3vh, 32px)" : "0",
         }}
       >
-      <BackButton onClick={handleBack} label="Menu" />
+      <BackButton onClick={handleBack} label={t('flagMatch.menu')} />
 
       {/* Top center panel */}
       <div
@@ -369,7 +372,7 @@ export default function FlagMatchGame() {
               marginRight: "clamp(4px, 1vw, 8px)",
             }}
           >
-            <span style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>Practice Mode</span>
+            <span style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{t('flagMatch.practiceMode')}</span>
             <button
               onClick={() => setShowRegionalIndicator(false)}
               style={{
@@ -399,33 +402,33 @@ export default function FlagMatchGame() {
               {game.bestStreak === game.targets.length ? "🏆" : "🎉"}
             </div>
             <h1 className={`win-title ${game.bestStreak === game.targets.length ? 'legendary' : 'perfect'}`}>
-              {game.bestStreak === game.targets.length ? "LEGENDARY!" : "Perfect!"}
+              {game.bestStreak === game.targets.length ? t('flagMatch.legendary') : t('flagMatch.perfect')}
             </h1>
             <p className="win-message">
               {game.bestStreak === game.targets.length 
-                ? `${game.targets.length} flags, perfect streak! Flawless victory! 🔥` 
-                : `All ${game.targets.length} flags matched! 🌍`}
+                ? t('flagMatch.legendaryMessage', { count: game.targets.length }) 
+                : t('flagMatch.allFlagsMatched', { count: game.targets.length })}
             </p>
             {game.bestStreak < game.targets.length && (
               <p className="win-streak">
-                Best streak: {game.bestStreak} 🔥
+                {t('flagMatch.bestStreak', { count: game.bestStreak })} 🔥
               </p>
             )}
             {game.bestStreak === game.targets.length && (
               <p className="win-quote">
-                "Is it possible to learn this power?" — Everyone else
+                {t('flagMatch.legendaryQuote')}
               </p>
             )}
             <div className="win-buttons">
               <button
-                onClick={() => navigate("/")}
+                onClick={() => navigate(buildLocalizedPath('/', i18n.language))}
                 className="win-home-btn"
               >
-                🏠 Home
+                🏠 {t('flagMatch.home')}
               </button>
               <button
                 onClick={() => {
-                  navigate("/game/flags");
+                  navigate(buildLocalizedPath('/game/flags', i18n.language));
                 }}
                 className="win-new-game-btn"
                 style={{
@@ -433,7 +436,7 @@ export default function FlagMatchGame() {
                 }}
                 {...GREEN_BUTTON_HOVER}
               >
-                🎮 New Game
+                🎮 {t('flagMatch.newGame')}
               </button>
             </div>
           </div>

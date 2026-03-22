@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState, lazy, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from 'react-i18next';
 import { geoCentroid } from "d3-geo";
 import { feature as topoFeature } from "topojson-client";
 import type { Topology, GeometryCollection } from "topojson-specification";
@@ -30,6 +31,7 @@ import {
 import GuessResultRow, { type GuessResultRowData } from "./GuessResultRow";
 import { incrementGuessCountryWins } from "../utils/leaderboardUtils";
 import { useAuth } from "../contexts/AuthContext";
+import { buildLocalizedPath } from "../utils/localeRouting";
 import "./GuessCountryGame.css";
 import "./FlagMatchGame.css";
 
@@ -77,50 +79,6 @@ type PlayableCountry = {
   lat: number;
   lng: number;
 };
-
-const translations: Record<string, string> = {
-  "game.loading": "Loading countries...",
-  "game.loadError": "Could not load game data.",
-  "game.playAgain": "Play Again",
-  "game.targetFound": "Target found!",
-  "game.targetMissed": "Out of attempts.",
-  "game.targetReveal": "Target country: {country}",
-  "game.startHint": "Click any country to start the round.",
-  "game.attempts": "Attempts",
-  "game.attemptsValue": "{used}/{max}",
-  "game.remaining": "Remaining: {remaining}",
-  "game.hints.region": "Region",
-  "game.hints.continent": "Continent",
-  "game.hints.subregion": "Subregion",
-  "game.hints.population": "Population",
-  "game.hints.area": "Area",
-  "game.hints.direction": "Direction",
-  "game.hints.distanceCategory": "Distance",
-  "game.hints.exactDistance": "Exact KM",
-  "game.guessLabel": "Guess #{index}",
-  "game.locked": "🔒",
-  "distance.close": "Nearby",
-  "distance.moderate": "Moderate Distance",
-  "distance.far": "Far Away",
-  "distance.veryFar": "Very Far",
-  "game.tooltip.population": "⬆️ means your selected country has less population than the target. ⬇️ means more.",
-  "game.tooltip.area": "⬆️ means your selected country has smaller area than the target. ⬇️ means larger.",
-  "game.tooltip.direction": "Arrow points from your guess toward the target.",
-  "game.km": "{value} km",
-  "game.result.correct": "Correct",
-  "game.mapPanel.body": "Guess countries on the map and use hints to find the target.",
-  "game.historyEmpty": "Your guesses will appear here.",
-  "nav.menu": "Menu",
-};
-
-function t(key: string, vars?: Record<string, string | number>): string {
-  const template = translations[key] ?? key;
-  if (!vars) return template;
-
-  return Object.entries(vars).reduce((acc, [k, value]) => {
-    return acc.split(`{${k}}`).join(String(value));
-  }, template);
-}
 
 function toLookupKeys(rawName: string): string[] {
   const norm = normalizeCountryName(rawName);
@@ -175,6 +133,7 @@ function getCountryFromMapName(
 }
 
 export default function GuessCountryGame() {
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const { user } = useAuth();
   const { dimensions, isDesktop } = useMapDimensions();
@@ -451,7 +410,7 @@ export default function GuessCountryGame() {
         overflowX: "hidden",
       }}
     >
-      <BackButton onClick={() => navigate("/")} label={t("nav.menu")} />
+      <BackButton onClick={() => navigate(buildLocalizedPath('/', i18n.language))} label={t("nav.menu")} />
 
       <div className="guess-country-layout">
         <div className="guess-country-map-col">
@@ -534,7 +493,7 @@ export default function GuessCountryGame() {
               <button className="win-new-game-btn" onClick={startNewRound}>
                 {t("game.playAgain")}
               </button>
-              <button className="win-home-btn" onClick={() => navigate("/")}>
+              <button className="win-home-btn" onClick={() => navigate(buildLocalizedPath('/', i18n.language))}>
                 {t("nav.menu")}
               </button>
             </div>

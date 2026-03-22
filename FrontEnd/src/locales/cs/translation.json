@@ -1,0 +1,259 @@
+{
+  "nav": {
+    "home": "Domů",
+    "countries": "Země",
+    "menu": "Menu",
+    "leaderboards": "Žebříčky",
+    "privacy": "Soukromí",
+    "privacyPolicy": "Zásady ochrany osobních údajů",
+    "terms": "Podmínky",
+    "termsConditions": "Obchodní podmínky",
+    "login": "Přihlásit se",
+    "join": "Připojte se",
+    "logout": "Odhlásit se",
+    "settings": "Nastavení"
+  },
+  "mainMenu": {
+    "title": "Vyberte herní režim",
+    "subtitle": "Vyberte režim níže nebo prozkoumejte interaktivní mapu světa.",
+    "exploreMap": "🗺️ Prozkoumat mapu",
+    "games": {
+      "physicalGeo": {
+        "title": "Fyzická geografie",
+        "description": "Najděte hory, řeky, pouště, moře a více!",
+        "tag": "Nové"
+      },
+      "flags": {
+        "title": "Vlajky",
+        "description": "Přiřaďte země k jejich vlajkám."
+      },
+      "shapeMatch": {
+        "title": "Karetní hra",
+        "description": "Přiřaďte vlajky, země, hlavní města nebo tvary na čas!"
+      },
+      "guessCountry": {
+        "title": "Hádej zemi",
+        "description": "Hádejte skrytou zemi pomocí nápověd vzdálenosti a směru.",
+        "tag": "Nové"
+      }
+    }
+  },
+  "settings": {
+    "title": "Nastavení",
+    "language": {
+      "title": "Jazyk",
+      "note": "Změna jazyka přesměruje na lokalizované URL."
+    },
+    "profile": {
+      "title": "Profilový obrázek",
+      "selectedFlag": "Jako profilový obrázek máte vybranou vlajku",
+      "googlePhoto": "Váš profilový obrázek je z Google",
+      "none": "Profilový obrázek není nastaven",
+      "changeFlag": "Změnit vlajku",
+      "useGooglePhoto": "Použít Google fotku",
+      "selectFlag": "Vyberte svou vlajku",
+      "saveFlag": "Uložit vlajku"
+    },
+    "nickname": {
+      "title": "Přezdívka",
+      "cooldownActive": "Cooldown je aktivní - další změna bude dostupná za {{count}} den(ů).",
+      "monthlyLimitReached": "Měsíční limit dosažen (2/2 využito). Obnoví se 1. den příštího měsíce.",
+      "changesRemaining": "Zbývá {{count}} z 2 změn přezdívky tento měsíc.",
+      "limitInfo": "Maximálně 2 změny měsíčně, mezi změnami je 7denní cooldown.",
+      "usernameLabel": "Uživatelské jméno",
+      "usernamePlaceholder": "Zadejte své uživatelské jméno",
+      "usernameTitle": "Uživatelské jméno může obsahovat pouze písmena, čísla, podtržítka a pomlčky",
+      "usernameHelp": "3-50 znaků, pouze písmena, čísla, podtržítka a pomlčky"
+    },
+    "account": {
+      "title": "Informace o účtu",
+      "emailLabel": "E-mail:",
+      "accountTypeLabel": "Typ účtu:",
+      "googleAccount": "Google účet",
+      "localAccount": "Lokální účet",
+      "memberSinceLabel": "Členem od:",
+      "notAvailable": "N/A"
+    },
+    "stats": {
+      "title": "Vaše statistiky",
+      "bestStreak": "Nejlepší série",
+      "cardsMatchHighScore": "Nejvyšší skóre Cards Match",
+      "countriesGuessed": "Uhodnuté země"
+    },
+    "dangerZone": {
+      "title": "Nebezpečná zóna",
+      "deleteMyAccount": "Smazat můj účet",
+      "warning": "Tuto akci nelze vrátit zpět. Všechna vaše data včetně skóre a postupu budou trvale smazána.",
+      "typeDelete": "Pro potvrzení napište DELETE:",
+      "deleteWord": "DELETE",
+      "passwordLabel": "Zadejte své heslo:",
+      "passwordPlaceholder": "Heslo",
+      "deleteAccount": "Smazat účet"
+    },
+    "saveChanges": "Uložit změny",
+    "saving": "Ukládání...",
+    "cancel": "Zrušit",
+    "close": "Zavřít",
+    "deleting": "Mazání...",
+    "messages": {
+      "nicknameSame": "Přezdívka je stejná jako vaše aktuální",
+      "nicknameUpdated": "Přezdívka byla úspěšně aktualizována!",
+      "nicknameUpdateFailed": "Aktualizace přezdívky se nezdařila",
+      "profileFlagUpdated": "Profilová vlajka byla úspěšně aktualizována!",
+      "profileFlagUpdateFailed": "Aktualizace profilové vlajky se nezdařila",
+      "noGooglePhoto": "Není dostupná žádná Google profilová fotka",
+      "usingGooglePhoto": "Nyní používáte Google profilovou fotku",
+      "profilePictureUpdateFailed": "Aktualizace profilového obrázku se nezdařila",
+      "typeDeleteToConfirm": "Pro potvrzení napište DELETE",
+      "passwordRequiredForDelete": "Pro potvrzení smazání účtu zadejte své heslo.",
+      "deleteAccountFailed": "Smazání účtu se nezdařilo"
+    }
+  },
+  "auth": {
+    "joinTitle": "Připojte se k World Quiz",
+    "welcomeBackTitle": "Vítejte zpět",
+    "usernameLabel": "Uživatelské jméno",
+    "usernamePlaceholder": "Zadejte své uživatelské jméno",
+    "usernameTitle": "Uživatelské jméno může obsahovat pouze písmena, čísla, podtržítka a pomlčky",
+    "emailLabel": "E-mail",
+    "emailPlaceholder": "Zadejte svůj e-mail",
+    "passwordLabel": "Heslo",
+    "passwordPlaceholder": "Zadejte své heslo",
+    "passwordHelp": "Použijte alespoň 8 znaků s velkým písmenem, malým písmenem a číslem.",
+    "confirmPasswordLabel": "Potvrďte heslo",
+    "creatingAccount": "Vytváření účtu...",
+    "loggingIn": "Přihlašování...",
+    "signUp": "Registrovat se",
+    "login": "Přihlásit se",
+    "or": "nebo",
+    "continueWithGoogle": "Pokračovat přes Google",
+    "privacyConsentPrefix": "Vytvořením účtu souhlasíte s našimi",
+    "termsOfService": "Podmínkami služby",
+    "and": "a",
+    "privacyPolicy": "Zásadami ochrany osobních údajů",
+    "alreadyHaveAccount": "Už máte účet?",
+    "logInLink": "Přihlásit se",
+    "noAccount": "Ještě nemáte účet?",
+    "signUpLink": "Zaregistrujte se",
+    "errors": {
+      "passwordsDoNotMatch": "Hesla se neshodují",
+      "passwordMinLength": "Heslo musí mít alespoň 8 znaků",
+      "passwordComplexity": "Heslo musí obsahovat alespoň jedno velké písmeno, jedno malé písmeno a jedno číslo"
+    },
+    "messages": {
+      "registrationSuccess": "Registrace proběhla úspěšně! Před přihlášením prosím ověřte svůj e-mail."
+    }
+  },
+  "gameHUD": {
+    "loadingFlags": "Načítání vlajek...",
+    "errorPrefix": "Chyba:",
+    "legendaryMessage": "Neuvěřitelné! Přiřadili jste všech {{count}} vlajek bez chyby.",
+    "perfectMessage": "Perfektní! Přiřadili jste všech {{count}} vlajek.",
+    "bestStreak": "Nejlepší série: {{count}}",
+    "roundFinished": "Kolo dokončeno!",
+    "matchedSummary": "Přiřazeno {{score}} / {{total}}",
+    "skipped": "přeskočeno",
+    "newGame": "Nová hra",
+    "loading": "Načítání...",
+    "findThisFlag": "Najděte tuto vlajku",
+    "tapCountry": "Klepněte na odpovídající zemi",
+    "showCurrentFlagName": "Zobrazit název aktuální vlajky",
+    "hideName": "Skrýt název",
+    "showName": "Zobrazit název",
+    "skipThisFlag": "Přeskočit tuto vlajku",
+    "skip": "Přeskočit",
+    "score": "Skóre: {{score}}/{{total}}"
+  },
+  "physicalGeoHUD": {
+    "loading": "Načítání fyzickogeografických prvků...",
+    "legendaryMessage": "Legendární! Našli jste všech {{count}} prvků.",
+    "locatedSummary": "Našli jste {{score}} / {{total}} prvků.",
+    "bestStreak": "Nejlepší série: {{count}}",
+    "roundFinished": "Kolo dokončeno!",
+    "locatedLabel": "Nalezeno: {{score}} / {{total}}",
+    "skipped": "přeskočeno",
+    "newGame": "Nová hra",
+    "clickOnMap": "Klikněte na mapě: {{label}}",
+    "skipThisFeature": "Přeskočit tento prvek",
+    "skip": "Přeskočit",
+    "score": "Skóre: {{score}}/{{total}}",
+    "correct": "✓ Správně!",
+    "wrong": "✗ Špatně!",
+    "youClicked": "Klikli jste na: {{name}}"
+  },
+  "flagMatch": {
+    "regionSelectorTitle": "Vyberte region",
+    "regionSelectorSubtitle": "Vyberte, kde chcete trénovat přiřazování vlajek.",
+    "regionWorld": "Svět",
+    "regionEurope": "Evropa",
+    "regionAsia": "Asie",
+    "regionAfrica": "Afrika",
+    "regionAmericas": "Amerika",
+    "regionOceania": "Oceánie",
+    "backToMenu": "Zpět do menu",
+    "menu": "Menu",
+    "practiceMode": "Tréninkový režim",
+    "legendary": "LEGENDÁRNÍ!",
+    "perfect": "Perfektní skóre!",
+    "legendaryMessage": "Přiřadili jste všech {{count}} vlajek bez jediné chyby!",
+    "allFlagsMatched": "Přiřadili jste všech {{count}} vlajek!",
+    "bestStreak": "Nejlepší série: {{count}}",
+    "legendaryQuote": "Mapa se podřídila vaší paměti.",
+    "home": "Domů",
+    "newGame": "Nová hra"
+  },
+  "countryIndex": {
+    "loading": "Načítání zemí...",
+    "title": "Encyklopedie zemí",
+    "subtitle": "Procházejte všech {{count}} zemí a území.",
+    "stats": {
+      "countries": "Země",
+      "showing": "Zobrazeno"
+    },
+    "searchPlaceholder": "Hledejte podle země nebo hlavního města...",
+    "allRegions": "Všechny regiony",
+    "noCountriesFound": "Žádné země nenalezeny",
+    "tryAdjustingFilters": "Zkuste upravit vyhledávání nebo filtr regionu."
+  },
+  "worldMap": {
+    "loading": "Načítání dat světa...",
+    "capitalLabel": "Hlavní město: ",
+    "capitalsLabel": "Hlavní města: ",
+    "capitalUnknown": "Hlavní město není dostupné",
+    "exploreWorld": "Prozkoumejte svět",
+    "clickCountryHint": "Klikněte na zemi pro zobrazení detailů",
+    "loadingMap": "Načítání mapy..."
+  },
+  "game": {
+    "startHint": "Začněte klepnutím na libovolnou zemi na mapě",
+    "loading": "Načítání...",
+    "loadError": "Chyba při načítání hry:",
+    "attempts": "Pokusy",
+    "attemptsValue": "{{used}}/{{max}}",
+    "remaining": "Zbývá: {{remaining}}",
+    "targetFound": "Cíl nalezen!",
+    "targetMissed": "Cíl nenalezen!",
+    "targetReveal": "Hledaná země byla {{country}}.",
+    "historyEmpty": "Vaše tipy se zobrazí zde.",
+    "playAgain": "Hrát znovu",
+    "guessLabel": "Tip #{{index}}",
+    "locked": "Zamčeno",
+    "km": "{{value}} km",
+    "hints": {
+      "continent": "Kontinent",
+      "subregion": "Podregion",
+      "population": "Populace",
+      "area": "Rozloha",
+      "direction": "Směr",
+      "exactDistance": "Přesná vzdálenost"
+    },
+    "tooltip": {
+      "population": "Odemkne se od 2. tipu",
+      "area": "Odemkne se od 2. tipu",
+      "direction": "Odemkne se od 3. tipu"
+    },
+    "mapPanel": {
+      "body": "Nápovědy se odemykají po kolech: nejdřív kontinent/podregion, pak populace/rozloha, poté směr a přesná vzdálenost."
+    }
+  }
+}

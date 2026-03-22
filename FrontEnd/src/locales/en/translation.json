@@ -1,0 +1,259 @@
+{
+  "nav": {
+    "home": "Home",
+    "countries": "Countries",
+    "menu": "Menu",
+    "leaderboards": "Leaderboards",
+    "privacy": "Privacy",
+    "privacyPolicy": "Privacy Policy",
+    "terms": "Terms",
+    "termsConditions": "Terms & Conditions",
+    "login": "Login",
+    "join": "Join us",
+    "logout": "Logout",
+    "settings": "Settings"
+  },
+  "mainMenu": {
+    "title": "Choose a Game Mode",
+    "subtitle": "Pick a mode below, or explore the interactive world map.",
+    "exploreMap": "🗺️ Explore Map",
+    "games": {
+      "physicalGeo": {
+        "title": "Physical Geography",
+        "description": "Locate mountains, rivers, deserts, seas and more!",
+        "tag": "New"
+      },
+      "flags": {
+        "title": "Flag Match",
+        "description": "Match countries to their flags."
+      },
+      "shapeMatch": {
+        "title": "Cards Match",
+        "description": "Match Flags, Countries, Capitals, or Shapes on a timer!"
+      },
+      "guessCountry": {
+        "title": "Guess the Country",
+        "description": "Guess the hidden country using distance and direction hints.",
+        "tag": "New"
+      }
+    }
+  },
+  "settings": {
+    "title": "Settings",
+    "language": {
+      "title": "Language",
+      "note": "Language changes redirect to localized URLs."
+    },
+    "profile": {
+      "title": "Profile Picture",
+      "selectedFlag": "You have selected a flag as your profile picture",
+      "googlePhoto": "Your profile picture is from Google",
+      "none": "No profile picture set",
+      "changeFlag": "Change Flag",
+      "useGooglePhoto": "Use Google Photo",
+      "selectFlag": "Select Your Flag",
+      "saveFlag": "Save Flag"
+    },
+    "nickname": {
+      "title": "Nickname",
+      "cooldownActive": "Cooldown active - next change available in {{count}} day(s).",
+      "monthlyLimitReached": "Monthly limit reached (2/2 used). Resets on the 1st of next month.",
+      "changesRemaining": "{{count}} of 2 nickname changes remaining this month.",
+      "limitInfo": "Limited to 2 changes per month, with a 7-day cooldown between changes.",
+      "usernameLabel": "Username",
+      "usernamePlaceholder": "Enter your username",
+      "usernameTitle": "Username can only contain letters, numbers, underscores, and hyphens",
+      "usernameHelp": "3-50 characters, letters, numbers, underscores, and hyphens only"
+    },
+    "account": {
+      "title": "Account Information",
+      "emailLabel": "Email:",
+      "accountTypeLabel": "Account Type:",
+      "googleAccount": "Google Account",
+      "localAccount": "Local Account",
+      "memberSinceLabel": "Member Since:",
+      "notAvailable": "N/A"
+    },
+    "stats": {
+      "title": "Your Stats",
+      "bestStreak": "Best Streak",
+      "cardsMatchHighScore": "Cards Match High Score",
+      "countriesGuessed": "Countries guessed"
+    },
+    "dangerZone": {
+      "title": "Danger Zone",
+      "deleteMyAccount": "Delete My Account",
+      "warning": "This action cannot be undone. All your data including scores and progress will be permanently deleted.",
+      "typeDelete": "Type DELETE to confirm:",
+      "deleteWord": "DELETE",
+      "passwordLabel": "Enter your password:",
+      "passwordPlaceholder": "Password",
+      "deleteAccount": "Delete Account"
+    },
+    "saveChanges": "Save Changes",
+    "saving": "Saving...",
+    "cancel": "Cancel",
+    "close": "Close",
+    "deleting": "Deleting...",
+    "messages": {
+      "nicknameSame": "Nickname is the same as your current one",
+      "nicknameUpdated": "Nickname updated successfully!",
+      "nicknameUpdateFailed": "Failed to update nickname",
+      "profileFlagUpdated": "Profile flag updated successfully!",
+      "profileFlagUpdateFailed": "Failed to update profile flag",
+      "noGooglePhoto": "No Google profile picture available",
+      "usingGooglePhoto": "Now using Google profile picture",
+      "profilePictureUpdateFailed": "Failed to update profile picture",
+      "typeDeleteToConfirm": "Please type DELETE to confirm",
+      "passwordRequiredForDelete": "Please enter your password to confirm account deletion.",
+      "deleteAccountFailed": "Failed to delete account"
+    }
+  },
+  "auth": {
+    "joinTitle": "Join World Quiz",
+    "welcomeBackTitle": "Welcome Back",
+    "usernameLabel": "Username",
+    "usernamePlaceholder": "Enter your username",
+    "usernameTitle": "Username can only contain letters, numbers, underscores, and hyphens",
+    "emailLabel": "Email",
+    "emailPlaceholder": "Enter your email",
+    "passwordLabel": "Password",
+    "passwordPlaceholder": "Enter your password",
+    "passwordHelp": "Use at least 8 characters with uppercase, lowercase, and a number.",
+    "confirmPasswordLabel": "Confirm Password",
+    "creatingAccount": "Creating account...",
+    "loggingIn": "Logging in...",
+    "signUp": "Sign Up",
+    "login": "Log In",
+    "or": "or",
+    "continueWithGoogle": "Continue with Google",
+    "privacyConsentPrefix": "By creating an account, you agree to our",
+    "termsOfService": "Terms of Service",
+    "and": "and",
+    "privacyPolicy": "Privacy Policy",
+    "alreadyHaveAccount": "Already have an account?",
+    "logInLink": "Log in",
+    "noAccount": "Don't have an account?",
+    "signUpLink": "Sign up",
+    "errors": {
+      "passwordsDoNotMatch": "Passwords do not match",
+      "passwordMinLength": "Password must be at least 8 characters long",
+      "passwordComplexity": "Password must contain at least one uppercase letter, one lowercase letter, and one number"
+    },
+    "messages": {
+      "registrationSuccess": "Registration successful! Please check your email to verify your account before logging in."
+    }
+  },
+  "gameHUD": {
+    "loadingFlags": "Loading flags...",
+    "errorPrefix": "Error:",
+    "legendaryMessage": "Incredible! You matched all {{count}} flags without mistakes.",
+    "perfectMessage": "Perfect! You matched all {{count}} flags.",
+    "bestStreak": "Best streak: {{count}}",
+    "roundFinished": "Round Finished!",
+    "matchedSummary": "Matched {{score}} / {{total}}",
+    "skipped": "skipped",
+    "newGame": "New Game",
+    "loading": "Loading...",
+    "findThisFlag": "Find this flag",
+    "tapCountry": "Tap the matching country",
+    "showCurrentFlagName": "Show current flag name",
+    "hideName": "Hide Name",
+    "showName": "Show Name",
+    "skipThisFlag": "Skip this flag",
+    "skip": "Skip",
+    "score": "Score: {{score}}/{{total}}"
+  },
+  "physicalGeoHUD": {
+    "loading": "Loading physical features...",
+    "legendaryMessage": "Legendary! You located all {{count}} features.",
+    "locatedSummary": "You located {{score}} / {{total}} features.",
+    "bestStreak": "Best streak: {{count}}",
+    "roundFinished": "Round Finished!",
+    "locatedLabel": "Located: {{score}} / {{total}}",
+    "skipped": "skipped",
+    "newGame": "New Game",
+    "clickOnMap": "Click on the map: {{label}}",
+    "skipThisFeature": "Skip this feature",
+    "skip": "Skip",
+    "score": "Score: {{score}}/{{total}}",
+    "correct": "✓ Correct!",
+    "wrong": "✗ Wrong!",
+    "youClicked": "You clicked: {{name}}"
+  },
+  "flagMatch": {
+    "regionSelectorTitle": "Choose a Region",
+    "regionSelectorSubtitle": "Select where you want to practice flag matching.",
+    "regionWorld": "World",
+    "regionEurope": "Europe",
+    "regionAsia": "Asia",
+    "regionAfrica": "Africa",
+    "regionAmericas": "Americas",
+    "regionOceania": "Oceania",
+    "backToMenu": "Back to Menu",
+    "menu": "Menu",
+    "practiceMode": "Practice Mode",
+    "legendary": "LEGENDARY!",
+    "perfect": "Perfect Score!",
+    "legendaryMessage": "You matched all {{count}} flags in a flawless streak!",
+    "allFlagsMatched": "You matched all {{count}} flags!",
+    "bestStreak": "Best streak: {{count}}",
+    "legendaryQuote": "The map bends to your memory.",
+    "home": "Home",
+    "newGame": "New Game"
+  },
+  "countryIndex": {
+    "loading": "Loading countries...",
+    "title": "Country Encyclopedia",
+    "subtitle": "Browse all {{count}} countries and territories.",
+    "stats": {
+      "countries": "Countries",
+      "showing": "Showing"
+    },
+    "searchPlaceholder": "Search by country or capital...",
+    "allRegions": "All regions",
+    "noCountriesFound": "No countries found",
+    "tryAdjustingFilters": "Try adjusting your search or region filter."
+  },
+  "worldMap": {
+    "loading": "Loading world data...",
+    "capitalLabel": "Capital: ",
+    "capitalsLabel": "Capitals: ",
+    "capitalUnknown": "Capital unavailable",
+    "exploreWorld": "Explore the World",
+    "clickCountryHint": "Click a country to see details",
+    "loadingMap": "Loading map..."
+  },
+  "game": {
+    "startHint": "Start by tapping any country on the map",
+    "loading": "Loading...",
+    "loadError": "Error loading game:",
+    "attempts": "Attempts",
+    "attemptsValue": "{{used}}/{{max}}",
+    "remaining": "Remaining: {{remaining}}",
+    "targetFound": "Target found!",
+    "targetMissed": "Target missed!",
+    "targetReveal": "The target country was {{country}}.",
+    "historyEmpty": "Your guesses will appear here.",
+    "playAgain": "Play Again",
+    "guessLabel": "Guess #{{index}}",
+    "locked": "Locked",
+    "km": "{{value}} km",
+    "hints": {
+      "continent": "Continent",
+      "subregion": "Subregion",
+      "population": "Population",
+      "area": "Area",
+      "direction": "Direction",
+      "exactDistance": "Exact distance"
+    },
+    "tooltip": {
+      "population": "Unlocked from guess 2",
+      "area": "Unlocked from guess 2",
+      "direction": "Unlocked from guess 3"
+    },
+    "mapPanel": {
+      "body": "Hints unlock each round: continent/subregion first, then population/area, then direction and exact distance."
+    }
+  }
+}

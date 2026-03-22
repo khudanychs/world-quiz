@@ -1,7 +1,14 @@
-import { useState, lazy, Suspense } from 'react';
-import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { useState, lazy, Suspense, useEffect, useRef } from 'react';
+import { Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Navbar } from './components/Navbar';
 import { useAuth } from './contexts/AuthContext';
+import {
+  SUPPORTED_LOCALE_PREFIXES,
+  stripLocalePrefix,
+  getLanguageFromLocalePrefix,
+  buildLocalizedPath,
+} from './utils/localeRouting';
 import './App.css';
 
 // Lazy load all route components for code splitting
@@ -179,15 +186,40 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
+  const { i18n } = useTranslation();
   const location = useLocation();
+  const navigate = useNavigate();
+  const contentRef = useRef<HTMLDivElement | null>(null);
+
+  const prefixSegment = location.pathname.split('/').filter(Boolean)[0] || '';
+  const languageFromPath = getLanguageFromLocalePrefix(prefixSegment);
+  const plainPathname = stripLocalePrefix(location.pathname);
+
   const { loading, user } = useAuth();
-  const isMapRoute = location.pathname.startsWith('/map');
-  const isGameRoute = location.pathname.startsWith('/game');
-  const isAuthRoute = ['/auth', '/set-nickname'].some(p => location.pathname.startsWith(p));
-  const isCountriesRoute = location.pathname.startsWith('/countries');
-  const isPrivacyRoute = location.pathname === '/privacy';
-  const isTermsRoute = location.pathname === '/terms';
+  const isMapRoute = plainPathname.startsWith('/map');
+  const isGameRoute = plainPathname.startsWith('/game');
+  const isAuthRoute = ['/auth', '/set-nickname'].some(p => plainPathname.startsWith(p));
+  const isPrivacyRoute = plainPathname === '/privacy';
+  const isTermsRoute = plainPathname === '/terms';
   const isPublicRoute = isPrivacyRoute || isTermsRoute;
+
+  useEffect(() => {
+    if (languageFromPath) return;
+    const localizedPath = buildLocalizedPath(location.pathname, i18n.language);
+    navigate(`${localizedPath}${location.search}${location.hash}`, { replace: true });
+  }, [i18n.language, languageFromPath, location.hash, location.pathname, location.search, navigate]);
+
+  useEffect(() => {
+    if (!languageFromPath) return;
+    if (i18n.language.split('-')[0] !== languageFromPath) {
+      i18n.changeLanguage(languageFromPath);
+    }
+  }, [i18n, i18n.language, languageFromPath]);
+
+  useEffect(() => {
+    contentRef.current?.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+    window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+  }, [location.pathname]);
   
   // Check if user is unverified email/password user
   const isEmailPasswordUser = user && user.email && !user.photoURL;
@@ -208,7 +240,9 @@ export default function App() {
   return (
     <>
       {!hideNav && <Navbar />}
-      <div className="container-fluid p-0"
+      <div
+        ref={contentRef}
+        className="container-fluid p-0"
         style={{
           marginTop: hideNav ? 0 : 64,
           height: hideNav ? '100dvh' : 'calc(100dvh - 64px)',
@@ -220,6 +254,9 @@ export default function App() {
         <Suspense fallback={<LoadingFallback />}>
           <Routes>
             <Route path='/auth' element={<GuestRoute><Auth /></GuestRoute>} />
+            <Route path='/en/auth' element={<GuestRoute><Auth /></GuestRoute>} />
+            <Route path='/cz/auth' element={<GuestRoute><Auth /></GuestRoute>} />
+            <Route path='/de/auth' element={<GuestRoute><Auth /></GuestRoute>} />
             <Route
               path='/set-nickname'
               element={
@@ -228,20 +265,83 @@ export default function App() {
                 </ProtectedRoute>
               }
             />
+            <Route path='/en/set-nickname' element={<ProtectedRoute><SetNickname /></ProtectedRoute>} />
+            <Route path='/cz/set-nickname' element={<ProtectedRoute><SetNickname /></ProtectedRoute>} />
+            <Route path='/de/set-nickname' element={<ProtectedRoute><SetNickname /></ProtectedRoute>} />
+
             <Route path='/' element={<VerifiedOrGuestRoute><MainMenu /></VerifiedOrGuestRoute>} />
+            <Route path='/en' element={<VerifiedOrGuestRoute><MainMenu /></VerifiedOrGuestRoute>} />
+            <Route path='/cz' element={<VerifiedOrGuestRoute><MainMenu /></VerifiedOrGuestRoute>} />
+            <Route path='/de' element={<VerifiedOrGuestRoute><MainMenu /></VerifiedOrGuestRoute>} />
+
             <Route path='/leaderboards' element={<VerifiedOrGuestRoute><LeaderboardsPage /></VerifiedOrGuestRoute>} />
+            <Route path='/en/leaderboards' element={<VerifiedOrGuestRoute><LeaderboardsPage /></VerifiedOrGuestRoute>} />
+            <Route path='/cz/leaderboards' element={<VerifiedOrGuestRoute><LeaderboardsPage /></VerifiedOrGuestRoute>} />
+            <Route path='/de/leaderboards' element={<VerifiedOrGuestRoute><LeaderboardsPage /></VerifiedOrGuestRoute>} />
+
             <Route path='/countries' element={<VerifiedOrGuestRoute><CountryIndex /></VerifiedOrGuestRoute>} />
+            <Route path='/en/countries' element={<VerifiedOrGuestRoute><CountryIndex /></VerifiedOrGuestRoute>} />
+            <Route path='/cz/countries' element={<VerifiedOrGuestRoute><CountryIndex /></VerifiedOrGuestRoute>} />
+            <Route path='/de/countries' element={<VerifiedOrGuestRoute><CountryIndex /></VerifiedOrGuestRoute>} />
+
             <Route path='/countries/:countryCode' element={<VerifiedOrGuestRoute><CountryIndex /></VerifiedOrGuestRoute>} />
+            <Route path='/en/countries/:countryCode' element={<VerifiedOrGuestRoute><CountryIndex /></VerifiedOrGuestRoute>} />
+            <Route path='/cz/countries/:countryCode' element={<VerifiedOrGuestRoute><CountryIndex /></VerifiedOrGuestRoute>} />
+            <Route path='/de/countries/:countryCode' element={<VerifiedOrGuestRoute><CountryIndex /></VerifiedOrGuestRoute>} />
+
             <Route path='/map' element={<VerifiedOrGuestRoute><WorldMap /></VerifiedOrGuestRoute>} />
+            <Route path='/en/map' element={<VerifiedOrGuestRoute><WorldMap /></VerifiedOrGuestRoute>} />
+            <Route path='/cz/map' element={<VerifiedOrGuestRoute><WorldMap /></VerifiedOrGuestRoute>} />
+            <Route path='/de/map' element={<VerifiedOrGuestRoute><WorldMap /></VerifiedOrGuestRoute>} />
+
             <Route path='/game/flags' element={<VerifiedOrGuestRoute><FlagMatchGame /></VerifiedOrGuestRoute>} />
+            <Route path='/en/game/flags' element={<VerifiedOrGuestRoute><FlagMatchGame /></VerifiedOrGuestRoute>} />
+            <Route path='/cz/game/flags' element={<VerifiedOrGuestRoute><FlagMatchGame /></VerifiedOrGuestRoute>} />
+            <Route path='/de/game/flags' element={<VerifiedOrGuestRoute><FlagMatchGame /></VerifiedOrGuestRoute>} />
+
             <Route path='/game/flags/:regionKey' element={<VerifiedOrGuestRoute><FlagMatchGame /></VerifiedOrGuestRoute>} />
+            <Route path='/en/game/flags/:regionKey' element={<VerifiedOrGuestRoute><FlagMatchGame /></VerifiedOrGuestRoute>} />
+            <Route path='/cz/game/flags/:regionKey' element={<VerifiedOrGuestRoute><FlagMatchGame /></VerifiedOrGuestRoute>} />
+            <Route path='/de/game/flags/:regionKey' element={<VerifiedOrGuestRoute><FlagMatchGame /></VerifiedOrGuestRoute>} />
+
             <Route path='/game/guess-country' element={<VerifiedOrGuestRoute><GuessCountryGame /></VerifiedOrGuestRoute>} />
+            <Route path='/en/game/guess-country' element={<VerifiedOrGuestRoute><GuessCountryGame /></VerifiedOrGuestRoute>} />
+            <Route path='/cz/game/guess-country' element={<VerifiedOrGuestRoute><GuessCountryGame /></VerifiedOrGuestRoute>} />
+            <Route path='/de/game/guess-country' element={<VerifiedOrGuestRoute><GuessCountryGame /></VerifiedOrGuestRoute>} />
+
             <Route path='/game/physical-geo' element={<VerifiedOrGuestRoute><PhysicalGeoGame /></VerifiedOrGuestRoute>} />
+            <Route path='/en/game/physical-geo' element={<VerifiedOrGuestRoute><PhysicalGeoGame /></VerifiedOrGuestRoute>} />
+            <Route path='/cz/game/physical-geo' element={<VerifiedOrGuestRoute><PhysicalGeoGame /></VerifiedOrGuestRoute>} />
+            <Route path='/de/game/physical-geo' element={<VerifiedOrGuestRoute><PhysicalGeoGame /></VerifiedOrGuestRoute>} />
+
             <Route path='/game/physical-geo/:modeKey' element={<VerifiedOrGuestRoute><PhysicalGeoGame /></VerifiedOrGuestRoute>} />
+            <Route path='/en/game/physical-geo/:modeKey' element={<VerifiedOrGuestRoute><PhysicalGeoGame /></VerifiedOrGuestRoute>} />
+            <Route path='/cz/game/physical-geo/:modeKey' element={<VerifiedOrGuestRoute><PhysicalGeoGame /></VerifiedOrGuestRoute>} />
+            <Route path='/de/game/physical-geo/:modeKey' element={<VerifiedOrGuestRoute><PhysicalGeoGame /></VerifiedOrGuestRoute>} />
+
             <Route path='/settings' element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+            <Route path='/en/settings' element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+            <Route path='/cz/settings' element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+            <Route path='/de/settings' element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+
             <Route path='/terms' element={<TermsConditions />} />
+            <Route path='/en/terms' element={<TermsConditions />} />
+            <Route path='/cz/terms' element={<TermsConditions />} />
+            <Route path='/de/terms' element={<TermsConditions />} />
+
             <Route path='/game/shape-match' element={<VerifiedOrGuestRoute><CardMatchGame /></VerifiedOrGuestRoute>} />
+            <Route path='/en/game/shape-match' element={<VerifiedOrGuestRoute><CardMatchGame /></VerifiedOrGuestRoute>} />
+            <Route path='/cz/game/shape-match' element={<VerifiedOrGuestRoute><CardMatchGame /></VerifiedOrGuestRoute>} />
+            <Route path='/de/game/shape-match' element={<VerifiedOrGuestRoute><CardMatchGame /></VerifiedOrGuestRoute>} />
+
             <Route path='/privacy' element={<PrivacyPolicy />} />
+            <Route path='/en/privacy' element={<PrivacyPolicy />} />
+            <Route path='/cz/privacy' element={<PrivacyPolicy />} />
+            <Route path='/de/privacy' element={<PrivacyPolicy />} />
+
+            {SUPPORTED_LOCALE_PREFIXES.map((prefix) => (
+              <Route key={prefix} path={`/${prefix}/*`} element={<NotFound />} />
+            ))}
             <Route path='*' element={<NotFound />} />
           </Routes>
         </Suspense>

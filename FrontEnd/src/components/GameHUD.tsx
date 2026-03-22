@@ -1,4 +1,5 @@
 import { GREEN_BUTTON_STYLE, GREEN_BUTTON_HOVER } from "../utils/sharedStyles";
+import { useTranslation } from 'react-i18next';
 
 interface GameHUDProps {
   loading: boolean;
@@ -37,15 +38,16 @@ export default function GameHUD({
   onSkip,
   isPortrait,
 }: GameHUDProps) {
+  const { t } = useTranslation();
   if (loading) {
     return (
-      <span style={{ fontSize: "clamp(12px, 2.8vw, 16px)" }}>Loading flags…</span>
+      <span style={{ fontSize: "clamp(12px, 2.8vw, 16px)" }}>{t('gameHUD.loadingFlags')}</span>
     );
   }
 
   if (loadError) {
     return (
-      <span style={{ fontSize: "clamp(12px, 2.8vw, 16px)" }}>Error: {loadError}</span>
+      <span style={{ fontSize: "clamp(12px, 2.8vw, 16px)" }}>{t('gameHUD.errorPrefix')} {loadError}</span>
     );
   }
 
@@ -58,28 +60,28 @@ export default function GameHUD({
           <>
             <strong style={{ fontSize: "clamp(16px, 3.5vw, 24px)", color: "#fbbf24" }}>🏆 LEGENDARY! 🏆</strong>
             <span style={{ opacity: 0.9, fontSize: "clamp(14px, 3vw, 18px)" }}>
-              {targetsLength} flags, perfect streak! You're a geography god! 🌍👑
+              {t('gameHUD.legendaryMessage', { count: targetsLength })}
             </span>
           </>
         ) : hasWon ? (
           <>
             <strong style={{ fontSize: "clamp(16px, 3.5vw, 24px)", color: "#10b981" }}>🎉 Perfect Score! 🎉</strong>
             <span style={{ opacity: 0.9, fontSize: "clamp(14px, 3vw, 18px)" }}>
-              All {score} flags matched!
+              {t('gameHUD.perfectMessage', { count: score })}
             </span>
             <span style={{ opacity: 0.8, fontSize: "clamp(12px, 2.8vw, 16px)" }}>
-              Best streak: {bestStreak} 🔥
+              {t('gameHUD.bestStreak', { count: bestStreak })} 🔥
             </span>
           </>
         ) : (
           <>
-            <strong style={{ fontSize: "clamp(14px, 3.2vw, 20px)" }}>Round finished</strong>
+            <strong style={{ fontSize: "clamp(14px, 3.2vw, 20px)" }}>{t('gameHUD.roundFinished')}</strong>
             <span style={{ opacity: 0.8, fontSize: "clamp(12px, 2.8vw, 16px)" }}>
-              Matched: {score}/{targetsLength} {skippedCount > 0 && `(${skippedCount} skipped)`}
+              {t('gameHUD.matchedSummary', { score, total: targetsLength })} {skippedCount > 0 && `(${skippedCount} ${t('gameHUD.skipped')})`}
             </span>
             {bestStreak > 0 && (
               <span style={{ opacity: 0.8, fontSize: "clamp(11px, 2.6vw, 14px)" }}>
-                Best streak: {bestStreak} 🔥
+                {t('gameHUD.bestStreak', { count: bestStreak })} 🔥
               </span>
             )}
           </>
@@ -89,7 +91,7 @@ export default function GameHUD({
           style={{ ...GREEN_BUTTON_STYLE, marginTop: 4 }}
           {...GREEN_BUTTON_HOVER}
         >
-          🎮 New Game
+          🎮 {t('gameHUD.newGame')}
         </button>
       </div>
     );
@@ -97,7 +99,7 @@ export default function GameHUD({
 
   if (!currentTarget) {
     return (
-      <span style={{ fontSize: "clamp(12px, 2.8vw, 16px)" }}>Loading…</span>
+      <span style={{ fontSize: "clamp(12px, 2.8vw, 16px)" }}>{t('gameHUD.loading')}</span>
     );
   }
   
@@ -116,8 +118,8 @@ export default function GameHUD({
         }}
       />
       <div style={{ display: "flex", flexDirection: "column", minWidth: "clamp(100px, 24vw, 150px)" }}>
-        <strong style={{ fontSize: "clamp(12px, 2.6vw, 18px)" }}>Find this flag</strong>
-        <span style={{ opacity: 0.7, fontSize: "clamp(9px, 2.2vw, 13px)" }}>Tap country</span>
+        <strong style={{ fontSize: "clamp(12px, 2.6vw, 18px)" }}>{t('gameHUD.findThisFlag')}</strong>
+        <span style={{ opacity: 0.7, fontSize: "clamp(9px, 2.2vw, 13px)" }}>{t('gameHUD.tapCountry')}</span>
       </div>
       <span style={{ marginLeft: 4, opacity: 0.8, fontSize: "clamp(10px, 2.4vw, 14px)", whiteSpace: "nowrap" }}>
         {currentIdx + 1}/{targetsLength}
@@ -141,7 +143,7 @@ export default function GameHUD({
       )}
       <button
         onClick={onToggleNamePanel}
-        title="Show current flag's name"
+        title={t('gameHUD.showCurrentFlagName')}
         style={{
           marginLeft: 4,
           padding: "clamp(4px, 1.5vw, 6px) clamp(8px, 2vw, 10px)",
@@ -154,11 +156,11 @@ export default function GameHUD({
           cursor: "pointer",
         }}
       >
-        {showNamePanel ? "Hide name" : "Show name"}
+        {showNamePanel ? t('gameHUD.hideName') : t('gameHUD.showName')}
       </button>
       <button
         onClick={onSkip}
-        title="Skip this flag"
+        title={t('gameHUD.skipThisFlag')}
         style={{
           marginLeft: 4,
           padding: "clamp(4px, 1.5vw, 6px) clamp(8px, 2vw, 10px)",
@@ -172,7 +174,7 @@ export default function GameHUD({
           fontWeight: 500,
         }}
       >
-        Skip
+        {t('gameHUD.skip')}
       </button>
       <span
         style={{
@@ -187,7 +189,7 @@ export default function GameHUD({
           whiteSpace: "nowrap",
         }}
       >
-        Score: {score}/{targetsLength}
+        {t('gameHUD.score', { score, total: targetsLength })}
       </span>
     </>
   );
