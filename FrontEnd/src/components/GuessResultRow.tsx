@@ -1,4 +1,3 @@
-import type { DistanceCategoryKey } from "../utils/guessCountryMath";
 import "./GuessResultRow.css";
 
 export type GuessResultRowData = {
@@ -11,7 +10,6 @@ export type GuessResultRowData = {
   populationHint: string;
   areaHint: string;
   directionHint: string;
-  distanceCategoryKey: DistanceCategoryKey;
   distanceKm: number;
 };
 
@@ -57,11 +55,8 @@ export default function GuessResultRow({ row, t }: GuessResultRowProps) {
         <span className="guess-row-chip" title={t("game.tooltip.direction")}> 
           {t("game.hints.direction")}: {level >= 3 ? row.directionHint : t("game.locked")}
         </span>
-        <span className="guess-row-chip">
-          {t("game.hints.distanceCategory")}: {level >= 3 ? t(row.distanceCategoryKey) : t("game.locked")}
-        </span>
 
-        <span className="guess-row-chip guess-row-chip-wide">
+        <span className="guess-row-chip">
           {t("game.hints.exactDistance")}: {level >= 4 ? t("game.km", { value: Math.round(row.distanceKm) }) : t("game.locked")}
         </span>
       </div>

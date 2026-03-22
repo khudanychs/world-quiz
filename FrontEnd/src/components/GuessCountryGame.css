@@ -11,6 +11,52 @@
   justify-content: center;
 }
 
+.guess-country-map-wrapper {
+  position: relative;
+}
+
+.guess-country-start-hud {
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 6;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(52, 211, 153, 0.45);
+  background: rgba(2, 6, 23, 0.78);
+  color: #d1fae5;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  pointer-events: none;
+}
+
+.guess-country-start-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #34d399;
+  box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.55);
+  animation: guess-country-pulse 1.5s ease-out infinite;
+}
+
+@keyframes guess-country-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(52, 211, 153, 0.55);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(52, 211, 153, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(52, 211, 153, 0);
+  }
+}
+
 .guess-country-side-col {
   display: flex;
   flex-direction: column;
@@ -50,7 +96,7 @@
 .guess-country-legend {
   width: 100%;
   color: rgba(225, 236, 255, 0.92);
-  text-align: left;
+  text-align: center;
   font-size: 12px;
 }
 
@@ -153,7 +199,7 @@
   }
 
   .guess-country-results-wrap {
-    max-height: 32vh;
+    max-height: 42vh;
   }
 
   .guess-country-card-top {
@@ -171,11 +217,12 @@
 
 @media (max-width: 560px) {
   .guess-country-results-wrap {
-    max-height: 28vh;
+    max-height: 50vh;
+    min-height: 260px;
   }
 
   .guess-country-legend {
-    font-size: 11px;
+    display: none;
   }
 
   .guess-country-status-panel {
@@ -186,4 +233,42 @@
   .guess-country-feedback-panel {
     font-size: 13px;
   }
+
+  .guess-country-start-hud {
+    top: 6px;
+    max-width: min(78%, 240px);
+    padding: 4px 8px;
+    gap: 6px;
+    border-radius: 10px;
+    font-size: 10px;
+    text-align: center;
+  }
+
+  .guess-country-start-dot {
+    width: 7px;
+    height: 7px;
+  }
+}
+
+.guess-country-layout .win-attempts {
+  margin: 0 0 18px;
+  color: rgba(209, 250, 229, 0.95);
+  font-size: clamp(14px, 3.2vw, 20px);
+  font-weight: 600;
+}
+
+.guess-country-win-overlay .win-new-game-btn {
+  border: 1px solid rgba(147, 197, 253, 0.95) !important;
+  background: linear-gradient(180deg, #22d3ee 0%, #3b82f6 55%, #2563eb 100%) !important;
+  color: #eff6ff !important;
+  box-shadow: 0 10px 24px rgba(37, 99, 235, 0.42);
+}
+
+.guess-country-win-overlay .win-new-game-btn:hover {
+  background: linear-gradient(180deg, #67e8f9 0%, #60a5fa 60%, #3b82f6 100%) !important;
+  box-shadow: 0 12px 28px rgba(59, 130, 246, 0.5);
+}
+
+.guess-country-win-overlay .win-new-game-btn:active {
+  background: linear-gradient(180deg, #22d3ee 0%, #2563eb 100%) !important;
 }

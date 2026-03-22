@@ -175,10 +175,6 @@
   to { transform: scale(1); opacity: 1; }
 }
 
-@keyframes streakPop {
-  0%, 100% { transform: translate(-50%, -50%) scale(0.9); opacity: 0; }
-  50% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; }
-}
 
 /* Win Animation Overlay */
 .win-animation-overlay {
@@ -293,19 +289,26 @@
   transform: scale(0.98);
 }
 
-/* Streak Animation - Optimized */
-.streak-animation {
+/* Streak milestone animation (same behavior as Physical Geo) */
+.flag-streak-animation {
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  z-index: 10;
-  font-size: clamp(32px, 8vw, 64px);
-  font-weight: 800;
+  z-index: 15;
+  font-size: clamp(48px, 10vw, 80px);
+  font-weight: 900;
   color: #fb923c;
-  animation: streakPop 1s ease-in-out;
+  text-shadow: 0 4px 24px rgba(251, 146, 60, 0.6);
   pointer-events: none;
-  letter-spacing: 0.05em;
+  animation: flagStreakPop 1s ease-out forwards;
+}
+
+@keyframes flagStreakPop {
+  0% { transform: translate(-50%, -50%) scale(0.3); opacity: 0; }
+  30% { transform: translate(-50%, -50%) scale(1.3); opacity: 1; }
+  60% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+  100% { transform: translate(-50%, -50%) scale(1); opacity: 0; }
 }
 
 /* Name Panel - Optimized */

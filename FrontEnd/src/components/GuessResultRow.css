@@ -21,7 +21,7 @@
 .guess-row-chip-grid {
   margin-top: 6px;
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 6px;
 }
 
@@ -37,8 +37,10 @@
   text-overflow: ellipsis;
 }
 
-.guess-row-chip-wide {
-  grid-column: 1 / -1;
+@media (max-width: 920px) {
+  .guess-row-chip-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 @media (max-width: 560px) {
