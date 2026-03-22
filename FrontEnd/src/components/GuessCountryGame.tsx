@@ -28,6 +28,8 @@ import {
   type GeoPoint,
 } from "../utils/guessCountryMath";
 import GuessResultRow, { type GuessResultRowData } from "./GuessResultRow";
+import { incrementGuessCountryWins } from "../utils/leaderboardUtils";
+import { useAuth } from "../contexts/AuthContext";
 import "./GuessCountryGame.css";
 import "./FlagMatchGame.css";
 
@@ -174,6 +176,7 @@ function getCountryFromMapName(
 
 export default function GuessCountryGame() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const { dimensions, isDesktop } = useMapDimensions();
 
   const viewportW = window.innerWidth;
@@ -203,6 +206,7 @@ export default function GuessCountryGame() {
   const [playableCodes, setPlayableCodes] = useState<string[]>([]);
   const [targetCode, setTargetCode] = useState<string | null>(null);
   const [guesses, setGuesses] = useState<GuessResultRowData[]>([]);
+  const [statSaved, setStatSaved] = useState(false);
 
   const wrapperRef = useRef<HTMLDivElement>(null);
   const resultsWrapRef = useRef<HTMLDivElement>(null);
@@ -347,9 +351,24 @@ export default function GuessCountryGame() {
     };
   }, []);
 
+  // Save stat when user wins (any number of attempts)
+  useEffect(() => {
+    if (!user || statSaved || !isGameOver || !hasWon) return;
+
+    (async () => {
+      try {
+        await incrementGuessCountryWins(user);
+        setStatSaved(true);
+      } catch (error) {
+        console.error("Failed to save Guess Country stat:", error);
+      }
+    })();
+  }, [user, isGameOver, hasWon, statSaved]);
+
   const startNewRound = useCallback(() => {
     setGuesses([]);
     setTargetCode(null);
+    setStatSaved(false);
   }, []);
 
   const getRoundTarget = useCallback(

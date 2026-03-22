@@ -20,7 +20,15 @@ interface ScoreEntry {
   score: number;
 }
 
-type GameMode = 'flag-match' | 'cards-match';
+// Define the structure of a guess country stats document
+interface GuessCountryEntry {
+  id: string;
+  userId: string;
+  username: string;
+  countriesGuessed: number;
+}
+
+type GameMode = 'flag-match' | 'cards-match' | 'guess-country';
 
 // Cache for leaderboard data (prevents excessive reads on filter switching)
 const leaderboardCache: {
@@ -32,12 +40,20 @@ const leaderboardCache: {
     today: { data: ScoreEntry[]; timestamp: number } | null;
     allTime: { data: ScoreEntry[]; timestamp: number } | null;
   };
+  'guess-country': {
+    today: { data: GuessCountryEntry[]; timestamp: number } | null;
+    allTime: { data: GuessCountryEntry[]; timestamp: number } | null;
+  };
 } = {
   'flag-match': {
     today: null,
     allTime: null
   },
   'cards-match': {
+    today: null,
+    allTime: null
+  },
+  'guess-country': {
     today: null,
     allTime: null
   }
@@ -47,31 +63,31 @@ const CACHE_DURATION = 5 * 60 * 1000; // 5 minute cache to reduce Firebase reads
 
 // Hook for leaderboard data - fetches top 10 with caching
 function useLeaderboard(gameMode: GameMode, timeFilter: 'today' | 'allTime') {
-  const [entries, setEntries] = useState<StreakEntry[] | ScoreEntry[]>([]);
+  const [entries, setEntries] = useState<StreakEntry[] | ScoreEntry[] | GuessCountryEntry[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchLeaderboard = useCallback(async (forceRefresh = false) => {
     // Check cache first (unless force refresh)
     const cached = leaderboardCache[gameMode][timeFilter];
     const now = Date.now();
-    
+
     if (!forceRefresh && cached && (now - cached.timestamp) < CACHE_DURATION) {
       setEntries(cached.data as any);
       setLoading(false);
       return;
     }
-    
+
     setLoading(true);
-    
+
     try {
       // Dynamically import Firebase to avoid blocking initial load
       const [{ collection, query, orderBy, limit, getDocs, where }, { db }] = await Promise.all([
         import('firebase/firestore'),
         import('../firebase')
       ]);
-      
+
       let q;
-      
+
       if (gameMode === 'flag-match') {
         // Flag Match: Query by streak
         if (timeFilter === 'today') {
@@ -91,7 +107,7 @@ function useLeaderboard(gameMode: GameMode, timeFilter: 'today' | 'allTime') {
             limit(10)
           );
         }
-      } else {
+      } else if (gameMode === 'cards-match') {
         // Cards Match: Query by score
         if (timeFilter === 'today') {
           const todayDate = getTodayDateString();
@@ -110,6 +126,14 @@ function useLeaderboard(gameMode: GameMode, timeFilter: 'today' | 'allTime') {
             limit(10)
           );
         }
+      } else {
+        // Guess Country: Query by countries guessed (all-time only)
+        q = query(
+          collection(db, "guessCountryStats"),
+          orderBy("countriesGuessed", "desc"),
+          orderBy("createdAt", "asc"),
+          limit(10)
+        );
       }
 
       const snapshot = await getDocs(q);
@@ -120,17 +144,22 @@ function useLeaderboard(gameMode: GameMode, timeFilter: 'today' | 'allTime') {
 
       // Update cache with proper type
       if (gameMode === 'flag-match') {
-        (leaderboardCache[gameMode][timeFilter] as any) = { 
-          data: topEntries as StreakEntry[], 
-          timestamp: now 
+        (leaderboardCache[gameMode][timeFilter] as any) = {
+          data: topEntries as StreakEntry[],
+          timestamp: now
+        };
+      } else if (gameMode === 'cards-match') {
+        (leaderboardCache[gameMode][timeFilter] as any) = {
+          data: topEntries as ScoreEntry[],
+          timestamp: now
         };
       } else {
-        (leaderboardCache[gameMode][timeFilter] as any) = { 
-          data: topEntries as ScoreEntry[], 
-          timestamp: now 
+        (leaderboardCache[gameMode][timeFilter] as any) = {
+          data: topEntries as GuessCountryEntry[],
+          timestamp: now
         };
       }
-      
+
       setEntries(topEntries as any);
     } catch (error: any) {
       console.error("Error fetching leaderboard: ", error);
@@ -197,13 +226,20 @@ export function Leaderboard({ gameMode }: LeaderboardProps) {
   const isGuest = !user;
   const isOnCooldown = cooldownRemaining > 0;
 
-  const title = gameMode === 'flag-match' ? '🔥 Top Streaks' : '🏆 Cards Match — Top Scores';
+  const title = gameMode === 'flag-match'
+    ? '🔥 Top Streaks'
+    : gameMode === 'cards-match'
+    ? '🏆 Cards Match — Top Scores'
+    : '🎯 Guess Country — Top Players';
+
+  // Hide time filter for guess-country (all-time only)
+  const showTimeFilter = gameMode !== 'guess-country';
 
   return (
     <div className="leaderboard-card">
       <div className="leaderboard-header">
         <h3 className="leaderboard-title">{title}</h3>
-        <button 
+        <button
           className={`refresh-btn ${isOnCooldown ? 'on-cooldown' : ''} ${loading ? 'loading' : ''}`}
           onClick={handleRefresh}
           disabled={isOnCooldown || loading}
@@ -212,11 +248,11 @@ export function Leaderboard({ gameMode }: LeaderboardProps) {
           {isOnCooldown ? (
             `${Math.ceil(cooldownRemaining / 1000)}s`
           ) : (
-            <svg 
-              className="refresh-icon" 
-              width="18" 
-              height="18" 
-              viewBox="0 0 32 32" 
+            <svg
+              className="refresh-icon"
+              width="18"
+              height="18"
+              viewBox="0 0 32 32"
               fill="currentColor"
             >
               <path d="M26.631,4H31.5C31.776,4,32,3.776,32,3.5S31.776,3,31.5,3h-6C25.224,3,25,3.224,25,3.5v6c0,0.276,0.224,0.5,0.5,0.5S26,9.776,26,9.5V4.783l0.611,0.611c2.833,2.833,4.394,6.6,4.394,10.606s-1.561,7.773-4.394,10.606c-4.205,4.206-10.504,5.532-16.051,3.375c-0.257-0.102-0.547,0.027-0.647,0.284c-0.1,0.258,0.027,0.548,0.285,0.647c1.884,0.732,3.848,1.088,5.797,1.088c4.17,0,8.266-1.63,11.323-4.688c3.022-3.021,4.687-7.04,4.687-11.313S30.34,7.708,27.318,4.687L26.631,4z"/>
@@ -225,32 +261,34 @@ export function Leaderboard({ gameMode }: LeaderboardProps) {
           )}
         </button>
       </div>
-      
-      {/* Time filter toggle */}
-      <div className="leaderboard-toggle">
-        <button 
-          className={`toggle-btn ${timeFilter === 'today' ? 'active' : ''}`}
-          onClick={() => setTimeFilter('today')}
-        >
-          Today
-        </button>
-        <button 
-          className={`toggle-btn ${timeFilter === 'allTime' ? 'active' : ''}`}
-          onClick={() => setTimeFilter('allTime')}
-        >
-          All Time
-        </button>
-      </div>
+
+      {/* Time filter toggle - only show for flag-match and cards-match */}
+      {showTimeFilter && (
+        <div className="leaderboard-toggle">
+          <button
+            className={`toggle-btn ${timeFilter === 'today' ? 'active' : ''}`}
+            onClick={() => setTimeFilter('today')}
+          >
+            Today
+          </button>
+          <button
+            className={`toggle-btn ${timeFilter === 'allTime' ? 'active' : ''}`}
+            onClick={() => setTimeFilter('allTime')}
+          >
+            All Time
+          </button>
+        </div>
+      )}
 
       {loading ? (
         <div className="loader">Loading...</div>
       ) : entries.length === 0 ? (
-        <p className="no-scores">No {gameMode === 'flag-match' ? 'streaks' : 'scores'} yet. Be the first!</p>
+        <p className="no-scores">No {gameMode === 'guess-country' ? 'players' : gameMode === 'flag-match' ? 'streaks' : 'scores'} yet. Be the first!</p>
       ) : (
         <ol className="leaderboard-list">
           {entries.map((entry, index) => (
-            <li 
-              key={entry.id} 
+            <li
+              key={entry.id}
               className={`leaderboard-item ${user?.uid === entry.userId ? 'current-user' : ''}`}
             >
               <span className={`leaderboard-rank ${index < 3 ? `rank-${index + 1}` : ''}`}>
@@ -262,10 +300,15 @@ export function Leaderboard({ gameMode }: LeaderboardProps) {
                   <span className="streak-fire">🔥</span>
                   {((entry as StreakEntry).streak || 0)}
                 </span>
-              ) : (
+              ) : gameMode === 'cards-match' ? (
                 <span className="leaderboard-score">
                   <span className="score-icon">💎</span>
                   {((entry as ScoreEntry).score || 0).toLocaleString()}
+                </span>
+              ) : (
+                <span className="leaderboard-score">
+                  <span className="score-icon">🌍</span>
+                  {((entry as GuessCountryEntry).countriesGuessed || 0)}
                 </span>
               )}
             </li>

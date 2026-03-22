@@ -30,6 +30,10 @@ export const Settings = () => {
   const [deletePassword, setDeletePassword] = useState('');
   const [highestStreak, setHighestStreak] = useState<number | null>(null);
   const [streakLoading, setStreakLoading] = useState(false);
+  const [cardsMatchHighScore, setCardsMatchHighScore] = useState<number | null>(null);
+  const [cardsMatchLoading, setCardsMatchLoading] = useState(false);
+  const [countriesGuessed, setCountriesGuessed] = useState<number | null>(null);
+  const [guessCountryLoading, setGuessCountryLoading] = useState(false);
   const [nickChangeStatus, setNickChangeStatus] = useState<{
     changesThisMonth: number;
     changesLeft: number;
@@ -135,6 +139,66 @@ export const Settings = () => {
         }
       };
       fetchHighestStreak();
+    }
+  }, [user]);
+
+  // Fetch user's highest Cards Match score
+  useEffect(() => {
+    if (user) {
+      const fetchCardsMatchScore = async () => {
+        setCardsMatchLoading(true);
+        try {
+          const [{ doc, getDoc }, { db }] = await Promise.all([
+            import('firebase/firestore'),
+            import('../firebase')
+          ]);
+
+          const scoreDocRef = doc(db, 'cardsMatchScores', user.uid);
+          const scoreDoc = await getDoc(scoreDocRef);
+          if (scoreDoc.exists()) {
+            const data = scoreDoc.data();
+            setCardsMatchHighScore(data.score || 0);
+          } else {
+            setCardsMatchHighScore(0);
+          }
+        } catch (err) {
+          console.error('Error fetching Cards Match high score:', err);
+          setCardsMatchHighScore(null);
+        } finally {
+          setCardsMatchLoading(false);
+        }
+      };
+      fetchCardsMatchScore();
+    }
+  }, [user]);
+
+  // Fetch user's Guess Country stats
+  useEffect(() => {
+    if (user) {
+      const fetchGuessCountryStats = async () => {
+        setGuessCountryLoading(true);
+        try {
+          const [{ doc, getDoc }, { db }] = await Promise.all([
+            import('firebase/firestore'),
+            import('../firebase')
+          ]);
+
+          const statsDocRef = doc(db, 'guessCountryStats', user.uid);
+          const statsDoc = await getDoc(statsDocRef);
+          if (statsDoc.exists()) {
+            const data = statsDoc.data();
+            setCountriesGuessed(data.countriesGuessed || 0);
+          } else {
+            setCountriesGuessed(0);
+          }
+        } catch (err) {
+          console.error('Error fetching Guess Country stats:', err);
+          setCountriesGuessed(null);
+        } finally {
+          setGuessCountryLoading(false);
+        }
+      };
+      fetchGuessCountryStats();
     }
   }, [user]);
 
@@ -415,6 +479,18 @@ export const Settings = () => {
                 <span className="stat-icon">🔥</span>
                 <div className="stat-content">
                   <p><span style={{ fontWeight: 'bold', color: '#fff', fontSize: '22px' }}>Best Streak:&ensp; </span><span className="stat-value">{streakLoading ? '...' : (highestStreak ?? '—')}</span></p>
+                </div>
+              </div>
+              <div className="stat-card">
+                <span className="stat-icon">🎴</span>
+                <div className="stat-content">
+                  <p><span style={{ fontWeight: 'bold', color: '#fff', fontSize: '22px' }}>Cards Match High Score:&ensp; </span><span className="stat-value">{cardsMatchLoading ? '...' : (cardsMatchHighScore !== null ? cardsMatchHighScore.toLocaleString() : '—')}</span></p>
+                </div>
+              </div>
+              <div className="stat-card">
+                <span className="stat-icon">🎯</span>
+                <div className="stat-content">
+                  <p><span style={{ fontWeight: 'bold', color: '#fff', fontSize: '22px' }}>Countries guessed:&ensp; </span><span className="stat-value">{guessCountryLoading ? '...' : (countriesGuessed ?? '—')}</span></p>
                 </div>
               </div>
             </div>

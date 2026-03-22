@@ -4,7 +4,7 @@ import { SEOHelmet } from '../components/SEOHelmet';
 import { SEO_TRANSLATIONS, toCanonicalUrl, getSeoOgImage } from '../seo/seo-translations';
 import './LeaderboardsPage.css';
 
-type GameMode = 'flag-match' | 'cards-match';
+type GameMode = 'flag-match' | 'cards-match' | 'guess-country';
 
 export default function LeaderboardsPage() {
   const seo = SEO_TRANSLATIONS.routes.leaderboards;
@@ -24,7 +24,7 @@ export default function LeaderboardsPage() {
           <p className="leaderboards-subtitle">
             See how you stack up against other players!
           </p>
-        
+
         {/* Game Mode Selector */}
         <div className="game-mode-selector">
           <button
@@ -39,8 +39,14 @@ export default function LeaderboardsPage() {
           >
             🎴 Cards Match
           </button>
+          <button
+            className={`mode-btn ${gameMode === 'guess-country' ? 'active' : ''}`}
+            onClick={() => setGameMode('guess-country')}
+          >
+            🎯 Guess Country
+          </button>
         </div>
-        
+
           <div className="leaderboards-grid">
             <Leaderboard gameMode={gameMode} />
           </div>
