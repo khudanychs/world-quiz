@@ -3,12 +3,12 @@ import type { ModeStyleConfig, ModeStyleOverrides } from "./types";
 export const BASE_MODE_STYLE: ModeStyleConfig = {
   desert: {
     fillBoost: 0.12,
-    borderStrokeWidth: 1.8,
+    borderStrokeWidth: 1.1,
     textureOpacity: 0.5,
   },
   mountainRange: {
-    bandWidth: 10,
-    outlineWidth: 13,
+    bandWidth: 6.5,
+    outlineWidth: 6,
     textureOpacity: 0.5,
   },
   river: {

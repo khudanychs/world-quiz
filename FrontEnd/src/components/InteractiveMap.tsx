@@ -1,5 +1,5 @@
 // Shared interactive map component used by both WorldMap and FlagMatchGame
-import { memo, useRef, useEffect } from "react";
+import { memo, useRef, useEffect, useCallback, useMemo } from "react";
 import { ComposableMap, Geographies, Geography, ZoomableGroup } from "react-simple-maps";
 import { geoNaturalEarth1 } from "d3-geo";
 import { normalizeCountryName, isClickableInGameMode, isHiddenTerritory } from "../utils/countries";
@@ -7,6 +7,7 @@ import { SMALL_ISLAND_MARKERS } from "../utils/markerPositions";
 
 const PROJECTION = "geoNaturalEarth1" as const;
 const DEFAULT_GEO_URL = "/countries-110m.json";
+const HOVER_THROTTLE_MS = 33;
 
 /* ============================================================================
    MARKER CONFIGURATION - Edit these values to customize marker appearance
@@ -43,22 +44,23 @@ const ZOOM_CONFIG = {
 /* ============================================================================ */
 
 /** Check if a country has a custom marker */
+const SMALL_ISLAND_MARKER_NAME_SET = new Set(
+  Object.keys(SMALL_ISLAND_MARKERS).map((markerName) => normalizeCountryName(markerName))
+);
+
 function hasCustomMarker(countryName: string): boolean {
-  const normalized = normalizeCountryName(countryName);
-  return Object.keys(SMALL_ISLAND_MARKERS).some(
-    markerName => normalizeCountryName(markerName) === normalized
-  );
+  return SMALL_ISLAND_MARKER_NAME_SET.has(normalizeCountryName(countryName));
 }
 
 /**
  * Calculate adaptive marker radius based on zoom level and screen size
  * Formula: max(minRadius, baseRadius / zoom^exponent)
  */
-function getMarkerRadius(zoom: number, isDesktop: boolean): number {
+function getMarkerRadius(zoom: number, isDesktop: boolean, sizeMultiplier: number): number {
   const config = isDesktop ? DESKTOP_MARKER : MOBILE_MARKER;
   return Math.max(
-    config.minRadius,
-    config.baseRadius / Math.pow(zoom, config.zoomExponent)
+    config.minRadius * sizeMultiplier,
+    (config.baseRadius / Math.pow(zoom, config.zoomExponent)) * sizeMultiplier
   );
 }
 
@@ -66,11 +68,11 @@ function getMarkerRadius(zoom: number, isDesktop: boolean): number {
  * Calculate adaptive stroke width based on zoom level and screen size
  * Formula: max(minStrokeWidth, baseStrokeWidth / zoom^exponent)
  */
-function getMarkerStrokeWidth(zoom: number, isDesktop: boolean): number {
+function getMarkerStrokeWidth(zoom: number, isDesktop: boolean, sizeMultiplier: number): number {
   const config = isDesktop ? DESKTOP_MARKER : MOBILE_MARKER;
   return Math.max(
-    config.minStrokeWidth,
-    config.baseStrokeWidth / Math.pow(zoom, config.strokeZoomExponent)
+    config.minStrokeWidth * sizeMultiplier,
+    (config.baseStrokeWidth / Math.pow(zoom, config.strokeZoomExponent)) * sizeMultiplier
   );
 }
 
@@ -114,10 +116,16 @@ interface InteractiveMapProps {
   geoUrl?: string | object;
   /** Render SVG BEFORE land geographies (water features that should be masked by land) */
   renderUnderlay?: (projection: (coords: [number, number]) => [number, number] | null, zoom: number, isDesktop: boolean) => React.ReactNode;
+  /** If false, underlay is always non-interactive and excluded from pointer hit-testing. */
+  underlayInteractive?: boolean;
   /** Render SVG AFTER land geographies (mountains, rivers, etc. drawn on top) */
   renderOverlay?: (projection: (coords: [number, number]) => [number, number] | null, zoom: number, isDesktop: boolean) => React.ReactNode;
+  /** If false, overlay is always non-interactive and excluded from pointer hit-testing. */
+  overlayInteractive?: boolean;
   /** Disable built-in geography rendering and loading when custom overlays are sufficient */
   renderGeographies?: boolean;
+  /** Optional marker size multiplier for tiny-island dots. */
+  markerSizeMultiplier?: number;
 }
 
 export default memo(function InteractiveMap({
@@ -140,31 +148,85 @@ export default memo(function InteractiveMap({
   geoLandPath,
   geoUrl: customGeoUrl,
   renderUnderlay,
+  underlayInteractive = false,
   renderOverlay,
+  overlayInteractive = false,
   renderGeographies = true,
+  markerSizeMultiplier = 1,
 }: InteractiveMapProps) {
   const geoUrl = customGeoUrl ?? DEFAULT_GEO_URL;
   
   // Track if we've already notified parent about geographies
   const hasNotifiedRef = useRef(false);
+  const hoverTimerRef = useRef<number | null>(null);
+  const pendingHoverRef = useRef<string | null>(null);
+  const lastHoverEmittedRef = useRef<string | null>(null);
   
   // Create projection function for coordinate transformation
-  const projection = geoNaturalEarth1()
-    .scale(scale)
-    .translate([width / 2, height / 2])
-    .center(center);
+  const projection = useMemo(
+    () =>
+      geoNaturalEarth1()
+        .scale(scale)
+        .translate([width / 2, height / 2])
+        .center(center),
+    [scale, width, height, center]
+  );
 
-  const handleCountryClick = (nameRaw: string) => {
+  useEffect(() => {
+    return () => {
+      if (hoverTimerRef.current !== null) {
+        window.clearTimeout(hoverTimerRef.current);
+      }
+    };
+  }, []);
+
+  const emitHover = useCallback(
+    (nameRaw: string | null) => {
+      if (!onCountryHover) return;
+      if (lastHoverEmittedRef.current === nameRaw) return;
+      lastHoverEmittedRef.current = nameRaw;
+      onCountryHover(nameRaw);
+    },
+    [onCountryHover]
+  );
+
+  const handleCountryClick = useCallback((nameRaw: string) => {
+    // Clear pending hover first to avoid stale hover labels on click.
+    pendingHoverRef.current = null;
+    if (hoverTimerRef.current !== null) {
+      window.clearTimeout(hoverTimerRef.current);
+      hoverTimerRef.current = null;
+    }
+    emitHover(null);
+
     if (onCountryClick) {
       onCountryClick(nameRaw);
     }
-  };
+  }, [emitHover, onCountryClick]);
 
-  const handleCountryHover = (nameRaw: string | null) => {
-    if (onCountryHover) {
-      onCountryHover(nameRaw);
+  const handleCountryHover = useCallback((nameRaw: string | null) => {
+    if (!onCountryHover) return;
+
+    if (nameRaw === null) {
+      pendingHoverRef.current = null;
+      if (hoverTimerRef.current !== null) {
+        window.clearTimeout(hoverTimerRef.current);
+        hoverTimerRef.current = null;
+      }
+      emitHover(null);
+      return;
     }
-  };
+
+    pendingHoverRef.current = nameRaw;
+    if (hoverTimerRef.current !== null) {
+      return;
+    }
+
+    hoverTimerRef.current = window.setTimeout(() => {
+      hoverTimerRef.current = null;
+      emitHover(pendingHoverRef.current);
+    }, HOVER_THROTTLE_MS);
+  }, [emitHover, onCountryHover]);
 
 
 
@@ -174,7 +236,7 @@ export default memo(function InteractiveMap({
       projectionConfig={{ scale, center }}
       width={width}
       height={height}
-      style={{ width, height, display: "block" }}
+      style={{ width, height, display: "block", willChange: "transform", transform: "translateZ(0)" }}
     >
       <ZoomableGroup
         center={coordinates}
@@ -184,7 +246,11 @@ export default memo(function InteractiveMap({
         onMoveEnd={onMoveEnd}
       >
         {/* Water feature underlays — rendered BEFORE land so land masks them */}
-        {renderUnderlay && renderUnderlay(projection, zoom, isDesktop)}
+        {renderUnderlay && (
+          <g style={{ pointerEvents: underlayInteractive ? "all" : "none" }}>
+            {renderUnderlay(projection, zoom, isDesktop)}
+          </g>
+        )}
 
         {geoLandPath && (
           <path
@@ -366,10 +432,10 @@ export default memo(function InteractiveMap({
               key={`marker-${countryName}`}
               cx={x}
               cy={y}
-              r={getMarkerRadius(zoom, isDesktop)}
+              r={getMarkerRadius(zoom, isDesktop, markerSizeMultiplier)}
               fill={fill}
               stroke={getMarkerStrokeColor(isDesktop)}
-              strokeWidth={getMarkerStrokeWidth(zoom, isDesktop)}
+              strokeWidth={getMarkerStrokeWidth(zoom, isDesktop, markerSizeMultiplier)}
               style={{
                 cursor: markerInteractive ? "pointer" : (blockedByRegion ? "not-allowed" : "default"),
                 transition: "none",
@@ -382,7 +448,11 @@ export default memo(function InteractiveMap({
         })}
 
         {/* Physical geography feature overlays */}
-        {renderOverlay && renderOverlay(projection, zoom, isDesktop)}
+        {renderOverlay && (
+          <g style={{ pointerEvents: overlayInteractive ? "all" : "none" }}>
+            {renderOverlay(projection, zoom, isDesktop)}
+          </g>
+        )}
       </ZoomableGroup>
     </ComposableMap>
   );

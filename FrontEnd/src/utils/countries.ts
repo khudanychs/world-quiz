@@ -118,6 +118,45 @@ export const stripDiacritics = (s: string) =>
 type CountryInfo = { name: string; cca2: string; flag: string; region?: string };
 type CountryData = { name: { common: string }; cca2: string; flags: { svg?: string; png?: string }; region?: string };
 
+export type CountryHintSource = {
+  name: { common: string };
+  cca2: string;
+  flags?: { svg?: string; png?: string };
+  region?: string;
+  subregion?: string;
+  population?: number;
+  area?: number;
+  borders?: string[];
+  independent?: boolean;
+  unMember?: boolean;
+};
+
+export type CountryHintMeta = {
+  cca2: string;
+  continent: string;
+  subregion: string;
+  population: number | null;
+  area: number | null;
+  borderCount: number;
+};
+
+export function buildCountryHintLookup(countries: CountryHintSource[]): Record<string, CountryHintMeta> {
+  const out: Record<string, CountryHintMeta> = {};
+
+  for (const c of countries) {
+    out[c.cca2] = {
+      cca2: c.cca2,
+      continent: c.region || "",
+      subregion: c.subregion || "",
+      population: typeof c.population === "number" ? c.population : null,
+      area: typeof c.area === "number" ? c.area : null,
+      borderCount: Array.isArray(c.borders) ? c.borders.length : 0,
+    };
+  }
+
+  return out;
+}
+
 /** Build lookup table from REST Countries data */
 export function buildRestLookup(countries: CountryData[]): Record<string, CountryInfo> {
   initializeGameEligibleCountries(countries);

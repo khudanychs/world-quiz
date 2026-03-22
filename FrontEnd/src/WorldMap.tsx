@@ -1,5 +1,5 @@
 // src/WorldMap.tsx - Explore Map mode with country info panel
-import { useEffect, useRef, useState, lazy, Suspense } from "react";
+import { useEffect, useRef, useState, lazy, Suspense, useCallback } from "react";
 import { useNavigate } from 'react-router-dom';
 import { BackButton } from './components/BackButton';
 import {
@@ -107,6 +107,19 @@ export default function WorldMap() {
 
   /** Fit scale pro NaturalEarth1 */
   const FIT_SCALE = Math.max(1, Math.round(INNER_W * 0.32));
+
+  const handleMapMoveEnd = useCallback(({ zoom, coordinates }: { zoom: number; coordinates: [number, number] }) => {
+    setPos({ zoom, coordinates });
+  }, []);
+
+  const handleCountryClick = useCallback((name: string) => {
+    setHovered(null);
+    setSelected(name);
+  }, []);
+
+  const handleCountryHover = useCallback((name: string | null) => {
+    setHovered(name);
+  }, []);
 
   return (
     <div
@@ -336,9 +349,9 @@ export default function WorldMap() {
             center={[0, 15]}
             zoom={pos.zoom}
             coordinates={pos.coordinates}
-            onMoveEnd={({ zoom, coordinates }) => setPos({ zoom, coordinates })}
-            onCountryClick={(name) => setSelected(name)}
-            onCountryHover={setHovered}
+            onMoveEnd={handleMapMoveEnd}
+            onCountryClick={handleCountryClick}
+            onCountryHover={handleCountryHover}
             selectedCountry={selected}
             isDesktop={isDesktop}
           />

@@ -30,13 +30,13 @@ export default function MainMenu() {
             <p>Match Flags, Countries, Capitals, or Shapes on a timer!</p>
           </div>
         </button>
-        <div className="menu-card disabled">
+        <button className="menu-card" onClick={() => navigate('/game/guess-country')}>
           <div className="menu-card-body">
-            <h3>Boundaries Blitz</h3>
-            <p>Outline borders accurately for bonus points.</p>
-            <span className="menu-tag">Coming soon</span>
+            <h3>Guess the Country</h3>
+            <p>Guess the hidden country using distance and direction hints.</p>
+            <span className="menu-tag" style={{background:'#0ea5e9'}}>New</span>
           </div>
-        </div>
+        </button>
       </section>
 
       <footer className="menu-footer">

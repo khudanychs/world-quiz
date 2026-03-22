@@ -12,6 +12,7 @@ const WorldMap = lazy(() => import('./WorldMap'));
 const FlagMatchGame = lazy(() => import('./components/FlagMatchGame'));
 const CardMatchGame = lazy(() => import('./components/CardMatchGame'));
 const PhysicalGeoGame = lazy(() => import('./components/PhysicalGeoGame'));
+const GuessCountryGame = lazy(() => import('./components/GuessCountryGame'));
 const MainMenu = lazy(() => import('./components/MainMenu'));
 const LeaderboardsPage = lazy(() => import('./pages/LeaderboardsPage'));
 const CountryIndex = lazy(() => import('./pages/CountryIndex'));
@@ -232,6 +233,7 @@ export default function App() {
             <Route path='/map' element={<VerifiedOrGuestRoute><WorldMap /></VerifiedOrGuestRoute>} />
             <Route path='/game/flags' element={<VerifiedOrGuestRoute><FlagMatchGame /></VerifiedOrGuestRoute>} />
             <Route path='/game/flags/:regionKey' element={<VerifiedOrGuestRoute><FlagMatchGame /></VerifiedOrGuestRoute>} />
+            <Route path='/game/guess-country' element={<VerifiedOrGuestRoute><GuessCountryGame /></VerifiedOrGuestRoute>} />
             <Route path='/game/physical-geo' element={<VerifiedOrGuestRoute><PhysicalGeoGame /></VerifiedOrGuestRoute>} />
             <Route path='/game/physical-geo/:modeKey' element={<VerifiedOrGuestRoute><PhysicalGeoGame /></VerifiedOrGuestRoute>} />
             <Route path='/settings' element={<ProtectedRoute><Settings /></ProtectedRoute>} />
