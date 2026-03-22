@@ -24,9 +24,7 @@ import { SMALL_ISLAND_MARKERS } from "../utils/markerPositions";
 import {
   compareHintEmoji,
   directionEmoji,
-  getDistanceCategoryKey,
   haversineDistanceKm,
-  type DistanceCategoryKey,
   type GeoPoint,
 } from "../utils/guessCountryMath";
 import GuessResultRow, { type GuessResultRowData } from "./GuessResultRow";
@@ -67,6 +65,7 @@ type RestLookupInfo = {
 
 type PlayableCountry = {
   name: string;
+  displayName: string;
   cca2: string;
   continent: string;
   subregion: string;
@@ -84,6 +83,7 @@ const translations: Record<string, string> = {
   "game.targetFound": "Target found!",
   "game.targetMissed": "Out of attempts.",
   "game.targetReveal": "Target country: {country}",
+  "game.startHint": "Click any country to start the round.",
   "game.attempts": "Attempts",
   "game.attemptsValue": "{used}/{max}",
   "game.remaining": "Remaining: {remaining}",
@@ -205,7 +205,15 @@ export default function GuessCountryGame() {
   const [guesses, setGuesses] = useState<GuessResultRowData[]>([]);
 
   const wrapperRef = useRef<HTMLDivElement>(null);
+  const resultsWrapRef = useRef<HTMLDivElement>(null);
   usePreventWheelScroll(wrapperRef);
+
+  useEffect(() => {
+    if (resultsWrapRef.current) {
+      // Keep newest guess visible when user was scrolling older cards.
+      resultsWrapRef.current.scrollTop = 0;
+    }
+  }, [guesses.length]);
 
   const target = useMemo(() => {
     if (!targetCode) return null;
@@ -216,6 +224,7 @@ export default function GuessCountryGame() {
   const attemptsRemaining = Math.max(0, MAX_ATTEMPTS - attemptsUsed);
   const hasWon = !!target && guesses.some((g) => g.cca2 === target.cca2);
   const isGameOver = hasWon || attemptsUsed >= MAX_ATTEMPTS;
+  const showStartHint = !loading && !loadError && !target && guesses.length === 0;
 
   const pickRandomTargetCode = useCallback((codes: string[], excludeCca2?: string) => {
     const candidates = excludeCca2 ? codes.filter((c) => c !== excludeCca2) : codes;
@@ -299,10 +308,14 @@ export default function GuessCountryGame() {
           if (!coords) continue;
 
           const hint = hintLookup[c.cca2];
+          const isRussia = c.cca2 === "RU";
+          const resolvedContinent = isRussia ? "Asia" : (hint?.continent || c.region || "");
+          const resolvedDisplayName = isRussia ? `${c.name.common} (Asia)` : c.name.common;
           playable.set(c.cca2, {
             name: c.name.common,
+            displayName: resolvedDisplayName,
             cca2: c.cca2,
-            continent: hint?.continent || c.region || "",
+            continent: resolvedContinent,
             subregion: hint?.subregion || c.subregion || "",
             population: hint?.population ?? null,
             area: hint?.area ?? null,
@@ -369,15 +382,13 @@ export default function GuessCountryGame() {
       const fromPoint: GeoPoint = { lat: guessedCountry.lat, lng: guessedCountry.lng };
       const toPoint: GeoPoint = { lat: roundTarget.lat, lng: roundTarget.lng };
       const distanceKm = guessedCountry.cca2 === roundTarget.cca2 ? 0 : haversineDistanceKm(fromPoint, toPoint);
-      const distanceCategoryKey: DistanceCategoryKey = getDistanceCategoryKey(distanceKm);
       const attemptNumber = guesses.length + 1;
 
       const row: GuessResultRowData = {
         cca2: guessedCountry.cca2,
-        name: guessedCountry.name,
+        name: guessedCountry.displayName,
         attemptNumber,
         distanceKm,
-        distanceCategoryKey,
         directionHint: guessedCountry.cca2 === roundTarget.cca2 ? "✅" : directionEmoji(fromPoint, toPoint),
         continentHint: guessedCountry.continent && guessedCountry.continent === roundTarget.continent ? "✅" : "❌",
         subregionHint: guessedCountry.subregion && guessedCountry.subregion === roundTarget.subregion ? "✅" : "❌",
@@ -425,7 +436,17 @@ export default function GuessCountryGame() {
 
       <div className="guess-country-layout">
         <div className="guess-country-map-col">
-          <div ref={wrapperRef} style={getMapWrapperStyle(OUTER_W, OUTER_H, FRAME, FRAME_COLOR)}>
+          <div
+            ref={wrapperRef}
+            className="guess-country-map-wrapper"
+            style={getMapWrapperStyle(OUTER_W, OUTER_H, FRAME, FRAME_COLOR)}
+          >
+            {showStartHint && (
+              <div className="guess-country-start-hud" aria-live="polite">
+                <span className="guess-country-start-dot" aria-hidden="true" />
+                <span>{t("game.startHint")}</span>
+              </div>
+            )}
             <Suspense fallback={<div className="guess-country-loading">{t("game.loading")}</div>}>
               <InteractiveMap
                 width={OUTER_W}
@@ -434,7 +455,7 @@ export default function GuessCountryGame() {
                 zoom={1}
                 coordinates={[0, 0]}
                 gameMode
-                markerSizeMultiplier={0.52}
+                markerSizeMultiplier={isDesktop ? 0.52 : 0.47}
                 getCountryFill={getCountryFill}
                 onCountryClick={handleCountryClick}
                 isDesktop={isDesktop}
@@ -467,7 +488,7 @@ export default function GuessCountryGame() {
 
           <div className="guess-country-legend">{t("game.mapPanel.body")}</div>
 
-          <div className="guess-country-results-wrap">
+          <div ref={resultsWrapRef} className="guess-country-results-wrap">
             {guesses.length === 0 && <div className="guess-country-history-empty">{t("game.historyEmpty")}</div>}
             {guesses
               .slice()
@@ -480,13 +501,16 @@ export default function GuessCountryGame() {
       </div>
 
       {!loading && !loadError && target && isGameOver && (
-        <div className="win-animation-overlay" role="dialog" aria-modal="true">
+        <div className="win-animation-overlay guess-country-win-overlay" role="dialog" aria-modal="true">
           <div className="win-animation-content">
             <div className="win-emoji">{hasWon ? "🎯" : "🧭"}</div>
             <h3 className={`win-title ${hasWon ? "perfect" : "legendary"}`}>
               {hasWon ? t("game.targetFound") : t("game.targetMissed")}
             </h3>
             <p className="win-message">{t("game.targetReveal", { country: target.name })}</p>
+            <p className="win-attempts">
+              {t("game.attempts")}: {t("game.attemptsValue", { used: attemptsUsed, max: MAX_ATTEMPTS })}
+            </p>
             <div className="win-buttons">
               <button className="win-new-game-btn" onClick={startNewRound}>
                 {t("game.playAgain")}

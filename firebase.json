@@ -5,6 +5,7 @@
   },
   "hosting": {
     "public": "FrontEnd/dist",
+    "trailingSlash": false,
     "ignore": [
       "firebase.json",
       "**/.*",

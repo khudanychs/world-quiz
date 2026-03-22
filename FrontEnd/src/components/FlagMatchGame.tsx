@@ -174,6 +174,19 @@ export default function FlagMatchGame() {
   const wrapperRef = useRef<HTMLDivElement>(null);
   usePreventWheelScroll(wrapperRef);
 
+  const [streakMilestone, setStreakMilestone] = useState<number | null>(null);
+  const prevStreakRef = useRef(0);
+  useEffect(() => {
+    const cur = game.currentStreak;
+    const prev = prevStreakRef.current;
+    prevStreakRef.current = cur;
+    if (cur >= 5 && cur > prev && cur % 5 === 0) {
+      setStreakMilestone(cur);
+      const timer = window.setTimeout(() => setStreakMilestone(null), 1200);
+      return () => window.clearTimeout(timer);
+    }
+  }, [game.currentStreak]);
+
   const FIT_SCALE = Math.max(1, Math.round(INNER_W * 0.32));
 
   // Effect to save streak when game is over
@@ -427,10 +440,10 @@ export default function FlagMatchGame() {
         </div>
       )}
 
-      {/* Streak Animation - displayed in the center of the map */}
-      {game.showStreakAnimation && game.currentStreak >= 5 && wrapperRef.current && (
-        <div className="streak-animation">
-          {game.currentStreak} 🔥
+      {/* Streak milestone animation - matches physical geo 5*n pop */}
+      {streakMilestone !== null && (
+        <div key={streakMilestone} className="flag-streak-animation">
+          {streakMilestone} 🔥
         </div>
       )}
 

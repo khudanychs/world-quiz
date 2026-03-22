@@ -41,7 +41,6 @@ export function useFlagMatchGame(selectedRegion: string | null = null, hasUserSe
   // Streak tracking
   const [currentStreak, setCurrentStreak] = useState<number>(0);
   const [bestStreak, setBestStreak] = useState<number>(0);
-  const [showStreakAnimation, setShowStreakAnimation] = useState<boolean>(false);
   
   // Win state
   const [hasWon, setHasWon] = useState<boolean>(false);
@@ -61,7 +60,6 @@ export function useFlagMatchGame(selectedRegion: string | null = null, hasUserSe
   // Timers for feedback to avoid queuing multiple timeouts during rapid clicks
   const correctTimerRef = useRef<number | null>(null);
   const wrongTimerRef = useRef<number | null>(null);
-  const streakTimerRef = useRef<number | null>(null);
 
   const geosRef = useRef<any[] | null>(null);
 
@@ -144,7 +142,6 @@ export function useFlagMatchGame(selectedRegion: string | null = null, hasUserSe
     return () => {
       if (correctTimerRef.current) window.clearTimeout(correctTimerRef.current);
       if (wrongTimerRef.current) window.clearTimeout(wrongTimerRef.current);
-      if (streakTimerRef.current) window.clearTimeout(streakTimerRef.current);
     };
   }, []);
 
@@ -195,12 +192,6 @@ export function useFlagMatchGame(selectedRegion: string | null = null, hasUserSe
     setHasWon(false);
     setShowWinAnimation(false);
     
-    if (streakTimerRef.current) {
-      window.clearTimeout(streakTimerRef.current);
-      streakTimerRef.current = null;
-    }
-    setShowStreakAnimation(false);
-
     // Preload first 10 flags for smooth start
     round.slice(0, 10).forEach((c) => {
       if (c.flag) preloadImage(c.flag);
@@ -252,17 +243,6 @@ export function useFlagMatchGame(selectedRegion: string | null = null, hasUserSe
       
       if (newStreak > bestStreak) {
         setBestStreak(newStreak);
-      }
-      
-      if (newStreak > 0 && newStreak % 5 === 0) {
-        if (streakTimerRef.current) {
-          window.clearTimeout(streakTimerRef.current);
-        }
-        setShowStreakAnimation(true);
-        streakTimerRef.current = window.setTimeout(() => {
-          setShowStreakAnimation(false);
-          streakTimerRef.current = null;
-        }, 1200);
       }
       
       // Preload ONLY the next flag (nextIdx) - it will be shown in 350ms
@@ -343,7 +323,6 @@ export function useFlagMatchGame(selectedRegion: string | null = null, hasUserSe
     setShowNamePanel,
     currentStreak,
     bestStreak,
-    showStreakAnimation,
     hasWon,
     showWinAnimation,
     gameOver,
