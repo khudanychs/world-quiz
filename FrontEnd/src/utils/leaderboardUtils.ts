@@ -69,7 +69,7 @@ export async function saveCardsMatchScore(user: any, score: number) {
 
   try {
     const { doc, getDoc, setDoc, serverTimestamp, db } = await getFirebaseModules();
-    
+
     // 1. Save to ALL-TIME scores (cardsMatchScores/{userId})
     const allTimeDocRef = doc(db, "cardsMatchScores", user.uid);
     const allTimeDoc = await getDoc(allTimeDocRef);
@@ -106,6 +106,41 @@ export async function saveCardsMatchScore(user: any, score: number) {
     }
   } catch (error) {
     console.error("Error saving cards match score:", error);
+    throw error;
+  }
+}
+
+/**
+ * Increments the count of successful country guesses in Guess the Country game.
+ * Stores in guessCountryStats/{userId} collection.
+ */
+export async function incrementGuessCountryWins(user: any) {
+  if (!user) return;
+
+  try {
+    const { doc, getDoc, setDoc, increment, serverTimestamp, db } = await getFirebaseModules();
+
+    const statsDocRef = doc(db, "guessCountryStats", user.uid);
+    const statsDoc = await getDoc(statsDocRef);
+
+    if (statsDoc.exists()) {
+      // Increment existing counter
+      await setDoc(statsDocRef, {
+        countriesGuessed: increment(1),
+        lastUpdated: serverTimestamp(),
+      }, { merge: true });
+    } else {
+      // Create new document with initial counter
+      await setDoc(statsDocRef, {
+        userId: user.uid,
+        username: user.displayName || "Anonymous",
+        countriesGuessed: 1,
+        createdAt: serverTimestamp(),
+        lastUpdated: serverTimestamp(),
+      });
+    }
+  } catch (error) {
+    console.error("Error incrementing Guess Country wins:", error);
     throw error;
   }
 }

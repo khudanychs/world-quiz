@@ -90,6 +90,14 @@
         { "fieldPath": "score", "order": "DESCENDING" },
         { "fieldPath": "createdAt", "order": "ASCENDING" }
       ]
+    },
+    {
+      "collectionGroup": "guessCountryStats",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "countriesGuessed", "order": "DESCENDING" },
+        { "fieldPath": "createdAt", "order": "ASCENDING" }
+      ]
     }
   ],
   "fieldOverrides": []
