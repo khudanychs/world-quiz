@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState, lazy, Suspense, useCallback } from "react";
 import { useNavigate } from 'react-router-dom';
 import { BackButton } from './components/BackButton';
+import { SEOHelmet } from './components/SEOHelmet';
 import {
   PAGE_CONTAINER_STYLE,
   getMapWrapperStyle,
@@ -16,11 +17,13 @@ import {
   type CountryInfoWithCapitals 
 } from './utils/countries';
 import { FRAME, FRAME_COLOR } from './utils/mapConstants';
+import { SEO_TRANSLATIONS, toCanonicalUrl, getSeoOgImage } from './seo/seo-translations';
 
 // Lazy load the heavy InteractiveMap component
 const InteractiveMap = lazy(() => import('./components/InteractiveMap'));
 
 export default function WorldMap() {
+  const seo = SEO_TRANSLATIONS.routes.map;
   const navigate = useNavigate();
   
   /** --- Dynamic dimensions based on window --- */
@@ -122,12 +125,19 @@ export default function WorldMap() {
   }, []);
 
   return (
-    <div
-      style={{
-        ...PAGE_CONTAINER_STYLE,
-        gap: isPortrait ? "clamp(12px, 2vh, 24px)" : "0",
-      }}
-    >
+    <>
+      <SEOHelmet
+        title={seo.title}
+        description={seo.description}
+        canonicalUrl={toCanonicalUrl(seo.path)}
+        ogImage={getSeoOgImage(seo)}
+      />
+      <div
+        style={{
+          ...PAGE_CONTAINER_STYLE,
+          gap: isPortrait ? "clamp(12px, 2vh, 24px)" : "0",
+        }}
+      >
       {/* Back button to main menu */}
       <BackButton onClick={() => navigate('/')} />
 
@@ -357,6 +367,7 @@ export default function WorldMap() {
           />
         </Suspense>
       </div>
-    </div>
+      </div>
+    </>
   );
 }

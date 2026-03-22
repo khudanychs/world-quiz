@@ -1,14 +1,35 @@
 import { useNavigate } from 'react-router-dom';
+import { SEOHelmet } from './SEOHelmet';
+import { SEO_TRANSLATIONS, toCanonicalUrl, getSeoOgImage } from '../seo/seo-translations';
 import './MainMenu.css';
 
 export default function MainMenu() {
+  const seo = SEO_TRANSLATIONS.routes.home;
   const navigate = useNavigate();
+  const canonicalHome = toCanonicalUrl(seo.path);
+  const homeStructuredData = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: "World Quiz",
+    url: canonicalHome,
+    description: seo.description,
+    inLanguage: "en",
+  };
+
   return (
-    <div className="menu-wrap">
-      <header className="menu-header">
-        <h2>Choose a Game Mode</h2>
-        <p>Pick a mode below, or explore the interactive world map.</p>
-      </header>
+    <>
+      <SEOHelmet
+        title={seo.title}
+        description={seo.description}
+        canonicalUrl={canonicalHome}
+        ogImage={getSeoOgImage(seo)}
+        structuredData={homeStructuredData}
+      />
+      <div className="menu-wrap">
+        <header className="menu-header">
+          <h2>Choose a Game Mode</h2>
+          <p>Pick a mode below, or explore the interactive world map.</p>
+        </header>
 
       <section className="menu-grid">
         <button className="menu-card" onClick={() => navigate('/game/physical-geo')}>
@@ -39,11 +60,12 @@ export default function MainMenu() {
         </button>
       </section>
 
-      <footer className="menu-footer">
-        <button className="menu-primary" onClick={() => navigate('/map')}>
-          🗺️ Explore Map
-        </button>
-      </footer>
-    </div>
+        <footer className="menu-footer">
+          <button className="menu-primary" onClick={() => navigate('/map')}>
+            🗺️ Explore Map
+          </button>
+        </footer>
+      </div>
+    </>
   );
 }

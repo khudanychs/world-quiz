@@ -6,12 +6,14 @@ import { BackButton } from "./BackButton";
 import { CountryCard, useCardMatchGame, CardKind } from "../hooks/useCardMatchGame";
 import { saveCardsMatchScore } from "../utils/leaderboardUtils";
 import { TimeBar } from "./TimeBar";
+import { SEOHelmet } from "./SEOHelmet";
 import "./CardMatchGame.css";
 import {
     GREEN_BUTTON_HOVER,
     GREEN_BUTTON_STYLE,
     PAGE_CONTAINER_STYLE,
 } from "../utils/sharedStyles";
+  import { SEO_TRANSLATIONS, toCanonicalUrl, getSeoOgImage } from "../seo/seo-translations";
 
 // SVG dimensions for rendering country shapes
 const SVG_WIDTH = 100;
@@ -231,6 +233,7 @@ function useOrientation() {
 }
 
 export default function CardMatchGame() {
+  const seo = SEO_TRANSLATIONS.routes.shapeMatch;
   const navigate = useNavigate();
   const { user } = useAuth();
   const [firstType, setFirstType] = useState<CardKind>("flag");
@@ -284,27 +287,43 @@ export default function CardMatchGame() {
 
   if (game.loading) {
     return (
-      <div style={{ ...PAGE_CONTAINER_STYLE, alignItems: "center", justifyContent: "center" }}>
-        <div style={{ color: "#fff", fontSize: "18px" }}>Loading game...</div>
-      </div>
+      <>
+        <SEOHelmet
+          title={seo.title}
+          description={seo.description}
+          canonicalUrl={toCanonicalUrl(seo.path)}
+          ogImage={getSeoOgImage(seo)}
+        />
+        <div style={{ ...PAGE_CONTAINER_STYLE, alignItems: "center", justifyContent: "center" }}>
+          <div style={{ color: "#fff", fontSize: "18px" }}>Loading game...</div>
+        </div>
+      </>
     );
   }
 
   if (game.loadError) {
     return (
-      <div style={{ ...PAGE_CONTAINER_STYLE, alignItems: "center", justifyContent: "center" }}>
-        <div style={{ color: "#ef4444", fontSize: "18px" }}>Error: {game.loadError}</div>
-        <BackButton
-          onClick={handleBack}
-          style={{ 
-            position: "relative",
-            top: "auto",
-            left: "auto",
-            marginTop: "20px" 
-          }}
-          label="Back to Menu"
+      <>
+        <SEOHelmet
+          title={seo.title}
+          description={seo.description}
+          canonicalUrl={toCanonicalUrl(seo.path)}
+          ogImage={getSeoOgImage(seo)}
         />
-      </div>
+        <div style={{ ...PAGE_CONTAINER_STYLE, alignItems: "center", justifyContent: "center" }}>
+          <div style={{ color: "#ef4444", fontSize: "18px" }}>Error: {game.loadError}</div>
+          <BackButton
+            onClick={handleBack}
+            style={{ 
+              position: "relative",
+              top: "auto",
+              left: "auto",
+              marginTop: "20px" 
+            }}
+            label="Back to Menu"
+          />
+        </div>
+      </>
     );
   }
 
@@ -313,8 +332,15 @@ export default function CardMatchGame() {
     const totalMatches = game.totalMatches;
 
     return (
-      <div className="card-match-results-container" style={PAGE_CONTAINER_STYLE}>
-        <div className="card-match-results-card">
+      <>
+        <SEOHelmet
+          title={seo.title}
+          description={seo.description}
+          canonicalUrl={toCanonicalUrl(seo.path)}
+          ogImage={getSeoOgImage(seo)}
+        />
+        <div className="card-match-results-container" style={PAGE_CONTAINER_STYLE}>
+          <div className="card-match-results-card">
           <h2 className="card-match-results-title">
             🎮 Game Over!
           </h2>
@@ -367,16 +393,24 @@ export default function CardMatchGame() {
               🎮 Play Again
             </button>
           </div>
+          </div>
         </div>
-      </div>
+      </>
     );
   }
 
   // Pre-game screen
   if (!game.gameStarted) {
     return (
-      <div className="card-match-pregame-container" style={PAGE_CONTAINER_STYLE}>
-        <div className="card-match-pregame-card">
+      <>
+        <SEOHelmet
+          title={seo.title}
+          description={seo.description}
+          canonicalUrl={toCanonicalUrl(seo.path)}
+          ogImage={getSeoOgImage(seo)}
+        />
+        <div className="card-match-pregame-container" style={PAGE_CONTAINER_STYLE}>
+          <div className="card-match-pregame-card">
           <h1 className="card-match-pregame-title">
             🎴 Cards Match
           </h1>
@@ -471,8 +505,9 @@ export default function CardMatchGame() {
               ▶ Start Game
             </button>
           </div>
+          </div>
         </div>
-      </div>
+      </>
     );
   }
 
@@ -484,9 +519,16 @@ export default function CardMatchGame() {
   // Landscape Layout (Side-by-side)
   if (isLandscape) {
     return (
-      <div className="card-match-landscape-container">
-        {/* Sidebar for Stats */}
-        <div className="card-match-sidebar">
+      <>
+        <SEOHelmet
+          title={seo.title}
+          description={seo.description}
+          canonicalUrl={toCanonicalUrl(seo.path)}
+          ogImage={getSeoOgImage(seo)}
+        />
+        <div className="card-match-landscape-container">
+          {/* Sidebar for Stats */}
+          <div className="card-match-sidebar">
           <BackButton 
             onClick={handleBack} 
             style={{
@@ -540,7 +582,7 @@ export default function CardMatchGame() {
         </div>
   
         {/* Game Grid Container - Maximized Height */}
-        <div className="card-match-grid-container">
+          <div className="card-match-grid-container">
           {/* Color Legend */}
           {showColorLegend && (
             <div className="card-match-color-legend">
@@ -574,14 +616,22 @@ export default function CardMatchGame() {
               );
             })}
           </div>
+          </div>
         </div>
-      </div>
+      </>
     );
   }
 
   // Portrait Layout (Original Stacked)
   return (
-    <div className="card-match-game-container">
+    <>
+      <SEOHelmet
+        title={seo.title}
+        description={seo.description}
+        canonicalUrl={toCanonicalUrl(seo.path)}
+        ogImage={getSeoOgImage(seo)}
+      />
+      <div className="card-match-game-container">
       {/* TimeBar */}
       <div style={{ marginBottom: "clamp(8px, 2vw, 12px)" }}>
         <TimeBar
@@ -671,6 +721,7 @@ export default function CardMatchGame() {
       <div className="card-match-progress">
         Total Matched: {game.totalMatches}
       </div>
-    </div>
+      </div>
+    </>
   );
 }

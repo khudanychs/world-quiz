@@ -1,9 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { SEOHelmet } from './SEOHelmet';
+import { SEO_TRANSLATIONS, toCanonicalUrl, getSeoOgImage } from '../seo/seo-translations';
 import './Auth.css';
 
 export const SetNickname = () => {
+  const seo = SEO_TRANSLATIONS.routes.setNickname;
   const { user, setNickname } = useAuth();
   const [username, setUsername] = useState('');
   const [error, setError] = useState('');
@@ -33,8 +36,16 @@ export const SetNickname = () => {
   };
 
   return (
-    <div className="auth-container">
-      <div className="auth-card">
+    <>
+      <SEOHelmet
+        title={seo.title}
+        description={seo.description}
+        canonicalUrl={toCanonicalUrl(seo.path)}
+        ogImage={getSeoOgImage(seo)}
+        noindex={seo.noindex}
+      />
+      <div className="auth-container">
+        <div className="auth-card">
         <h2>Choose Your Nickname</h2>
         <p style={{ textAlign: 'center', color: '#666', marginBottom: '24px', fontSize: '14px' }}>
           You can keep your Google name or choose a new one!
@@ -68,7 +79,8 @@ export const SetNickname = () => {
             {loading ? 'Setting...' : 'Continue to Game'}
           </button>
         </form>
+        </div>
       </div>
-    </div>
+    </>
   );
 };

@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "npm run dev --prefix FrontEnd",
     "build": "npm run build --prefix FrontEnd",
+    "build:frontend:seo": "npm run build --prefix FrontEnd",
     "preview": "npm run preview --prefix FrontEnd",
     "install:frontend": "cd FrontEnd && npm install",
     "deploy": "npm run build && firebase deploy"

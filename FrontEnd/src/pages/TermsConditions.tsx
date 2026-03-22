@@ -1,13 +1,23 @@
 import { useNavigate } from 'react-router-dom';
 import { BackButton } from '../components/BackButton';
+import { SEOHelmet } from '../components/SEOHelmet';
+import { SEO_TRANSLATIONS, toCanonicalUrl, getSeoOgImage } from '../seo/seo-translations';
 import './TermsConditions.css';
 
 export default function TermsConditions() {
+  const seo = SEO_TRANSLATIONS.routes.terms;
   const navigate = useNavigate();
 
   return (
-    <div className="terms-conditions-page">
-      <div className="terms-conditions-container">
+    <>
+      <SEOHelmet
+        title={seo.title}
+        description={seo.description}
+        canonicalUrl={toCanonicalUrl(seo.path)}
+        ogImage={getSeoOgImage(seo)}
+      />
+      <div className="terms-conditions-page">
+        <div className="terms-conditions-container">
         <BackButton
           style={{
             position: 'relative',
@@ -193,7 +203,8 @@ export default function TermsConditions() {
             Please also review our <a href="/privacy" onClick={(e) => { e.preventDefault(); navigate('/privacy'); }}>Privacy Policy</a> to understand how we collect, use, and protect your personal data.
           </p>
         </section>
+        </div>
       </div>
-    </div>
+    </>
   );
 }
