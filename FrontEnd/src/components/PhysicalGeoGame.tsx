@@ -1,4 +1,4 @@
-import { useState, useRef, useMemo, useEffect, useCallback, lazy, Suspense } from "react";
+import { useState, useRef, useMemo, useEffect, useCallback, lazy, Suspense, memo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { geoPath as d3GeoPath, geoNaturalEarth1, geoArea, type GeoPermissibleObjects } from "d3-geo";
 import { BackButton } from "./BackButton";
@@ -36,8 +36,110 @@ import {
   type PhysicalFeature,
 } from "../utils/physicalFeatures";
 import "./PhysicalGeoGame.css";
+import type { ModeStyleOverrides } from "./physicalGeoGame/modes/types";
 
 const InteractiveMap = lazy(() => import("./InteractiveMap"));
+
+// =============================================================================
+// MEMOIZED OVERLAY COMPONENT
+// This prevents re-rendering the overlay SVG on every zoom/pan frame.
+// Only re-renders when actual game state or features change.
+// =============================================================================
+interface MemoizedOverlayProps {
+  projection: Proj;
+  zoom: number;
+  isDesktop: boolean;
+  lowDetailMode: boolean;
+  modeStyleOverrides: ModeStyleOverrides;
+  waterFeatures: PhysicalFeature[];
+  backgroundMarineNames: string[];
+  landFeatures: PhysicalFeature[];
+  getPrecomputedPath: (name: string, kind?: "marine" | "river" | "lake") => string | null;
+  canClick: (feature: PhysicalFeature) => boolean;
+  onFeatureClick: (featureName: string) => void;
+  showingResult: boolean;
+  lastResult: { correct: boolean; clickedName: string } | null;
+  currentFeatureName: string | undefined;
+  correctSet: Set<string>;
+  skippedSet: Set<string>;
+  // Key to force re-render when visual state changes
+  visualStateKey: string;
+}
+
+const MemoizedOverlay = memo(function MemoizedOverlay({
+  projection,
+  zoom,
+  isDesktop,
+  lowDetailMode,
+  modeStyleOverrides,
+  waterFeatures,
+  backgroundMarineNames,
+  landFeatures,
+  getPrecomputedPath,
+  canClick,
+  onFeatureClick,
+  showingResult,
+  lastResult,
+  currentFeatureName,
+  correctSet,
+  skippedSet,
+}: MemoizedOverlayProps) {
+  return (
+    <>
+      {renderWaterUnderlaySvg({
+        projection,
+        zoom,
+        isDesktop,
+        lowDetailMode,
+        modeStyleOverrides,
+        waterFeatures,
+        backgroundMarineNames,
+        getPrecomputedPath,
+        canClick,
+        onFeatureClick,
+        showingResult,
+        lastResult,
+        currentFeatureName,
+        correctSet,
+        skippedSet,
+      })}
+      {renderLandOverlaySvg({
+        projection,
+        zoom,
+        isDesktop,
+        lowDetailMode,
+        modeStyleOverrides,
+        landFeatures,
+        getPrecomputedPath,
+        canClick,
+        onFeatureClick,
+        showingResult,
+        lastResult,
+        currentFeatureName,
+        correctSet,
+        skippedSet,
+      })}
+    </>
+  );
+}, (prevProps, nextProps) => {
+  // 1. Změnil se viditelný stav hry? PŘEKRESLIT!
+  if (prevProps.visualStateKey !== nextProps.visualStateKey) return false;
+  
+  // 2. Skokový ZOOM (uživatel posunul kolečko nebo prsty zastavil). 
+  // Změna o víc než 0.1 je náš bezpečný práh, kdy víme, že se musí přepočítat scaleStroke.
+  if (Math.abs(prevProps.zoom - nextProps.zoom) > 0.1) return false;
+
+  // 3. Změnil se počet objektů na obrazovce (nová úroveň, nebo loading hotov)? PŘEKRESLIT!
+  if (prevProps.waterFeatures.length !== nextProps.waterFeatures.length) return false;
+  if (prevProps.landFeatures.length !== nextProps.landFeatures.length) return false;
+
+  // 4. Je tohle jiný prohlížeč (změnilo se isDesktop)? PŘEKRESLIT!
+  if (prevProps.isDesktop !== nextProps.isDesktop) return false;
+
+  // VE VŠECH OSTATNÍCH PŘÍPADECH (a to včetně mikro-posunů myší během PANNINGU na CPU)
+  // SE NEPŘEKRESLUJE ANI JEDNA JEDINÁ ČÁRA!
+  return true;
+});
 
 export default function PhysicalGeoGame() {
   const navigate = useNavigate();
@@ -414,16 +516,32 @@ export default function PhysicalGeoGame() {
   correctSetRef.current = game.correctSet;
   const skippedSetRef = useRef(game.skippedSet);
   skippedSetRef.current = game.skippedSet;
+
+  // Refs for render-time values to avoid callback recreation
+  const showingResultRef = useRef(game.showingResult);
+  showingResultRef.current = game.showingResult;
+  const lastResultRef = useRef(game.lastResult);
+  lastResultRef.current = game.lastResult;
+  const currentFeatureRef = useRef(game.currentFeature);
+  currentFeatureRef.current = game.currentFeature;
+  const gameOverRef = useRef(game.gameOver);
+  gameOverRef.current = game.gameOver;
+  const handleFeatureClickRef = useRef(game.handleFeatureClick);
+  handleFeatureClickRef.current = game.handleFeatureClick;
+  const panToFeatureRef = useRef(panToFeature);
+  panToFeatureRef.current = panToFeature;
+
   const handleFeatureClickWithZoom = useCallback(
     (featureName: string) => {
-      if (!game.currentFeature) return;
-      const isCorrect = featureName === game.currentFeature.name;
-      game.handleFeatureClick(featureName);
+      const currentFeature = currentFeatureRef.current;
+      if (!currentFeature) return;
+      const isCorrect = featureName === currentFeature.name;
+      handleFeatureClickRef.current(featureName);
       if (!isCorrect) {
-        panToFeature(game.currentFeature);
+        panToFeatureRef.current(currentFeature);
       }
     },
-    [game.currentFeature, game.handleFeatureClick, panToFeature]
+    []
   );
 
   const handleBack = useCallback(() => navigate("/"), [navigate]);
@@ -467,52 +585,52 @@ export default function PhysicalGeoGame() {
   const canClick = useCallback((feature: PhysicalFeature) => (
     !correctSetRef.current.has(feature.name) &&
     !skippedSetRef.current.has(feature.name) &&
-    !game.showingResult &&
-    !game.gameOver
-  ), [game.showingResult, game.gameOver]);
+    !showingResultRef.current &&
+    !gameOverRef.current
+  ), []);
 
-  const currentFeatureName = game.currentFeature?.name;
+  // Key that changes when visual state changes (triggers overlay re-render)
+  const visualStateKey = useMemo(() =>
+    `${game.showingResult}|${game.lastResult?.correct ?? ''}|${game.lastResult?.clickedName ?? ''}|${game.currentFeature?.name ?? ''}|${game.correctSet.size}|${game.skippedSet.size}`,
+    [game.showingResult, game.lastResult, game.currentFeature?.name, game.correctSet.size, game.skippedSet.size]
+  );
 
   // Marine water bodies are rendered in the overlay (on top of land) so they aren't
   // covered by land polygons — this fixes bodies like the Gulf of St. Lawrence that
   // would otherwise be hidden beneath Canada's land geometry.
-  const renderOverlay = useCallback((projection: Proj, zoom: number, isDesktop: boolean) => (
-    <>
-      {renderWaterUnderlaySvg({
-        projection,
-        zoom,
-        isDesktop,
-        lowDetailMode: preferLowDetailTopography,
-        modeStyleOverrides: activeMode.styleOverrides,
-        waterFeatures,
-        backgroundMarineNames: allMarineFeatureNames,
-        getPrecomputedPath,
-        canClick,
-        onFeatureClick: handleFeatureClickWithZoom,
-        showingResult: game.showingResult,
-        lastResult: game.lastResult,
-        currentFeatureName,
-        correctSet: correctSetRef.current,
-        skippedSet: skippedSetRef.current,
-      })}
-      {renderLandOverlaySvg({
-        projection,
-        zoom,
-        isDesktop,
-        lowDetailMode: preferLowDetailTopography,
-        modeStyleOverrides: activeMode.styleOverrides,
-        landFeatures,
-        getPrecomputedPath,
-        canClick,
-        onFeatureClick: handleFeatureClickWithZoom,
-        showingResult: game.showingResult,
-        lastResult: game.lastResult,
-        currentFeatureName,
-        correctSet: correctSetRef.current,
-        skippedSet: skippedSetRef.current,
-      })}
-    </>
-  ), [activeMode.styleOverrides, waterFeatures, allMarineFeatureNames, landFeatures, getPrecomputedPath, canClick, game.showingResult, game.lastResult, currentFeatureName, handleFeatureClickWithZoom, preferLowDetailTopography]);
+  const renderOverlay = useCallback((projection: Proj, zoom: number, isDesktop: boolean) => {
+    return (
+      <MemoizedOverlay
+        projection={projection}
+        zoom={zoom}
+        isDesktop={isDesktop}
+        lowDetailMode={preferLowDetailTopography}
+        modeStyleOverrides={activeMode.styleOverrides}
+        waterFeatures={waterFeatures}
+        backgroundMarineNames={allMarineFeatureNames}
+        landFeatures={landFeatures}
+        getPrecomputedPath={getPrecomputedPath}
+        canClick={canClick}
+        onFeatureClick={handleFeatureClickWithZoom}
+        showingResult={showingResultRef.current}
+        lastResult={lastResultRef.current}
+        currentFeatureName={currentFeatureRef.current?.name}
+        correctSet={correctSetRef.current}
+        skippedSet={skippedSetRef.current}
+        visualStateKey={visualStateKey}
+      />
+    );
+  }, [
+    preferLowDetailTopography,
+    activeMode.styleOverrides,
+    waterFeatures,
+    allMarineFeatureNames,
+    landFeatures,
+    getPrecomputedPath,
+    canClick,
+    handleFeatureClickWithZoom,
+    visualStateKey,
+  ]);
 
   return (
     <>
