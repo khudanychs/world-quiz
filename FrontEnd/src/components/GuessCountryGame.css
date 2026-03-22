@@ -1,0 +1,189 @@
+.guess-country-layout {
+  width: min(99vw, 1500px);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 440px;
+  gap: 12px;
+  align-items: start;
+}
+
+.guess-country-map-col {
+  display: flex;
+  justify-content: center;
+}
+
+.guess-country-side-col {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.guess-country-status-panel {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(10, 18, 34, 0.86);
+  backdrop-filter: blur(6px);
+  font-size: 16px;
+}
+
+.guess-country-loading {
+  color: #e5edff;
+}
+
+.guess-country-feedback-panel {
+  width: 100%;
+  min-height: 36px;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  padding: 6px 10px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(10, 18, 34, 0.82);
+}
+
+.guess-country-legend {
+  width: 100%;
+  color: rgba(225, 236, 255, 0.92);
+  text-align: left;
+  font-size: 12px;
+}
+
+.guess-country-results-wrap {
+  width: 100%;
+  max-height: 46vh;
+  overflow: auto;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(5, 10, 21, 0.84);
+  padding: 8px;
+}
+
+
+.guess-country-layout .win-animation-overlay {
+  z-index: 30;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .guess-country-layout .win-animation-overlay,
+  .guess-country-layout .win-animation-content,
+  .guess-country-layout .win-new-game-btn,
+  .guess-country-layout .win-home-btn {
+    animation: none !important;
+    transition: none !important;
+    transform: none !important;
+  }
+}
+
+.guess-country-history-empty {
+  color: #cbd7ff;
+  font-size: 13px;
+  text-align: center;
+  padding: 12px 8px;
+}
+
+.guess-country-card {
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(21, 29, 50, 0.72);
+  border-radius: 10px;
+  padding: 8px;
+}
+
+.guess-country-card + .guess-country-card {
+  margin-top: 8px;
+}
+
+.guess-country-card-correct {
+  border-color: rgba(34, 197, 94, 0.62);
+  background: rgba(34, 197, 94, 0.2);
+}
+
+.guess-country-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: #edf4ff;
+  font-size: 14px;
+}
+
+.guess-country-card-main {
+  margin-top: 6px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #dbe8ff;
+  font-size: 14px;
+}
+
+.guess-country-chip-row {
+  margin-top: 6px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.guess-country-chip {
+  font-size: 11px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  padding: 2px 8px;
+  color: #d4e1ff;
+  background: rgba(9, 15, 28, 0.52);
+}
+
+@media (max-width: 920px) {
+  .guess-country-layout {
+    width: min(99vw, 840px);
+    grid-template-columns: 1fr;
+  }
+
+  .guess-country-side-col {
+    width: 100%;
+  }
+
+  .guess-country-status-panel {
+    flex-wrap: wrap;
+    justify-content: center;
+    font-size: 13px;
+  }
+
+  .guess-country-results-wrap {
+    max-height: 32vh;
+  }
+
+  .guess-country-card-top {
+    font-size: 13px;
+  }
+
+  .guess-country-card-main {
+    font-size: 13px;
+  }
+
+  .guess-country-chip {
+    font-size: 10px;
+  }
+}
+
+@media (max-width: 560px) {
+  .guess-country-results-wrap {
+    max-height: 28vh;
+  }
+
+  .guess-country-legend {
+    font-size: 11px;
+  }
+
+  .guess-country-status-panel {
+    gap: 8px;
+    padding: 6px 8px;
+  }
+
+  .guess-country-feedback-panel {
+    font-size: 13px;
+  }
+}

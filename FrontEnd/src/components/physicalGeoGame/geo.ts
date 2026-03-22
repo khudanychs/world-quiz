@@ -1,11 +1,13 @@
 import { geoBounds, geoCentroid, type GeoPermissibleObjects } from "d3-geo";
+import { feature as topoFeature } from "topojson-client";
+import type { Topology, GeometryCollection } from "topojson-specification";
 
 export type GeoFeatureKind = "marine" | "river" | "lake";
 
-export const GEO_LAND_URL = "/Land10mForMarines.geojson";
+export const GEO_LAND_URL = "/Land10mForMarines.json";
 export const MARINE_URL = "/FinalMarines10m.json";
 export const MERGED_URL = "/world-marine.json";
-export const RIVERS_URL = "/fixed_rivers.geojson";
+export const RIVERS_URL = "/fixed_rivers.json";
 export const LAKES_URL = "/lakes.json";
 
 export interface GeoFeature {
@@ -17,6 +19,161 @@ export interface GeoFeature {
 export interface GeoFeatureCollection {
   type: "FeatureCollection";
   features: GeoFeature[];
+}
+
+interface GeoFeatureSingle {
+  type: "Feature";
+  properties?: Record<string, unknown>;
+  geometry: GeoPermissibleObjects | null;
+}
+
+function asFeatureCollection(value: unknown): GeoFeatureCollection | null {
+  if (!value || typeof value !== "object") {
+    return null;
+  }
+
+  const maybeCollection = value as { type?: string; features?: unknown[] };
+  if (maybeCollection.type === "FeatureCollection" && Array.isArray(maybeCollection.features)) {
+    return maybeCollection as GeoFeatureCollection;
+  }
+
+  return null;
+}
+
+function asSingleFeature(value: unknown): GeoFeatureSingle | null {
+  if (!value || typeof value !== "object") {
+    return null;
+  }
+
+  const maybeFeature = value as { type?: string; geometry?: GeoPermissibleObjects | null };
+  if (maybeFeature.type === "Feature" && "geometry" in maybeFeature) {
+    return maybeFeature as GeoFeatureSingle;
+  }
+
+  return null;
+}
+
+function asTopology(value: unknown): (Topology & { objects?: Record<string, unknown> }) | null {
+  if (!value || typeof value !== "object") {
+    return null;
+  }
+
+  const maybeTopology = value as Topology & { objects?: Record<string, unknown> };
+  if (maybeTopology.type === "Topology" && maybeTopology.objects && typeof maybeTopology.objects === "object") {
+    return maybeTopology;
+  }
+
+  return null;
+}
+
+function toFeatureCollection(value: unknown): GeoFeatureCollection | null {
+  const collection = asFeatureCollection(value);
+  if (collection) {
+    return collection;
+  }
+
+  const feature = asSingleFeature(value);
+  if (feature) {
+    return { type: "FeatureCollection", features: [feature] };
+  }
+
+  return null;
+}
+
+function pickTopologyObjectKey(
+  objects: Record<string, unknown>,
+  preferredObjectKeys: string[] = []
+): string | null {
+  for (const key of preferredObjectKeys) {
+    if (key in objects) {
+      return key;
+    }
+  }
+
+  const keys = Object.keys(objects);
+  return keys.length > 0 ? keys[0] : null;
+}
+
+function mergeCollectionGeometries(collection: GeoFeatureCollection): GeoPermissibleObjects | null {
+  const geometries = collection.features
+    .map((f) => f.geometry)
+    .filter((g): g is GeoPermissibleObjects => g !== null);
+
+  if (geometries.length === 0) {
+    return null;
+  }
+
+  if (geometries.length === 1) {
+    return geometries[0];
+  }
+
+  return { type: "GeometryCollection", geometries } as unknown as GeoPermissibleObjects;
+}
+
+export function extractGeoFeatureCollection(
+  raw: unknown,
+  preferredObjectKeys: string[] = []
+): GeoFeatureCollection | null {
+  const directCollection = asFeatureCollection(raw);
+  if (directCollection) {
+    return directCollection;
+  }
+
+  const topo = asTopology(raw);
+  if (!topo || !topo.objects) {
+    return toFeatureCollection(raw);
+  }
+
+  const objectKey = pickTopologyObjectKey(topo.objects, preferredObjectKeys);
+  if (!objectKey) {
+    return null;
+  }
+
+  const converted = topoFeature(topo, topo.objects[objectKey] as GeometryCollection) as unknown;
+  return toFeatureCollection(converted);
+}
+
+export function extractLandGeometry(
+  raw: unknown,
+  preferredObjectKeys: string[] = ["land", "landmask", "geoland", "countries"]
+): GeoPermissibleObjects | null {
+  if (!raw || typeof raw !== "object") {
+    return null;
+  }
+
+  const maybeGeometryCollection = raw as { type?: string; geometries?: GeoPermissibleObjects[] };
+  if (maybeGeometryCollection.type === "GeometryCollection" && Array.isArray(maybeGeometryCollection.geometries)) {
+    return maybeGeometryCollection.geometries[0] ?? null;
+  }
+
+  const maybeFeatureCollection = asFeatureCollection(raw);
+  if (maybeFeatureCollection) {
+    return mergeCollectionGeometries(maybeFeatureCollection);
+  }
+
+  const maybeFeature = asSingleFeature(raw);
+  if (maybeFeature) {
+    return maybeFeature.geometry;
+  }
+
+  const topo = asTopology(raw);
+  if (!topo || !topo.objects) {
+    return null;
+  }
+
+  const objectKey = pickTopologyObjectKey(topo.objects, preferredObjectKeys);
+  if (!objectKey) {
+    return null;
+  }
+
+  const converted = topoFeature(topo, topo.objects[objectKey] as GeometryCollection) as unknown;
+  const convertedCollection = toFeatureCollection(converted);
+  if (convertedCollection) {
+    return mergeCollectionGeometries(convertedCollection);
+  }
+
+  const convertedFeature = asSingleFeature(converted);
+  return convertedFeature?.geometry ?? null;
 }
 
 const FEATURE_NAME_KEYS = new Set([

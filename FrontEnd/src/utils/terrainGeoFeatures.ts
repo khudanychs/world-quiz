@@ -1,4 +1,6 @@
 import type { PhysicalFeature } from "./physicalFeaturesTypes";
+import { feature as topoFeature } from "topojson-client";
+import type { GeometryCollection, Topology } from "topojson-specification";
 
 type Difficulty = PhysicalFeature["difficulty"];
 
@@ -13,17 +15,26 @@ interface GeoJsonFeature {
 }
 
 interface GeoJsonCollection {
+  type?: string;
   features?: GeoJsonFeature[];
 }
+
+interface GeoJsonSingleFeature {
+  type?: string;
+  properties?: Record<string, unknown>;
+  geometry?: GeoJsonGeometry | null;
+}
+
+type TopologyLike = Topology & { objects?: Record<string, unknown> };
 
 interface PolygonFilterConfig {
   minArea: number;
   maxAreaRatio: number;
 }
 
-const MOUNTAIN_RANGES_URL = "/region_polys/Mountain ranges.geojson";
-const ELEVATION_POINTS_URL = "/region_polys/elev_points.geojson";
-const DESERTS_URL = "/region_polys/deserts.geojson";
+const MOUNTAIN_RANGES_URL = "/region_polys/Mountain ranges.json";
+const ELEVATION_POINTS_URL = "/region_polys/elev_points.json";
+const DESERTS_URL = "/region_polys/deserts.json";
 
 const RANGE_NAME_KEYS = ["NAME_EN", "NAME", "LABEL", "NAMEALT"] as const;
 const DESERT_NAME_KEYS = ["NAME_EN", "NAME", "LABEL", "NAMEALT"] as const;
@@ -185,12 +196,101 @@ function ensureUniqueFeatureNames(features: PhysicalFeature[]): PhysicalFeature[
   });
 }
 
-async function fetchGeoJson(url: string): Promise<GeoJsonCollection> {
+async function fetchGeoJson(
+  url: string,
+  preferredObjectKeys: readonly string[] = [],
+): Promise<GeoJsonCollection> {
   const response = await fetch(url);
   if (!response.ok) {
     throw new Error(`Failed to fetch ${url}`);
   }
-  return response.json() as Promise<GeoJsonCollection>;
+
+  const raw = (await response.json()) as unknown;
+  return { features: toGeoJsonFeatures(raw, preferredObjectKeys) };
+}
+
+function asFeatureCollection(value: unknown): GeoJsonCollection | null {
+  if (!value || typeof value !== "object") {
+    return null;
+  }
+
+  const collection = value as GeoJsonCollection;
+  if (collection.type === "FeatureCollection" && Array.isArray(collection.features)) {
+    return collection;
+  }
+
+  return null;
+}
+
+function asSingleFeature(value: unknown): GeoJsonSingleFeature | null {
+  if (!value || typeof value !== "object") {
+    return null;
+  }
+
+  const single = value as GeoJsonSingleFeature;
+  if (single.type === "Feature") {
+    return single;
+  }
+
+  return null;
+}
+
+function asTopology(value: unknown): TopologyLike | null {
+  if (!value || typeof value !== "object") {
+    return null;
+  }
+
+  const topology = value as TopologyLike;
+  if (topology.type === "Topology" && topology.objects && typeof topology.objects === "object") {
+    return topology;
+  }
+
+  return null;
+}
+
+function pickObjectKey(objects: Record<string, unknown>, preferredObjectKeys: readonly string[]): string | null {
+  for (const key of preferredObjectKeys) {
+    if (key in objects) {
+      return key;
+    }
+  }
+
+  const keys = Object.keys(objects);
+  return keys.length > 0 ? keys[0] : null;
+}
+
+function toGeoJsonFeatures(
+  raw: unknown,
+  preferredObjectKeys: readonly string[] = [],
+): GeoJsonFeature[] {
+  const collection = asFeatureCollection(raw);
+  if (collection?.features) {
+    return collection.features;
+  }
+
+  const single = asSingleFeature(raw);
+  if (single) {
+    return [single];
+  }
+
+  const topology = asTopology(raw);
+  if (!topology?.objects) {
+    return [];
+  }
+
+  const objectKey = pickObjectKey(topology.objects, preferredObjectKeys);
+  if (!objectKey) {
+    return [];
+  }
+
+  const converted = topoFeature(topology, topology.objects[objectKey] as GeometryCollection) as unknown;
+  const convertedCollection = asFeatureCollection(converted);
+  if (convertedCollection?.features) {
+    return convertedCollection.features;
+  }
+
+  const convertedSingle = asSingleFeature(converted);
+  return convertedSingle ? [convertedSingle] : [];
 }
 
 function buildRangePolygonFeatures(features: GeoJsonFeature[]): PhysicalFeature[] {
@@ -311,8 +411,8 @@ function buildDesertPolygonFeatures(features: GeoJsonFeature[]): PhysicalFeature
 export async function loadMountainElevationFeatures(): Promise<PhysicalFeature[]> {
   if (!mountainsPromise) {
     mountainsPromise = Promise.all([
-      fetchGeoJson(MOUNTAIN_RANGES_URL),
-      fetchGeoJson(ELEVATION_POINTS_URL),
+      fetchGeoJson(MOUNTAIN_RANGES_URL, ["Mountain ranges", "mountain_ranges", "ranges"]),
+      fetchGeoJson(ELEVATION_POINTS_URL, ["elev_points", "elevation_points", "points"]),
     ]).then(([rangesData, pointsData]) => {
       const ranges = buildRangePolygonFeatures(rangesData.features ?? []);
       const points = buildElevationPointFeatures(pointsData.features ?? []);
@@ -325,7 +425,7 @@ export async function loadMountainElevationFeatures(): Promise<PhysicalFeature[]
 
 export async function loadDesertPolygonFeatures(): Promise<PhysicalFeature[]> {
   if (!desertsPromise) {
-    desertsPromise = fetchGeoJson(DESERTS_URL).then((desertData) =>
+    desertsPromise = fetchGeoJson(DESERTS_URL, ["deserts", "desert_polygons", "desert"]).then((desertData) =>
       buildDesertPolygonFeatures(desertData.features ?? []),
     );
   }

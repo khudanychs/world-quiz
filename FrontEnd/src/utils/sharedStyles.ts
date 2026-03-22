@@ -79,6 +79,9 @@ export function getMapWrapperStyle(
     display: "grid",
     placeItems: "center",
     touchAction: "none",
+    willChange: "transform",
+    transform: "translateZ(0)",
+    contain: "layout paint",
   };
 }
 
