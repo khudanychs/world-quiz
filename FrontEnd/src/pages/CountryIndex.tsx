@@ -1,5 +1,7 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
+import { SEOHelmet } from '../components/SEOHelmet';
+import { SEO_TRANSLATIONS, toCanonicalUrl, getSeoOgImage } from '../seo/seo-translations';
 import CountryDetails from './CountryDetails';
 import { FLAG_MATCH_SPECIAL_TERRITORIES } from '../utils/countries';
 import './CountryIndex.css';
@@ -60,12 +62,15 @@ function LazyFlag({ code, name }: { code: string; name: string }) {
 }
 
 export default function CountryIndex() {
-  const [searchParams, setSearchParams] = useSearchParams();
+  const seo = SEO_TRANSLATIONS.routes.countries;
+  const navigate = useNavigate();
+  const { countryCode } = useParams<{ countryCode?: string }>();
   const [countries, setCountries] = useState<Country[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedRegion, setSelectedRegion] = useState('all');
   const [selectedCountry, setSelectedCountry] = useState<Country | null>(null);
+  const isCountryDetailRoute = !!countryCode;
 
   // Load countries from local JSON
   useEffect(() => {
@@ -148,24 +153,35 @@ export default function CountryIndex() {
 
   const handleCountryClick = (country: Country) => {
     setSelectedCountry(country);
-    setSearchParams({ country: country.cca2 });
+    navigate(`/countries/${country.cca2.toLowerCase()}`);
   };
 
   const handleCloseDetails = () => {
     setSelectedCountry(null);
-    setSearchParams({});
+    navigate('/countries');
   };
 
-  // Handle URL param for selected country
+  // Handle URL param for selected country from /countries/:countryCode
   useEffect(() => {
-    const countryCode = searchParams.get('country');
-    if (countryCode && countries.length > 0) {
-      const country = countries.find(c => c.cca2 === countryCode);
-      if (country) {
-        setSelectedCountry(country);
-      }
+    if (countries.length === 0) {
+      return;
     }
-  }, [searchParams, countries]);
+
+    if (!countryCode) {
+      setSelectedCountry(null);
+      return;
+    }
+
+    const normalizedCode = countryCode.toUpperCase();
+    const country = countries.find(c => c.cca2 === normalizedCode);
+    if (country) {
+      setSelectedCountry(country);
+      return;
+    }
+
+    setSelectedCountry(null);
+    navigate('/countries', { replace: true });
+  }, [countryCode, countries, navigate]);
 
   if (loading) {
     return (
@@ -177,74 +193,82 @@ export default function CountryIndex() {
 
   return (
     <>
-      <div className="country-index-wrap">
-        <div className="country-index-container">
-          {/* Header */}
-          <header className="country-index-header">
-            <h1>Country Encyclopedia</h1>
-            <p>Explore detailed information about {countries.length} countries around the world</p>
-          </header>
+      <SEOHelmet
+        title={selectedCountry ? `${selectedCountry.officialName} - Country Encyclopedia - World Quiz` : seo.title}
+        description={selectedCountry ? `Explore facts about ${selectedCountry.officialName}: capital, population, area, languages, and neighboring countries.` : seo.description}
+        canonicalUrl={selectedCountry ? toCanonicalUrl(`/countries/${selectedCountry.cca2.toLowerCase()}`) : toCanonicalUrl(seo.path)}
+        ogImage={getSeoOgImage(seo)}
+      />
+      {!isCountryDetailRoute && (
+        <div className="country-index-wrap">
+          <div className="country-index-container">
+            {/* Header */}
+            <header className="country-index-header">
+              <h1>Country Encyclopedia</h1>
+              <p>Explore detailed information about {countries.length} countries around the world</p>
+            </header>
 
-          {/* Stats Summary */}
-          <div className="country-stats-summary">
-            <div className="stat-card">
-              <h3>{countries.length}</h3>
-              <p>Countries</p>
+            {/* Stats Summary */}
+            <div className="country-stats-summary">
+              <div className="stat-card">
+                <h3>{countries.length}</h3>
+                <p>Countries</p>
+              </div>
+              <div className="stat-card">
+                <h3>{filteredCountries.length}</h3>
+                <p>Showing</p>
+              </div>
             </div>
-            <div className="stat-card">
-              <h3>{filteredCountries.length}</h3>
-              <p>Showing</p>
+
+            {/* Search and Filters */}
+            <div className="country-search-section">
+              <input
+                type="text"
+                className="country-search-input"
+                placeholder="Search by country or capital..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+              <select
+                className="country-filter-select"
+                value={selectedRegion}
+                onChange={(e) => setSelectedRegion(e.target.value)}
+              >
+                <option value="all">All Regions</option>
+                {regions.filter(r => r !== 'all').map(region => (
+                  <option key={region} value={region}>{region}</option>
+                ))}
+              </select>
             </div>
+
+            {/* Country Grid */}
+            {filteredCountries.length === 0 ? (
+              <div className="country-empty">
+                <h3>No countries found</h3>
+                <p>Try adjusting your search or filters</p>
+              </div>
+            ) : (
+              <div className="country-grid">
+                {filteredCountries.map(country => (
+                  <article
+                    key={country.cca2}
+                    className="country-card"
+                    onClick={() => handleCountryClick(country)}
+                  >
+                    <LazyFlag code={country.cca2} name={country.name} />
+                    <div className="country-card-info">
+                      <h2 className="country-card-name">{country.officialName}</h2>
+                      <p className="country-card-capital">
+                        {country.capital[0] || 'N/A'}
+                      </p>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            )}
           </div>
-
-          {/* Search and Filters */}
-          <div className="country-search-section">
-            <input
-              type="text"
-              className="country-search-input"
-              placeholder="Search by country or capital..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-            <select
-              className="country-filter-select"
-              value={selectedRegion}
-              onChange={(e) => setSelectedRegion(e.target.value)}
-            >
-              <option value="all">All Regions</option>
-              {regions.filter(r => r !== 'all').map(region => (
-                <option key={region} value={region}>{region}</option>
-              ))}
-            </select>
-          </div>
-
-          {/* Country Grid */}
-          {filteredCountries.length === 0 ? (
-            <div className="country-empty">
-              <h3>No countries found</h3>
-              <p>Try adjusting your search or filters</p>
-            </div>
-          ) : (
-            <div className="country-grid">
-              {filteredCountries.map(country => (
-                <article
-                  key={country.cca2}
-                  className="country-card"
-                  onClick={() => handleCountryClick(country)}
-                >
-                  <LazyFlag code={country.cca2} name={country.name} />
-                  <div className="country-card-info">
-                    <h2 className="country-card-name">{country.officialName}</h2>
-                    <p className="country-card-capital">
-                      {country.capital[0] || 'N/A'}
-                    </p>
-                  </div>
-                </article>
-              ))}
-            </div>
-          )}
         </div>
-      </div>
+      )}
 
       {/* Detail Modal */}
       {selectedCountry && (
@@ -255,7 +279,7 @@ export default function CountryIndex() {
             const borderCountry = countries.find(c => c.cca2 === cca2);
             if (borderCountry) {
               setSelectedCountry(borderCountry);
-              setSearchParams({ country: borderCountry.cca2 });
+              navigate(`/countries/${borderCountry.cca2.toLowerCase()}`);
             }
           }}
         />

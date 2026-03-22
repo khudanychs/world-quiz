@@ -1,9 +1,12 @@
 import { useState, useEffect, FormEvent } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { SEOHelmet } from './SEOHelmet';
+import { SEO_TRANSLATIONS, toCanonicalUrl, getSeoOgImage } from '../seo/seo-translations';
 import './Auth.css';
 
 export function Auth() {
+  const seo = SEO_TRANSLATIONS.routes.auth;
   const [searchParams, setSearchParams] = useSearchParams();
   const initialMode = searchParams.get('mode') === 'login' ? 'login' : 'register';
   const [mode, setMode] = useState<'register' | 'login'>(initialMode);
@@ -81,8 +84,16 @@ export function Auth() {
   };
 
   return (
-    <div className="auth-container">
-      <div className="auth-card">
+    <>
+      <SEOHelmet
+        title={seo.title}
+        description={seo.description}
+        canonicalUrl={toCanonicalUrl(seo.path)}
+        ogImage={getSeoOgImage(seo)}
+        noindex={seo.noindex}
+      />
+      <div className="auth-container">
+        <div className="auth-card">
         <h2>{mode === 'register' ? 'Join World Quiz' : 'Welcome Back'}</h2>
 
         {error && <div className="error-message">{error}</div>}
@@ -214,7 +225,8 @@ export function Auth() {
             </>
           )}
         </p>
+        </div>
       </div>
-    </div>
+    </>
   );
 }

@@ -1,0 +1,65 @@
+.not-found-page {
+  min-height: 100%;
+  background: radial-gradient(circle at top, #16223f 0%, #0b1020 52%, #070b16 100%);
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+.not-found-card {
+  width: min(640px, 95vw);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 18px;
+  background: rgba(9, 14, 28, 0.86);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(8px);
+  padding: 32px;
+  text-align: center;
+  color: #eaf0ff;
+}
+
+.not-found-code {
+  margin: 0;
+  font-size: clamp(48px, 12vw, 92px);
+  line-height: 1;
+  font-weight: 800;
+  color: #8fb0ff;
+  letter-spacing: 1px;
+}
+
+.not-found-card h1 {
+  margin: 12px 0 8px;
+  font-size: clamp(24px, 5vw, 34px);
+  color: #ffffff;
+}
+
+.not-found-text {
+  margin: 0 auto;
+  max-width: 46ch;
+  color: rgba(234, 240, 255, 0.82);
+  font-size: clamp(14px, 2.6vw, 18px);
+}
+
+.not-found-actions {
+  margin-top: 28px;
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.not-found-button {
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  background: rgba(255, 255, 255, 0.08);
+  color: #f3f7ff;
+  border-radius: 10px;
+  padding: 12px 18px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.not-found-button.primary {
+  border: none;
+  background: linear-gradient(135deg, #4f8cff 0%, #67b5ff 100%);
+  color: #0a1022;
+}

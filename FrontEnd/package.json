@@ -5,7 +5,12 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "generate:sitemap": "node ./scripts/generate-sitemap.mjs",
+    "prerender": "node ./scripts/prerender-from-sitemap.mjs",
+    "verify:prerender": "node ./scripts/verify-prerender-count.mjs",
+    "prebuild": "npm run generate:sitemap",
     "build": "vite build",
+    "postbuild": "npm run prerender && npm run verify:prerender",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -13,8 +18,10 @@
     "circle-flags": "^2.8.2",
     "d3-geo": "^3.1.1",
     "firebase": "^10.12.2",
+    "firebase-functions": "^7.2.2",
     "react": "18.2.0",
     "react-dom": "18.2.0",
+    "react-helmet-async": "^3.0.0",
     "react-router-dom": "^7.9.4",
     "react-simple-maps": "^3.0.0"
   },
@@ -24,6 +31,7 @@
     "@types/react-dom": "18.2.22",
     "@types/topojson-client": "^3.1.5",
     "@vitejs/plugin-react": "^4.7.0",
+    "playwright-core": "^1.58.2",
     "svgo": "^4.0.0",
     "terser": "^5.46.0",
     "topojson-client": "^3.1.0",

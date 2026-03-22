@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { BackButton } from './BackButton';
 import { FlagSelector, getFlagUrl } from './FlagSelector';
+import { SEOHelmet } from './SEOHelmet';
+import { SEO_TRANSLATIONS, toCanonicalUrl, getSeoOgImage } from '../seo/seo-translations';
 import './Settings.css';
 
 // Cache for user streak data (survives component remounts)
@@ -10,6 +12,7 @@ const streakCache: { [userId: string]: { streak: number; timestamp: number } } =
 const STREAK_CACHE_DURATION = 10 * 60 * 1000; // 10 minutes - optimized for Firebase free tier
 
 export const Settings = () => {
+  const seo = SEO_TRANSLATIONS.routes.settings;
   const { user, setNickname, setProfileFlag: saveProfileFlag, deleteAccount, refreshUser } = useAuth();
   const navigate = useNavigate();
   const [username, setUsername] = useState('');
@@ -249,8 +252,16 @@ export const Settings = () => {
   };
 
   return (
-    <div className="settings-page-wrapper">
-      <div className="settings-page-card">
+    <>
+      <SEOHelmet
+        title={seo.title}
+        description={seo.description}
+        canonicalUrl={toCanonicalUrl(seo.path)}
+        ogImage={getSeoOgImage(seo)}
+        noindex={seo.noindex}
+      />
+      <div className="settings-page-wrapper">
+        <div className="settings-page-card">
         <div className="settings-header">
           <BackButton
             onClick={() => navigate(-1)}
@@ -489,48 +500,49 @@ export const Settings = () => {
             )}
           </div>
         </div>
-      </div>
+        </div>
 
-      {/* Flag Selection Modal */}
-      {showFlagModal && (
-        <div className="flag-modal-overlay" onClick={() => setShowFlagModal(false)}>
-          <div className="flag-modal-content" onClick={(e) => e.stopPropagation()}>
-            <div className="flag-modal-header">
-              <h2>Select Your Flag</h2>
-              <button 
-                className="flag-modal-close"
-                onClick={() => setShowFlagModal(false)}
-                aria-label="Close"
-              >
-                ×
-              </button>
-            </div>
-            
-            <div className="flag-modal-body">
-              <FlagSelector 
-                selectedFlag={tempSelectedFlag}
-                onFlagSelect={setTempSelectedFlag}
-              />
-            </div>
-            
-            <div className="flag-modal-footer">
-              <button 
-                onClick={() => setShowFlagModal(false)}
-                className="flag-modal-cancel"
-              >
-                Cancel
-              </button>
-              <button 
-                onClick={handleSaveFlag}
-                className="flag-modal-save"
-                disabled={loading}
-              >
-                {loading ? 'Saving...' : 'Save Flag'}
-              </button>
+        {/* Flag Selection Modal */}
+        {showFlagModal && (
+          <div className="flag-modal-overlay" onClick={() => setShowFlagModal(false)}>
+            <div className="flag-modal-content" onClick={(e) => e.stopPropagation()}>
+              <div className="flag-modal-header">
+                <h2>Select Your Flag</h2>
+                <button 
+                  className="flag-modal-close"
+                  onClick={() => setShowFlagModal(false)}
+                  aria-label="Close"
+                >
+                  ×
+                </button>
+              </div>
+              
+              <div className="flag-modal-body">
+                <FlagSelector 
+                  selectedFlag={tempSelectedFlag}
+                  onFlagSelect={setTempSelectedFlag}
+                />
+              </div>
+              
+              <div className="flag-modal-footer">
+                <button 
+                  onClick={() => setShowFlagModal(false)}
+                  className="flag-modal-cancel"
+                >
+                  Cancel
+                </button>
+                <button 
+                  onClick={handleSaveFlag}
+                  className="flag-modal-save"
+                  disabled={loading}
+                >
+                  {loading ? 'Saving...' : 'Save Flag'}
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
-    </div>
+        )}
+      </div>
+    </>
   );
 };

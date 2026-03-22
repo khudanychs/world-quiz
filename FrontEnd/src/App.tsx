@@ -16,6 +16,7 @@ const GuessCountryGame = lazy(() => import('./components/GuessCountryGame'));
 const MainMenu = lazy(() => import('./components/MainMenu'));
 const LeaderboardsPage = lazy(() => import('./pages/LeaderboardsPage'));
 const CountryIndex = lazy(() => import('./pages/CountryIndex'));
+const NotFound = lazy(() => import('./pages/NotFound'));
 const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'));
 const TermsConditions = lazy(() => import('./pages/TermsConditions'));
   
@@ -230,6 +231,7 @@ export default function App() {
             <Route path='/' element={<VerifiedOrGuestRoute><MainMenu /></VerifiedOrGuestRoute>} />
             <Route path='/leaderboards' element={<VerifiedOrGuestRoute><LeaderboardsPage /></VerifiedOrGuestRoute>} />
             <Route path='/countries' element={<VerifiedOrGuestRoute><CountryIndex /></VerifiedOrGuestRoute>} />
+            <Route path='/countries/:countryCode' element={<VerifiedOrGuestRoute><CountryIndex /></VerifiedOrGuestRoute>} />
             <Route path='/map' element={<VerifiedOrGuestRoute><WorldMap /></VerifiedOrGuestRoute>} />
             <Route path='/game/flags' element={<VerifiedOrGuestRoute><FlagMatchGame /></VerifiedOrGuestRoute>} />
             <Route path='/game/flags/:regionKey' element={<VerifiedOrGuestRoute><FlagMatchGame /></VerifiedOrGuestRoute>} />
@@ -240,6 +242,7 @@ export default function App() {
             <Route path='/terms' element={<TermsConditions />} />
             <Route path='/game/shape-match' element={<VerifiedOrGuestRoute><CardMatchGame /></VerifiedOrGuestRoute>} />
             <Route path='/privacy' element={<PrivacyPolicy />} />
+            <Route path='*' element={<NotFound />} />
           </Routes>
         </Suspense>
       </div>

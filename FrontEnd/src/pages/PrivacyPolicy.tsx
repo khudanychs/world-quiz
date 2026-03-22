@@ -1,13 +1,23 @@
 import { useNavigate } from 'react-router-dom';
 import { BackButton } from '../components/BackButton';
+import { SEOHelmet } from '../components/SEOHelmet';
+import { SEO_TRANSLATIONS, toCanonicalUrl, getSeoOgImage } from '../seo/seo-translations';
 import './PrivacyPolicy.css';
 
 export default function PrivacyPolicy() {
+  const seo = SEO_TRANSLATIONS.routes.privacy;
   const navigate = useNavigate();
 
   return (
-    <div className="privacy-policy-page">
-      <div className="privacy-policy-container">
+    <>
+      <SEOHelmet
+        title={seo.title}
+        description={seo.description}
+        canonicalUrl={toCanonicalUrl(seo.path)}
+        ogImage={getSeoOgImage(seo)}
+      />
+      <div className="privacy-policy-page">
+        <div className="privacy-policy-container">
         <BackButton
           style={{
             position: 'relative',
@@ -377,7 +387,8 @@ export default function PrivacyPolicy() {
             Please also review our <a href="/terms" onClick={(e) => { e.preventDefault(); navigate('/terms'); }}>Terms & Conditions</a> to understand the rules and guidelines for using World Quiz.
           </p>
         </section>
+        </div>
       </div>
-    </div>
+    </>
   );
 }
