@@ -51,8 +51,43 @@ const DESERT_POLYGON_FILTER: PolygonFilterConfig = {
   maxAreaRatio: 0.02,
 };
 
-let mountainsPromise: Promise<PhysicalFeature[]> | null = null;
-let desertsPromise: Promise<PhysicalFeature[]> | null = null;
+const mountainsPromiseByLanguage = new Map<string, Promise<PhysicalFeature[]>>();
+const desertsPromiseByLanguage = new Map<string, Promise<PhysicalFeature[]>>();
+
+function getBaseLanguage(language: string): "en" | "cs" | "de" {
+  const value = (language || "en").toLowerCase().split("-")[0];
+  if (value === "cs" || value === "cz") return "cs";
+  if (value === "de") return "de";
+  return "en";
+}
+
+function getLocalizedNameKeys(baseKeys: readonly string[], language: string): string[] {
+  const currentLanguage = getBaseLanguage(language);
+  if (currentLanguage === "cs") {
+    return ["name_cs", "NAME_CS", "name_cz", "NAME_CZ", ...baseKeys];
+  }
+  if (currentLanguage === "de") {
+    return ["name_de", "NAME_DE", ...baseKeys];
+  }
+  return [...baseKeys];
+}
+
+function normalizeFeatureLabel(raw: string): string {
+  const trimmed = raw.trim().replace(/\s+/g, " ");
+  const hasUpper = /[A-Z]/.test(trimmed);
+  const hasLower = /[a-z]/.test(trimmed);
+
+  // Data files occasionally store labels in full uppercase (e.g. BROOKS RANGE).
+  // Convert these to readable title case while preserving regular mixed-case names.
+  if (hasUpper && !hasLower) {
+    return trimmed
+      .toLowerCase()
+      .replace(/(^|[\s\-\/\(])([a-z])/g, (_m, p1: string, p2: string) => `${p1}${p2.toUpperCase()}`)
+      .replace(/'([a-z])/g, (_m, p1: string) => `'${p1.toUpperCase()}`);
+  }
+
+  return trimmed;
+}
 
 function toDifficulty(raw: unknown): Difficulty {
   const scalerank = Number(raw);
@@ -75,7 +110,7 @@ function stringProp(properties: Record<string, unknown> | undefined, keys: reado
   for (const key of keys) {
     const value = properties[key];
     if (typeof value === "string" && value.trim()) {
-      return value.trim();
+      return normalizeFeatureLabel(value);
     }
   }
   return null;
@@ -293,12 +328,12 @@ function toGeoJsonFeatures(
   return convertedSingle ? [convertedSingle] : [];
 }
 
-function buildRangePolygonFeatures(features: GeoJsonFeature[]): PhysicalFeature[] {
+function buildRangePolygonFeatures(features: GeoJsonFeature[], language: string = "en"): PhysicalFeature[] {
   const out: PhysicalFeature[] = [];
   const grouped = new Map<string, { difficulty: Difficulty; rings: [number, number][][] }>();
 
   for (const feature of features) {
-    const baseName = stringProp(feature.properties, RANGE_NAME_KEYS);
+    const baseName = stringProp(feature.properties, getLocalizedNameKeys(RANGE_NAME_KEYS, language));
     if (!baseName) {
       continue;
     }
@@ -358,12 +393,12 @@ function buildRangePolygonFeatures(features: GeoJsonFeature[]): PhysicalFeature[
   return out;
 }
 
-function buildElevationPointFeatures(features: GeoJsonFeature[]): PhysicalFeature[] {
+function buildElevationPointFeatures(features: GeoJsonFeature[], language: string = "en"): PhysicalFeature[] {
   const out: PhysicalFeature[] = [];
   const usedNames = new Map<string, number>();
 
   for (const feature of features) {
-    const baseName = stringProp(feature.properties, ELEVATION_NAME_KEYS);
+    const baseName = stringProp(feature.properties, getLocalizedNameKeys(ELEVATION_NAME_KEYS, language));
     const coords = normalizePoint(feature.geometry?.coordinates);
     if (!baseName || !coords) {
       continue;
@@ -380,12 +415,12 @@ function buildElevationPointFeatures(features: GeoJsonFeature[]): PhysicalFeatur
   return out;
 }
 
-function buildDesertPolygonFeatures(features: GeoJsonFeature[]): PhysicalFeature[] {
+function buildDesertPolygonFeatures(features: GeoJsonFeature[], language: string = "en"): PhysicalFeature[] {
   const out: PhysicalFeature[] = [];
   const usedNames = new Map<string, number>();
 
   for (const feature of features) {
-    const baseName = stringProp(feature.properties, DESERT_NAME_KEYS);
+    const baseName = stringProp(feature.properties, getLocalizedNameKeys(DESERT_NAME_KEYS, language));
     if (!baseName) {
       continue;
     }
@@ -408,27 +443,29 @@ function buildDesertPolygonFeatures(features: GeoJsonFeature[]): PhysicalFeature
   return out;
 }
 
-export async function loadMountainElevationFeatures(): Promise<PhysicalFeature[]> {
-  if (!mountainsPromise) {
-    mountainsPromise = Promise.all([
+export async function loadMountainElevationFeatures(language: string = "en"): Promise<PhysicalFeature[]> {
+  const currentLanguage = getBaseLanguage(language);
+  if (!mountainsPromiseByLanguage.has(currentLanguage)) {
+    mountainsPromiseByLanguage.set(currentLanguage, Promise.all([
       fetchGeoJson(MOUNTAIN_RANGES_URL, ["Mountain ranges", "mountain_ranges", "ranges"]),
       fetchGeoJson(ELEVATION_POINTS_URL, ["elev_points", "elevation_points", "points"]),
     ]).then(([rangesData, pointsData]) => {
-      const ranges = buildRangePolygonFeatures(rangesData.features ?? []);
-      const points = buildElevationPointFeatures(pointsData.features ?? []);
+      const ranges = buildRangePolygonFeatures(rangesData.features ?? [], currentLanguage);
+      const points = buildElevationPointFeatures(pointsData.features ?? [], currentLanguage);
       return ensureUniqueFeatureNames([...points, ...ranges]);
-    });
+    }));
   }
 
-  return mountainsPromise;
+  return mountainsPromiseByLanguage.get(currentLanguage)!;
 }
 
-export async function loadDesertPolygonFeatures(): Promise<PhysicalFeature[]> {
-  if (!desertsPromise) {
-    desertsPromise = fetchGeoJson(DESERTS_URL, ["deserts", "desert_polygons", "desert"]).then((desertData) =>
-      buildDesertPolygonFeatures(desertData.features ?? []),
-    );
+export async function loadDesertPolygonFeatures(language: string = "en"): Promise<PhysicalFeature[]> {
+  const currentLanguage = getBaseLanguage(language);
+  if (!desertsPromiseByLanguage.has(currentLanguage)) {
+    desertsPromiseByLanguage.set(currentLanguage, fetchGeoJson(DESERTS_URL, ["deserts", "desert_polygons", "desert"]).then((desertData) =>
+      buildDesertPolygonFeatures(desertData.features ?? [], currentLanguage),
+    ));
   }
 
-  return desertsPromise;
+  return desertsPromiseByLanguage.get(currentLanguage)!;
 }

@@ -10,7 +10,11 @@ import {
 
 type CountryInfo = { name: string; cca2: string; flag: string; region?: string };
 
-export function useFlagMatchGame(selectedRegion: string | null = null, hasUserSelected: boolean = false) {
+export function useFlagMatchGame(
+  selectedRegion: string | null = null,
+  hasUserSelected: boolean = false,
+  language: string = 'en'
+) {
   // Selection state
   const [correctSet, setCorrectSet] = useState<Set<string>>(new Set());
   const [skippedSet, setSkippedSet] = useState<Set<string>>(new Set());
@@ -109,7 +113,7 @@ export function useFlagMatchGame(selectedRegion: string | null = null, hasUserSe
           independent?: boolean;
           region?: string;
         }>;
-        const lookup = buildRestLookup(data);
+        const lookup = buildRestLookup(data, language);
         if (!alive) return;
         setRestLookup(lookup);
         setAllCountriesData(data);
@@ -123,7 +127,7 @@ export function useFlagMatchGame(selectedRegion: string | null = null, hasUserSe
     return () => {
       alive = false;
     };
-  }, []);
+  }, [language]);
 
   // Restart game when region changes (after user makes initial selection)
   useEffect(() => {

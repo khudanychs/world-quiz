@@ -1,12 +1,15 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
 import { SEOHelmet } from './SEOHelmet';
 import { SEO_TRANSLATIONS, toCanonicalUrl, getSeoOgImage } from '../seo/seo-translations';
+import { buildLocalizedPath } from '../utils/localeRouting';
 import './Auth.css';
 
 export const SetNickname = () => {
   const seo = SEO_TRANSLATIONS.routes.setNickname;
+  const { t, i18n } = useTranslation();
   const { user, setNickname } = useAuth();
   const [username, setUsername] = useState('');
   const [error, setError] = useState('');
@@ -27,9 +30,9 @@ export const SetNickname = () => {
 
     try {
       await setNickname(username);
-      navigate('/', { replace: true }); // Replace history to avoid back to nickname
+      navigate(buildLocalizedPath('/', i18n.language), { replace: true }); // Replace history to avoid back to nickname
     } catch (err: any) {
-      setError(err.message || 'Failed to set nickname');
+      setError(err.message || t('setNickname.errors.failedToSet'));
     } finally {
       setLoading(false);
     }
@@ -46,29 +49,29 @@ export const SetNickname = () => {
       />
       <div className="auth-container">
         <div className="auth-card">
-        <h2>Choose Your Nickname</h2>
+        <h2>{t('setNickname.title')}</h2>
         <p style={{ textAlign: 'center', color: '#666', marginBottom: '24px', fontSize: '14px' }}>
-          You can keep your Google name or choose a new one!
+          {t('setNickname.subtitle')}
         </p>
         
         {error && <div className="error-message">{error}</div>}
         
         <form onSubmit={handleSubmit}>
           <div className="form-group">
-            <label htmlFor="username">Username</label>
+            <label htmlFor="username">{t('setNickname.usernameLabel')}</label>
             <input
               type="text"
               id="username"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              placeholder="Enter your username"
+              placeholder={t('setNickname.usernamePlaceholder')}
               required
               minLength={3}
               maxLength={50}
               pattern="[a-zA-Z0-9_\-]+"
-              title="Username can only contain letters, numbers, underscores, and hyphens"
+              title={t('setNickname.usernameTitle')}
             />
-            <small>3-50 characters, letters, numbers, underscores, and hyphens only</small>
+            <small>{t('setNickname.usernameHelp')}</small>
           </div>
 
           <button 
@@ -76,7 +79,7 @@ export const SetNickname = () => {
             className="btn-primary"
             disabled={loading || username.length < 3}
           >
-            {loading ? 'Setting...' : 'Continue to Game'}
+            {loading ? t('setNickname.setting') : t('setNickname.continueToGame')}
           </button>
         </form>
         </div>

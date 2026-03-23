@@ -4,6 +4,7 @@ export type LocalePrefix = (typeof SUPPORTED_LOCALE_PREFIXES)[number];
 
 export function getBaseLanguage(language: string): 'en' | 'cs' | 'de' {
   const base = (language || 'en').toLowerCase().split('-')[0];
+  if (base === 'cz') return 'cs';
   if (base === 'cs') return 'cs';
   if (base === 'de') return 'de';
   return 'en';

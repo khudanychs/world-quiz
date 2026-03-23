@@ -244,7 +244,7 @@ export default function GuessCountryGame() {
           };
         });
 
-        const builtLookup = buildRestLookup(mergedCountries) as Record<string, RestLookupInfo>;
+        const builtLookup = buildRestLookup(mergedCountries, i18n.language) as Record<string, RestLookupInfo>;
         const hintLookup = buildCountryHintLookup(mergedCountries);
         const centroidByCode = extractCentroidsByCode(topology, builtLookup);
 
@@ -273,9 +273,10 @@ export default function GuessCountryGame() {
           const hint = hintLookup[c.cca2];
           const isRussia = c.cca2 === "RU";
           const resolvedContinent = isRussia ? "Asia" : (hint?.continent || c.region || "");
-          const resolvedDisplayName = isRussia ? `${c.name.common} (Asia)` : c.name.common;
+          const localizedName = builtLookup[c.name.common]?.name || c.name.common;
+          const resolvedDisplayName = isRussia ? `${localizedName} (Asia)` : localizedName;
           playable.set(c.cca2, {
-            name: c.name.common,
+            name: localizedName,
             displayName: resolvedDisplayName,
             cca2: c.cca2,
             continent: resolvedContinent,
@@ -308,7 +309,7 @@ export default function GuessCountryGame() {
     return () => {
       alive = false;
     };
-  }, []);
+  }, [i18n.language, t]);
 
   // Save stat when user wins (any number of attempts)
   useEffect(() => {

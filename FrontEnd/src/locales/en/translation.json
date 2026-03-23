@@ -1,5 +1,6 @@
 {
   "nav": {
+    "appName": "World Quiz",
     "home": "Home",
     "countries": "Countries",
     "menu": "Menu",
@@ -11,7 +12,8 @@
     "login": "Login",
     "join": "Join us",
     "logout": "Logout",
-    "settings": "Settings"
+    "settings": "Settings",
+    "toggleMenu": "Toggle menu"
   },
   "mainMenu": {
     "title": "Choose a Game Mode",
@@ -42,7 +44,8 @@
     "title": "Settings",
     "language": {
       "title": "Language",
-      "note": "Language changes redirect to localized URLs."
+      "note": "Language changes redirect to localized URLs.",
+      "switcherAriaLabel": "Language switcher"
     },
     "profile": {
       "title": "Profile Picture",
@@ -111,6 +114,8 @@
   },
   "auth": {
     "joinTitle": "Join World Quiz",
+    "loginToWorldQuiz": "Log in to World Quiz",
+    "createAccountTitle": "Create Your Account",
     "welcomeBackTitle": "Welcome Back",
     "usernameLabel": "Username",
     "usernamePlaceholder": "Enter your username",
@@ -128,6 +133,8 @@
     "or": "or",
     "continueWithGoogle": "Continue with Google",
     "privacyConsentPrefix": "By creating an account, you agree to our",
+    "bySigningInAgree": "By signing in, you agree to our",
+    "privacyPolicyAndTerms": "Privacy Policy & Terms",
     "termsOfService": "Terms of Service",
     "and": "and",
     "privacyPolicy": "Privacy Policy",
@@ -147,6 +154,8 @@
   "gameHUD": {
     "loadingFlags": "Loading flags...",
     "errorPrefix": "Error:",
+    "legendaryTitle": "LEGENDARY!",
+    "perfectTitle": "Perfect Score!",
     "legendaryMessage": "Incredible! You matched all {{count}} flags without mistakes.",
     "perfectMessage": "Perfect! You matched all {{count}} flags.",
     "bestStreak": "Best streak: {{count}}",
@@ -155,6 +164,7 @@
     "skipped": "skipped",
     "newGame": "New Game",
     "loading": "Loading...",
+    "flagToMatchAlt": "Flag to match",
     "findThisFlag": "Find this flag",
     "tapCountry": "Tap the matching country",
     "showCurrentFlagName": "Show current flag name",
@@ -166,6 +176,8 @@
   },
   "physicalGeoHUD": {
     "loading": "Loading physical features...",
+    "legendaryTitle": "LEGENDARY!",
+    "wellDoneTitle": "Well Done!",
     "legendaryMessage": "Legendary! You located all {{count}} features.",
     "locatedSummary": "You located {{score}} / {{total}} features.",
     "bestStreak": "Best streak: {{count}}",
@@ -180,6 +192,160 @@
     "correct": "✓ Correct!",
     "wrong": "✗ Wrong!",
     "youClicked": "You clicked: {{name}}"
+    ,"featureTypes": {
+      "mountain": "Mountain",
+      "mountain_range": "Mountain Range",
+      "river": "River",
+      "desert": "Desert",
+      "sea": "Sea",
+      "ocean": "Ocean",
+      "lake": "Lake",
+      "strait": "Strait",
+      "gulf": "Gulf / Bay",
+      "canal": "Canal",
+      "volcano": "Volcano",
+      "bay": "Bay",
+      "channel": "Channel",
+      "passage": "Passage"
+    }
+  },
+  "cardMatch": {
+    "loadingGame": "Loading game...",
+    "errorPrefix": "Error:",
+    "backToMenu": "Back to Menu",
+    "gameOverTitle": "Game Over!",
+    "points": "Points",
+    "totalMatched": "Total Matched",
+    "maxStreak": "Max Streak",
+    "home": "Home",
+    "playAgain": "Play Again",
+    "pregameTitle": "Cards Match",
+    "pregameDescription": "Match cards as quickly as possible and build streaks for bonus points.",
+    "howToPlay": "How to Play",
+    "rules": {
+      "matchPairs": "Match related pairs (flag-country, country-capital, and more).",
+      "baseScore": "Correct match: +100 points.",
+      "wrongPenalty": "Wrong match: -50 points.",
+      "streak5": "5x streak: +50 bonus.",
+      "streak10": "10x streak: +100 bonus.",
+      "streak15": "15x streak: +150 bonus.",
+      "streak20": "20x streak: +200 bonus."
+    },
+    "matchFrom": "Match from",
+    "matchTo": "Match to",
+    "startGame": "Start Game",
+    "menu": "Menu",
+    "timeLeft": "Time Left",
+    "score": "Score",
+    "streak": "Streak",
+    "matches": "Matches: {{count}}",
+    "types": {
+      "flag": "Flag",
+      "country": "Country",
+      "capital": "Capital",
+      "shape": "Shape"
+    },
+    "totalMatchedWithCount": "Total matched: {{count}}"
+  },
+  "leaderboard": {
+    "titles": {
+      "flagMatch": "Flag Match Leaderboard",
+      "cardsMatch": "Cards Match Leaderboard",
+      "guessCountry": "Guess Country Leaderboard"
+    },
+    "refresh": "Refresh",
+    "waitSeconds": "Wait {{count}}s",
+    "today": "Today",
+    "allTime": "All Time",
+    "loading": "Loading leaderboard...",
+    "empty": {
+      "guessCountry": "No players yet. Be the first!",
+      "flagMatch": "No streaks yet. Be the first!",
+      "cardsMatch": "No scores yet. Be the first!"
+    },
+    "anonymous": "Anonymous",
+    "guestCta": "Sign in to submit your score and climb the leaderboard.",
+    "joinNow": "Join Now"
+  },
+  "leaderboardsPage": {
+    "title": "Leaderboards",
+    "subtitle": "See who dominates each game mode.",
+    "mode": {
+      "flagMatch": "Flag Match",
+      "cardsMatch": "Cards Match",
+      "guessCountry": "Guess Country"
+    }
+  },
+  "countryDetails": {
+    "loading": "Loading country details...",
+    "errorPrefix": "Error:",
+    "close": "Close",
+    "flagOf": "Flag of {{country}}",
+    "capital": "Capital",
+    "notAvailable": "N/A",
+    "population": "Population",
+    "peopleCount": "About {{count}} people",
+    "area": "Area",
+    "areaValue": "{{area}} km²",
+    "density": "Density",
+    "peoplePerKm2": "people/km²",
+    "currency": "Currency",
+    "oneUsd": "1 USD =",
+    "exchangeRatesUpdated": "exchange rates updated",
+    "languages": "Languages",
+    "timezones": "Timezones",
+    "borderingCountries": "Bordering Countries"
+  },
+  "notFound": {
+    "title": "Page Not Found",
+    "message": "The page you are looking for does not exist or has moved.",
+    "goHome": "Go Home",
+    "browseCountries": "Browse Countries"
+  },
+  "setNickname": {
+    "title": "Choose Your Nickname",
+    "subtitle": "Set a public nickname to appear on leaderboards.",
+    "usernameLabel": "Username",
+    "usernamePlaceholder": "Enter your username",
+    "usernameTitle": "Username can only contain letters, numbers, underscores, and hyphens",
+    "usernameHelp": "3-50 characters, letters, numbers, underscores, and hyphens only",
+    "continueToGame": "Continue to Game",
+    "setting": "Saving...",
+    "errors": {
+      "failedToSet": "Failed to set nickname"
+    }
+  },
+  "flagSelector": {
+    "title": "Choose Your Flag",
+    "searchPlaceholder": "Search flags by country...",
+    "flagsAvailable": "{{count}} flags available"
+  },
+  "timeBar": {
+    "matchPoints": "MATCH POINTS"
+  },
+  "physicalGeoGame": {
+    "title": "Physical Geography",
+    "chooseCategory": "Choose a category",
+    "backToMenu": "Back to Menu",
+    "menu": "Menu",
+    "legendary": "LEGENDARY!",
+    "perfect": "Perfect!",
+    "wellDone": "Well done!",
+    "legendaryMessage": "Legendary! You located all {{count}} features without mistakes.",
+    "locatedMessage": "You located {{score}} / {{total}} features.",
+    "bestStreak": "Best streak: {{count}}",
+    "home": "Home",
+    "newGame": "New Game",
+    "correct": "✓ Correct!",
+    "wrong": "✗ Wrong!",
+    "mapAria": "Interactive physical geography map",
+    "loadingMapBase": "Loading map base...",
+    "categories": {
+      "mountains": "Elevation Extremes & Ranges",
+      "rivers": "Rivers & Lakes",
+      "deserts": "Deserts",
+      "waters": "Seas, Straits & Oceans"
+    }
   },
   "flagMatch": {
     "regionSelectorTitle": "Choose a Region",
@@ -200,7 +366,8 @@
     "bestStreak": "Best streak: {{count}}",
     "legendaryQuote": "The map bends to your memory.",
     "home": "Home",
-    "newGame": "New Game"
+    "newGame": "New Game",
+    "mapAriaLabel": "Flag match game map"
   },
   "countryIndex": {
     "loading": "Loading countries...",
@@ -212,8 +379,19 @@
     },
     "searchPlaceholder": "Search by country or capital...",
     "allRegions": "All regions",
+    "regions": {
+      "africa": "Africa",
+      "americas": "Americas",
+      "antarctic": "Antarctica",
+      "asia": "Asia",
+      "europe": "Europe",
+      "oceania": "Oceania",
+      "unknown": "Unknown"
+    },
     "noCountriesFound": "No countries found",
-    "tryAdjustingFilters": "Try adjusting your search or region filter."
+    "tryAdjustingFilters": "Try adjusting your search or region filter.",
+    "seoTitleWithCountry": "{{country}} - Country Encyclopedia - World Quiz",
+    "seoDescriptionWithCountry": "Explore facts about {{country}}: capital, population, area, languages, and neighboring countries."
   },
   "worldMap": {
     "loading": "Loading world data...",
@@ -222,7 +400,8 @@
     "capitalUnknown": "Capital unavailable",
     "exploreWorld": "Explore the World",
     "clickCountryHint": "Click a country to see details",
-    "loadingMap": "Loading map..."
+    "loadingMap": "Loading map...",
+    "interactiveGlobeAria": "Interactive globe"
   },
   "game": {
     "startHint": "Start by tapping any country on the map",

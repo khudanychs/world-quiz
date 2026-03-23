@@ -48,14 +48,14 @@ export default function PhysicalGeoHUD({
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 12, padding: "8px 0" }}>
         {hasWon && isPerfectStreak ? (
           <>
-            <strong style={{ fontSize: "clamp(16px, 3.5vw, 24px)", color: "#fbbf24" }}>🏆 LEGENDARY! 🏆</strong>
+            <strong style={{ fontSize: "clamp(16px, 3.5vw, 24px)", color: "#fbbf24" }}>🏆 {t('physicalGeoHUD.legendaryTitle')} 🏆</strong>
             <span style={{ opacity: 0.9, fontSize: "clamp(14px, 3vw, 18px)" }}>
               {t('physicalGeoHUD.legendaryMessage', { count: featuresLength })}
             </span>
           </>
         ) : hasWon ? (
           <>
-            <strong style={{ fontSize: "clamp(16px, 3.5vw, 24px)", color: "#10b981" }}>🎉 Well Done! 🎉</strong>
+            <strong style={{ fontSize: "clamp(16px, 3.5vw, 24px)", color: "#10b981" }}>🎉 {t('physicalGeoHUD.wellDoneTitle')} 🎉</strong>
             <span style={{ opacity: 0.9, fontSize: "clamp(14px, 3vw, 18px)" }}>
               {t('physicalGeoHUD.locatedSummary', { score, total: featuresLength })}
             </span>
@@ -86,6 +86,10 @@ export default function PhysicalGeoHUD({
   }
 
   const catInfo = CATEGORY_INFO[currentFeature.type];
+  const localizedFeatureTypeLabel = t(`physicalGeoHUD.featureTypes.${currentFeature.type}`, {
+    defaultValue: catInfo.label,
+  });
+  const currentFeatureDisplayName = toPhysicalFeatureDisplayName(currentFeature.displayName || currentFeature.name);
 
   // Result feedback (skip silently shows highlighted answer without banner)
   if (showingResult && lastResult && lastResult.clickedName !== "") {
@@ -129,10 +133,10 @@ export default function PhysicalGeoHUD({
         <span style={{ fontSize: "clamp(24px, 5vw, 40px)" }}>{catInfo.emoji}</span>
         <div style={{ display: "flex", flexDirection: "column", minWidth: "clamp(100px, 24vw, 180px)" }}>
           <strong style={{ fontSize: "clamp(13px, 2.8vw, 18px)", lineHeight: 1.2 }}>
-            {toPhysicalFeatureDisplayName(currentFeature.name)}
+            {currentFeatureDisplayName}
           </strong>
           <span style={{ opacity: 0.6, fontSize: "clamp(9px, 2vw, 12px)" }}>
-            {t('physicalGeoHUD.clickOnMap', { label: catInfo.label })}
+            {t('physicalGeoHUD.clickOnMap', { label: localizedFeatureTypeLabel })}
           </span>
         </div>
       </div>

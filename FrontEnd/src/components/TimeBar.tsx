@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 
 interface TimeBarProps {
   durationSeconds: number;
@@ -21,6 +22,7 @@ export function TimeBar({
   initialElapsedMs = 0,
   onElapsedChange
 }: TimeBarProps) {
+  const { t } = useTranslation();
   const totalDurationMs = durationSeconds * 1000;
   const slowZoneThreshold = Math.min(500, maxPoints);
   const slowZoneStepMs = 100; // -1 point every 100ms in slow zone
@@ -159,7 +161,7 @@ export function TimeBar({
             WebkitBackgroundClip: 'text',
             WebkitTextFillColor: 'transparent',
             letterSpacing: '0.5px'
-          }}>⚡ MATCH POINTS</span>
+          }}>⚡ {t('timeBar.matchPoints')}</span>
         </div>
         <span style={{
           fontSize: 'clamp(16px, 3.5vw, 20px)',

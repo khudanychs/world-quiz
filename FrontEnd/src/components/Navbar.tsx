@@ -58,8 +58,8 @@ export function Navbar() {
         <div className="container-fluid">
           {/* Logo / Brand - clickable to home */}
           <div className="navbar-brand" onClick={() => handleNavClick('/')}>
-            <img src="/newlogo.png" alt="World Quiz" className="navbar-logo" />
-            <h1 className="m-0">World Quiz</h1>
+            <img src="/newlogo.png" alt={t('nav.appName')} className="navbar-logo" />
+            <h1 className="m-0">{t('nav.appName')}</h1>
           </div>
 
           {/* Desktop Navigation Links */}
@@ -154,7 +154,7 @@ export function Navbar() {
             <button 
               className={`hamburger-button ${isMobileMenuOpen ? 'open' : ''}`}
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              aria-label="Toggle menu"
+              aria-label={t('nav.toggleMenu')}
             >
               <span className="hamburger-line"></span>
               <span className="hamburger-line"></span>

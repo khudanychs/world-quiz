@@ -355,7 +355,7 @@ export const Settings = () => {
           <div className="settings-section">
             <h3>{t('settings.language.title')}</h3>
             <p className="settings-language-note">{t('settings.language.note')}</p>
-            <div className="settings-language-switcher" role="group" aria-label="Language switcher">
+            <div className="settings-language-switcher" role="group" aria-label={t('settings.language.switcherAriaLabel')}>
               <button
                 type="button"
                 className={`settings-lang-btn ${currentLanguage === 'en' ? 'active' : ''}`}

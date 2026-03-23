@@ -58,14 +58,14 @@ export default function GameHUD({
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 12, padding: "8px 0" }}>
         {hasWon && isPerfectStreak ? (
           <>
-            <strong style={{ fontSize: "clamp(16px, 3.5vw, 24px)", color: "#fbbf24" }}>🏆 LEGENDARY! 🏆</strong>
+            <strong style={{ fontSize: "clamp(16px, 3.5vw, 24px)", color: "#fbbf24" }}>🏆 {t('gameHUD.legendaryTitle')} 🏆</strong>
             <span style={{ opacity: 0.9, fontSize: "clamp(14px, 3vw, 18px)" }}>
               {t('gameHUD.legendaryMessage', { count: targetsLength })}
             </span>
           </>
         ) : hasWon ? (
           <>
-            <strong style={{ fontSize: "clamp(16px, 3.5vw, 24px)", color: "#10b981" }}>🎉 Perfect Score! 🎉</strong>
+            <strong style={{ fontSize: "clamp(16px, 3.5vw, 24px)", color: "#10b981" }}>🎉 {t('gameHUD.perfectTitle')} 🎉</strong>
             <span style={{ opacity: 0.9, fontSize: "clamp(14px, 3vw, 18px)" }}>
               {t('gameHUD.perfectMessage', { count: score })}
             </span>
@@ -108,7 +108,7 @@ export default function GameHUD({
       {/* Flag - SVG has correct aspect ratio built-in */}
       <img
         src={currentTarget.flag}
-        alt="Flag to match"
+        alt={t('gameHUD.flagToMatchAlt')}
         style={{
           height: "clamp(44px, 10vw, 70px)",
           borderRadius: 2,

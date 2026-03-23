@@ -1,4 +1,5 @@
 import {useState, useMemo} from 'react';
+import { useTranslation } from 'react-i18next';
 import './FlagSelector.css';
 
 interface FlagSelectorProps {
@@ -34,6 +35,7 @@ export const getFlagUrl = (countryCode: string): string | null => {
 export const getAvailableFlags = () => availableFlagCodes;
 
 export const FlagSelector = ({ selectedFlag, onFlagSelect }: FlagSelectorProps) => {
+  const { t } = useTranslation();
     const [searchTerm, setSearchTerm] = useState('');
     
     const availableFlags = useMemo(() => availableFlagCodes, []);
@@ -45,15 +47,17 @@ export const FlagSelector = ({ selectedFlag, onFlagSelect }: FlagSelectorProps) 
     return (
         <div className="flag-selector">
       <div className="flag-selector-header">
-        <h3>Select Your Flag</h3>
+        <h3>{t('flagSelector.title')}</h3>
         <input
+          id="flag-search"
+          name="flag-search"
           type="text"
-          placeholder="Search country code (e.g., us, gb, de)..."
+          placeholder={t('flagSelector.searchPlaceholder')}
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           className="flag-search-input"
         />
-        <p className="flag-count">{filteredCountryCodes.length} flags available</p>
+        <p className="flag-count">{t('flagSelector.flagsAvailable', { count: filteredCountryCodes.length })}</p>
       </div>
 
       <div className="flag-grid">

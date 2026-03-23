@@ -1,6 +1,7 @@
 import { useState, useRef, useMemo, useEffect, useCallback, lazy, Suspense, memo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { geoPath as d3GeoPath, geoNaturalEarth1, geoArea, type GeoPermissibleObjects } from "d3-geo";
+import { useTranslation } from "react-i18next";
 import { BackButton } from "./BackButton";
 import PhysicalGeoHUD from "./PhysicalGeoHUD";
 import {
@@ -35,6 +36,7 @@ import {
   CATEGORY_GROUPS,
   type PhysicalFeature,
 } from "../utils/physicalFeatures";
+import { buildLocalizedPath } from "../utils/localeRouting";
 import "./PhysicalGeoGame.css";
 import type { ModeStyleOverrides } from "./physicalGeoGame/modes/types";
 
@@ -142,6 +144,7 @@ const MemoizedOverlay = memo(function MemoizedOverlay({
 });
 
 export default function PhysicalGeoGame() {
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const { modeKey } = useParams<{ modeKey?: string }>();
   const categoryKey = useMemo(() => {
@@ -544,7 +547,7 @@ export default function PhysicalGeoGame() {
     []
   );
 
-  const handleBack = useCallback(() => navigate("/"), [navigate]);
+  const handleBack = useCallback(() => navigate(buildLocalizedPath("/", i18n.language)), [navigate, i18n.language]);
   const selectCategory = useCallback((key: string) => {
     navigate(`/game/physical-geo/${key}`);
   }, [navigate]);
@@ -554,7 +557,7 @@ export default function PhysicalGeoGame() {
       return;
     }
     game.startNewGame(categoryKey);
-  }, [categoryKey]);
+  }, [categoryKey, i18n.language]);
 
   const { waterFeatures, landFeatures } = useMemo(
     () => activeMode.splitFeatures(game.features),
@@ -637,8 +640,8 @@ export default function PhysicalGeoGame() {
       {showSelector && (
         <div className="phys-category-overlay">
           <div className="phys-category-content">
-            <h1 className="phys-category-title">🌍 Physical Geography</h1>
-            <p className="phys-category-subtitle">Choose a category to start</p>
+            <h1 className="phys-category-title">🌍 {t("physicalGeoGame.title")}</h1>
+            <p className="phys-category-subtitle">{t("physicalGeoGame.chooseCategory")}</p>
 
             <div className={`phys-category-grid ${isPortrait ? "portrait" : "landscape"}`}>
               {CATEGORY_GROUPS.map((group) => (
@@ -647,13 +650,13 @@ export default function PhysicalGeoGame() {
                   onClick={() => selectCategory(group.key)}
                   className={`phys-cat-btn phys-cat-btn-${group.key}`}
                 >
-                  {group.emoji} {group.label}
+                  {group.emoji} {t(`physicalGeoGame.categories.${group.key}`)}
                 </button>
               ))}
             </div>
 
-            <button onClick={() => navigate("/")} className="phys-category-back-btn">
-              ← Back to Menu
+            <button onClick={() => navigate(buildLocalizedPath("/", i18n.language))} className="phys-category-back-btn">
+              ← {t("physicalGeoGame.backToMenu")}
             </button>
           </div>
         </div>
@@ -665,7 +668,7 @@ export default function PhysicalGeoGame() {
           gap: isPortrait ? "clamp(16px, 3vh, 32px)" : "0",
         }}
       >
-        <BackButton onClick={handleBack} label="Menu" />
+        <BackButton onClick={handleBack} label={t("physicalGeoGame.menu")} />
         <div
           style={{
             position: isPortrait ? "relative" : "absolute",
@@ -704,7 +707,7 @@ export default function PhysicalGeoGame() {
             showingResult={game.showingResult}
             lastResult={game.lastResult}
             onStartNewGame={() => {
-              navigate("/game/physical-geo");
+              navigate(buildLocalizedPath("/game/physical-geo", i18n.language));
             }}
             onSkip={() => {
               if (game.currentFeature) panToFeature(game.currentFeature);
@@ -731,29 +734,29 @@ export default function PhysicalGeoGame() {
                 }`}
               >
                 {game.bestStreak === game.features.length
-                  ? "LEGENDARY!"
+                  ? t("physicalGeoGame.legendary")
                   : game.score === game.features.length
-                  ? "Perfect!"
-                  : "Well Done!"}
+                  ? t("physicalGeoGame.perfect")
+                  : t("physicalGeoGame.wellDone")}
               </h1>
               <p className="phys-win-message">
                 {game.bestStreak === game.features.length
-                  ? `${game.features.length} features, perfect streak! 🔥`
-                  : `Located ${game.score}/${game.features.length} features! 🌍`}
+                  ? t("physicalGeoGame.legendaryMessage", { count: game.features.length })
+                  : t("physicalGeoGame.locatedMessage", { score: game.score, total: game.features.length })}
               </p>
               {game.bestStreak > 0 && game.bestStreak < game.features.length && (
-                <p className="phys-win-streak">Best streak: {game.bestStreak} 🔥</p>
+                <p className="phys-win-streak">{t("physicalGeoGame.bestStreak", { count: game.bestStreak })} 🔥</p>
               )}
               <div className="phys-win-buttons">
-                <button onClick={() => navigate("/")} className="phys-win-home-btn">
-                  🏠 Home
+                <button onClick={() => navigate(buildLocalizedPath("/", i18n.language))} className="phys-win-home-btn">
+                  🏠 {t("physicalGeoGame.home")}
                 </button>
                 <button
-                  onClick={() => navigate("/game/physical-geo")}
+                  onClick={() => navigate(buildLocalizedPath("/game/physical-geo", i18n.language))}
                   style={GREEN_BUTTON_STYLE}
                   {...GREEN_BUTTON_HOVER}
                 >
-                  🎮 New Game
+                  🎮 {t("physicalGeoGame.newGame")}
                 </button>
               </div>
             </div>
@@ -765,7 +768,7 @@ export default function PhysicalGeoGame() {
         {game.showingResult && game.lastResult && game.lastResult.clickedName !== "" && (!game.lastResult.correct || streakMilestone === null) && (
           <div className={`phys-result-flash ${game.lastResult.correct ? "flash-correct" : ""}`}>
             <div className={`phys-result-badge ${game.lastResult.correct ? "correct" : "wrong"}`}>
-              {game.lastResult.correct ? "✓ Correct!" : "✗ Wrong"}
+              {game.lastResult.correct ? t("physicalGeoGame.correct") : t("physicalGeoGame.wrong")}
             </div>
           </div>
         )}
@@ -776,7 +779,7 @@ export default function PhysicalGeoGame() {
             position: "relative",
             ...(activeMode.key === "waters" ? { background: "#0f2a4a" } : {}),
           }}
-          aria-label="Physical geography game map"
+          aria-label={t("physicalGeoGame.mapAria")}
         >
           <Suspense
             fallback={
@@ -813,7 +816,8 @@ export default function PhysicalGeoGame() {
             />
           </Suspense>
           {hasActiveMode && !baseMapReady && (
-            <div className="phys-base-loading-veil" aria-live="polite" aria-label="Loading map base">
+            <div className="phys-base-loading-veil" aria-live="polite" aria-label={t("physicalGeoGame.loadingMapBase")}
+            >
               <div className="phys-map-loading-spinner" />
             </div>
           )}

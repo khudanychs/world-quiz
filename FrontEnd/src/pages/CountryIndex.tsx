@@ -7,6 +7,7 @@ import CountryDetails from './CountryDetails';
 import { FLAG_MATCH_SPECIAL_TERRITORIES } from '../utils/countries';
 import { getLocalizedName } from '../utils/i18nUtils';
 import { buildLocalizedPath } from '../utils/localeRouting';
+import { getBaseLanguage } from '../utils/localeRouting';
 import './CountryIndex.css';
 
 interface Country {
@@ -71,7 +72,7 @@ function LazyFlag({ code, name }: { code: string; name: string }) {
 export default function CountryIndex() {
   const seo = SEO_TRANSLATIONS.routes.countries;
   const { i18n, t } = useTranslation();
-  const currentLanguage = i18n.language.split('-')[0];
+  const currentLanguage = getBaseLanguage(i18n.language);
   const navigate = useNavigate();
   const { countryCode } = useParams<{ countryCode?: string }>();
   const [countries, setCountries] = useState<Country[]>([]);
@@ -101,6 +102,8 @@ export default function CountryIndex() {
           .map((c: any) => {
             const commonName = c.name?.common || c.name;
             const officialName = c.name?.official || c.name?.common || c.name;
+            const shouldUseOfficialName = !!useOfficialName[c.cca2];
+            const displayNameBase = shouldUseOfficialName ? officialName : commonName;
             const localizedCommonNameProps = {
               name: commonName,
               name_cs: c.name_cs || c.translations?.ces?.common,
@@ -111,14 +114,20 @@ export default function CountryIndex() {
               officialName_cs: c.official_name_cs || c.translations?.ces?.official,
               officialName_de: c.official_name_de || c.translations?.deu?.official,
             };
+            const displayNameCs = shouldUseOfficialName
+              ? (localizedOfficialNameProps.officialName_cs || localizedCommonNameProps.name_cs)
+              : localizedCommonNameProps.name_cs;
+            const displayNameDe = shouldUseOfficialName
+              ? (localizedOfficialNameProps.officialName_de || localizedCommonNameProps.name_de)
+              : localizedCommonNameProps.name_de;
             
             return {
               name: getLocalizedName(localizedCommonNameProps, currentLanguage, 'name'),
               name_cs: localizedCommonNameProps.name_cs,
               name_de: localizedCommonNameProps.name_de,
-              officialName: useOfficialName[c.cca2] ? officialName : commonName,
-              officialName_cs: localizedOfficialNameProps.officialName_cs,
-              officialName_de: localizedOfficialNameProps.officialName_de,
+              officialName: displayNameBase,
+              officialName_cs: displayNameCs,
+              officialName_de: displayNameDe,
               cca2: c.cca2,
               cca3: c.cca3,
               capital: Array.isArray(c.capital) ? c.capital : [c.capital || 'N/A'],
@@ -152,6 +161,25 @@ export default function CountryIndex() {
     return ['all', ...Array.from(regionSet).sort()];
   }, [countries]);
 
+  const regionTranslationKeys: Record<string, string> = {
+    Africa: 'countryIndex.regions.africa',
+    Americas: 'countryIndex.regions.americas',
+    Antarctic: 'countryIndex.regions.antarctic',
+    Antarctica: 'countryIndex.regions.antarctic',
+    Asia: 'countryIndex.regions.asia',
+    Europe: 'countryIndex.regions.europe',
+    Oceania: 'countryIndex.regions.oceania',
+    Unknown: 'countryIndex.regions.unknown',
+  };
+
+  const getRegionLabel = (region: string) => {
+    const key = regionTranslationKeys[region];
+    if (!key) {
+      return region;
+    }
+    return t(key, { defaultValue: region });
+  };
+
   // Filter countries based on search and region
   const filteredCountries = useMemo(() => {
     let filtered = countries;
@@ -167,6 +195,10 @@ export default function CountryIndex() {
       filtered = filtered.filter(c => 
         c.name.toLowerCase().includes(search) ||
         c.officialName.toLowerCase().includes(search) ||
+        (c.name_cs || '').toLowerCase().includes(search) ||
+        (c.name_de || '').toLowerCase().includes(search) ||
+        (c.officialName_cs || '').toLowerCase().includes(search) ||
+        (c.officialName_de || '').toLowerCase().includes(search) ||
         c.capital.some(cap => cap.toLowerCase().includes(search))
       );
     }
@@ -217,8 +249,8 @@ export default function CountryIndex() {
   return (
     <>
       <SEOHelmet
-        title={selectedCountry ? `${selectedCountry.officialName} - Country Encyclopedia - World Quiz` : seo.title}
-        description={selectedCountry ? `Explore facts about ${selectedCountry.officialName}: capital, population, area, languages, and neighboring countries.` : seo.description}
+        title={selectedCountry ? t('countryIndex.seoTitleWithCountry', { country: selectedCountry.officialName }) : seo.title}
+        description={selectedCountry ? t('countryIndex.seoDescriptionWithCountry', { country: selectedCountry.officialName }) : seo.description}
         canonicalUrl={selectedCountry ? toCanonicalUrl(`/countries/${selectedCountry.cca2.toLowerCase()}`) : toCanonicalUrl(seo.path)}
         ogImage={getSeoOgImage(seo)}
       />
@@ -246,6 +278,8 @@ export default function CountryIndex() {
             {/* Search and Filters */}
             <div className="country-search-section">
               <input
+                id="country-search"
+                name="country-search"
                 type="text"
                 className="country-search-input"
                 placeholder={t('countryIndex.searchPlaceholder')}
@@ -253,13 +287,15 @@ export default function CountryIndex() {
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
               <select
+                id="country-region"
+                name="country-region"
                 className="country-filter-select"
                 value={selectedRegion}
                 onChange={(e) => setSelectedRegion(e.target.value)}
               >
                 <option value="all">{t('countryIndex.allRegions')}</option>
                 {regions.filter(r => r !== 'all').map(region => (
-                  <option key={region} value={region}>{region}</option>
+                  <option key={region} value={region}>{getRegionLabel(region)}</option>
                 ))}
               </select>
             </div>

@@ -1,12 +1,14 @@
 import { geoNaturalEarth1, geoPath, geoCentroid } from "d3-geo";
 import { useEffect, useState, useLayoutEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "../contexts/AuthContext";
 import { BackButton } from "./BackButton";
 import { CountryCard, useCardMatchGame, CardKind } from "../hooks/useCardMatchGame";
 import { saveCardsMatchScore } from "../utils/leaderboardUtils";
 import { TimeBar } from "./TimeBar";
 import { SEOHelmet } from "./SEOHelmet";
+import { buildLocalizedPath } from "../utils/localeRouting";
 import "./CardMatchGame.css";
 import {
     GREEN_BUTTON_HOVER,
@@ -234,6 +236,7 @@ function useOrientation() {
 
 export default function CardMatchGame() {
   const seo = SEO_TRANSLATIONS.routes.shapeMatch;
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const { user } = useAuth();
   const [firstType, setFirstType] = useState<CardKind>("flag");
@@ -282,7 +285,7 @@ export default function CardMatchGame() {
         console.error("Failed to save on exit:", e);
       }
     }
-    navigate("/");
+    navigate(buildLocalizedPath("/", i18n.language));
   };
 
   if (game.loading) {
@@ -295,7 +298,7 @@ export default function CardMatchGame() {
           ogImage={getSeoOgImage(seo)}
         />
         <div style={{ ...PAGE_CONTAINER_STYLE, alignItems: "center", justifyContent: "center" }}>
-          <div style={{ color: "#fff", fontSize: "18px" }}>Loading game...</div>
+          <div style={{ color: "#fff", fontSize: "18px" }}>{t("cardMatch.loadingGame")}</div>
         </div>
       </>
     );
@@ -311,7 +314,7 @@ export default function CardMatchGame() {
           ogImage={getSeoOgImage(seo)}
         />
         <div style={{ ...PAGE_CONTAINER_STYLE, alignItems: "center", justifyContent: "center" }}>
-          <div style={{ color: "#ef4444", fontSize: "18px" }}>Error: {game.loadError}</div>
+          <div style={{ color: "#ef4444", fontSize: "18px" }}>{t("cardMatch.errorPrefix")} {game.loadError}</div>
           <BackButton
             onClick={handleBack}
             style={{ 
@@ -320,7 +323,7 @@ export default function CardMatchGame() {
               left: "auto",
               marginTop: "20px" 
             }}
-            label="Back to Menu"
+            label={t("cardMatch.backToMenu")}
           />
         </div>
       </>
@@ -342,28 +345,28 @@ export default function CardMatchGame() {
         <div className="card-match-results-container" style={PAGE_CONTAINER_STYLE}>
           <div className="card-match-results-card">
           <h2 className="card-match-results-title">
-            🎮 Game Over!
+            {t("cardMatch.gameOverTitle")}
           </h2>
 
           <div style={{ display: "flex", flexDirection: "column", gap: "12px", marginBottom: "30px", color: "#fff" }}>
             <div className="card-match-results-score">
               {game.score.toLocaleString()}
             </div>
-            <div className="card-match-results-label">Points</div>
+            <div className="card-match-results-label">{t("cardMatch.points")}</div>
 
             <div className="card-match-results-stats">
               <div className="card-match-results-stat">
                 <div className="card-match-results-stat-value">
                   {totalMatches}
                 </div>
-                <div className="card-match-results-stat-label">Total Matched</div>
+                <div className="card-match-results-stat-label">{t("cardMatch.totalMatched")}</div>
               </div>
 
               <div className="card-match-results-stat">
                 <div className="card-match-results-stat-value">
                   {game.maxStreak}
                 </div>
-                <div className="card-match-results-stat-label">Max Streak</div>
+                <div className="card-match-results-stat-label">{t("cardMatch.maxStreak")}</div>
               </div>
             </div>
           </div>
@@ -378,7 +381,7 @@ export default function CardMatchGame() {
                 padding: "12px 24px",
                 fontSize: "16px",
               }}
-              label="Home"
+              label={t("cardMatch.home")}
               icon={<span>🏠</span>}
             />
             <button
@@ -390,7 +393,7 @@ export default function CardMatchGame() {
               }}
               {...GREEN_BUTTON_HOVER}
             >
-              🎮 Play Again
+              🎮 {t("cardMatch.playAgain")}
             </button>
           </div>
           </div>
@@ -412,33 +415,35 @@ export default function CardMatchGame() {
         <div className="card-match-pregame-container" style={PAGE_CONTAINER_STYLE}>
           <div className="card-match-pregame-card">
           <h1 className="card-match-pregame-title">
-            🎴 Cards Match
+            {t("cardMatch.pregameTitle")}
           </h1>
           <p className="card-match-pregame-description">
-            Choose what to match — Flags, Countries, Capitals, or Shapes — then match the pairs fast to build streaks and score big!
+            {t("cardMatch.pregameDescription")}
           </p>
 
           <div className="card-match-instructions">
             <h3 className="card-match-instructions-title">
-              🎯 How to Play
+              {t("cardMatch.howToPlay")}
             </h3>
             <ul className="card-match-instructions-list">
-              <li>Match all pairs before time runs out (60 seconds)</li>
-              <li>Base score: 1,000 points per match</li>
-              <li>Wrong match penalty: -1 second</li>
-              <li>5 streak: 1.5x multiplier (1,500 pts)</li>
-              <li>10 streak: 2x multiplier (2,000 pts)</li>
-              <li>15 streak: 2.5x multiplier (2,500 pts)</li>
-              <li>20+ streak: 3x multiplier (3,000 pts)</li>
+              <li>{t("cardMatch.rules.matchPairs")}</li>
+              <li>{t("cardMatch.rules.baseScore")}</li>
+              <li>{t("cardMatch.rules.wrongPenalty")}</li>
+              <li>{t("cardMatch.rules.streak5")}</li>
+              <li>{t("cardMatch.rules.streak10")}</li>
+              <li>{t("cardMatch.rules.streak15")}</li>
+              <li>{t("cardMatch.rules.streak20")}</li>
             </ul>
           </div>
 
           {/* Mode Selector */}
           <div className="card-match-mode-selector">
             <div className="card-match-select-group">
-              <label className="card-match-select-label">Match from</label>
+              <label className="card-match-select-label">{t("cardMatch.matchFrom")}</label>
               <div className="card-match-select-wrapper">
                 <select
+                  id="card-match-first-type"
+                  name="card-match-first-type"
                   value={firstType}
                   onChange={(e) => {
                     const val = e.target.value as CardKind;
@@ -452,7 +457,7 @@ export default function CardMatchGame() {
                 >
                   {(["flag", "country", "capital", "shape"] as CardKind[]).map((opt) => (
                     <option key={opt} value={opt} style={{ background: "#1a1a2e", color: "#fff", padding: "10px" }}>
-                      {opt.charAt(0).toUpperCase() + opt.slice(1)}
+                      {t(`cardMatch.types.${opt}`)}
                     </option>
                   ))}
                 </select>
@@ -461,9 +466,11 @@ export default function CardMatchGame() {
             </div>
 
             <div className="card-match-select-group">
-              <label className="card-match-select-label">Match to</label>
+              <label className="card-match-select-label">{t("cardMatch.matchTo")}</label>
               <div className="card-match-select-wrapper">
                 <select
+                  id="card-match-second-type"
+                  name="card-match-second-type"
                   value={secondType}
                   onChange={(e) => setSecondType(e.target.value as CardKind)}
                   className="card-match-select second-type"
@@ -472,7 +479,7 @@ export default function CardMatchGame() {
                     .filter((opt) => opt !== firstType)
                     .map((opt) => (
                       <option key={opt} value={opt} style={{ background: "#1a1a2e", color: "#fff", padding: "10px" }}>
-                        {opt.charAt(0).toUpperCase() + opt.slice(1)}
+                        {t(`cardMatch.types.${opt}`)}
                       </option>
                     ))}
                 </select>
@@ -502,7 +509,7 @@ export default function CardMatchGame() {
               }}
               {...GREEN_BUTTON_HOVER}
             >
-              ▶ Start Game
+              ▶ {t("cardMatch.startGame")}
             </button>
           </div>
           </div>
@@ -538,7 +545,7 @@ export default function CardMatchGame() {
               marginBottom: "8px",
               padding: "8px 12px",
             }}
-            label="Menu"
+            label={t("cardMatch.menu")}
           />
 
           {/* TimeBar */}
@@ -557,27 +564,27 @@ export default function CardMatchGame() {
   
           {/* Timer */}
           <div className={`card-match-stat-box ${timeWarning ? 'timer-warning' : 'timer'}`}>
-            <div className="card-match-stat-label">Time Left</div>
+            <div className="card-match-stat-label">{t("cardMatch.timeLeft")}</div>
             <div className="card-match-stat-value">{game.timeLeft}s</div>
           </div>
   
           {/* Score */}
           <div className="card-match-stat-box score">
-            <div className="card-match-stat-label">Score</div>
+            <div className="card-match-stat-label">{t("cardMatch.score")}</div>
             <div className="card-match-stat-value large">{game.score.toLocaleString()}</div>
           </div>
   
           {/* Streak */}
           {game.streak > 0 && (
             <div className="card-match-stat-box streak">
-               <div className="card-match-stat-label">Streak</div>
+               <div className="card-match-stat-label">{t("cardMatch.streak")}</div>
                <div className="card-match-stat-value large">🔥 {game.streak}</div>
                <div className="card-match-stat-label">({game.getStreakMultiplier(game.streak)}x)</div>
             </div>
           )}
           
           <div className="card-match-matches-footer">
-            Matches: {game.totalMatches}
+            {t("cardMatch.matches", { count: game.totalMatches })}
           </div>
         </div>
   
@@ -588,11 +595,11 @@ export default function CardMatchGame() {
             <div className="card-match-color-legend">
               <div className="card-match-legend-item">
                 <div className="card-match-legend-color countries" />
-                <span className="card-match-legend-text">Countries</span>
+                <span className="card-match-legend-text">{t("cardMatch.types.country")}</span>
               </div>
               <div className="card-match-legend-item">
                 <div className="card-match-legend-color capitals" />
-                <span className="card-match-legend-text">Capitals</span>
+                <span className="card-match-legend-text">{t("cardMatch.types.capital")}</span>
               </div>
             </div>
           )}
@@ -659,7 +666,7 @@ export default function CardMatchGame() {
             whiteSpace: "nowrap",
             flexShrink: 0,
           }}
-          label="Menu"
+          label={t("cardMatch.menu")}
         />
 
         <div className="card-match-stats-row">
@@ -687,11 +694,11 @@ export default function CardMatchGame() {
         <div className="card-match-color-legend" style={{ marginBottom: "clamp(8px, 2vw, 12px)" }}>
           <div className="card-match-legend-item">
             <div className="card-match-legend-color countries" style={{ width: "clamp(10px, 2.5vw, 14px)", height: "clamp(10px, 2.5vw, 14px)" }} />
-            <span className="card-match-legend-text" style={{ whiteSpace: "nowrap" }}>Countries</span>
+            <span className="card-match-legend-text" style={{ whiteSpace: "nowrap" }}>{t("cardMatch.types.country")}</span>
           </div>
           <div className="card-match-legend-item">
             <div className="card-match-legend-color capitals" style={{ width: "clamp(10px, 2.5vw, 14px)", height: "clamp(10px, 2.5vw, 14px)" }} />
-            <span className="card-match-legend-text" style={{ whiteSpace: "nowrap" }}>Capitals</span>
+            <span className="card-match-legend-text" style={{ whiteSpace: "nowrap" }}>{t("cardMatch.types.capital")}</span>
           </div>
         </div>
       )}
@@ -719,7 +726,7 @@ export default function CardMatchGame() {
 
       {/* Progress indicator */}
       <div className="card-match-progress">
-        Total Matched: {game.totalMatches}
+        {t("cardMatch.totalMatchedWithCount", { count: game.totalMatches })}
       </div>
       </div>
     </>

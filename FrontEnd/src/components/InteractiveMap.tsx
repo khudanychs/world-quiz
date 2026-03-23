@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { normalizeCountryName, isClickableInGameMode, isHiddenTerritory } from "../utils/countries";
 import { getLocalizedName } from "../utils/i18nUtils";
 import { SMALL_ISLAND_MARKERS } from "../utils/markerPositions";
+import { getBaseLanguage } from "../utils/localeRouting";
 
 const PROJECTION = "geoNaturalEarth1" as const;
 const DEFAULT_GEO_URL = "/countries-110m.json";
@@ -157,7 +158,7 @@ export default memo(function InteractiveMap({
   markerSizeMultiplier = 1,
 }: InteractiveMapProps) {
   const { i18n } = useTranslation();
-  const currentLanguage = i18n.language.split('-')[0];
+  const currentLanguage = getBaseLanguage(i18n.language);
   const geoUrl = customGeoUrl ?? DEFAULT_GEO_URL;
   
   // Track if we've already notified parent about geographies

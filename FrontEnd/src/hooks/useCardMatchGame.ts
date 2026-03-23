@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import { feature } from "topojson-client";
 import { 
   normalizeCountryName, 
@@ -84,6 +85,7 @@ function getStreakMultiplier(streak: number): number {
 }
 
 export function useCardMatchGame(pair: { first: CardKind; second: CardKind }) {
+  const { i18n } = useTranslation();
   const [state, setState] = useState<GameState>({
     cards: [],
     selectedCards: [],
@@ -129,8 +131,8 @@ export function useCardMatchGame(pair: { first: CardKind; second: CardKind }) {
           capital?: string[];
         }>;
 
-        const lookup = buildRestLookup(restData);
-        const caps = buildCountryLookupWithCapitals(restData);
+        const lookup = buildRestLookup(restData, i18n.language);
+        const caps = buildCountryLookupWithCapitals(restData, i18n.language);
         // REST Countries loaded successfully
 
         // Load TopoJSON for country shapes
@@ -156,7 +158,7 @@ export function useCardMatchGame(pair: { first: CardKind; second: CardKind }) {
     return () => {
       alive = false;
     };
-  }, []);
+  }, [i18n.language]);
 
   // Timer effect
   useEffect(() => {

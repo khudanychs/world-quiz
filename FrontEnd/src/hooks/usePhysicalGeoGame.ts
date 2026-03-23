@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import {
   getFeaturesByCategory,
   shuffleFeatures,
@@ -8,6 +9,7 @@ import {
   loadDesertPolygonFeatures,
   loadMountainElevationFeatures,
 } from "../utils/terrainGeoFeatures";
+import { localizePhysicalFeatures } from "../utils/physicalFeatureLocalization";
 
 export interface PhysicalGeoGameState {
   // Data
@@ -43,6 +45,7 @@ export interface PhysicalGeoGameState {
 }
 
 export function usePhysicalGeoGame(categoryKey: string = "all"): PhysicalGeoGameState {
+  const { i18n } = useTranslation();
   const [features, setFeatures] = useState<PhysicalFeature[]>([]);
   const [loading, setLoading] = useState(false);
   const [currentIdx, setCurrentIdx] = useState(0);
@@ -68,14 +71,18 @@ export function usePhysicalGeoGame(categoryKey: string = "all"): PhysicalGeoGame
   const currentFeature = features[currentIdx];
 
   const loadCategoryFeatures = useCallback(async (key: string): Promise<PhysicalFeature[]> => {
+    let baseFeatures: PhysicalFeature[];
     if (key === "mountains") {
-      return loadMountainElevationFeatures();
+      baseFeatures = await loadMountainElevationFeatures(i18n.language);
+      return localizePhysicalFeatures(baseFeatures, i18n.language);
     }
     if (key === "deserts") {
-      return loadDesertPolygonFeatures();
+      baseFeatures = await loadDesertPolygonFeatures(i18n.language);
+      return localizePhysicalFeatures(baseFeatures, i18n.language);
     }
-    return getFeaturesByCategory(key);
-  }, []);
+    baseFeatures = getFeaturesByCategory(key);
+    return localizePhysicalFeatures(baseFeatures, i18n.language);
+  }, [i18n.language]);
 
   const initializeCategory = useCallback(async (key: string) => {
     const requestId = ++requestIdRef.current;

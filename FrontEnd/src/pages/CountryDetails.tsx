@@ -1,4 +1,5 @@
 import { useEffect, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useCountryStats, useExchangeRate } from '../hooks/useCountryStats';
 import { BackButton } from '../components/BackButton';
 import './CountryDetails.css';
@@ -19,6 +20,7 @@ interface CountryDetailsProps {
 }
 
 export default function CountryDetails({ country, onClose, onCountryClick }: CountryDetailsProps) {
+  const { t } = useTranslation();
   const stats = useCountryStats(country.cca2);
   
   const handleBorderClick = (borderCode: string, e: React.MouseEvent) => {
@@ -78,7 +80,7 @@ export default function CountryDetails({ country, onClose, onCountryClick }: Cou
       <div className="country-detail-modal" onClick={handleBackdropClick}>
         <div className="country-detail-content">
           <div className="country-detail-loading">
-            Loading country details...
+            {t('countryDetails.loading')}
           </div>
         </div>
       </div>
@@ -96,7 +98,7 @@ export default function CountryDetails({ country, onClose, onCountryClick }: Cou
           </div>
           <div className="country-detail-body">
             <div className="country-detail-error">
-              Failed to load country details: {stats.error}
+              {t('countryDetails.errorPrefix')} {stats.error}
             </div>
           </div>
         </div>
@@ -113,7 +115,7 @@ export default function CountryDetails({ country, onClose, onCountryClick }: Cou
         <div className="country-detail-close">
           <BackButton 
             onClick={onClose}
-            aria-label="Close"
+            aria-label={t('countryDetails.close')}
             style={{
               position: 'relative',
               top: 'auto',
@@ -127,13 +129,13 @@ export default function CountryDetails({ country, onClose, onCountryClick }: Cou
           <header className="country-detail-header">
             <img
               src={`/flags-v2/${country.cca2.toLowerCase()}.svg`}
-              alt={`Flag of ${country.officialName}`}
+              alt={t('countryDetails.flagOf', { country: country.officialName })}
               className="country-detail-flag"
             />
             <div className="country-detail-title">
               <h1>{country.officialName}</h1>
               <p className="capital">
-                Capital: {country.capital[0] || 'N/A'}
+                {t('countryDetails.capital')}: {country.capital[0] || t('countryDetails.notAvailable')}
               </p>
               {stats.subregion && (
                 <span className="region">{stats.subregion}</span>
@@ -144,33 +146,29 @@ export default function CountryDetails({ country, onClose, onCountryClick }: Cou
           {/* Stats Grid */}
           <div className="country-stats-grid">
             <div className="stat-box">
-              <span className="stat-box-label">Population</span>
+              <span className="stat-box-label">{t('countryDetails.population')}</span>
               <p className="stat-box-value">
                 {formatNumber(stats.population)}
               </p>
-              <p className="stat-box-subtext">
-                {stats.population.toLocaleString()} people
-              </p>
+              <p className="stat-box-subtext">{t('countryDetails.peopleCount', { count: stats.population.toLocaleString() })}</p>
             </div>
 
             <div className="stat-box">
-              <span className="stat-box-label">Area</span>
+              <span className="stat-box-label">{t('countryDetails.area')}</span>
               <p className="stat-box-value">
                 {formatNumber(stats.area)}
               </p>
-              <p className="stat-box-subtext">
-                {stats.area.toLocaleString()} km²
-              </p>
+              <p className="stat-box-subtext">{t('countryDetails.areaValue', { area: stats.area.toLocaleString() })}</p>
             </div>
 
             {stats.population > 0 && stats.area > 0 && (
               <div className="stat-box">
-                <span className="stat-box-label">Density</span>
+                <span className="stat-box-label">{t('countryDetails.density')}</span>
                 <p className="stat-box-value">
                   {stats.population / stats.area > 1 ? (stats.population / stats.area).toFixed(1)
                   : (stats.population / stats.area).toPrecision(2)}
                 </p>
-                <p className="stat-box-subtext">people per km²</p>
+                <p className="stat-box-subtext">{t('countryDetails.peoplePerKm2')}</p>
               </div>
             )}
           </div>
@@ -178,16 +176,16 @@ export default function CountryDetails({ country, onClose, onCountryClick }: Cou
           {/* Currency Converter */}
           {currency && (
             <section className="country-detail-section">
-              <h2>Currency</h2>
+              <h2>{t('countryDetails.currency')}</h2>
               <div className="currency-converter">
                 <div className="currency-pair">
-                  <span className="currency-amount">1 USD</span>
+                  <span className="currency-amount">{t('countryDetails.oneUsd')}</span>
                   <span className="currency-symbol">=</span>
                   <span className="currency-amount">
                     {exchangeRate.loading ? (
                       '...'
                     ) : exchangeRate.error ? (
-                      'N/A'
+                      t('countryDetails.notAvailable')
                     ) : (
                       <>
                         {exchangeRate.rate.toFixed(2)} {currencyCode}
@@ -198,7 +196,7 @@ export default function CountryDetails({ country, onClose, onCountryClick }: Cou
                 <p className="currency-rate-note">
                   {currency.name} ({currency.symbol || currencyCode})
                   {!exchangeRate.loading && !exchangeRate.error && 
-                    ' • Exchange rates updated daily'}
+                    ` ${t('countryDetails.exchangeRatesUpdated')}`}
                 </p>
               </div>
             </section>
@@ -207,7 +205,7 @@ export default function CountryDetails({ country, onClose, onCountryClick }: Cou
           {/* Languages */}
           {stats.officialLanguages.length > 0 && (
             <section className="country-detail-section">
-              <h2>Languages</h2>
+              <h2>{t('countryDetails.languages')}</h2>
               <div className="detail-list">
                 {stats.officialLanguages.map((lang) => (
                   <span key={lang} className="detail-chip">{lang}</span>
@@ -219,7 +217,7 @@ export default function CountryDetails({ country, onClose, onCountryClick }: Cou
           {/* Timezones */}
           {stats.timezones.length > 0 && (
             <section className="country-detail-section">
-              <h2>Timezones</h2>
+              <h2>{t('countryDetails.timezones')}</h2>
               <div className="detail-list">
                 {stats.timezones.map((tz) => (
                   <span key={tz} className="detail-chip">{tz}</span>
@@ -231,7 +229,7 @@ export default function CountryDetails({ country, onClose, onCountryClick }: Cou
           {/* Borders */}
           {stats.borderCountries.length > 0 && (
             <section className="country-detail-section">
-              <h2>Bordering Countries</h2>
+              <h2>{t('countryDetails.borderingCountries')}</h2>
               <div className="detail-list">
                 {stats.borderCountries.map((border) => (
                   <span 

@@ -1,5 +1,6 @@
 {
   "nav": {
+    "appName": "World Quiz",
     "home": "Startseite",
     "countries": "Länder",
     "menu": "Menü",
@@ -11,7 +12,8 @@
     "login": "Anmelden",
     "join": "Beitreten",
     "logout": "Abmelden",
-    "settings": "Einstellungen"
+    "settings": "Einstellungen",
+    "toggleMenu": "Menü umschalten"
   },
   "mainMenu": {
     "title": "Wählen Sie einen Spielmodus",
@@ -42,7 +44,8 @@
     "title": "Einstellungen",
     "language": {
       "title": "Sprache",
-      "note": "Sprachwechsel leitet auf lokalisierte URLs weiter."
+      "note": "Sprachwechsel leitet auf lokalisierte URLs weiter.",
+      "switcherAriaLabel": "Sprachauswahl"
     },
     "profile": {
       "title": "Profilbild",
@@ -111,6 +114,8 @@
   },
   "auth": {
     "joinTitle": "World Quiz beitreten",
+    "loginToWorldQuiz": "Bei World Quiz anmelden",
+    "createAccountTitle": "Konto erstellen",
     "welcomeBackTitle": "Willkommen zurück",
     "usernameLabel": "Benutzername",
     "usernamePlaceholder": "Geben Sie Ihren Benutzernamen ein",
@@ -128,12 +133,14 @@
     "or": "oder",
     "continueWithGoogle": "Mit Google fortfahren",
     "privacyConsentPrefix": "Mit der Erstellung eines Kontos stimmen Sie unseren",
+    "bySigningInAgree": "Mit der Anmeldung stimmen Sie unseren",
+    "privacyPolicyAndTerms": "Datenschutzrichtlinien und Bedingungen",
     "termsOfService": "Nutzungsbedingungen",
     "and": "und",
     "privacyPolicy": "Datenschutzrichtlinien",
     "alreadyHaveAccount": "Haben Sie bereits ein Konto?",
     "logInLink": "Anmelden",
-    "noAccount": "Sie haben noch kein Konto?",
+    "noAccount": "Noch kein Konto?",
     "signUpLink": "Registrieren",
     "errors": {
       "passwordsDoNotMatch": "Passwörter stimmen nicht überein",
@@ -147,6 +154,8 @@
   "gameHUD": {
     "loadingFlags": "Flaggen werden geladen...",
     "errorPrefix": "Fehler:",
+    "legendaryTitle": "LEGENDÄR!",
+    "perfectTitle": "Perfekte Punktzahl!",
     "legendaryMessage": "Unglaublich! Sie haben alle {{count}} Flaggen fehlerfrei zugeordnet.",
     "perfectMessage": "Perfekt! Sie haben alle {{count}} Flaggen zugeordnet.",
     "bestStreak": "Beste Serie: {{count}}",
@@ -155,6 +164,7 @@
     "skipped": "übersprungen",
     "newGame": "Neues Spiel",
     "loading": "Wird geladen...",
+    "flagToMatchAlt": "Zuordnungsflagge",
     "findThisFlag": "Finden Sie diese Flagge",
     "tapCountry": "Tippen Sie auf das passende Land",
     "showCurrentFlagName": "Aktuellen Flaggennamen anzeigen",
@@ -166,6 +176,8 @@
   },
   "physicalGeoHUD": {
     "loading": "Physische Merkmale werden geladen...",
+    "legendaryTitle": "LEGENDÄR!",
+    "wellDoneTitle": "Gut gemacht!",
     "legendaryMessage": "Legendär! Sie haben alle {{count}} Merkmale gefunden.",
     "locatedSummary": "Sie haben {{score}} / {{total}} Merkmale gefunden.",
     "bestStreak": "Beste Serie: {{count}}",
@@ -180,6 +192,160 @@
     "correct": "✓ Richtig!",
     "wrong": "✗ Falsch!",
     "youClicked": "Sie haben geklickt: {{name}}"
+    ,"featureTypes": {
+      "mountain": "Berg",
+      "mountain_range": "Gebirge",
+      "river": "Fluss",
+      "desert": "Wüste",
+      "sea": "Meer",
+      "ocean": "Ozean",
+      "lake": "See",
+      "strait": "Meerenge",
+      "gulf": "Golf / Bucht",
+      "canal": "Kanal",
+      "volcano": "Vulkan",
+      "bay": "Bucht",
+      "channel": "Kanal",
+      "passage": "Passage"
+    }
+  },
+  "cardMatch": {
+    "loadingGame": "Spiel wird geladen...",
+    "errorPrefix": "Fehler:",
+    "backToMenu": "Zurück zum Menü",
+    "gameOverTitle": "Spiel beendet!",
+    "points": "Punkte",
+    "totalMatched": "Gesamt zugeordnet",
+    "maxStreak": "Beste Serie",
+    "home": "Start",
+    "playAgain": "Erneut spielen",
+    "pregameTitle": "Karten zuordnen",
+    "pregameDescription": "Ordnen Sie Karten so schnell wie möglich zu und bauen Sie Serien für Bonuspunkte auf.",
+    "howToPlay": "So wird gespielt",
+    "rules": {
+      "matchPairs": "Ordnen Sie passende Paare zu (Flagge-Land, Land-Hauptstadt und mehr).",
+      "baseScore": "Richtige Zuordnung: +100 Punkte.",
+      "wrongPenalty": "Falsche Zuordnung: -50 Punkte.",
+      "streak5": "5er-Serie: +50 Bonus.",
+      "streak10": "10er-Serie: +100 Bonus.",
+      "streak15": "15er-Serie: +150 Bonus.",
+      "streak20": "20er-Serie: +200 Bonus."
+    },
+    "matchFrom": "Zuordnen von",
+    "matchTo": "Zuordnen zu",
+    "startGame": "Spiel starten",
+    "menu": "Menü",
+    "timeLeft": "Verbleibende Zeit",
+    "score": "Punktzahl",
+    "streak": "Serie",
+    "matches": "Treffer: {{count}}",
+    "types": {
+      "flag": "Flagge",
+      "country": "Land",
+      "capital": "Hauptstadt",
+      "shape": "Form"
+    },
+    "totalMatchedWithCount": "Gesamt zugeordnet: {{count}}"
+  },
+  "leaderboard": {
+    "titles": {
+      "flagMatch": "Bestenliste - Flaggen",
+      "cardsMatch": "Bestenliste - Karten zuordnen",
+      "guessCountry": "Bestenliste - Land erraten"
+    },
+    "refresh": "Aktualisieren",
+    "waitSeconds": "Warten Sie {{count}} s",
+    "today": "Heute",
+    "allTime": "Gesamt",
+    "loading": "Bestenliste wird geladen...",
+    "empty": {
+      "guessCountry": "Noch keine Spieler. Seien Sie der Erste!",
+      "flagMatch": "Noch keine Serien. Seien Sie der Erste!",
+      "cardsMatch": "Noch keine Ergebnisse. Seien Sie der Erste!"
+    },
+    "anonymous": "Anonym",
+    "guestCta": "Melden Sie sich an, senden Sie Ihr Ergebnis und steigen Sie in der Bestenliste auf.",
+    "joinNow": "Jetzt beitreten"
+  },
+  "leaderboardsPage": {
+    "title": "Bestenlisten",
+    "subtitle": "Sehen Sie, wer in jedem Spielmodus dominiert.",
+    "mode": {
+      "flagMatch": "Flaggen zuordnen",
+      "cardsMatch": "Karten zuordnen",
+      "guessCountry": "Land erraten"
+    }
+  },
+  "countryDetails": {
+    "loading": "Länderdetails werden geladen...",
+    "errorPrefix": "Fehler:",
+    "close": "Schließen",
+    "flagOf": "Flagge von {{country}}",
+    "capital": "Hauptstadt",
+    "notAvailable": "N/V",
+    "population": "Bevölkerung",
+    "peopleCount": "Etwa {{count}} Einwohner",
+    "area": "Fläche",
+    "areaValue": "{{area}} km²",
+    "density": "Dichte",
+    "peoplePerKm2": "Einwohner/km²",
+    "currency": "Währung",
+    "oneUsd": "1 USD =",
+    "exchangeRatesUpdated": "Wechselkurse aktualisiert",
+    "languages": "Sprachen",
+    "timezones": "Zeitzonen",
+    "borderingCountries": "Nachbarländer"
+  },
+  "notFound": {
+    "title": "Seite nicht gefunden",
+    "message": "Die gesuchte Seite existiert nicht oder wurde verschoben.",
+    "goHome": "Zur Startseite",
+    "browseCountries": "Länder durchsuchen"
+  },
+  "setNickname": {
+    "title": "Wählen Sie Ihren Spitznamen",
+    "subtitle": "Legen Sie einen öffentlichen Spitznamen fest, der in Bestenlisten erscheint.",
+    "usernameLabel": "Benutzername",
+    "usernamePlaceholder": "Geben Sie Ihren Benutzernamen ein",
+    "usernameTitle": "Der Benutzername darf nur Buchstaben, Zahlen, Unterstriche und Bindestriche enthalten",
+    "usernameHelp": "3-50 Zeichen, nur Buchstaben, Zahlen, Unterstriche und Bindestriche",
+    "continueToGame": "Zum Spiel fortfahren",
+    "setting": "Speichern...",
+    "errors": {
+      "failedToSet": "Spitzname konnte nicht gesetzt werden"
+    }
+  },
+  "flagSelector": {
+    "title": "Wählen Sie Ihre Flagge",
+    "searchPlaceholder": "Flaggen nach Land suchen...",
+    "flagsAvailable": "{{count}} Flaggen verfügbar"
+  },
+  "timeBar": {
+    "matchPoints": "TREFFERPUNKTE"
+  },
+  "physicalGeoGame": {
+    "title": "Physische Geographie",
+    "chooseCategory": "Kategorie wählen",
+    "backToMenu": "Zurück zum Menü",
+    "menu": "Menü",
+    "legendary": "LEGENDÄR!",
+    "perfect": "Perfekt!",
+    "wellDone": "Gut gemacht!",
+    "legendaryMessage": "Legendär! Sie haben alle {{count}} Merkmale fehlerfrei gefunden.",
+    "locatedMessage": "Sie haben {{score}} / {{total}} Merkmale gefunden.",
+    "bestStreak": "Beste Serie: {{count}}",
+    "home": "Start",
+    "newGame": "Neues Spiel",
+    "correct": "✓ Richtig!",
+    "wrong": "✗ Falsch!",
+    "mapAria": "Interaktive Karte der physischen Geographie",
+    "loadingMapBase": "Kartenbasis wird geladen...",
+    "categories": {
+      "mountains": "Höhenextreme und Gebirge",
+      "rivers": "Flüsse und Seen",
+      "deserts": "Wüsten",
+      "waters": "Meere, Meerengen und Ozeane"
+    }
   },
   "flagMatch": {
     "regionSelectorTitle": "Region wählen",
@@ -200,7 +366,8 @@
     "bestStreak": "Beste Serie: {{count}}",
     "legendaryQuote": "Die Karte beugt sich Ihrem Gedächtnis.",
     "home": "Start",
-    "newGame": "Neues Spiel"
+    "newGame": "Neues Spiel",
+    "mapAriaLabel": "Karte für das Flaggen-Zuordnungsspiel"
   },
   "countryIndex": {
     "loading": "Länder werden geladen...",
@@ -212,8 +379,19 @@
     },
     "searchPlaceholder": "Nach Land oder Hauptstadt suchen...",
     "allRegions": "Alle Regionen",
+    "regions": {
+      "africa": "Afrika",
+      "americas": "Amerika",
+      "antarctic": "Antarktis",
+      "asia": "Asien",
+      "europe": "Europa",
+      "oceania": "Ozeanien",
+      "unknown": "Unbekannt"
+    },
     "noCountriesFound": "Keine Länder gefunden",
-    "tryAdjustingFilters": "Versuchen Sie, Ihre Suche oder den Regionsfilter anzupassen."
+    "tryAdjustingFilters": "Versuchen Sie, Ihre Suche oder den Regionsfilter anzupassen.",
+    "seoTitleWithCountry": "{{country}} - Länderlexikon - World Quiz",
+    "seoDescriptionWithCountry": "Entdecken Sie Fakten über {{country}}: Hauptstadt, Bevölkerung, Fläche, Sprachen und Nachbarländer."
   },
   "worldMap": {
     "loading": "Weltdaten werden geladen...",
@@ -222,7 +400,8 @@
     "capitalUnknown": "Hauptstadt nicht verfügbar",
     "exploreWorld": "Die Welt erkunden",
     "clickCountryHint": "Klicken Sie auf ein Land, um Details zu sehen",
-    "loadingMap": "Karte wird geladen..."
+    "loadingMap": "Karte wird geladen...",
+    "interactiveGlobeAria": "Interaktiver Globus"
   },
   "game": {
     "startHint": "Beginnen Sie, indem Sie ein beliebiges Land auf der Karte antippen",

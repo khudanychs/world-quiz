@@ -17,6 +17,7 @@ import {
 } from "../utils/sharedStyles";
 import { getTodayDateString } from "../utils/dateUtils";
 import { buildLocalizedPath } from '../utils/localeRouting';
+import { getBaseLanguage } from '../utils/localeRouting';
 import "./FlagMatchGame.css";
 
 // Lazy load the heavy InteractiveMap component
@@ -51,7 +52,7 @@ export default function FlagMatchGame() {
   const [showRegionalIndicator, setShowRegionalIndicator] = useState(true);
 
   // Use custom hook for game logic
-  const game = useFlagMatchGame(selectedRegion, hasUserSelected);
+  const game = useFlagMatchGame(selectedRegion, hasUserSelected, getBaseLanguage(i18n.language));
 
   // Track if streak has been saved to avoid duplicates
   const streakSavedRef = useRef(false);
@@ -462,7 +463,7 @@ export default function FlagMatchGame() {
           ...getMapWrapperStyle(OUTER_W, OUTER_H, FRAME, "#5b8cff"),
           position: "relative",
         }}
-        aria-label="Flag match game map"
+        aria-label={t('flagMatch.mapAriaLabel')}
       >
         <Suspense fallback={
           <div style={{

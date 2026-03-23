@@ -24,7 +24,7 @@ import { SEO_TRANSLATIONS, toCanonicalUrl, getSeoOgImage } from './seo/seo-trans
 const InteractiveMap = lazy(() => import('./components/InteractiveMap'));
 
 export default function WorldMap() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const seo = SEO_TRANSLATIONS.routes.map;
   const navigate = useNavigate();
   
@@ -70,7 +70,7 @@ export default function WorldMap() {
         }>;
         
         // Use shared function to build lookup with all variations
-        const lookup = buildCountryLookupWithCapitals(data);
+        const lookup = buildCountryLookupWithCapitals(data, i18n.language);
         
         if (alive) setCountryLookup(lookup);
       } catch (e) {
@@ -82,7 +82,7 @@ export default function WorldMap() {
     return () => {
       alive = false;
     };
-  }, []);
+  }, [i18n.language]);
 
   /** Get country info for display */
   function getCountryInfo(countryNameRaw: string): CountryInfoWithCapitals | null {
@@ -109,6 +109,8 @@ export default function WorldMap() {
   /** Selected country info */
   const selectedInfo = selected ? getCountryInfo(selected) : null;
   const displayName = selectedInfo?.name || (selected ? normalizeCountryName(selected) : null);
+  const hoveredInfo = hovered ? getCountryInfo(hovered) : null;
+  const hoveredDisplayName = hoveredInfo?.name || (hovered ? normalizeCountryName(hovered) : null);
 
   /** Fit scale pro NaturalEarth1 */
   const FIT_SCALE = Math.max(1, Math.round(INNER_W * 0.32));
@@ -317,7 +319,7 @@ export default function WorldMap() {
             pointerEvents: "none",
           }}
         >
-          {normalizeCountryName(hovered)}
+          {hoveredDisplayName}
         </div>
       )}
 

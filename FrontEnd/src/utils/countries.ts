@@ -111,12 +111,30 @@ export const normalizeApos = (s: string) => s.replace(/\u2019/g, "'");
 export const stripDiacritics = (s: string) =>
   s.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 
+function getBaseLanguage(language: string): 'en' | 'cs' | 'de' {
+  const value = (language || 'en').toLowerCase().split('-')[0];
+  if (value === 'cs' || value === 'cz') return 'cs';
+  if (value === 'de') return 'de';
+  return 'en';
+}
+
 // ============================================================================
 // REST COUNTRIES INTEGRATION
 // ============================================================================
 
 type CountryInfo = { name: string; cca2: string; flag: string; region?: string };
-type CountryData = { name: { common: string }; cca2: string; flags: { svg?: string; png?: string }; region?: string };
+type CountryData = {
+  name: { common: string; official?: string };
+  cca2: string;
+  flags: { svg?: string; png?: string };
+  region?: string;
+  name_cs?: string;
+  name_de?: string;
+  translations?: {
+    ces?: { common?: string; official?: string };
+    deu?: { common?: string; official?: string };
+  };
+};
 
 export type CountryHintSource = {
   name: { common: string };
@@ -158,8 +176,13 @@ export function buildCountryHintLookup(countries: CountryHintSource[]): Record<s
 }
 
 /** Build lookup table from REST Countries data */
-export function buildRestLookup(countries: CountryData[]): Record<string, CountryInfo> {
+export function buildRestLookup(
+  countries: CountryData[],
+  language: string = 'en'
+): Record<string, CountryInfo> {
   initializeGameEligibleCountries(countries);
+
+  const currentLanguage = getBaseLanguage(language);
   
   const lookup: Record<string, CountryInfo> = {};
   
@@ -169,18 +192,24 @@ export function buildRestLookup(countries: CountryData[]): Record<string, Countr
   };
 
   for (const c of countries) {
-    const name = c.name.common;
+    const englishName = c.name.common;
+    const localizedName =
+      currentLanguage === 'cs'
+        ? c.name_cs || c.translations?.ces?.common || englishName
+        : currentLanguage === 'de'
+          ? c.name_de || c.translations?.deu?.common || englishName
+          : englishName;
     const flag = `/flags-v2/${c.cca2.toLowerCase()}.svg`;
-    const info = { name, cca2: c.cca2, flag, region: c.region };
+    const info = { name: localizedName, cca2: c.cca2, flag, region: c.region };
     
     // Add main entry
-    addEntry(name, info);
+    addEntry(englishName, info);
     
     // Add map name variations that point to this country
     for (const [mapName, displayName] of Object.entries(MAP_TO_DISPLAY)) {
-      if (displayName === name || DISPLAY_TO_REST[displayName] === name) {
-        addEntry(mapName, { ...info, name: displayName });
-        addEntry(displayName, { ...info, name: displayName });
+      if (displayName === englishName || DISPLAY_TO_REST[displayName] === englishName) {
+        addEntry(mapName, info);
+        addEntry(displayName, info);
       }
     }
   }
@@ -234,8 +263,21 @@ export function initializeGameEligibleCountries(
 export type CountryInfoWithCapitals = { name: string; cca2: string; flag: string; capitals: string[] };
 
 export function buildCountryLookupWithCapitals(
-  countries: Array<{ name: { common: string }; cca2: string; flags: { svg?: string; png?: string }; capital?: string[] }>
+  countries: Array<{
+    name: { common: string };
+    cca2: string;
+    flags: { svg?: string; png?: string };
+    capital?: string[];
+    name_cs?: string;
+    name_de?: string;
+    translations?: {
+      ces?: { common?: string };
+      deu?: { common?: string };
+    };
+  }>,
+  language: string = 'en'
 ): Record<string, CountryInfoWithCapitals> {
+  const currentLanguage = getBaseLanguage(language);
   const lookup: Record<string, CountryInfoWithCapitals> = {};
   
   const addEntry = (key: string, val: CountryInfoWithCapitals) => {
@@ -244,16 +286,22 @@ export function buildCountryLookupWithCapitals(
   };
 
   for (const c of countries) {
-    const name = c.name.common;
+    const englishName = c.name.common;
+    const localizedName =
+      currentLanguage === 'cs'
+        ? c.name_cs || c.translations?.ces?.common || englishName
+        : currentLanguage === 'de'
+          ? c.name_de || c.translations?.deu?.common || englishName
+          : englishName;
     const flag = `/flags-v2/${c.cca2.toLowerCase()}.svg`;
-    const info = { name, cca2: c.cca2, flag, capitals: c.capital || [] };
+    const info = { name: localizedName, cca2: c.cca2, flag, capitals: c.capital || [] };
     
-    addEntry(name, info);
+    addEntry(englishName, info);
     
     for (const [mapName, displayName] of Object.entries(MAP_TO_DISPLAY)) {
-      if (displayName === name || DISPLAY_TO_REST[displayName] === name) {
-        addEntry(mapName, { ...info, name: displayName });
-        addEntry(displayName, { ...info, name: displayName });
+      if (displayName === englishName || DISPLAY_TO_REST[displayName] === englishName) {
+        addEntry(mapName, info);
+        addEntry(displayName, info);
       }
     }
   }

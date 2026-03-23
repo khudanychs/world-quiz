@@ -31,6 +31,7 @@ export type FeatureShape =
 
 export interface PhysicalFeature {
   name: string;
+  displayName?: string;
   type: FeatureCategory;
   shape: FeatureShape;
   difficulty: "easy" | "medium" | "hard";

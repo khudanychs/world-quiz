@@ -1,5 +1,6 @@
 {
   "nav": {
+    "appName": "World Quiz",
     "home": "Domů",
     "countries": "Země",
     "menu": "Menu",
@@ -11,7 +12,8 @@
     "login": "Přihlásit se",
     "join": "Připojte se",
     "logout": "Odhlásit se",
-    "settings": "Nastavení"
+    "settings": "Nastavení",
+    "toggleMenu": "Přepnout menu"
   },
   "mainMenu": {
     "title": "Vyberte herní režim",
@@ -42,7 +44,8 @@
     "title": "Nastavení",
     "language": {
       "title": "Jazyk",
-      "note": "Změna jazyka přesměruje na lokalizované URL."
+      "note": "Změna jazyka přesměruje na lokalizované URL.",
+      "switcherAriaLabel": "Přepínač jazyka"
     },
     "profile": {
       "title": "Profilový obrázek",
@@ -111,6 +114,8 @@
   },
   "auth": {
     "joinTitle": "Připojte se k World Quiz",
+    "loginToWorldQuiz": "Přihlaste se do World Quiz",
+    "createAccountTitle": "Vytvořte si účet",
     "welcomeBackTitle": "Vítejte zpět",
     "usernameLabel": "Uživatelské jméno",
     "usernamePlaceholder": "Zadejte své uživatelské jméno",
@@ -128,6 +133,8 @@
     "or": "nebo",
     "continueWithGoogle": "Pokračovat přes Google",
     "privacyConsentPrefix": "Vytvořením účtu souhlasíte s našimi",
+    "bySigningInAgree": "Přihlášením souhlasíte s našimi",
+    "privacyPolicyAndTerms": "Zásadami ochrany osobních údajů a podmínkami",
     "termsOfService": "Podmínkami služby",
     "and": "a",
     "privacyPolicy": "Zásadami ochrany osobních údajů",
@@ -147,6 +154,8 @@
   "gameHUD": {
     "loadingFlags": "Načítání vlajek...",
     "errorPrefix": "Chyba:",
+    "legendaryTitle": "LEGENDÁRNÍ!",
+    "perfectTitle": "Perfektní skóre!",
     "legendaryMessage": "Neuvěřitelné! Přiřadili jste všech {{count}} vlajek bez chyby.",
     "perfectMessage": "Perfektní! Přiřadili jste všech {{count}} vlajek.",
     "bestStreak": "Nejlepší série: {{count}}",
@@ -155,6 +164,7 @@
     "skipped": "přeskočeno",
     "newGame": "Nová hra",
     "loading": "Načítání...",
+    "flagToMatchAlt": "Vlajka k přiřazení",
     "findThisFlag": "Najděte tuto vlajku",
     "tapCountry": "Klepněte na odpovídající zemi",
     "showCurrentFlagName": "Zobrazit název aktuální vlajky",
@@ -166,6 +176,8 @@
   },
   "physicalGeoHUD": {
     "loading": "Načítání fyzickogeografických prvků...",
+    "legendaryTitle": "LEGENDÁRNÍ!",
+    "wellDoneTitle": "Skvělá práce!",
     "legendaryMessage": "Legendární! Našli jste všech {{count}} prvků.",
     "locatedSummary": "Našli jste {{score}} / {{total}} prvků.",
     "bestStreak": "Nejlepší série: {{count}}",
@@ -180,6 +192,160 @@
     "correct": "✓ Správně!",
     "wrong": "✗ Špatně!",
     "youClicked": "Klikli jste na: {{name}}"
+    ,"featureTypes": {
+      "mountain": "Hora",
+      "mountain_range": "Pohoří",
+      "river": "Řeka",
+      "desert": "Poušť",
+      "sea": "Moře",
+      "ocean": "Oceán",
+      "lake": "Jezero",
+      "strait": "Průliv",
+      "gulf": "Záliv",
+      "canal": "Kanál",
+      "volcano": "Sopka",
+      "bay": "Zátoka",
+      "channel": "Průliv",
+      "passage": "Průjezd"
+    }
+  },
+  "cardMatch": {
+    "loadingGame": "Načítání hry...",
+    "errorPrefix": "Chyba:",
+    "backToMenu": "Zpět do menu",
+    "gameOverTitle": "Konec hry!",
+    "points": "Body",
+    "totalMatched": "Celkem přiřazeno",
+    "maxStreak": "Nejvyšší série",
+    "home": "Domů",
+    "playAgain": "Hrát znovu",
+    "pregameTitle": "Karetní hra",
+    "pregameDescription": "Přiřazujte karty co nejrychleji a sbírejte série pro bonusové body.",
+    "howToPlay": "Jak hrát",
+    "rules": {
+      "matchPairs": "Přiřazujte související dvojice (vlajka-země, země-hlavní město a další).",
+      "baseScore": "Správné přiřazení: +100 bodů.",
+      "wrongPenalty": "Špatné přiřazení: -50 bodů.",
+      "streak5": "Série 5x: +50 bonus.",
+      "streak10": "Série 10x: +100 bonus.",
+      "streak15": "Série 15x: +150 bonus.",
+      "streak20": "Série 20x: +200 bonus."
+    },
+    "matchFrom": "Přiřazovat z",
+    "matchTo": "Přiřazovat k",
+    "startGame": "Spustit hru",
+    "menu": "Menu",
+    "timeLeft": "Zbývající čas",
+    "score": "Skóre",
+    "streak": "Série",
+    "matches": "Shody: {{count}}",
+    "types": {
+      "flag": "Vlajka",
+      "country": "Země",
+      "capital": "Hlavní město",
+      "shape": "Tvar"
+    },
+    "totalMatchedWithCount": "Celkem přiřazeno: {{count}}"
+  },
+  "leaderboard": {
+    "titles": {
+      "flagMatch": "Žebříček - Vlajky",
+      "cardsMatch": "Žebříček - Karetní hra",
+      "guessCountry": "Žebříček - Hádej zemi"
+    },
+    "refresh": "Obnovit",
+    "waitSeconds": "Počkejte {{count}} s",
+    "today": "Dnes",
+    "allTime": "Celkově",
+    "loading": "Načítání žebříčku...",
+    "empty": {
+      "guessCountry": "Zatím žádní hráči. Buďte první!",
+      "flagMatch": "Zatím žádné série. Buďte první!",
+      "cardsMatch": "Zatím žádná skóre. Buďte první!"
+    },
+    "anonymous": "Anonym",
+    "guestCta": "Přihlaste se, odešlete své skóre a stoupejte v žebříčku.",
+    "joinNow": "Připojit se"
+  },
+  "leaderboardsPage": {
+    "title": "Žebříčky",
+    "subtitle": "Podívejte se, kdo dominuje jednotlivým režimům.",
+    "mode": {
+      "flagMatch": "Vlajky",
+      "cardsMatch": "Karetní hra",
+      "guessCountry": "Hádej zemi"
+    }
+  },
+  "countryDetails": {
+    "loading": "Načítání detailů země...",
+    "errorPrefix": "Chyba:",
+    "close": "Zavřít",
+    "flagOf": "Vlajka státu {{country}}",
+    "capital": "Hlavní město",
+    "notAvailable": "N/A",
+    "population": "Populace",
+    "peopleCount": "Přibližně {{count}} obyvatel",
+    "area": "Rozloha",
+    "areaValue": "{{area}} km²",
+    "density": "Hustota",
+    "peoplePerKm2": "obyvatel/km²",
+    "currency": "Měna",
+    "oneUsd": "1 USD =",
+    "exchangeRatesUpdated": "kurzy aktualizovány",
+    "languages": "Jazyky",
+    "timezones": "Časová pásma",
+    "borderingCountries": "Sousední státy"
+  },
+  "notFound": {
+    "title": "Stránka nebyla nalezena",
+    "message": "Stránka, kterou hledáte, neexistuje nebo byla přesunuta.",
+    "goHome": "Na domovskou stránku",
+    "browseCountries": "Procházet země"
+  },
+  "setNickname": {
+    "title": "Vyberte si přezdívku",
+    "subtitle": "Nastavte veřejnou přezdívku, která se zobrazí v žebříčcích.",
+    "usernameLabel": "Uživatelské jméno",
+    "usernamePlaceholder": "Zadejte své uživatelské jméno",
+    "usernameTitle": "Uživatelské jméno může obsahovat pouze písmena, čísla, podtržítka a pomlčky",
+    "usernameHelp": "3-50 znaků, pouze písmena, čísla, podtržítka a pomlčky",
+    "continueToGame": "Pokračovat do hry",
+    "setting": "Ukládání...",
+    "errors": {
+      "failedToSet": "Nepodařilo se nastavit přezdívku"
+    }
+  },
+  "flagSelector": {
+    "title": "Vyberte svou vlajku",
+    "searchPlaceholder": "Hledejte vlajky podle země...",
+    "flagsAvailable": "Dostupných vlajek: {{count}}"
+  },
+  "timeBar": {
+    "matchPoints": "BODY ZA SHODY"
+  },
+  "physicalGeoGame": {
+    "title": "Fyzická geografie",
+    "chooseCategory": "Vyberte kategorii",
+    "backToMenu": "Zpět do menu",
+    "menu": "Menu",
+    "legendary": "LEGENDÁRNÍ!",
+    "perfect": "Perfektní!",
+    "wellDone": "Skvělá práce!",
+    "legendaryMessage": "Legendární! Našli jste všech {{count}} prvků bez chyby.",
+    "locatedMessage": "Našli jste {{score}} / {{total}} prvků.",
+    "bestStreak": "Nejlepší série: {{count}}",
+    "home": "Domů",
+    "newGame": "Nová hra",
+    "correct": "✓ Správně!",
+    "wrong": "✗ Špatně!",
+    "mapAria": "Interaktivní mapa fyzické geografie",
+    "loadingMapBase": "Načítání mapového podkladu...",
+    "categories": {
+      "mountains": "Výškové extrémy a pohoří",
+      "rivers": "Řeky a jezera",
+      "deserts": "Pouště",
+      "waters": "Moře, průlivy a oceány"
+    }
   },
   "flagMatch": {
     "regionSelectorTitle": "Vyberte region",
@@ -200,7 +366,8 @@
     "bestStreak": "Nejlepší série: {{count}}",
     "legendaryQuote": "Mapa se podřídila vaší paměti.",
     "home": "Domů",
-    "newGame": "Nová hra"
+    "newGame": "Nová hra",
+    "mapAriaLabel": "Mapa hry přiřazování vlajek"
   },
   "countryIndex": {
     "loading": "Načítání zemí...",
@@ -212,8 +379,19 @@
     },
     "searchPlaceholder": "Hledejte podle země nebo hlavního města...",
     "allRegions": "Všechny regiony",
+    "regions": {
+      "africa": "Afrika",
+      "americas": "Amerika",
+      "antarctic": "Antarktida",
+      "asia": "Asie",
+      "europe": "Evropa",
+      "oceania": "Oceánie",
+      "unknown": "Neznámý"
+    },
     "noCountriesFound": "Žádné země nenalezeny",
-    "tryAdjustingFilters": "Zkuste upravit vyhledávání nebo filtr regionu."
+    "tryAdjustingFilters": "Zkuste upravit vyhledávání nebo filtr regionu.",
+    "seoTitleWithCountry": "{{country}} - Encyklopedie zemí - World Quiz",
+    "seoDescriptionWithCountry": "Prozkoumejte fakta o zemi {{country}}: hlavní město, populace, rozloha, jazyky a sousední státy."
   },
   "worldMap": {
     "loading": "Načítání dat světa...",
@@ -222,7 +400,8 @@
     "capitalUnknown": "Hlavní město není dostupné",
     "exploreWorld": "Prozkoumejte svět",
     "clickCountryHint": "Klikněte na zemi pro zobrazení detailů",
-    "loadingMap": "Načítání mapy..."
+    "loadingMap": "Načítání mapy...",
+    "interactiveGlobeAria": "Interaktivní glóbus"
   },
   "game": {
     "startHint": "Začněte klepnutím na libovolnou zemi na mapě",

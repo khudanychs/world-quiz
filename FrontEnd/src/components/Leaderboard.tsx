@@ -1,8 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from "../contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import './Leaderboard.css';
 import { getTodayDateString } from "../utils/dateUtils";
+import { buildLocalizedPath } from '../utils/localeRouting';
 
 // Define the structure of a streak document
 interface StreakEntry {
@@ -192,6 +194,7 @@ interface LeaderboardProps {
 }
 
 export function Leaderboard({ gameMode }: LeaderboardProps) {
+  const { t, i18n } = useTranslation();
   const [timeFilter, setTimeFilter] = useState<'today' | 'allTime'>('today');
   const { entries, loading, refetch } = useLeaderboard(gameMode, timeFilter);
   const { user } = useAuth();
@@ -227,10 +230,10 @@ export function Leaderboard({ gameMode }: LeaderboardProps) {
   const isOnCooldown = cooldownRemaining > 0;
 
   const title = gameMode === 'flag-match'
-    ? '🔥 Top Streaks'
+    ? t('leaderboard.titles.flagMatch')
     : gameMode === 'cards-match'
-    ? '🏆 Cards Match — Top Scores'
-    : '🎯 Guess Country — Top Players';
+    ? t('leaderboard.titles.cardsMatch')
+    : t('leaderboard.titles.guessCountry');
 
   // Hide time filter for guess-country (all-time only)
   const showTimeFilter = gameMode !== 'guess-country';
@@ -243,7 +246,7 @@ export function Leaderboard({ gameMode }: LeaderboardProps) {
           className={`refresh-btn ${isOnCooldown ? 'on-cooldown' : ''} ${loading ? 'loading' : ''}`}
           onClick={handleRefresh}
           disabled={isOnCooldown || loading}
-          title={isOnCooldown ? `Wait ${Math.ceil(cooldownRemaining / 1000)}s` : 'Refresh'}
+          title={isOnCooldown ? t('leaderboard.waitSeconds', { count: Math.ceil(cooldownRemaining / 1000) }) : t('leaderboard.refresh')}
         >
           {isOnCooldown ? (
             `${Math.ceil(cooldownRemaining / 1000)}s`
@@ -269,21 +272,21 @@ export function Leaderboard({ gameMode }: LeaderboardProps) {
             className={`toggle-btn ${timeFilter === 'today' ? 'active' : ''}`}
             onClick={() => setTimeFilter('today')}
           >
-            Today
+            {t('leaderboard.today')}
           </button>
           <button
             className={`toggle-btn ${timeFilter === 'allTime' ? 'active' : ''}`}
             onClick={() => setTimeFilter('allTime')}
           >
-            All Time
+            {t('leaderboard.allTime')}
           </button>
         </div>
       )}
 
       {loading ? (
-        <div className="loader">Loading...</div>
+        <div className="loader">{t('leaderboard.loading')}</div>
       ) : entries.length === 0 ? (
-        <p className="no-scores">No {gameMode === 'guess-country' ? 'players' : gameMode === 'flag-match' ? 'streaks' : 'scores'} yet. Be the first!</p>
+        <p className="no-scores">{t(gameMode === 'guess-country' ? 'leaderboard.empty.guessCountry' : gameMode === 'flag-match' ? 'leaderboard.empty.flagMatch' : 'leaderboard.empty.cardsMatch')}</p>
       ) : (
         <ol className="leaderboard-list">
           {entries.map((entry, index) => (
@@ -294,7 +297,7 @@ export function Leaderboard({ gameMode }: LeaderboardProps) {
               <span className={`leaderboard-rank ${index < 3 ? `rank-${index + 1}` : ''}`}>
                 {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `${index + 1}.`}
               </span>
-              <span className="leaderboard-name">{entry.username || 'Anonymous'}</span>
+              <span className="leaderboard-name">{entry.username || t('leaderboard.anonymous')}</span>
               {gameMode === 'flag-match' ? (
                 <span className="leaderboard-streak">
                   <span className="streak-fire">🔥</span>
@@ -319,12 +322,12 @@ export function Leaderboard({ gameMode }: LeaderboardProps) {
       {/* Guest CTA */}
       {isGuest && (
         <div className="guest-cta">
-          <p>Create an account to appear on the leaderboard!</p>
+          <p>{t('leaderboard.guestCta')}</p>
           <button 
             className="cta-button"
-            onClick={() => navigate('/auth?mode=register')}
+            onClick={() => navigate(`${buildLocalizedPath('/auth', i18n.language)}?mode=register`)}
           >
-            Join Now
+            {t('leaderboard.joinNow')}
           </button>
         </div>
       )}

@@ -1,10 +1,13 @@
 import { useState, FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
 import { GoogleIcon } from './Icons';
+import { buildLocalizedPath } from '../utils/localeRouting';
 import './Auth.css';
 
 export function Login() {
+  const { t, i18n } = useTranslation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -19,7 +22,7 @@ export function Login() {
 
     try {
       await login(email, password);
-      navigate('/', { replace: true }); // Replace history so back can't return to login
+      navigate(buildLocalizedPath('/', i18n.language), { replace: true }); // Replace history so back can't return to login
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -30,23 +33,23 @@ export function Login() {
   return (
     <div className="auth-container">
       <div className="auth-card">
-        <h2>Login to World Quiz</h2>
+        <h2>{t('auth.loginToWorldQuiz')}</h2>
 
         {error && <div className="error-message">{error}</div>}
 
         <form onSubmit={handleSubmit}>
           <div className="form-group">
-            <label htmlFor="email">Email</label>
+            <label htmlFor="email">{t('auth.emailLabel')}</label>
             <input
               id="email"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              placeholder="your@email.com"
+              placeholder={t('auth.emailPlaceholder')}
             />
           </div>          <div className="form-group">
-            <label htmlFor="password">Password</label>
+            <label htmlFor="password">{t('auth.passwordLabel')}</label>
             <input
               id="password"
               type="password"
@@ -58,25 +61,25 @@ export function Login() {
           </div>
 
           <button type="submit" disabled={loading} className="btn-primary">
-            {loading ? 'Logging in...' : 'Login'}
+            {loading ? t('auth.loggingIn') : t('auth.login')}
           </button>
         </form>
 
         <div className="divider">
-          <span>OR</span>
+          <span>{t('auth.or')}</span>
         </div>
 
         <button onClick={loginWithGoogle} className="btn-google">
           <GoogleIcon />
-          Continue with Google
+          {t('auth.continueWithGoogle')}
         </button>
 
         <p className="privacy-consent">
-          By signing in, you agree to our <Link to="/privacy">Privacy Policy & Terms of Service</Link>
+          {t('auth.bySigningInAgree')} <Link to={buildLocalizedPath('/privacy', i18n.language)}>{t('auth.privacyPolicyAndTerms')}</Link>
         </p>
 
         <p className="auth-footer">
-          Don't have an account? <a href="/register">Sign up</a>
+          {t('auth.noAccount')} <a href={buildLocalizedPath('/auth', i18n.language) + '?mode=register'}>{t('auth.signUpLink')}</a>
         </p>
       </div>
     </div>

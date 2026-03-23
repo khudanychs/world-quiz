@@ -17,7 +17,21 @@ i18n
   .use(initReactI18next)
   .init({
     resources,
+    supportedLngs: ['en', 'cs', 'de'],
+    nonExplicitSupportedLngs: true,
     fallbackLng: 'en',
+    detection: {
+      order: ['path', 'querystring', 'localStorage', 'cookie', 'navigator', 'htmlTag'],
+      lookupFromPathIndex: 0,
+      caches: ['localStorage', 'cookie'],
+      convertDetectedLanguage: (lng: string) => {
+        const value = (lng || '').toLowerCase();
+        if (value === 'cz') return 'cs';
+        if (value.startsWith('cs')) return 'cs';
+        if (value.startsWith('de')) return 'de';
+        return 'en';
+      },
+    },
     interpolation: { escapeValue: false }
   });
 

@@ -7,6 +7,7 @@ import {
   SUPPORTED_LOCALE_PREFIXES,
   stripLocalePrefix,
   getLanguageFromLocalePrefix,
+  getBaseLanguage,
   buildLocalizedPath,
 } from './utils/localeRouting';
 import './App.css';
@@ -211,7 +212,7 @@ export default function App() {
 
   useEffect(() => {
     if (!languageFromPath) return;
-    if (i18n.language.split('-')[0] !== languageFromPath) {
+    if (getBaseLanguage(i18n.language) !== languageFromPath) {
       i18n.changeLanguage(languageFromPath);
     }
   }, [i18n, i18n.language, languageFromPath]);

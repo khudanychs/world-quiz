@@ -1,6 +1,7 @@
 // src/components/Globe.tsx
 import { ComposableMap, Geographies, Geography, ZoomableGroup } from "react-simple-maps";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 // Stable data source (TopoJSON) – world-atlas
 const geoUrl = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
@@ -24,6 +25,7 @@ type GeographiesChildrenArgs = {
 };
 
 export default function Globe() {
+  const { t } = useTranslation();
   const [position, setPosition] = useState<Position>({
     coordinates: [0, 0],
     zoom: 1,
@@ -42,7 +44,7 @@ export default function Globe() {
         alignItems: "center",
         justifyContent: "center",
       }}
-      aria-label="Interactive globe"
+      aria-label={t('worldMap.interactiveGlobeAria')}
     >
       <ComposableMap
         // no need to import projection from d3-geo, just the name
