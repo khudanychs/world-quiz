@@ -38,6 +38,13 @@ export default function FlagMatchGame() {
   const navigate = useNavigate();
   const { regionKey } = useParams<{ regionKey?: string }>();
 
+  // Redirect /game/flags (no region) to /game/flags/world for better prerendering
+  useEffect(() => {
+    if (!regionKey) {
+      navigate(buildLocalizedPath('/game/flags/world', i18n.language), { replace: true });
+    }
+  }, [regionKey, navigate, i18n.language]);
+
   const routeRegionKey = regionKey?.toLowerCase();
   const hasValidRegionRoute = !!routeRegionKey && routeRegionKey in FLAG_REGION_ROUTES;
   const selectedRegion = useMemo<string | null>(() => {
