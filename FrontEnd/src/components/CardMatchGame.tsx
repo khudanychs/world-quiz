@@ -8,14 +8,14 @@ import { CountryCard, useCardMatchGame, CardKind } from "../hooks/useCardMatchGa
 import { saveCardsMatchScore } from "../utils/leaderboardUtils";
 import { TimeBar } from "./TimeBar";
 import { SEOHelmet } from "./SEOHelmet";
-import { buildLocalizedPath } from "../utils/localeRouting";
+import { buildLocalizedPath, getBaseLanguage } from "../utils/localeRouting";
 import "./CardMatchGame.css";
 import {
     GREEN_BUTTON_HOVER,
     GREEN_BUTTON_STYLE,
     PAGE_CONTAINER_STYLE,
 } from "../utils/sharedStyles";
-  import { SEO_TRANSLATIONS, toCanonicalUrl, getSeoOgImage } from "../seo/seo-translations";
+import { SEO_TRANSLATIONS, toCanonicalUrlWithLanguage, getSeoOgImage } from "../seo/seo-translations";
 
 // SVG dimensions for rendering country shapes
 const SVG_WIDTH = 100;
@@ -237,6 +237,7 @@ function useOrientation() {
 export default function CardMatchGame() {
   const seo = SEO_TRANSLATIONS.routes.shapeMatch;
   const { t, i18n } = useTranslation();
+  const currentLanguage = getBaseLanguage(i18n.language);
   const navigate = useNavigate();
   const { user } = useAuth();
   const [firstType, setFirstType] = useState<CardKind>("flag");
@@ -294,7 +295,7 @@ export default function CardMatchGame() {
         <SEOHelmet
           title={seo.title}
           description={seo.description}
-          canonicalUrl={toCanonicalUrl(seo.path)}
+          canonicalUrl={toCanonicalUrlWithLanguage(seo.path, currentLanguage)}
           ogImage={getSeoOgImage(seo)}
         />
         <div style={{ ...PAGE_CONTAINER_STYLE, alignItems: "center", justifyContent: "center" }}>
@@ -310,7 +311,7 @@ export default function CardMatchGame() {
         <SEOHelmet
           title={seo.title}
           description={seo.description}
-          canonicalUrl={toCanonicalUrl(seo.path)}
+          canonicalUrl={toCanonicalUrlWithLanguage(seo.path, currentLanguage)}
           ogImage={getSeoOgImage(seo)}
         />
         <div style={{ ...PAGE_CONTAINER_STYLE, alignItems: "center", justifyContent: "center" }}>
@@ -339,7 +340,7 @@ export default function CardMatchGame() {
         <SEOHelmet
           title={seo.title}
           description={seo.description}
-          canonicalUrl={toCanonicalUrl(seo.path)}
+          canonicalUrl={toCanonicalUrlWithLanguage(seo.path, currentLanguage)}
           ogImage={getSeoOgImage(seo)}
         />
         <div className="card-match-results-container" style={PAGE_CONTAINER_STYLE}>
@@ -409,7 +410,7 @@ export default function CardMatchGame() {
         <SEOHelmet
           title={seo.title}
           description={seo.description}
-          canonicalUrl={toCanonicalUrl(seo.path)}
+          canonicalUrl={toCanonicalUrlWithLanguage(seo.path, currentLanguage)}
           ogImage={getSeoOgImage(seo)}
         />
         <div className="card-match-pregame-container" style={PAGE_CONTAINER_STYLE}>
@@ -530,7 +531,7 @@ export default function CardMatchGame() {
         <SEOHelmet
           title={seo.title}
           description={seo.description}
-          canonicalUrl={toCanonicalUrl(seo.path)}
+          canonicalUrl={toCanonicalUrlWithLanguage(seo.path, currentLanguage)}
           ogImage={getSeoOgImage(seo)}
         />
         <div className="card-match-landscape-container">
@@ -635,7 +636,7 @@ export default function CardMatchGame() {
       <SEOHelmet
         title={seo.title}
         description={seo.description}
-        canonicalUrl={toCanonicalUrl(seo.path)}
+        canonicalUrl={toCanonicalUrlWithLanguage(seo.path, currentLanguage)}
         ogImage={getSeoOgImage(seo)}
       />
       <div className="card-match-game-container">

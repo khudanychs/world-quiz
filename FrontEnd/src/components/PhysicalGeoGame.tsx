@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { geoPath as d3GeoPath, geoNaturalEarth1, geoArea, type GeoPermissibleObjects } from "d3-geo";
 import { useTranslation } from "react-i18next";
 import { BackButton } from "./BackButton";
+import { SEOHelmet } from "./SEOHelmet";
 import PhysicalGeoHUD from "./PhysicalGeoHUD";
 import {
   GEO_LAND_URL,
@@ -36,7 +37,8 @@ import {
   CATEGORY_GROUPS,
   type PhysicalFeature,
 } from "../utils/physicalFeatures";
-import { buildLocalizedPath } from "../utils/localeRouting";
+import { buildLocalizedPath, getBaseLanguage } from "../utils/localeRouting";
+import { SEO_TRANSLATIONS, toCanonicalUrlWithLanguage, getSeoOgImage } from "../seo/seo-translations";
 import "./PhysicalGeoGame.css";
 import type { ModeStyleOverrides } from "./physicalGeoGame/modes/types";
 
@@ -145,6 +147,7 @@ const MemoizedOverlay = memo(function MemoizedOverlay({
 
 export default function PhysicalGeoGame() {
   const { t, i18n } = useTranslation();
+  const currentLanguage = getBaseLanguage(i18n.language);
   const navigate = useNavigate();
   const { modeKey } = useParams<{ modeKey?: string }>();
   const categoryKey = useMemo(() => {
@@ -154,6 +157,9 @@ export default function PhysicalGeoGame() {
     return CATEGORY_GROUPS.some((group) => group.key === modeKey) ? modeKey : null;
   }, [modeKey]);
   const showSelector = categoryKey === null;
+  const canonicalPhysicalGeoPath = categoryKey
+    ? `/game/physical-geo/${categoryKey}`
+    : "/game/physical-geo";
   const game = usePhysicalGeoGame(categoryKey ?? "mountains");
   const activeMode = useMemo(() => getPhysicalGeoMode(categoryKey ?? "mountains"), [categoryKey]);
   const { dimensions, isPortrait, isDesktop } = useMapDimensions();
@@ -241,9 +247,6 @@ export default function PhysicalGeoGame() {
   // - TopoJSON geographies have loaded.
   const baseMapReady = needsDetailedLandMask ? !!landPathD : geographiesReady;
 
-  // Only draw clickable overlays once the land base is visible.
-  const canRenderFeatureOverlay = hasActiveMode && baseMapReady;
-
   const perfDebugEnabled = useMemo(() => {
     if (typeof window === "undefined") {
       return false;
@@ -260,6 +263,79 @@ export default function PhysicalGeoGame() {
     }
     return window.location.search.includes("physLowDetail=1") || window.localStorage.getItem("physGeoLowDetail") === "1";
   }, []);
+
+  const handleMapMoveEnd = useCallback(({ zoom, coordinates }: { zoom: number; coordinates: [number, number] }) => {
+    setPos((prev) => {
+      if (
+        prev.zoom === zoom &&
+        prev.coordinates[0] === coordinates[0] &&
+        prev.coordinates[1] === coordinates[1]
+      ) {
+        return prev;
+      }
+      return { zoom, coordinates };
+    });
+  }, []);
+
+  const handleBaseGeographiesLoaded = useCallback(() => {
+    setGeographiesReady(true);
+  }, []);
+
+  const [riverData, setRiverData] = useState<GeoFeatureCollection | null>(null);
+  const needsRivers = !!categoryKey && activeMode.dataNeeds.rivers;
+  useEffect(() => {
+    if (!needsRivers) { setRiverData(null); return; }
+    if (riverGeoCache.current) { setRiverData(riverGeoCache.current); return; }
+    fetch(RIVERS_URL)
+      .then(r => r.json())
+      .then((raw: unknown) => {
+        const extracted = extractGeoFeatureCollection(raw, ["rivers", "river", "waterways"]);
+        if (!extracted) {
+          setRiverData(null);
+          return;
+        }
+        riverGeoCache.current = extracted;
+        setRiverData(extracted);
+      })
+        .catch(() => {});
+  }, [needsRivers]);
+
+  const [lakeData, setLakeData] = useState<GeoFeatureCollection | null>(null);
+  const needsLakes = !!categoryKey && activeMode.dataNeeds.lakes;
+  useEffect(() => {
+    if (!needsLakes) { setLakeData(null); return; }
+    if (lakeGeoCache.current) { setLakeData(lakeGeoCache.current); return; }
+    fetch(LAKES_URL)
+      .then(r => r.json())
+      .then((raw: unknown) => {
+        const extracted = extractGeoFeatureCollection(raw, ["lakes", "lake", "water"]);
+        if (!extracted) {
+          setLakeData(null);
+          return;
+        }
+        lakeGeoCache.current = extracted;
+        setLakeData(extracted);
+      })
+      .catch(() => {});
+  }, [needsLakes]);
+
+  const getGeoFeature = useMemo(
+    () => buildGeoFeatureGetter(marineData, riverData, lakeData),
+    [marineData, riverData, lakeData],
+  );
+
+  // Check if required data is loaded for the active mode
+  const requiredDataLoaded = useMemo(() => {
+    if (!hasActiveMode) return true;
+    // Check each required data source
+    if (activeMode.dataNeeds.marine && !marineData) return false;
+    if (activeMode.dataNeeds.rivers && !riverData) return false;
+    if (activeMode.dataNeeds.lakes && !lakeData) return false;
+    return true;
+  }, [hasActiveMode, activeMode, marineData, riverData, lakeData]);
+
+  // Only draw clickable overlays once the land base AND required data are loaded.
+  const canRenderFeatureOverlay = hasActiveMode && baseMapReady && requiredDataLoaded;
 
   const debugSnapshotRef = useRef({
     mode: categoryKey,
@@ -333,66 +409,6 @@ export default function PhysicalGeoGame() {
     rafId = window.requestAnimationFrame(tick);
     return () => window.cancelAnimationFrame(rafId);
   }, [perfDebugEnabled]);
-
-  const handleMapMoveEnd = useCallback(({ zoom, coordinates }: { zoom: number; coordinates: [number, number] }) => {
-    setPos((prev) => {
-      if (
-        prev.zoom === zoom &&
-        prev.coordinates[0] === coordinates[0] &&
-        prev.coordinates[1] === coordinates[1]
-      ) {
-        return prev;
-      }
-      return { zoom, coordinates };
-    });
-  }, []);
-
-  const handleBaseGeographiesLoaded = useCallback(() => {
-    setGeographiesReady(true);
-  }, []);
-
-  const [riverData, setRiverData] = useState<GeoFeatureCollection | null>(null);
-  const needsRivers = !!categoryKey && activeMode.dataNeeds.rivers;
-  useEffect(() => {
-    if (!needsRivers) { setRiverData(null); return; }
-    if (riverGeoCache.current) { setRiverData(riverGeoCache.current); return; }
-    fetch(RIVERS_URL)
-      .then(r => r.json())
-      .then((raw: unknown) => {
-        const extracted = extractGeoFeatureCollection(raw, ["rivers", "river", "waterways"]);
-        if (!extracted) {
-          setRiverData(null);
-          return;
-        }
-        riverGeoCache.current = extracted;
-        setRiverData(extracted);
-      })
-        .catch(() => {});
-  }, [needsRivers]);
-
-  const [lakeData, setLakeData] = useState<GeoFeatureCollection | null>(null);
-  const needsLakes = !!categoryKey && activeMode.dataNeeds.lakes;
-  useEffect(() => {
-    if (!needsLakes) { setLakeData(null); return; }
-    if (lakeGeoCache.current) { setLakeData(lakeGeoCache.current); return; }
-    fetch(LAKES_URL)
-      .then(r => r.json())
-      .then((raw: unknown) => {
-        const extracted = extractGeoFeatureCollection(raw, ["lakes", "lake", "water"]);
-        if (!extracted) {
-          setLakeData(null);
-          return;
-        }
-        lakeGeoCache.current = extracted;
-        setLakeData(extracted);
-      })
-      .catch(() => {});
-  }, [needsLakes]);
-
-  const getGeoFeature = useMemo(
-    () => buildGeoFeatureGetter(marineData, riverData, lakeData),
-    [marineData, riverData, lakeData],
-  );
 
   const panToFeature = useCallback((feature: PhysicalFeature) => {
     const geometryKind = activeMode.getGeoFeatureKind(feature);
@@ -598,9 +614,60 @@ export default function PhysicalGeoGame() {
     [game.showingResult, game.lastResult, game.currentFeature?.name, game.correctSet.size, game.skippedSet.size]
   );
 
-  // Marine water bodies are rendered in the overlay (on top of land) so they aren't
-  // covered by land polygons — this fixes bodies like the Gulf of St. Lawrence that
-  // would otherwise be hidden beneath Canada's land geometry.
+  const renderWaterUnderlay = useCallback((projection: Proj, zoom: number, isDesktop: boolean) => {
+    return renderWaterUnderlaySvg({
+      projection,
+      zoom,
+      isDesktop,
+      lowDetailMode: preferLowDetailTopography,
+      modeStyleOverrides: activeMode.styleOverrides,
+      waterFeatures,
+      backgroundMarineNames: allMarineFeatureNames,
+      getPrecomputedPath,
+      canClick,
+      onFeatureClick: handleFeatureClickWithZoom,
+      showingResult: showingResultRef.current,
+      lastResult: lastResultRef.current,
+      currentFeatureName: currentFeatureRef.current?.name,
+      correctSet: correctSetRef.current,
+      skippedSet: skippedSetRef.current,
+    });
+  }, [
+    preferLowDetailTopography,
+    activeMode.styleOverrides,
+    waterFeatures,
+    allMarineFeatureNames,
+    getPrecomputedPath,
+    canClick,
+    handleFeatureClickWithZoom,
+  ]);
+
+  const renderLandOnlyOverlay = useCallback((projection: Proj, zoom: number, isDesktop: boolean) => {
+    return renderLandOverlaySvg({
+      projection,
+      zoom,
+      isDesktop,
+      lowDetailMode: preferLowDetailTopography,
+      modeStyleOverrides: activeMode.styleOverrides,
+      landFeatures,
+      getPrecomputedPath,
+      canClick,
+      onFeatureClick: handleFeatureClickWithZoom,
+      showingResult: showingResultRef.current,
+      lastResult: lastResultRef.current,
+      currentFeatureName: currentFeatureRef.current?.name,
+      correctSet: correctSetRef.current,
+      skippedSet: skippedSetRef.current,
+    });
+  }, [
+    preferLowDetailTopography,
+    activeMode.styleOverrides,
+    landFeatures,
+    getPrecomputedPath,
+    canClick,
+    handleFeatureClickWithZoom,
+  ]);
+
   const renderOverlay = useCallback((projection: Proj, zoom: number, isDesktop: boolean) => {
     return (
       <MemoizedOverlay
@@ -637,6 +704,12 @@ export default function PhysicalGeoGame() {
 
   return (
     <>
+      <SEOHelmet
+        title="Physical Geography Game - World Quiz"
+        description="Locate mountains, rivers, lakes, deserts, and marine features in the Physical Geography mode."
+        canonicalUrl={toCanonicalUrlWithLanguage(canonicalPhysicalGeoPath, currentLanguage)}
+        ogImage={getSeoOgImage(SEO_TRANSLATIONS.routes.home)}
+      />
       {showSelector && (
         <div className="phys-category-overlay">
           <div className="phys-category-content">
@@ -811,8 +884,10 @@ export default function PhysicalGeoGame() {
               geoUrl={needsDetailedLandMask ? undefined : MERGED_URL}
               onGeographiesLoaded={handleBaseGeographiesLoaded}
               onMoveEnd={handleMapMoveEnd}
+              underlayInteractive={activeMode.key === "waters"}
+              renderUnderlay={canRenderFeatureOverlay && activeMode.key === "waters" ? renderWaterUnderlay : undefined}
               overlayInteractive={true}
-              renderOverlay={canRenderFeatureOverlay ? renderOverlay : undefined}
+              renderOverlay={canRenderFeatureOverlay ? (activeMode.key === "waters" ? renderLandOnlyOverlay : renderOverlay) : undefined}
             />
           </Suspense>
           {hasActiveMode && !baseMapReady && (

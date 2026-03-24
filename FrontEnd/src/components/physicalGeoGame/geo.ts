@@ -4,9 +4,11 @@ import type { Topology, GeometryCollection } from "topojson-specification";
 
 export type GeoFeatureKind = "marine" | "river" | "lake";
 
-export const GEO_LAND_URL = "/Land10mForMarines.json";
+// Unified land base for all physical-geo modes (TopoJSON).
+export const GEO_LAND_URL = "/GeoLand.json";
 export const MARINE_URL = "/FinalMarines10m.json";
-export const MERGED_URL = "/world-marine.json";
+// Non-mask modes should still render the same shared land topology.
+export const MERGED_URL = GEO_LAND_URL;
 export const RIVERS_URL = "/fixed_rivers.json";
 export const LAKES_URL = "/lakes.json";
 
@@ -135,7 +137,7 @@ export function extractGeoFeatureCollection(
 
 export function extractLandGeometry(
   raw: unknown,
-  preferredObjectKeys: string[] = ["land", "landmask", "geoland", "countries"]
+  preferredObjectKeys: string[] = ["Land10mForMarines", "land", "landmask", "geoland", "countries"]
 ): GeoPermissibleObjects | null {
   if (!raw || typeof raw !== "object") {
     return null;

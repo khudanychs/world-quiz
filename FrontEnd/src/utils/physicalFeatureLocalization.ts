@@ -19,7 +19,7 @@ interface TopologyLike {
 
 const LOCALIZED_DATASETS = [
   "/fixed_rivers.json",
-  "/world-marine.json",
+  "/FinalMarines10m.json",
   "/lakes.json",
 ] as const;
 
@@ -38,12 +38,12 @@ function normalizeLookupKey(name: string): string {
 
 function pickLocalizedName(properties: Record<string, unknown>, language: BaseLanguage): string | null {
   if (language === "cs") {
-    const value = properties.name_cs;
+    const value = properties.name_cs ?? properties.NAME_CS ?? properties.name_cz ?? properties.NAME_CZ;
     return typeof value === "string" && value.trim() ? value.trim() : null;
   }
 
   if (language === "de") {
-    const value = properties.name_de;
+    const value = properties.name_de ?? properties.NAME_DE;
     return typeof value === "string" && value.trim() ? value.trim() : null;
   }
 
@@ -99,13 +99,25 @@ async function buildTranslationLookup(language: BaseLanguage): Promise<Map<strin
         continue;
       }
 
-      const englishName = typeof properties.name === "string" ? properties.name.trim() : "";
       const localizedName = pickLocalizedName(properties, language);
-      if (!englishName || !localizedName) {
+      if (!localizedName) {
         continue;
       }
 
-      lookup.set(normalizeLookupKey(englishName), localizedName);
+      const englishCandidates = [
+        properties.name,
+        properties.name_en,
+        properties.NAME,
+        properties.NAME_EN,
+        properties.moje_nazvy,
+      ];
+
+      for (const candidate of englishCandidates) {
+        if (typeof candidate !== "string" || !candidate.trim()) {
+          continue;
+        }
+        lookup.set(normalizeLookupKey(candidate), localizedName);
+      }
     }
   }
 

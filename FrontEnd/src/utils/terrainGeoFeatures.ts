@@ -417,7 +417,7 @@ function buildElevationPointFeatures(features: GeoJsonFeature[], language: strin
 
 function buildDesertPolygonFeatures(features: GeoJsonFeature[], language: string = "en"): PhysicalFeature[] {
   const out: PhysicalFeature[] = [];
-  const usedNames = new Map<string, number>();
+  const grouped = new Map<string, { difficulty: Difficulty; rings: [number, number][][] }>();
 
   for (const feature of features) {
     const baseName = stringProp(feature.properties, getLocalizedNameKeys(DESERT_NAME_KEYS, language));
@@ -429,15 +429,52 @@ function buildDesertPolygonFeatures(features: GeoJsonFeature[], language: string
       polygonRingsFromGeometry(feature.geometry),
       DESERT_POLYGON_FILTER,
     );
-    const difficulty = toDifficulty(feature.properties?.SCALERANK);
-    for (const ring of rings) {
-      out.push({
-        name: uniqueName(baseName, usedNames),
-        type: "desert",
-        difficulty,
-        shape: { kind: "polygon", points: ring },
-      });
+    if (rings.length === 0) {
+      continue;
     }
+
+    const normalizedName = baseName.trim();
+    const difficulty = toDifficulty(feature.properties?.SCALERANK);
+    const existing = grouped.get(normalizedName);
+
+    if (!existing) {
+      grouped.set(normalizedName, {
+        difficulty,
+        rings: [...rings],
+      });
+      continue;
+    }
+
+    const mergedDifficulty =
+      existing.difficulty === "easy" || difficulty === "easy"
+        ? "easy"
+        : existing.difficulty === "medium" || difficulty === "medium"
+          ? "medium"
+          : "hard";
+
+    grouped.set(normalizedName, {
+      difficulty: mergedDifficulty,
+      rings: [...existing.rings, ...rings],
+    });
+  }
+
+  for (const [name, value] of grouped) {
+    if (value.rings.length === 1) {
+      out.push({
+        name,
+        type: "desert",
+        difficulty: value.difficulty,
+        shape: { kind: "polygon", points: value.rings[0] },
+      });
+      continue;
+    }
+
+    out.push({
+      name,
+      type: "desert",
+      difficulty: value.difficulty,
+      shape: { kind: "polygon_collection", polygons: value.rings },
+    });
   }
 
   return out;

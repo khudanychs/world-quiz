@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, useCallback, useMemo, lazy, Suspense } fro
 import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from 'react-i18next';
 import { BackButton } from "./BackButton";
+import { SEOHelmet } from "./SEOHelmet";
 import GameHUD from "./GameHUD";
 import { useAuth } from "../contexts/AuthContext";
 import { normalizeCountryName } from "../utils/countries";
@@ -18,6 +19,7 @@ import {
 import { getTodayDateString } from "../utils/dateUtils";
 import { buildLocalizedPath } from '../utils/localeRouting';
 import { getBaseLanguage } from '../utils/localeRouting';
+import { SEO_TRANSLATIONS, toCanonicalUrlWithLanguage, getSeoOgImage } from "../seo/seo-translations";
 import "./FlagMatchGame.css";
 
 // Lazy load the heavy InteractiveMap component
@@ -34,6 +36,7 @@ const FLAG_REGION_ROUTES: Record<string, string | null> = {
 
 export default function FlagMatchGame() {
   const { t, i18n } = useTranslation();
+  const currentLanguage = getBaseLanguage(i18n.language);
   const { user } = useAuth();
   const navigate = useNavigate();
   const { regionKey } = useParams<{ regionKey?: string }>();
@@ -55,6 +58,9 @@ export default function FlagMatchGame() {
   }, [hasValidRegionRoute, routeRegionKey]);
   const showRegionSelector = !regionKey || !hasValidRegionRoute;
   const hasUserSelected = !showRegionSelector;
+  const canonicalFlagPath = hasValidRegionRoute && routeRegionKey
+    ? `/game/flags/${routeRegionKey}`
+    : "/game/flags/world";
 
   const [showRegionalIndicator, setShowRegionalIndicator] = useState(true);
 
@@ -216,6 +222,12 @@ export default function FlagMatchGame() {
 
   return (
     <>
+      <SEOHelmet
+        title="Flag Match Game - World Quiz"
+        description="Match country flags in world or regional mode and build your streak in World Quiz."
+        canonicalUrl={toCanonicalUrlWithLanguage(canonicalFlagPath, currentLanguage)}
+        ogImage={getSeoOgImage(SEO_TRANSLATIONS.routes.home)}
+      />
       {/* Region Selector Modal */}
       {showRegionSelector && (
         <div className="region-selector-overlay">

@@ -182,6 +182,27 @@ async function main() {
       const routeUrl = `${origin}${routePath}`;
       await page.goto(routeUrl, { waitUntil: "domcontentloaded", timeout: 90000 });
 
+      const isAlreadyLocalizedRoute = /^\/(en|de|cz)(\/|$)/.test(routePath);
+
+      // Wait for client-side language redirects only on non-localized routes.
+      // Localized routes are already final and should not pay redirect wait cost.
+      if (!isAlreadyLocalizedRoute) {
+        try {
+          await Promise.race([
+            page.waitForURL(
+              (url) => {
+                const finalPath = url.pathname;
+                return finalPath !== routePath || /^\/(en|de|cz)(\/|$)/.test(finalPath);
+              },
+              { timeout: 5000 },
+            ),
+            new Promise((resolve) => setTimeout(resolve, 5000)),
+          ]);
+        } catch {
+          // Timeout is acceptable - route might not redirect
+        }
+      }
+
       await page.waitForFunction(
         () => {
           const root = document.querySelector("#root");

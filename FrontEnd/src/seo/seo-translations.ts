@@ -1,5 +1,31 @@
 export const SEO_BASE_URL = "https://world-quiz.com";
 
+const LOCALE_PREFIX_PATTERN = /^\/(en|de|cz|cs)(\/|$)/i;
+
+function normalizePathInput(path: string): string {
+  const value = (path || "/").trim();
+  if (value.startsWith("http://") || value.startsWith("https://")) {
+    const parsed = new URL(value);
+    return parsed.pathname || "/";
+  }
+  return value.startsWith("/") ? value : `/${value}`;
+}
+
+function normalizeLocalePrefix(pathname: string): string {
+  return pathname.replace(/^\/cs(\/|$)/i, "/cz$1");
+}
+
+function isLocalizedPath(pathname: string): boolean {
+  return LOCALE_PREFIX_PATTERN.test(pathname);
+}
+
+function toLocalePrefix(language?: string): "en" | "de" | "cz" {
+  const base = (language || "").toLowerCase().split("-")[0];
+  if (base === "de") return "de";
+  if (base === "cs" || base === "cz") return "cz";
+  return "en";
+}
+
 export interface SEOEntry {
   title: string;
   description: string;
@@ -84,8 +110,60 @@ export const SEO_TRANSLATIONS = {
   } satisfies Record<string, SEOEntry>,
 };
 
+/**
+ * Convert a path to a full canonical URL without language prefix.
+ * @deprecated Use toCanonicalUrlWithLanguage instead for multi-language sites
+ */
 export function toCanonicalUrl(path: string): string {
   return new URL(path, SEO_BASE_URL).toString();
+}
+
+/**
+ * Convert a path to a full canonical URL for a localized SPA.
+ *
+ * Rules:
+ * - Localized routes canonicalize to themselves.
+ * - Non-localized routes canonicalize to the current language variant.
+ * - If current language is unavailable, fallback is English (`/en/...`).
+ * - Root path canonicalizes to the current language root, with English fallback.
+ *
+ * Examples:
+ * - toCanonicalUrlWithLanguage('/cz/countries') => https://world-quiz.com/cz/countries
+ * - toCanonicalUrlWithLanguage('/de/countries') => https://world-quiz.com/de/countries
+ * - toCanonicalUrlWithLanguage('/countries', 'cs') => https://world-quiz.com/cz/countries
+ * - toCanonicalUrlWithLanguage('/') => https://world-quiz.com/en/
+ */
+export function toCanonicalUrlWithLanguage(path: string, currentLanguage?: string): string {
+  const normalized = normalizeLocalePrefix(normalizePathInput(path));
+  const localePrefix = toLocalePrefix(currentLanguage);
+
+  if (normalized === "/") {
+    return new URL(`/${localePrefix}/`, SEO_BASE_URL).toString();
+  }
+
+  const canonicalPath = isLocalizedPath(normalized) ? normalized : `/${localePrefix}${normalized}`;
+  return new URL(canonicalPath, SEO_BASE_URL).toString();
+}
+
+/**
+ * Helper function to generate hreflang URLs for a given base path
+ */
+export function getAlternateLanguageUrls(basePath: string): { lang: string, url: string }[] {
+  const normalized = normalizeLocalePrefix(normalizePathInput(basePath));
+  // Replace the locale prefix (e.g. /cz/) with a single slash (/)
+  let cleanPath = normalized.replace(LOCALE_PREFIX_PATTERN, "/");
+  // Remove duplicate slashes if they occurred, e.g. //countries -> /countries
+  cleanPath = cleanPath.replace(/\/+/g, "/");
+  
+  // If we ended up with just "/", make suffix empty so we don't append / to /en
+  const suffix = cleanPath === "/" ? "" : cleanPath;
+
+  return [
+    { lang: "en", url: new URL(`/en${suffix}`, SEO_BASE_URL).toString() },
+    { lang: "cs", url: new URL(`/cz${suffix}`, SEO_BASE_URL).toString() },
+    { lang: "de", url: new URL(`/de${suffix}`, SEO_BASE_URL).toString() },
+    { lang: "x-default", url: new URL(`/en${suffix}`, SEO_BASE_URL).toString() },
+  ];
 }
 
 export function getSeoOgImage(entry: SEOEntry): string {

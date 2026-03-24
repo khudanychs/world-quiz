@@ -18,13 +18,15 @@ import {
   type CountryInfoWithCapitals 
 } from './utils/countries';
 import { FRAME, FRAME_COLOR } from './utils/mapConstants';
-import { SEO_TRANSLATIONS, toCanonicalUrl, getSeoOgImage } from './seo/seo-translations';
+import { SEO_TRANSLATIONS, toCanonicalUrlWithLanguage, getSeoOgImage } from './seo/seo-translations';
+import { getBaseLanguage } from './utils/localeRouting';
 
 // Lazy load the heavy InteractiveMap component
 const InteractiveMap = lazy(() => import('./components/InteractiveMap'));
 
 export default function WorldMap() {
   const { t, i18n } = useTranslation();
+  const currentLanguage = getBaseLanguage(i18n.language);
   const seo = SEO_TRANSLATIONS.routes.map;
   const navigate = useNavigate();
   
@@ -133,7 +135,7 @@ export default function WorldMap() {
       <SEOHelmet
         title={seo.title}
         description={seo.description}
-        canonicalUrl={toCanonicalUrl(seo.path)}
+        canonicalUrl={toCanonicalUrlWithLanguage(seo.path, currentLanguage)}
         ogImage={getSeoOgImage(seo)}
       />
       <div
