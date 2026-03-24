@@ -20,7 +20,99 @@ interface ExchangeRate {
   error: string | null;
 }
 
-const countryStatsCache = new Map<string, Omit<CountryStats, 'loading' | 'error'>>();
+type CountryStatsData = Omit<CountryStats, 'loading' | 'error'>;
+
+interface Timestamped<T> {
+  value: T;
+  savedAt: number;
+}
+
+const COUNTRY_STATS_TTL_MS = 1000 * 60 * 60 * 24 * 7;
+const EXCHANGE_RATE_TTL_MS = 1000 * 60 * 60 * 12;
+const COUNTRY_STATS_STORAGE_KEY = 'wq_country_stats_cache_v1';
+const EXCHANGE_RATE_STORAGE_KEY = 'wq_exchange_rate_cache_v1';
+
+const countryStatsCache = new Map<string, Timestamped<CountryStatsData>>();
+const exchangeRateCache = new Map<string, Timestamped<number>>();
+
+function readStorageObject<T>(key: string): Record<string, Timestamped<T>> {
+  if (typeof window === 'undefined') {
+    return {};
+  }
+
+  try {
+    const raw = window.sessionStorage.getItem(key);
+    if (!raw) {
+      return {};
+    }
+    const parsed = JSON.parse(raw);
+    if (!parsed || typeof parsed !== 'object') {
+      return {};
+    }
+    return parsed as Record<string, Timestamped<T>>;
+  } catch {
+    return {};
+  }
+}
+
+function writeStorageObject<T>(key: string, source: Map<string, Timestamped<T>>): void {
+  if (typeof window === 'undefined') {
+    return;
+  }
+
+  try {
+    const serializable: Record<string, Timestamped<T>> = {};
+    for (const [cacheKey, value] of source.entries()) {
+      serializable[cacheKey] = value;
+    }
+    window.sessionStorage.setItem(key, JSON.stringify(serializable));
+  } catch {
+    // Ignore storage failures (private mode/quota).
+  }
+}
+
+function hydrateCachesFromSessionStorage() {
+  const statsEntries = readStorageObject<CountryStatsData>(COUNTRY_STATS_STORAGE_KEY);
+  for (const [key, entry] of Object.entries(statsEntries)) {
+    countryStatsCache.set(key, entry);
+  }
+
+  const rateEntries = readStorageObject<number>(EXCHANGE_RATE_STORAGE_KEY);
+  for (const [key, entry] of Object.entries(rateEntries)) {
+    exchangeRateCache.set(key, entry);
+  }
+}
+
+hydrateCachesFromSessionStorage();
+
+function getValidCachedValue<T>(
+  cache: Map<string, Timestamped<T>>,
+  key: string,
+  ttlMs: number,
+): T | null {
+  const cached = cache.get(key);
+  if (!cached) {
+    return null;
+  }
+
+  if (Date.now() - cached.savedAt > ttlMs) {
+    cache.delete(key);
+    return null;
+  }
+
+  return cached.value;
+}
+
+function setCachedValue<T>(
+  cache: Map<string, Timestamped<T>>,
+  key: string,
+  value: T,
+  storageKey: string,
+): void {
+  cache.set(key, { value, savedAt: Date.now() });
+  writeStorageObject(storageKey, cache);
+}
+
 let borderCountryIndexPromise: Promise<Map<string, { cca2: string; name: string }>> | null = null;
 
 async function getBorderCountryIndex(): Promise<Map<string, { cca2: string; name: string }>> {
@@ -86,7 +178,7 @@ export function useCountryStats(cca2: string | null): CountryStats {
     }
 
     const normalizedCca2 = cca2.toUpperCase();
-    const cached = countryStatsCache.get(normalizedCca2);
+    const cached = getValidCachedValue(countryStatsCache, normalizedCca2, COUNTRY_STATS_TTL_MS);
     if (cached) {
       setData({
         ...cached,
@@ -150,7 +242,7 @@ export function useCountryStats(cca2: string | null): CountryStats {
           }
         }
 
-        const nextData = {
+        const nextData: CountryStatsData = {
           population: country.population || 0,
           area: country.area || 0,
           currencies: country.currencies || {},
@@ -162,7 +254,7 @@ export function useCountryStats(cca2: string | null): CountryStats {
           borderCountries,
         };
 
-        countryStatsCache.set(normalizedCca2, nextData);
+        setCachedValue(countryStatsCache, normalizedCca2, nextData, COUNTRY_STATS_STORAGE_KEY);
         setData({
           ...nextData,
           loading: false,
@@ -204,6 +296,13 @@ export function useExchangeRate(currencyCode: string | null): ExchangeRate {
       return;
     }
 
+    const normalizedCurrencyCode = currencyCode.toLowerCase();
+    const cachedRate = getValidCachedValue(exchangeRateCache, normalizedCurrencyCode, EXCHANGE_RATE_TTL_MS);
+    if (cachedRate !== null) {
+      setData({ rate: cachedRate, loading: false, error: null });
+      return;
+    }
+
     const controller = new AbortController();
     
     const fetchRate = async () => {
@@ -229,12 +328,13 @@ export function useExchangeRate(currencyCode: string | null): ExchangeRate {
         }
         
         const result = await response.json();
-        const rate = result.usd?.[currencyCode.toLowerCase()];
+        const rate = result.usd?.[normalizedCurrencyCode];
         
         if (!rate) {
           throw new Error('Currency not found');
         }
         
+        setCachedValue(exchangeRateCache, normalizedCurrencyCode, rate, EXCHANGE_RATE_STORAGE_KEY);
         setData({
           rate,
           loading: false,

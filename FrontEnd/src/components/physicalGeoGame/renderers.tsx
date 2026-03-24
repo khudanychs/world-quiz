@@ -160,6 +160,25 @@ function getFeatureArea(feature: PhysicalFeature): number {
   return 0;
 }
 
+const ANTARCTIC_MARGINAL_SEAS = new Set([
+  "amundsen sea",
+  "bellingshausen sea",
+  "davis sea",
+  "ross sea",
+  "weddell sea",
+]);
+
+function getWaterZBucket(featureName: string): number {
+  const normalized = featureName.toLowerCase();
+  if (ANTARCTIC_MARGINAL_SEAS.has(normalized)) {
+    return 3;
+  }
+  if (normalized === "southern ocean") {
+    return 2;
+  }
+  return 1;
+}
+
 export function renderWaterUnderlay({ projection, zoom, isDesktop, lowDetailMode, modeStyleOverrides, waterFeatures, backgroundMarineNames, getPrecomputedPath, canClick, onFeatureClick, showingResult, lastResult, currentFeatureName, correctSet, skippedSet }: WaterUnderlayArgs): JSX.Element | null {
   if (waterFeatures.length === 0) return null;
   const modeStyle = resolveModeStyle(modeStyleOverrides);
@@ -168,10 +187,9 @@ export function renderWaterUnderlay({ projection, zoom, isDesktop, lowDetailMode
   // Keep draw order deterministic (independent of shuffled quiz order):
   // draw larger bodies first and smaller bodies last so small seas/reefs stay visible.
   const orderedWaterFeatures = [...waterFeatures].sort((a, b) => {
-    const aIsSouthern = a.name.toLowerCase() === "southern ocean";
-    const bIsSouthern = b.name.toLowerCase() === "southern ocean";
-    if (aIsSouthern !== bIsSouthern) {
-      return aIsSouthern ? 1 : -1;
+    const bucketDiff = getWaterZBucket(a.name) - getWaterZBucket(b.name);
+    if (bucketDiff !== 0) {
+      return bucketDiff;
     }
 
     const areaDiff = getFeatureArea(b) - getFeatureArea(a);

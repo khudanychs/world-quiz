@@ -185,6 +185,10 @@ function filterTinyPolygonFragments(
   return filtered.length > 0 ? filtered : [withArea[0].ring];
 }
 
+function sortRingsByAreaDesc(rings: [number, number][][]): [number, number][][] {
+  return [...rings].sort((a, b) => getPolygonArea(b) - getPolygonArea(a));
+}
+
 function polygonRingsFromGeometry(geometry: GeoJsonGeometry | null | undefined): [number, number][][] {
   if (!geometry || !geometry.coordinates) {
     return [];
@@ -372,12 +376,14 @@ function buildRangePolygonFeatures(features: GeoJsonFeature[], language: string 
   }
 
   for (const [name, value] of grouped) {
+    const orderedRings = sortRingsByAreaDesc(value.rings);
+
     if (value.rings.length === 1) {
       out.push({
         name,
         type: "mountain_range",
         difficulty: value.difficulty,
-        shape: { kind: "polygon", points: value.rings[0] },
+        shape: { kind: "polygon", points: orderedRings[0] },
       });
       continue;
     }
@@ -386,7 +392,7 @@ function buildRangePolygonFeatures(features: GeoJsonFeature[], language: string 
       name,
       type: "mountain_range",
       difficulty: value.difficulty,
-      shape: { kind: "polygon_collection", polygons: value.rings },
+      shape: { kind: "polygon_collection", polygons: orderedRings },
     });
   }
 
@@ -459,12 +465,14 @@ function buildDesertPolygonFeatures(features: GeoJsonFeature[], language: string
   }
 
   for (const [name, value] of grouped) {
+    const orderedRings = sortRingsByAreaDesc(value.rings);
+
     if (value.rings.length === 1) {
       out.push({
         name,
         type: "desert",
         difficulty: value.difficulty,
-        shape: { kind: "polygon", points: value.rings[0] },
+        shape: { kind: "polygon", points: orderedRings[0] },
       });
       continue;
     }
@@ -473,7 +481,7 @@ function buildDesertPolygonFeatures(features: GeoJsonFeature[], language: string
       name,
       type: "desert",
       difficulty: value.difficulty,
-      shape: { kind: "polygon_collection", polygons: value.rings },
+      shape: { kind: "polygon_collection", polygons: orderedRings },
     });
   }
 

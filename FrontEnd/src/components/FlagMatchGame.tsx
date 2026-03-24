@@ -41,13 +41,6 @@ export default function FlagMatchGame() {
   const navigate = useNavigate();
   const { regionKey } = useParams<{ regionKey?: string }>();
 
-  // Redirect /game/flags (no region) to /game/flags/world for better prerendering
-  useEffect(() => {
-    if (!regionKey) {
-      navigate(buildLocalizedPath('/game/flags/world', i18n.language), { replace: true });
-    }
-  }, [regionKey, navigate, i18n.language]);
-
   const routeRegionKey = regionKey?.toLowerCase();
   const hasValidRegionRoute = !!routeRegionKey && routeRegionKey in FLAG_REGION_ROUTES;
   const selectedRegion = useMemo<string | null>(() => {
@@ -64,8 +57,8 @@ export default function FlagMatchGame() {
 
   const [showRegionalIndicator, setShowRegionalIndicator] = useState(true);
 
-  // Use custom hook for game logic
-  const game = useFlagMatchGame(selectedRegion, hasUserSelected, getBaseLanguage(i18n.language));
+  // Use custom hook for game logic (only initialize if a region has been selected)
+  const game = useFlagMatchGame(showRegionSelector ? null : selectedRegion, hasUserSelected, getBaseLanguage(i18n.language));
 
   // Track if streak has been saved to avoid duplicates
   const streakSavedRef = useRef(false);

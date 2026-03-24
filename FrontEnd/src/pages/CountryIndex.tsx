@@ -25,15 +25,40 @@ interface Country {
 }
 
 const countriesCacheByLanguage = new Map<string, Country[]>();
+const warmedFlagsByLanguage = new Set<string>();
+const warmedFlagSrcs = new Set<string>();
+
+function getFlagSrc(code: string): string {
+  return `/flags-v2/${code.toLowerCase()}.svg`;
+}
+
+function warmFlagImage(src: string): void {
+  if (warmedFlagSrcs.has(src)) {
+    return;
+  }
+
+  const img = new Image();
+  img.decoding = 'async';
+  img.loading = 'eager';
+  img.src = src;
+  warmedFlagSrcs.add(src);
+}
 
 function LazyFlag({ code, name, eager = false }: { code: string; name: string; eager?: boolean }) {
-  const [shouldLoad, setShouldLoad] = useState(false);
-  const [loaded, setLoaded] = useState(false);
+  const flagSrc = getFlagSrc(code);
+  const [shouldLoad, setShouldLoad] = useState(eager || warmedFlagSrcs.has(flagSrc));
+  const [loaded, setLoaded] = useState(warmedFlagSrcs.has(flagSrc));
   const imageRef = useRef<HTMLImageElement | null>(null);
 
   useEffect(() => {
     if (eager) {
       setShouldLoad(true);
+      return;
+    }
+
+    if (warmedFlagSrcs.has(flagSrc)) {
+      setShouldLoad(true);
+      setLoaded(true);
       return;
     }
 
@@ -61,17 +86,20 @@ function LazyFlag({ code, name, eager = false }: { code: string; name: string; e
 
     observer.observe(element);
     return () => observer.disconnect();
-  }, [code, eager]);
+  }, [eager, flagSrc]);
 
   return (
     <img
       ref={imageRef}
-      src={shouldLoad ? `/flags-v2/${code.toLowerCase()}.svg` : undefined}
+      src={shouldLoad ? flagSrc : undefined}
       alt={`${name} flag`}
       className={`country-card-flag ${loaded ? 'is-loaded' : ''}`}
       loading={eager ? 'eager' : 'lazy'}
       decoding="async"
-      onLoad={() => setLoaded(true)}
+      onLoad={() => {
+        warmedFlagSrcs.add(flagSrc);
+        setLoaded(true);
+      }}
     />
   );
 }
@@ -163,6 +191,28 @@ export default function CountryIndex() {
 
     loadCountries();
   }, [currentLanguage]);
+
+  useEffect(() => {
+    if (countries.length === 0 || warmedFlagsByLanguage.has(currentLanguage)) {
+      return;
+    }
+
+    warmedFlagsByLanguage.add(currentLanguage);
+    const hotList = countries.slice(0, 140);
+
+    const warmChunk = (startIndex: number) => {
+      const endIndex = Math.min(startIndex + 24, hotList.length);
+      for (let i = startIndex; i < endIndex; i += 1) {
+        warmFlagImage(getFlagSrc(hotList[i].cca2));
+      }
+      if (endIndex < hotList.length) {
+        window.setTimeout(() => warmChunk(endIndex), 35);
+      }
+    };
+
+    const handle = window.setTimeout(() => warmChunk(0), 80);
+    return () => window.clearTimeout(handle);
+  }, [countries, currentLanguage]);
 
 
 
