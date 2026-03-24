@@ -20,6 +20,30 @@ interface ExchangeRate {
   error: string | null;
 }
 
+const countryStatsCache = new Map<string, Omit<CountryStats, 'loading' | 'error'>>();
+let borderCountryIndexPromise: Promise<Map<string, { cca2: string; name: string }>> | null = null;
+
+async function getBorderCountryIndex(): Promise<Map<string, { cca2: string; name: string }>> {
+  if (!borderCountryIndexPromise) {
+    borderCountryIndexPromise = fetch('/countries-full.json')
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error('Failed to load countries-full.json');
+        }
+        return response.json();
+      })
+      .then((allCountries: any[]) => new Map(
+        allCountries.map((c: any) => [c.cca3, { cca2: c.cca2, name: c.name.common }])
+      ))
+      .catch((error) => {
+        borderCountryIndexPromise = null;
+        throw error;
+      });
+  }
+
+  return borderCountryIndexPromise;
+}
+
 // Using fawazahmed0 exchange API - free, updated daily
 // https://github.com/fawazahmed0/exchange-api
 
@@ -55,6 +79,17 @@ export function useCountryStats(cca2: string | null): CountryStats {
         timezones: [],
         borders: [],
         borderCountries: [],
+        loading: false,
+        error: null,
+      });
+      return;
+    }
+
+    const normalizedCca2 = cca2.toUpperCase();
+    const cached = countryStatsCache.get(normalizedCca2);
+    if (cached) {
+      setData({
+        ...cached,
         loading: false,
         error: null,
       });
@@ -103,11 +138,7 @@ export function useCountryStats(cca2: string | null): CountryStats {
         let borderCountries: Array<{ cca2: string; cca3: string; name: string }> = [];
         if (country.borders && country.borders.length > 0) {
           try {
-            const allCountriesRes = await fetch('/countries-full.json');
-            const allCountries = await allCountriesRes.json();
-            const cca3ToCca2Map = new Map(
-              allCountries.map((c: any) => [c.cca3, { cca2: c.cca2, name: c.name.common }])
-            );
+            const cca3ToCca2Map = await getBorderCountryIndex();
             
             borderCountries = country.borders
               .map((cca3: string) => {
@@ -118,8 +149,8 @@ export function useCountryStats(cca2: string | null): CountryStats {
             console.error('Failed to map border countries:', err);
           }
         }
-        
-        setData({
+
+        const nextData = {
           population: country.population || 0,
           area: country.area || 0,
           currencies: country.currencies || {},
@@ -129,6 +160,11 @@ export function useCountryStats(cca2: string | null): CountryStats {
           timezones: country.timezones || [],
           borders: country.borders || [],
           borderCountries,
+        };
+
+        countryStatsCache.set(normalizedCca2, nextData);
+        setData({
+          ...nextData,
           loading: false,
           error: null,
         });

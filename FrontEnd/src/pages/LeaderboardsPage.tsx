@@ -2,13 +2,15 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Leaderboard } from '../components/Leaderboard';
 import { SEOHelmet } from '../components/SEOHelmet';
-import { SEO_TRANSLATIONS, toCanonicalUrl, getSeoOgImage } from '../seo/seo-translations';
+import { SEO_TRANSLATIONS, toCanonicalUrlWithLanguage, getSeoOgImage } from '../seo/seo-translations';
+import { getBaseLanguage } from '../utils/localeRouting';
 import './LeaderboardsPage.css';
 
 type GameMode = 'flag-match' | 'cards-match' | 'guess-country';
 
 export default function LeaderboardsPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const currentLanguage = getBaseLanguage(i18n.language);
   const seo = SEO_TRANSLATIONS.routes.leaderboards;
   const [gameMode, setGameMode] = useState<GameMode>('flag-match');
 
@@ -17,7 +19,7 @@ export default function LeaderboardsPage() {
       <SEOHelmet
         title={seo.title}
         description={seo.description}
-        canonicalUrl={toCanonicalUrl(seo.path)}
+        canonicalUrl={toCanonicalUrlWithLanguage(seo.path, currentLanguage)}
         ogImage={getSeoOgImage(seo)}
       />
       <div className="leaderboards-page">

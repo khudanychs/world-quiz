@@ -3,13 +3,14 @@ import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
 import { SEOHelmet } from './SEOHelmet';
-import { SEO_TRANSLATIONS, toCanonicalUrl, getSeoOgImage } from '../seo/seo-translations';
-import { buildLocalizedPath } from '../utils/localeRouting';
+import { SEO_TRANSLATIONS, toCanonicalUrlWithLanguage, getSeoOgImage } from '../seo/seo-translations';
+import { buildLocalizedPath, getBaseLanguage } from '../utils/localeRouting';
 import './Auth.css';
 
 export function Auth() {
   const seo = SEO_TRANSLATIONS.routes.auth;
   const { t, i18n } = useTranslation();
+  const currentLanguage = getBaseLanguage(i18n.language);
   const [searchParams, setSearchParams] = useSearchParams();
   const initialMode = searchParams.get('mode') === 'login' ? 'login' : 'register';
   const [mode, setMode] = useState<'register' | 'login'>(initialMode);
@@ -91,7 +92,7 @@ export function Auth() {
       <SEOHelmet
         title={seo.title}
         description={seo.description}
-        canonicalUrl={toCanonicalUrl(seo.path)}
+        canonicalUrl={toCanonicalUrlWithLanguage(seo.path, currentLanguage)}
         ogImage={getSeoOgImage(seo)}
         noindex={seo.noindex}
       />

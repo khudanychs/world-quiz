@@ -5,7 +5,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { BackButton } from './BackButton';
 import { FlagSelector, getFlagUrl } from './FlagSelector';
 import { SEOHelmet } from './SEOHelmet';
-import { SEO_TRANSLATIONS, toCanonicalUrl, getSeoOgImage } from '../seo/seo-translations';
+import { SEO_TRANSLATIONS, toCanonicalUrlWithLanguage, getSeoOgImage } from '../seo/seo-translations';
 import { buildLocalizedPath, getBaseLanguage } from '../utils/localeRouting';
 import './Settings.css';
 
@@ -332,7 +332,7 @@ export const Settings = () => {
       <SEOHelmet
         title={seo.title}
         description={seo.description}
-        canonicalUrl={toCanonicalUrl(seo.path)}
+        canonicalUrl={toCanonicalUrlWithLanguage(seo.path, currentLanguage)}
         ogImage={getSeoOgImage(seo)}
         noindex={seo.noindex}
       />

@@ -165,9 +165,25 @@ export function renderWaterUnderlay({ projection, zoom, isDesktop, lowDetailMode
   const modeStyle = resolveModeStyle(modeStyleOverrides);
   const sw = Math.max(0.5, 1.2 / Math.pow(zoom, 0.5));
   
+  // Keep draw order deterministic (independent of shuffled quiz order):
+  // draw larger bodies first and smaller bodies last so small seas/reefs stay visible.
+  const orderedWaterFeatures = [...waterFeatures].sort((a, b) => {
+    const aIsSouthern = a.name.toLowerCase() === "southern ocean";
+    const bIsSouthern = b.name.toLowerCase() === "southern ocean";
+    if (aIsSouthern !== bIsSouthern) {
+      return aIsSouthern ? 1 : -1;
+    }
+
+    const areaDiff = getFeatureArea(b) - getFeatureArea(a);
+    if (areaDiff !== 0) {
+      return areaDiff;
+    }
+    return a.name.localeCompare(b.name);
+  });
+  
   return (
     <g>
-      {waterFeatures.map(feature => {
+      {orderedWaterFeatures.map(feature => {
         const clickable = canClick(feature);
         const d = getPrecomputedPath(feature.name, "marine") || (feature.shape.kind === "ellipse" ? projectEllipse(feature.shape.center, feature.shape.rx, feature.shape.ry, feature.shape.rotation || 0, projection, 48) : null);
         
@@ -213,6 +229,16 @@ export function renderLandOverlay({ projection, zoom, isDesktop, lowDetailMode, 
     return getFeatureArea(b) - getFeatureArea(a);
   });
 
+  const highlightedLandNames = new Set<string>();
+  if (showingResult && lastResult) {
+    if (lastResult.clickedName) {
+      highlightedLandNames.add(lastResult.clickedName);
+    }
+    if (currentFeatureName) {
+      highlightedLandNames.add(currentFeatureName);
+    }
+  }
+
   return (
     <g>
       {LITE_TOPOGRAPHY_DEFS}
@@ -249,9 +275,21 @@ export function renderLandOverlay({ projection, zoom, isDesktop, lowDetailMode, 
         if (feature.type === "desert" || feature.type === "mountain_range") {
           const borderColor = feature.type === "desert" ? "rgba(64, 45, 24, 0.8)" : "rgba(56, 37, 27, 0.72)";
           const patternId = feature.type === "desert" ? LITE_DESERT_PATTERN_ID : LITE_MOUNTAIN_PATTERN_ID;
+          const isHighlighted = showingResult && highlightedLandNames.has(feature.name);
+          // During answer reveal, keep mountain/desert fill at base color and highlight via stroke only.
+          // This avoids inner polygons changing tint due to overlapping semi-transparent result fills.
+          const baseFillColor = FEATURE_COLORS[feature.type];
+          const fillColor = showingResult
+            ? (isHighlighted ? vis.color : baseFillColor)
+            : vis.color;
+          const stableFillOpacity = Math.min(
+            0.72,
+            (showingResult ? FEATURE_FILL_OPACITY[feature.type] : vis.fillOpacity) + 0.12,
+          );
+          const accentStrokeWidth = scaleStroke(isHighlighted ? 1.8 : 1, zoom);
           return (
             <g key={feature.name}>
-              <MemoizedFeatureShape featureName={feature.name} d={d} fill={vis.color} fillOpacity={Math.min(0.72, vis.fillOpacity + 0.12)} stroke={vis.color} strokeWidth={scaleStroke(1, zoom)} cursor={cursor} pointerEvents={clickable ? "all" : "none"} onFeatureClick={handleClick} strokeLinecap="round" strokeLinejoin="round" />
+              <MemoizedFeatureShape featureName={feature.name} d={d} fill={fillColor} fillOpacity={stableFillOpacity} stroke={vis.color} strokeWidth={accentStrokeWidth} cursor={cursor} pointerEvents={clickable ? "all" : "none"} onFeatureClick={handleClick} strokeLinecap="round" strokeLinejoin="round" />
               {isDesktop && <path d={d} fill={`url(#${patternId})`} fillOpacity={0.2} style={{ pointerEvents: "none" }} />}
               <MemoizedFeatureShape featureName={feature.name} d={d} fill="none" stroke={borderColor} strokeWidth={scaleStroke(1.5, zoom)} cursor="default" pointerEvents="none" strokeOpacity={0.95} strokeLinecap="round" strokeLinejoin="round" />
             </g>

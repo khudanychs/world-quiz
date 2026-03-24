@@ -1,14 +1,16 @@
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { SEOHelmet } from './SEOHelmet';
-import { SEO_TRANSLATIONS, toCanonicalUrl, getSeoOgImage } from '../seo/seo-translations';
+import { SEO_TRANSLATIONS, toCanonicalUrlWithLanguage, getSeoOgImage } from '../seo/seo-translations';
+import { getBaseLanguage } from '../utils/localeRouting';
 import './MainMenu.css';
 
 export default function MainMenu() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const seo = SEO_TRANSLATIONS.routes.home;
   const navigate = useNavigate();
-  const canonicalHome = toCanonicalUrl(seo.path);
+  const currentLanguage = getBaseLanguage(i18n.language);
+  const canonicalHome = toCanonicalUrlWithLanguage(seo.path, currentLanguage);
   const homeStructuredData = {
     "@context": "https://schema.org",
     "@type": "WebSite",

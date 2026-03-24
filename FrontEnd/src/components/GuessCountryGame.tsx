@@ -29,9 +29,11 @@ import {
   type GeoPoint,
 } from "../utils/guessCountryMath";
 import GuessResultRow, { type GuessResultRowData } from "./GuessResultRow";
+import { SEOHelmet } from "./SEOHelmet";
 import { incrementGuessCountryWins } from "../utils/leaderboardUtils";
 import { useAuth } from "../contexts/AuthContext";
-import { buildLocalizedPath } from "../utils/localeRouting";
+import { buildLocalizedPath, getBaseLanguage } from "../utils/localeRouting";
+import { SEO_TRANSLATIONS, toCanonicalUrlWithLanguage, getSeoOgImage } from "../seo/seo-translations";
 import "./GuessCountryGame.css";
 import "./FlagMatchGame.css";
 
@@ -134,6 +136,7 @@ function getCountryFromMapName(
 
 export default function GuessCountryGame() {
   const { t, i18n } = useTranslation();
+  const currentLanguage = getBaseLanguage(i18n.language);
   const navigate = useNavigate();
   const { user } = useAuth();
   const { dimensions, isDesktop } = useMapDimensions();
@@ -401,16 +404,23 @@ export default function GuessCountryGame() {
   );
 
   return (
-    <div
-      style={{
-        ...PAGE_CONTAINER_STYLE,
-        justifyContent: "flex-start",
-        padding: "72px 8px 14px",
-        gap: "10px",
-        overflowY: "auto",
-        overflowX: "hidden",
-      }}
-    >
+    <>
+      <SEOHelmet
+        title="Guess The Country - World Quiz"
+        description="Find the target country in five attempts using distance and direction hints on the world map."
+        canonicalUrl={toCanonicalUrlWithLanguage("/game/guess-country", currentLanguage)}
+        ogImage={getSeoOgImage(SEO_TRANSLATIONS.routes.home)}
+      />
+      <div
+        style={{
+          ...PAGE_CONTAINER_STYLE,
+          justifyContent: "flex-start",
+          padding: "72px 8px 14px",
+          gap: "10px",
+          overflowY: "auto",
+          overflowX: "hidden",
+        }}
+      >
       <BackButton onClick={() => navigate(buildLocalizedPath('/', i18n.language))} label={t("nav.menu")} />
 
       <div className="guess-country-layout">
@@ -501,6 +511,7 @@ export default function GuessCountryGame() {
           </div>
         </div>
       )}
-    </div>
+      </div>
+    </>
   );
 }

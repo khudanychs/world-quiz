@@ -1,12 +1,13 @@
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { SEOHelmet } from '../components/SEOHelmet';
-import { SEO_TRANSLATIONS, toCanonicalUrl, getSeoOgImage } from '../seo/seo-translations';
-import { buildLocalizedPath } from '../utils/localeRouting';
+import { SEO_TRANSLATIONS, toCanonicalUrlWithLanguage, getSeoOgImage } from '../seo/seo-translations';
+import { buildLocalizedPath, getBaseLanguage } from '../utils/localeRouting';
 import './NotFound.css';
 
 export default function NotFound() {
   const { t, i18n } = useTranslation();
+  const currentLanguage = getBaseLanguage(i18n.language);
   const navigate = useNavigate();
   const seo = SEO_TRANSLATIONS.routes.notFound;
 
@@ -15,7 +16,7 @@ export default function NotFound() {
       <SEOHelmet
         title={seo.title}
         description={seo.description}
-        canonicalUrl={toCanonicalUrl(seo.path)}
+        canonicalUrl={toCanonicalUrlWithLanguage(seo.path, currentLanguage)}
         ogImage={getSeoOgImage(seo)}
         noindex={seo.noindex}
       />

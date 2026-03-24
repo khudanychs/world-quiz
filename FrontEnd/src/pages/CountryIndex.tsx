@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { SEOHelmet } from '../components/SEOHelmet';
-import { SEO_TRANSLATIONS, toCanonicalUrl, getSeoOgImage } from '../seo/seo-translations';
+import { SEO_TRANSLATIONS, toCanonicalUrlWithLanguage, getSeoOgImage } from '../seo/seo-translations';
 import CountryDetails from './CountryDetails';
 import { FLAG_MATCH_SPECIAL_TERRITORIES } from '../utils/countries';
 import { getLocalizedName } from '../utils/i18nUtils';
@@ -24,12 +24,19 @@ interface Country {
   subregion: string;
 }
 
-function LazyFlag({ code, name }: { code: string; name: string }) {
+const countriesCacheByLanguage = new Map<string, Country[]>();
+
+function LazyFlag({ code, name, eager = false }: { code: string; name: string; eager?: boolean }) {
   const [shouldLoad, setShouldLoad] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const imageRef = useRef<HTMLImageElement | null>(null);
 
   useEffect(() => {
+    if (eager) {
+      setShouldLoad(true);
+      return;
+    }
+
     const element = imageRef.current;
     if (!element) {
       setShouldLoad(true);
@@ -49,12 +56,12 @@ function LazyFlag({ code, name }: { code: string; name: string }) {
           observer.disconnect();
         }
       },
-      { rootMargin: '250px 0px' }
+      { rootMargin: '900px 0px' }
     );
 
     observer.observe(element);
     return () => observer.disconnect();
-  }, [code]);
+  }, [code, eager]);
 
   return (
     <img
@@ -62,7 +69,7 @@ function LazyFlag({ code, name }: { code: string; name: string }) {
       src={shouldLoad ? `/flags-v2/${code.toLowerCase()}.svg` : undefined}
       alt={`${name} flag`}
       className={`country-card-flag ${loaded ? 'is-loaded' : ''}`}
-      loading="lazy"
+      loading={eager ? 'eager' : 'lazy'}
       decoding="async"
       onLoad={() => setLoaded(true)}
     />
@@ -80,10 +87,16 @@ export default function CountryIndex() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedRegion, setSelectedRegion] = useState('all');
   const [selectedCountry, setSelectedCountry] = useState<Country | null>(null);
-  const isCountryDetailRoute = !!countryCode;
 
   // Load countries from local JSON
   useEffect(() => {
+    const cachedCountries = countriesCacheByLanguage.get(currentLanguage);
+    if (cachedCountries) {
+      setCountries(cachedCountries);
+      setLoading(false);
+      return;
+    }
+
     const loadCountries = async () => {
       try {
         const response = await fetch('/countries-full.json');
@@ -138,7 +151,8 @@ export default function CountryIndex() {
         
         // Sort alphabetically by display name (officialName)
         formattedCountries.sort((a, b) => a.officialName.localeCompare(b.officialName));
-        
+
+        countriesCacheByLanguage.set(currentLanguage, formattedCountries);
         setCountries(formattedCountries);
         setLoading(false);
       } catch (error) {
@@ -251,93 +265,91 @@ export default function CountryIndex() {
       <SEOHelmet
         title={selectedCountry ? t('countryIndex.seoTitleWithCountry', { country: selectedCountry.officialName }) : seo.title}
         description={selectedCountry ? t('countryIndex.seoDescriptionWithCountry', { country: selectedCountry.officialName }) : seo.description}
-        canonicalUrl={selectedCountry ? toCanonicalUrl(`/countries/${selectedCountry.cca2.toLowerCase()}`) : toCanonicalUrl(seo.path)}
+        canonicalUrl={selectedCountry ? toCanonicalUrlWithLanguage(`/countries/${selectedCountry.cca2.toLowerCase()}`, currentLanguage) : toCanonicalUrlWithLanguage(seo.path, currentLanguage)}
         ogImage={getSeoOgImage(seo)}
       />
-      {!isCountryDetailRoute && (
-        <div className="country-index-wrap">
-          <div className="country-index-container">
-            {/* Header */}
-            <header className="country-index-header">
-              <h1>{t('countryIndex.title')}</h1>
-              <p>{t('countryIndex.subtitle', { count: countries.length })}</p>
-            </header>
+      <div className="country-index-wrap">
+        <div className="country-index-container">
+          {/* Header */}
+          <header className="country-index-header">
+            <h1>{t('countryIndex.title')}</h1>
+            <p>{t('countryIndex.subtitle', { count: countries.length })}</p>
+          </header>
 
-            {/* Stats Summary */}
-            <div className="country-stats-summary">
-              <div className="stat-card">
-                <h3>{countries.length}</h3>
-                <p>{t('countryIndex.stats.countries')}</p>
-              </div>
-              <div className="stat-card">
-                <h3>{filteredCountries.length}</h3>
-                <p>{t('countryIndex.stats.showing')}</p>
-              </div>
+          {/* Stats Summary */}
+          <div className="country-stats-summary">
+            <div className="stat-card">
+              <h3>{countries.length}</h3>
+              <p>{t('countryIndex.stats.countries')}</p>
             </div>
-
-            {/* Search and Filters */}
-            <div className="country-search-section">
-              <input
-                id="country-search"
-                name="country-search"
-                type="text"
-                className="country-search-input"
-                placeholder={t('countryIndex.searchPlaceholder')}
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-              <select
-                id="country-region"
-                name="country-region"
-                className="country-filter-select"
-                value={selectedRegion}
-                onChange={(e) => setSelectedRegion(e.target.value)}
-              >
-                <option value="all">{t('countryIndex.allRegions')}</option>
-                {regions.filter(r => r !== 'all').map(region => (
-                  <option key={region} value={region}>{getRegionLabel(region)}</option>
-                ))}
-              </select>
+            <div className="stat-card">
+              <h3>{filteredCountries.length}</h3>
+              <p>{t('countryIndex.stats.showing')}</p>
             </div>
-
-            {/* Country Grid */}
-            {filteredCountries.length === 0 ? (
-              <div className="country-empty">
-                <h3>{t('countryIndex.noCountriesFound')}</h3>
-                <p>{t('countryIndex.tryAdjustingFilters')}</p>
-              </div>
-            ) : (
-              <div className="country-grid">
-                {filteredCountries.map(country => (
-                  <article
-                    key={country.cca2}
-                    className="country-card"
-                    onClick={() => handleCountryClick(country)}
-                  >
-                    <LazyFlag code={country.cca2} name={country.name} />
-                    <div className="country-card-info">
-                      <h2 className="country-card-name">
-                        {getLocalizedName(
-                          {
-                            officialName: country.officialName,
-                            officialName_cs: country.officialName_cs,
-                            officialName_de: country.officialName_de,
-                          },
-                          currentLanguage,
-                          'officialName'
-                        )}
-                      </h2>
-                      <p className="country-card-capital">
-                        {country.capital[0] || 'N/A'}
-                      </p>
-                    </div>
-                  </article>
-                ))}
-              </div>
-            )}
           </div>
+
+          {/* Search and Filters */}
+          <div className="country-search-section">
+            <input
+              id="country-search"
+              name="country-search"
+              type="text"
+              className="country-search-input"
+              placeholder={t('countryIndex.searchPlaceholder')}
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+            <select
+              id="country-region"
+              name="country-region"
+              className="country-filter-select"
+              value={selectedRegion}
+              onChange={(e) => setSelectedRegion(e.target.value)}
+            >
+              <option value="all">{t('countryIndex.allRegions')}</option>
+              {regions.filter(r => r !== 'all').map(region => (
+                <option key={region} value={region}>{getRegionLabel(region)}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Country Grid */}
+          {filteredCountries.length === 0 ? (
+            <div className="country-empty">
+              <h3>{t('countryIndex.noCountriesFound')}</h3>
+              <p>{t('countryIndex.tryAdjustingFilters')}</p>
+            </div>
+          ) : (
+            <div className="country-grid">
+              {filteredCountries.map((country, index) => (
+                <article
+                  key={country.cca2}
+                  className="country-card"
+                  onClick={() => handleCountryClick(country)}
+                >
+                  <LazyFlag code={country.cca2} name={country.name} eager={index < 36} />
+                  <div className="country-card-info">
+                    <h2 className="country-card-name">
+                      {getLocalizedName(
+                        {
+                          officialName: country.officialName,
+                          officialName_cs: country.officialName_cs,
+                          officialName_de: country.officialName_de,
+                        },
+                        currentLanguage,
+                        'officialName'
+                      )}
+                    </h2>
+                    <p className="country-card-capital">
+                      {country.capital[0] || 'N/A'}
+                    </p>
+                  </div>
+                </article>
+              ))}
+            </div>
+          )}
         </div>
-      )}
+      </div>
 
       {/* Detail Modal */}
       {selectedCountry && (
