@@ -29,7 +29,6 @@ interface SharedRenderArgs {
   projection: Proj;
   zoom: number;
   isDesktop: boolean;
-  lowDetailMode?: boolean;
   modeStyleOverrides: ModeStyleOverrides;
   getPrecomputedPath: (name: string, kind?: "marine" | "river" | "lake") => string | null;
   canClick: (feature: PhysicalFeature) => boolean;
@@ -171,16 +170,18 @@ const ANTARCTIC_MARGINAL_SEAS = new Set([
 function getWaterZBucket(featureName: string): number {
   const normalized = featureName.toLowerCase();
   if (ANTARCTIC_MARGINAL_SEAS.has(normalized)) {
-    return 3;
+    return 4; // Antarctic marginal seas on top
   }
   if (normalized === "southern ocean") {
-    return 2;
+    return 3; // Southern Ocean above other oceans
   }
-  return 1;
+  if (normalized.includes("ocean")) {
+    return 1; // Other oceans (Indian, Pacific, Atlantic, Arctic) at bottom
+  }
+  return 2; // Seas in middle
 }
 
-export function renderWaterUnderlay({ projection, zoom, isDesktop, lowDetailMode, modeStyleOverrides, waterFeatures, backgroundMarineNames, getPrecomputedPath, canClick, onFeatureClick, showingResult, lastResult, currentFeatureName, correctSet, skippedSet }: WaterUnderlayArgs): JSX.Element | null {
-  if (waterFeatures.length === 0) return null;
+export function renderWaterUnderlay({ projection, zoom, isDesktop, modeStyleOverrides, waterFeatures, backgroundMarineNames, getPrecomputedPath, canClick, onFeatureClick, showingResult, lastResult, currentFeatureName, correctSet, skippedSet }: WaterUnderlayArgs): JSX.Element | null {
   const modeStyle = resolveModeStyle(modeStyleOverrides);
   const sw = Math.max(0.5, 1.2 / Math.pow(zoom, 0.5));
   
@@ -199,8 +200,50 @@ export function renderWaterUnderlay({ projection, zoom, isDesktop, lowDetailMode
     return a.name.localeCompare(b.name);
   });
   
+  // Render background marine features (Indian Ocean, Southern Ocean, etc.) from GeoJSON
+  const backgroundMarineElements = [];
+  if (backgroundMarineNames && backgroundMarineNames.length > 0) {
+    const sortedBackgroundNames = [...backgroundMarineNames].sort((aName, bName) => {
+      const bucketDiff = getWaterZBucket(aName) - getWaterZBucket(bName);
+      if (bucketDiff !== 0) {
+        return bucketDiff;
+      }
+      return aName.localeCompare(bName);
+    });
+
+    for (const featureName of sortedBackgroundNames) {
+      // Skip if this is a clickable water feature (it will be drawn later)
+      if (waterFeatures.some(f => f.name === featureName)) {
+        continue;
+      }
+
+      const d = getPrecomputedPath(featureName, "marine");
+      if (!d) {
+        continue;
+      }
+
+      backgroundMarineElements.push(
+        <MemoizedFeatureShape
+          key={`bg-${featureName}`}
+          featureName={featureName}
+          d={d}
+          fill={modeStyle.marine.fillColor}
+          stroke={modeStyle.marine.strokeColor}
+          strokeWidth={sw * 0.5}
+          cursor="default"
+          pointerEvents="none"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      );
+    }
+  }
+  
   return (
     <g>
+        {/* Background marine features (non-interactive oceans and major seas) */}
+        {backgroundMarineElements}
+      
       {orderedWaterFeatures.map(feature => {
         const clickable = canClick(feature);
         const d = getPrecomputedPath(feature.name, "marine") || (feature.shape.kind === "ellipse" ? projectEllipse(feature.shape.center, feature.shape.rx, feature.shape.ry, feature.shape.rotation || 0, projection, 48) : null);
@@ -238,7 +281,7 @@ export function renderWaterUnderlay({ projection, zoom, isDesktop, lowDetailMode
   );
 }
 
-export function renderLandOverlay({ projection, zoom, isDesktop, lowDetailMode, modeStyleOverrides, landFeatures, getPrecomputedPath, canClick, onFeatureClick, showingResult, lastResult, currentFeatureName, correctSet, skippedSet }: LandOverlayArgs): JSX.Element | null {
+export function renderLandOverlay({ projection, zoom, isDesktop, modeStyleOverrides, landFeatures, getPrecomputedPath, canClick, onFeatureClick, showingResult, lastResult, currentFeatureName, correctSet, skippedSet }: LandOverlayArgs): JSX.Element | null {
   if (landFeatures.length === 0) return null;
   const modeStyle = resolveModeStyle(modeStyleOverrides);
   
@@ -294,16 +337,16 @@ export function renderLandOverlay({ projection, zoom, isDesktop, lowDetailMode, 
           const borderColor = feature.type === "desert" ? "rgba(64, 45, 24, 0.8)" : "rgba(56, 37, 27, 0.72)";
           const patternId = feature.type === "desert" ? LITE_DESERT_PATTERN_ID : LITE_MOUNTAIN_PATTERN_ID;
           const isHighlighted = showingResult && highlightedLandNames.has(feature.name);
-          // During answer reveal, keep mountain/desert fill at base color and highlight via stroke only.
-          // This avoids inner polygons changing tint due to overlapping semi-transparent result fills.
+          
           const baseFillColor = FEATURE_COLORS[feature.type];
           const fillColor = showingResult
             ? (isHighlighted ? vis.color : baseFillColor)
             : vis.color;
-          const stableFillOpacity = Math.min(
-            0.72,
-            (showingResult ? FEATURE_FILL_OPACITY[feature.type] : vis.fillOpacity) + 0.12,
-          );
+            
+          // ZMĚNA ZDE: Pokud je to zvýrazněné (hlavně po kliknutí), zruš průhlednost!
+          // Keep terrain fills opaque so enclosed polygons do not blend with parent polygons.
+          const stableFillOpacity = 1.0;
+            
           const accentStrokeWidth = scaleStroke(isHighlighted ? 1.8 : 1, zoom);
           return (
             <g key={feature.name}>

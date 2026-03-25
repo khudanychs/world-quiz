@@ -1,4 +1,4 @@
-import { geoBounds, geoCentroid, type GeoPermissibleObjects } from "d3-geo";
+import { geoArea, geoBounds, geoCentroid, type GeoPermissibleObjects } from "d3-geo";
 import { feature as topoFeature } from "topojson-client";
 import type { Topology, GeometryCollection } from "topojson-specification";
 
@@ -7,7 +7,6 @@ export type GeoFeatureKind = "marine" | "river" | "lake";
 // Unified land base for all physical-geo modes (TopoJSON).
 export const GEO_LAND_URL = "/GeoLand.json";
 export const MARINE_URL = "/FinalMarines10m.json";
-// Non-mask modes should still render the same shared land topology.
 export const MERGED_URL = GEO_LAND_URL;
 export const RIVERS_URL = "/fixed_rivers.json";
 export const LAKES_URL = "/lakes.json";
@@ -300,9 +299,63 @@ function buildRiverGeometry(lines: [number, number][][]): GeoPermissibleObjects 
   return { type: "MultiLineString", coordinates: deduped } as GeoPermissibleObjects;
 }
 
-function normalizeFeatureGeometry(geometry: GeoPermissibleObjects | null, kind: GeoFeatureKind): GeoPermissibleObjects | null {
+function reverseRing(ring: number[][]): number[][] {
+  return [...ring].reverse();
+}
+
+function rewindGeometry(geometry: GeoPermissibleObjects): GeoPermissibleObjects {
+  const typed = geometry as GeoPermissibleObjects & {
+    type: string;
+    coordinates?: unknown;
+    geometries?: GeoPermissibleObjects[];
+  };
+
+  if (typed.type === "Polygon" && Array.isArray(typed.coordinates)) {
+    const rings = typed.coordinates as number[][][];
+    return {
+      ...typed,
+      coordinates: rings.map((ring) => reverseRing(ring)),
+    } as GeoPermissibleObjects;
+  }
+
+  if (typed.type === "MultiPolygon" && Array.isArray(typed.coordinates)) {
+    const polygons = typed.coordinates as number[][][][];
+    return {
+      ...typed,
+      coordinates: polygons.map((polygon) => polygon.map((ring) => reverseRing(ring))),
+    } as GeoPermissibleObjects;
+  }
+
+  if (typed.type === "GeometryCollection" && Array.isArray(typed.geometries)) {
+    return {
+      ...typed,
+      geometries: typed.geometries.map((child) => rewindGeometry(child)),
+    } as GeoPermissibleObjects;
+  }
+
+  return geometry;
+}
+
+function normalizeMarineGeometryWinding(geometry: GeoPermissibleObjects, featureName?: string): GeoPermissibleObjects {
+  // Mapshaper již správně ošetřil orientaci (winding) polygonů.
+  // Pevné pravidlo na přetáčení oceánů je tedy zbytečné a dělalo z nich "zbytek světa".
+  
+  // Bezpečnostní pojistka d3-geo: Pokud polygon zabírá více než polovinu planety (2 * Pí),
+  // znamená to, že je naruby a teprve tehdy ho přetočíme.
+  if (geoArea(geometry as unknown as Parameters<typeof geoArea>[0]) > 2 * Math.PI) {
+    return rewindGeometry(geometry);
+  }
+  
+  return geometry;
+}
+
+function normalizeFeatureGeometry(geometry: GeoPermissibleObjects | null, kind: GeoFeatureKind, featureName?: string): GeoPermissibleObjects | null {
   if (!geometry) {
     return null;
+  }
+
+  if (kind === "marine") {
+    return normalizeMarineGeometryWinding(geometry, featureName);
   }
 
   if (kind !== "river") {
@@ -374,9 +427,9 @@ function getGeoFeatureName(feature: GeoFeature): string | null {
   return findNestedFeatureName(feature.properties);
 }
 
-function mergeGeometriesByKind(geometries: GeoPermissibleObjects[], kind: GeoFeatureKind): GeoPermissibleObjects | null {
+function mergeGeometriesByKind(geometries: GeoPermissibleObjects[], kind: GeoFeatureKind, featureName?: string): GeoPermissibleObjects | null {
   const normalized = geometries
-    .map((geometry) => normalizeFeatureGeometry(geometry, kind))
+    .map((geometry) => normalizeFeatureGeometry(geometry, kind, featureName))
     .filter((geometry): geometry is GeoPermissibleObjects => geometry !== null);
 
   if (normalized.length === 0) {
@@ -399,7 +452,7 @@ function buildGeoFeatureLookup(data: GeoFeatureCollection | null, kind: GeoFeatu
 
   for (const feature of data?.features ?? []) {
     const name = getGeoFeatureName(feature);
-    const geometry = normalizeFeatureGeometry(feature.geometry, kind);
+    const geometry = normalizeFeatureGeometry(feature.geometry, kind, name ?? undefined);
     if (!name || !geometry) {
       continue;
     }
@@ -415,7 +468,7 @@ function buildGeoFeatureLookup(data: GeoFeatureCollection | null, kind: GeoFeatu
 
   const lookup = new Map<string, GeoFeature>();
   for (const [name, geometries] of grouped) {
-    const geometry = mergeGeometriesByKind(geometries, kind);
+    const geometry = mergeGeometriesByKind(geometries, kind, name);
     if (!geometry) {
       continue;
     }
@@ -450,6 +503,7 @@ export function buildGeoFeatureGetter(
         .map((feature) => feature.geometry)
         .filter((value): value is GeoPermissibleObjects => value !== null),
       kind,
+      name,
     );
 
     if (!geometry) {

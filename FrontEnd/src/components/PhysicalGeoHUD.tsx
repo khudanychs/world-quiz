@@ -14,6 +14,7 @@ interface PhysicalGeoHUDProps {
   currentIdx: number;
   featuresLength: number;
   currentStreak: number;
+  featureDisplayNameByName: Record<string, string>;
   showingResult: boolean;
   lastResult: { clickedName: string; correct: boolean } | null;
   onStartNewGame: () => void;
@@ -32,6 +33,7 @@ export default function PhysicalGeoHUD({
   currentIdx,
   featuresLength,
   currentStreak,
+  featureDisplayNameByName,
   showingResult,
   lastResult,
   onStartNewGame,
@@ -90,6 +92,10 @@ export default function PhysicalGeoHUD({
     defaultValue: catInfo.label,
   });
   const currentFeatureDisplayName = toPhysicalFeatureDisplayName(currentFeature.displayName || currentFeature.name);
+  const getLocalizedFeatureName = (rawName: string): string => {
+    const localized = featureDisplayNameByName[rawName];
+    return toPhysicalFeatureDisplayName(localized || rawName);
+  };
 
   // Result feedback (skip silently shows highlighted answer without banner)
   if (showingResult && lastResult && lastResult.clickedName !== "") {
@@ -107,7 +113,7 @@ export default function PhysicalGeoHUD({
         </strong>
         {!lastResult.correct && (
           <span style={{ fontSize: "clamp(10px, 2.2vw, 13px)", opacity: 0.7 }}>
-            {t('physicalGeoHUD.youClicked', { name: toPhysicalFeatureDisplayName(lastResult.clickedName) })}
+            {t('physicalGeoHUD.youClicked', { name: getLocalizedFeatureName(lastResult.clickedName) })}
           </span>
         )}
         <span style={{ opacity: 0.8, fontSize: "clamp(10px, 2.4vw, 14px)", whiteSpace: "nowrap" }}>
