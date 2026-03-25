@@ -1,5 +1,6 @@
-import {useState, useMemo} from 'react';
+import {useState, useEffect} from 'react';
 import { useTranslation } from 'react-i18next';
+import { getFlagUrlSync } from '../utils/flagUtils';
 import './FlagSelector.css';
 
 interface FlagSelectorProps {
@@ -7,39 +8,33 @@ interface FlagSelectorProps {
   onFlagSelect: (countryCode: string) => void;
 }
 
-// Dynamically import all flags from circle-flags package as URLs
-const flagModules = import.meta.glob('/node_modules/circle-flags/flags/*.svg', { 
-  eager: true, 
-  query: '?url',
-  import: 'default' 
-}) as Record<string, string>;
-
-// Build a map of country code -> URL
-const flagUrlMap: Record<string, string> = {};
-Object.entries(flagModules).forEach(([path, url]) => {
-  const match = path.match(/\/([a-z-]+)\.svg$/);
-  if (match) {
-    flagUrlMap[match[1]] = url;
-  }
-});
-
-// Get sorted list of available flag codes
-const availableFlagCodes = Object.keys(flagUrlMap).sort();
-
-// Export helper function for other components to get flag URL
-export const getFlagUrl = (countryCode: string): string | null => {
-  return flagUrlMap[countryCode.toLowerCase()] || null;
-};
-
-// Export the list of available flags
-export const getAvailableFlags = () => availableFlagCodes;
-
 export const FlagSelector = ({ selectedFlag, onFlagSelect }: FlagSelectorProps) => {
   const { t } = useTranslation();
     const [searchTerm, setSearchTerm] = useState('');
-    
-    const availableFlags = useMemo(() => availableFlagCodes, []);
+    const [availableFlags, setAvailableFlags] = useState<string[]>([]);
 
+    useEffect(() => {
+      let cancelled = false;
+      const loadManifest = async () => {
+        try {
+          const response = await fetch('/circle-flags-manifest.json', { cache: 'force-cache' });
+          if (!response.ok) return;
+          const data = (await response.json()) as string[];
+          if (!cancelled) {
+            setAvailableFlags(Array.isArray(data) ? data : []);
+          }
+        } catch {
+          if (!cancelled) {
+            setAvailableFlags([]);
+          }
+        }
+      };
+      loadManifest();
+      return () => {
+        cancelled = true;
+      };
+    }, []);
+    
     const filteredCountryCodes = availableFlags.filter(code =>
         code.toLowerCase().includes(searchTerm.toLowerCase())
     );
@@ -70,7 +65,7 @@ export const FlagSelector = ({ selectedFlag, onFlagSelect }: FlagSelectorProps) 
               title={countryCode.toUpperCase()}
             >
               <img 
-                src={flagUrlMap[countryCode]}
+                src={getFlagUrlSync(countryCode) || ''}
                 alt={countryCode.toUpperCase()}
                 className="flag-svg"
                 loading="lazy"

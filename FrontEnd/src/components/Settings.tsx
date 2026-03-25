@@ -1,9 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
 import { BackButton } from './BackButton';
-import { FlagSelector, getFlagUrl } from './FlagSelector';
+import { getFlagUrlSync } from '../utils/flagUtils';
 import { SEOHelmet } from './SEOHelmet';
 import { SEO_TRANSLATIONS, toCanonicalUrlWithLanguage, getSeoOgImage } from '../seo/seo-translations';
 import { buildLocalizedPath, getBaseLanguage } from '../utils/localeRouting';
@@ -12,6 +12,7 @@ import './Settings.css';
 // Cache for user streak data (survives component remounts)
 const streakCache: { [userId: string]: { streak: number; timestamp: number } } = {};
 const STREAK_CACHE_DURATION = 10 * 60 * 1000; // 10 minutes - optimized for Firebase free tier
+const FlagSelector = lazy(() => import('./FlagSelector').then(m => ({ default: m.FlagSelector })));
 
 export const Settings = () => {
   const seo = SEO_TRANSLATIONS.routes.settings;
@@ -323,8 +324,26 @@ export const Settings = () => {
   const handleLanguageChange = async (nextLanguage: 'en' | 'cs' | 'de') => {
     if (nextLanguage !== currentLanguage) {
       await i18n.changeLanguage(nextLanguage);
+
+      // Persist preferred language for authenticated users.
+      if (user?.uid) {
+        try {
+          const [{ doc, setDoc, serverTimestamp }, { db }] = await Promise.all([
+            import('firebase/firestore'),
+            import('../firebase'),
+          ]);
+          await setDoc(doc(db, 'users', user.uid), {
+            preferredLanguage: nextLanguage,
+            preferredLanguageUpdatedAt: serverTimestamp(),
+          }, { merge: true });
+        } catch (err) {
+          console.error('Failed to persist preferred language:', err);
+        }
+      }
     }
-    navigate(buildLocalizedPath(location.pathname, nextLanguage));
+
+    // Replace history entry so Back button ignores language-only switches.
+    navigate(buildLocalizedPath(location.pathname, nextLanguage), { replace: true });
   };
 
   return (
@@ -354,7 +373,6 @@ export const Settings = () => {
         <div className="settings-content">
           <div className="settings-section">
             <h3>{t('settings.language.title')}</h3>
-            <p className="settings-language-note">{t('settings.language.note')}</p>
             <div className="settings-language-switcher" role="group" aria-label={t('settings.language.switcherAriaLabel')}>
               <button
                 type="button"
@@ -389,10 +407,10 @@ export const Settings = () => {
             <div className="profile-picture-container">
               {avatarUrl && !selectedFlag ? (
                 <img src={avatarUrl} alt="Profile" className="profile-picture-preview" />
-              ) : selectedFlag && getFlagUrl(selectedFlag) ? (
+              ) : selectedFlag && getFlagUrlSync(selectedFlag) ? (
                 <div className="profile-flag-wrapper">
                   <img 
-                    src={getFlagUrl(selectedFlag)!}
+                    src={getFlagUrlSync(selectedFlag)!}
                     alt={selectedFlag.toUpperCase()}
                     style={{ width: '100%', height: '100%', borderRadius: '50%' }}
                   />
@@ -634,10 +652,12 @@ export const Settings = () => {
               </div>
               
               <div className="flag-modal-body">
-                <FlagSelector 
-                  selectedFlag={tempSelectedFlag}
-                  onFlagSelect={setTempSelectedFlag}
-                />
+                <Suspense fallback={<div className="settings-loading-text">Loading flags...</div>}>
+                  <FlagSelector 
+                    selectedFlag={tempSelectedFlag}
+                    onFlagSelect={setTempSelectedFlag}
+                  />
+                </Suspense>
               </div>
               
               <div className="flag-modal-footer">

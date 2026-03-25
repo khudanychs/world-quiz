@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { getFlagUrlAsync } from '../utils/flagUtils';
-import { buildLocalizedPath, stripLocalePrefix } from '../utils/localeRouting';
+import { getFlagUrlSync } from '../utils/flagUtils';
+import { buildLocalizedPath, getBaseLanguage, stripLocalePrefix } from '../utils/localeRouting';
 import './Navbar.css';
 
 export function Navbar() {
@@ -11,21 +11,13 @@ export function Navbar() {
   const { user, isAuthenticated, logout } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 1000);
-  const [flagUrl, setFlagUrl] = useState<string | null>(null);
   const navigate = useNavigate();
   const location = useLocation();
+  const currentLanguage = getBaseLanguage(i18n.language);
 
   // Profile flag comes directly from user context now (cached in localStorage)
   const profileFlag = user?.profileFlag || null;
-  
-  // Load flag URL lazily
-  useEffect(() => {
-    if (profileFlag) {
-      getFlagUrlAsync(profileFlag).then(url => setFlagUrl(url));
-    } else {
-      setFlagUrl(null);
-    }
-  }, [profileFlag]);
+  const flagUrl = profileFlag ? getFlagUrlSync(profileFlag) : null;
 
   useEffect(() => {
     const handleResize = () => {
@@ -51,6 +43,43 @@ export function Navbar() {
     navigate(buildLocalizedPath(path, i18n.language));
     setIsMobileMenuOpen(false);
   };
+
+  const handleLanguageChange = async (nextLanguage: 'en' | 'cs' | 'de') => {
+    if (nextLanguage !== currentLanguage) {
+      await i18n.changeLanguage(nextLanguage);
+    }
+    navigate(buildLocalizedPath(location.pathname, nextLanguage), { replace: true });
+  };
+
+  const renderGuestLanguageSwitcher = (mobile = false) => (
+    <div
+      className={`navbar-language-switcher ${mobile ? 'mobile' : ''}`}
+      role="group"
+      aria-label={t('settings.language.switcherAriaLabel')}
+    >
+      <button
+        type="button"
+        className={`navbar-lang-btn ${currentLanguage === 'en' ? 'active' : ''}`}
+        onClick={() => handleLanguageChange('en')}
+      >
+        EN
+      </button>
+      <button
+        type="button"
+        className={`navbar-lang-btn ${currentLanguage === 'cs' ? 'active' : ''}`}
+        onClick={() => handleLanguageChange('cs')}
+      >
+        CZ
+      </button>
+      <button
+        type="button"
+        className={`navbar-lang-btn ${currentLanguage === 'de' ? 'active' : ''}`}
+        onClick={() => handleLanguageChange('de')}
+      >
+        DE
+      </button>
+    </div>
+  );
 
   return (
     <>
@@ -138,6 +167,7 @@ export function Navbar() {
                 </>
               ) : (
                 <>
+                  {renderGuestLanguageSwitcher()}
                   <a href="/auth?mode=login" className="navbar-button-secondary">
                     {t('nav.login')}
                   </a>
@@ -231,6 +261,7 @@ export function Navbar() {
                 </>
               ) : (
                 <>
+                  {renderGuestLanguageSwitcher(true)}
                   <a href="/auth?mode=login" className="mobile-auth-button secondary">
                     {t('nav.login')}
                   </a>

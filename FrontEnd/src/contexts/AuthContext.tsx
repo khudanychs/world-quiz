@@ -1,5 +1,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import { getFirebaseErrorMessage } from '../utils/firebaseErrors';
+import i18n from '../i18n';
+import { getBaseLanguage } from '../utils/localeRouting';
 
 // Firebase User type (minimal definition to avoid importing the full module)
 interface FirebaseUser {
@@ -77,13 +79,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Initialize Firebase and set up auth listener
   useEffect(() => {
     let unsubscribe: (() => void) | null = null;
+    let disposed = false;
     
     (async () => {
       try {
         const { auth, firestore, authInstance, db } = await getFirebaseModules();
+        if (disposed) return;
         setFirebaseReady(true);
         
-        unsubscribe = auth.onAuthStateChanged(authInstance, async (firebaseUser) => {
+        const authUnsubscribe = auth.onAuthStateChanged(authInstance, async (firebaseUser) => {
+          if (disposed) return;
           if (firebaseUser) {
             // Check if username exists in Firestore, if not create it
             // This is a fallback in case registration failed to create it
@@ -130,6 +135,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             
             // Load profile flag from Firestore or localStorage cache
             let profileFlag: string | null = null;
+            let preferredLanguage: 'en' | 'cs' | 'de' | null = null;
             const cachedFlag = localStorage.getItem(`profileFlag_${firebaseUser.uid}`);
             
             if (cachedFlag) {
@@ -150,10 +156,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                   localStorage.removeItem(`profileFlag_${firebaseUser.uid}`);
                   profileFlag = null;
                 }
+
+                if (typeof userData.preferredLanguage === 'string') {
+                  preferredLanguage = getBaseLanguage(userData.preferredLanguage);
+                }
               }
             } catch (error) {
               console.error('Error loading profile flag:', error);
               // Use cached value if fetch fails
+            }
+
+            if (preferredLanguage && getBaseLanguage(i18n.language) !== preferredLanguage) {
+              await i18n.changeLanguage(preferredLanguage);
             }
             
             const formattedUser: User = {
@@ -165,20 +179,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               createdAt: firebaseUser.metadata.creationTime || null,
               profileFlag,
             };
-            setUser(formattedUser);
+            if (!disposed) {
+              setUser(formattedUser);
+            }
           } else {
-            setUser(null);
+            if (!disposed) {
+              setUser(null);
+            }
           }
-          setLoading(false);
+          if (!disposed) {
+            setLoading(false);
+          }
         });
+
+        if (disposed) {
+          authUnsubscribe();
+          return;
+        }
+        unsubscribe = authUnsubscribe;
       } catch (error) {
         console.error('Failed to initialize Firebase:', error);
-        setLoading(false);
+        if (!disposed) {
+          setLoading(false);
+        }
       }
     })();
 
     // Cleanup subscription on unmount
     return () => {
+      disposed = true;
       if (unsubscribe) unsubscribe();
     };
   }, []);
@@ -311,6 +340,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (firebaseUser) {
       // Fetch fresh data from Firestore
       let profileFlag: string | null = null;
+      let preferredLanguage: 'en' | 'cs' | 'de' | null = null;
       
       try {
         const userDocRef = firestore.doc(db, 'users', firebaseUser.uid);
@@ -325,12 +355,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             localStorage.removeItem(`profileFlag_${firebaseUser.uid}`);
             profileFlag = null;
           }
+
+          if (typeof userData.preferredLanguage === 'string') {
+            preferredLanguage = getBaseLanguage(userData.preferredLanguage);
+          }
         }
       } catch (error) {
         console.error('Error loading profile flag:', error);
         // Fallback to localStorage cache if fetch fails
         const cachedFlag = localStorage.getItem(`profileFlag_${firebaseUser.uid}`);
         profileFlag = cachedFlag;
+      }
+
+      if (preferredLanguage && getBaseLanguage(i18n.language) !== preferredLanguage) {
+        await i18n.changeLanguage(preferredLanguage);
       }
       
       const formattedUser: User = {
