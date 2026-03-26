@@ -192,12 +192,18 @@ export default function App() {
     navigate(`${localizedPath}${location.search}${location.hash}`, { replace: true });
   }, [i18n.language, languageFromPath, location.hash, location.pathname, location.search, navigate]);
 
+  // Redirect URL to match stored language preference
+  // This ensures consistent language even when using back button
   useEffect(() => {
     if (!languageFromPath) return;
-    if (getBaseLanguage(i18n.language) !== languageFromPath) {
-      i18n.changeLanguage(languageFromPath);
+    const preferredLanguage = getBaseLanguage(i18n.language);
+    if (preferredLanguage !== languageFromPath) {
+      // User's stored language preference differs from URL language
+      // Redirect to the preferred language version
+      const localizedPath = buildLocalizedPath(location.pathname, preferredLanguage);
+      navigate(`${localizedPath}${location.search}${location.hash}`, { replace: true });
     }
-  }, [i18n, i18n.language, languageFromPath]);
+  }, [i18n.language, languageFromPath, location.hash, location.pathname, location.search, navigate]);
 
   useEffect(() => {
     const previousPath = previousPlainPathRef.current;
