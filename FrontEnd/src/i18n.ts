@@ -21,8 +21,10 @@ i18n
     nonExplicitSupportedLngs: true,
     fallbackLng: 'en',
     detection: {
-      order: ['path', 'querystring', 'localStorage', 'cookie', 'navigator', 'htmlTag'],
-      lookupFromPathIndex: 0,
+      // Prioritize stored preference (localStorage, cookie) over URL path
+      // This ensures back button respects the user's explicitly chosen language
+      order: ['localStorage', 'cookie', 'path', 'querystring', 'navigator', 'htmlTag'],
+      lookupFromPathIndex: 2, // 'path' is now at index 2
       caches: ['localStorage', 'cookie'],
       convertDetectedLanguage: (lng: string) => {
         const value = (lng || '').toLowerCase();
