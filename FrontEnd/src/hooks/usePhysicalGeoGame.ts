@@ -1,7 +1,7 @@
 import { useState, useRef, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import {
-  getFeaturesByCategory,
+  getFeaturesByCategoryAsync,
   shuffleFeatures,
   type PhysicalFeature,
 } from "../utils/physicalFeatures";
@@ -80,7 +80,7 @@ export function usePhysicalGeoGame(categoryKey: string = "all"): PhysicalGeoGame
       baseFeatures = await loadDesertPolygonFeatures(i18n.language);
       return localizePhysicalFeatures(baseFeatures, i18n.language);
     }
-    baseFeatures = getFeaturesByCategory(key);
+    baseFeatures = await getFeaturesByCategoryAsync(key);
     return localizePhysicalFeatures(baseFeatures, i18n.language);
   }, [i18n.language]);
 
@@ -109,13 +109,14 @@ export function usePhysicalGeoGame(categoryKey: string = "all"): PhysicalGeoGame
       setShowingResult(false);
       setLastResult(null);
       setLoading(false);
-    } catch {
+    } catch (error) {
+      console.error('Failed to load category features:', error);
       if (requestId !== requestIdRef.current) {
         return;
       }
 
-      const fallback = shuffleFeatures(getFeaturesByCategory(key));
-      setFeatures(fallback);
+      // Fallback to empty state on error
+      setFeatures([]);
       setCurrentIdx(0);
       setScore(0);
       setCurrentStreak(0);
@@ -123,7 +124,7 @@ export function usePhysicalGeoGame(categoryKey: string = "all"): PhysicalGeoGame
       setSkippedCount(0);
       setCorrectSet(new Set());
       setSkippedSet(new Set());
-      setGameOver(false);
+      setGameOver(true);
       setHasWon(false);
       setShowWinAnimation(false);
       setShowingResult(false);

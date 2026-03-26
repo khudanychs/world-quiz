@@ -164,7 +164,7 @@ export default function GameHUD({
         style={{
           marginLeft: 4,
           padding: "clamp(4px, 1.5vw, 6px) clamp(8px, 2vw, 10px)",
-          minWidth: "clamp(50px, 14vw, 60px)",
+          minWidth: "clamp(92px, 14vw, 118px)",
           borderRadius: "clamp(6px, 1.8vw, 8px)",
           border: "1px solid rgba(234, 179, 8, 0.4)",
           background: "rgba(234, 179, 8, 0.15)",
@@ -172,6 +172,8 @@ export default function GameHUD({
           fontSize: "clamp(10px, 2.4vw, 13px)",
           cursor: "pointer",
           fontWeight: 500,
+          whiteSpace: "nowrap",
+          flexShrink: 0,
         }}
       >
         {t('gameHUD.skip')}
