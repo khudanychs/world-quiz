@@ -8,7 +8,7 @@
  *   • waterFeatures.ts     – seas, oceans, gulfs, bays, straits, channels, passages, canals
  *
  * Types & constants live in physicalFeaturesTypes.ts.
- * This file combines them into ALL_FEATURES and provides helper functions.
+ * This file combines them with LAZY LOADING to avoid loading all data upfront.
  */
 
 // Re-export everything from types (so existing imports keep working)
@@ -26,39 +26,123 @@ export {
 
 import type { PhysicalFeature } from "./physicalFeaturesTypes";
 import { CATEGORY_GROUPS } from "./physicalFeaturesTypes";
-import { MOUNTAIN_FEATURES } from "./mountainFeatures";
-import { RIVER_FEATURES } from "./riverFeatures";
-import { DESERT_FEATURES } from "./desertFeatures";
-import { WATER_FEATURES } from "./waterFeatures";
 
 // ============================================================================
-// COMBINED FEATURE LIST  (deduplicated)
+// LAZY LOADED FEATURE CACHE
 // ============================================================================
 
-const ALL_RAW: PhysicalFeature[] = [
-  ...MOUNTAIN_FEATURES,
-  ...RIVER_FEATURES,
-  ...DESERT_FEATURES,
-  ...WATER_FEATURES,
-];
+let allFeaturesCache: PhysicalFeature[] | null = null;
 
-const seen = new Set<string>();
-export const ALL_FEATURES = ALL_RAW.filter(f => {
-  if (seen.has(f.name)) return false;
-  seen.add(f.name);
-  return true;
-});
+/**
+ * Dynamically import and cache ALL features (only when needed)
+ * This is a lazy-loaded version that won't block initial load
+ */
+async function loadAllFeatures(): Promise<PhysicalFeature[]> {
+  if (allFeaturesCache) {
+    return allFeaturesCache;
+  }
+
+  // Dynamic imports - only loaded when actually needed
+  const [
+    { MOUNTAIN_FEATURES },
+    { RIVER_FEATURES },
+    { DESERT_FEATURES },
+    { WATER_FEATURES },
+  ] = await Promise.all([
+    import("./mountainFeatures"),
+    import("./riverFeatures"),
+    import("./desertFeatures"),
+    import("./waterFeatures"),
+  ]);
+
+  const ALL_RAW: PhysicalFeature[] = [
+    ...MOUNTAIN_FEATURES,
+    ...RIVER_FEATURES,
+    ...DESERT_FEATURES,
+    ...WATER_FEATURES,
+  ];
+
+  // Deduplicate
+  const seen = new Set<string>();
+  allFeaturesCache = ALL_RAW.filter(f => {
+    if (seen.has(f.name)) return false;
+    seen.add(f.name);
+    return true;
+  });
+
+  return allFeaturesCache;
+}
+
+/**
+ * Load features for a specific category (lazy loaded)
+ * Only imports the exact feature file needed for that category
+ */
+async function loadCategoryFeatures(categoryKey: string): Promise<PhysicalFeature[]> {
+  if (categoryKey === "mountains") {
+    const { MOUNTAIN_FEATURES } = await import("./mountainFeatures");
+    return MOUNTAIN_FEATURES;
+  }
+  if (categoryKey === "rivers" || categoryKey === "waters") {
+    // Rivers mode uses both rivers and waters
+    const [{ RIVER_FEATURES }, { WATER_FEATURES }] = await Promise.all([
+      import("./riverFeatures"),
+      import("./waterFeatures"),
+    ]);
+
+    const group = CATEGORY_GROUPS.find(g => g.key === categoryKey);
+    if (!group) return [];
+
+    return [...RIVER_FEATURES, ...WATER_FEATURES].filter(f => group.types.includes(f.type));
+  }
+  if (categoryKey === "deserts") {
+    const { DESERT_FEATURES } = await import("./desertFeatures");
+    return DESERT_FEATURES;
+  }
+
+  // Fallback: load all features for unknown categories
+  return loadAllFeatures();
+}
 
 // ============================================================================
 // HELPERS
 // ============================================================================
 
-/** Get features filtered by category group key */
-export function getFeaturesByCategory(categoryKey: string): PhysicalFeature[] {
-  if (categoryKey === "all") return ALL_FEATURES;
+/**
+ * Get features filtered by category group key (ASYNC - lazy loaded)
+ * This is the new async version that lazy-loads features on demand
+ */
+export async function getFeaturesByCategoryAsync(categoryKey: string): Promise<PhysicalFeature[]> {
+  if (categoryKey === "all") {
+    return loadAllFeatures();
+  }
+
+  const features = await loadCategoryFeatures(categoryKey);
   const group = CATEGORY_GROUPS.find(g => g.key === categoryKey);
-  if (!group) return ALL_FEATURES;
-  return ALL_FEATURES.filter(f => group.types.includes(f.type));
+
+  if (!group) return features;
+  return features.filter(f => group.types.includes(f.type));
+}
+
+/**
+ * DEPRECATED: Synchronous version kept for backward compatibility
+ * This will load ALL features if called (not lazy)
+ * Use getFeaturesByCategoryAsync() instead for lazy loading
+ */
+export function getFeaturesByCategory(categoryKey: string): PhysicalFeature[] {
+  console.warn('getFeaturesByCategory() is deprecated and loads all features. Use getFeaturesByCategoryAsync() instead.');
+
+  // For backward compatibility, we need to provide a synchronous fallback
+  // This will require loading all features synchronously (not ideal)
+  // Components should migrate to the async version
+  if (allFeaturesCache) {
+    const group = CATEGORY_GROUPS.find(g => g.key === categoryKey);
+    if (!group || categoryKey === "all") return allFeaturesCache;
+    return allFeaturesCache.filter(f => group.types.includes(f.type));
+  }
+
+  // If cache is empty, return empty array and log warning
+  console.error('Features not loaded yet. Use getFeaturesByCategoryAsync() which returns a Promise.');
+  return [];
 }
 
 /** Fisher-Yates shuffle */

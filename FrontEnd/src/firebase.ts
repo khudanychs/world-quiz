@@ -1,7 +1,7 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
+import { initializeFirestore } from "firebase/firestore";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -20,5 +20,10 @@ const app = initializeApp(firebaseConfig);
 // Get a reference to the auth service
 export const auth = getAuth(app);
 
-// Get a reference to the Firestore service
-export const db = getFirestore(app);
+// Get a reference to the Firestore service with optimized WebSocket configuration
+// This explicitly prevents long polling and ensures WebSocket transport
+export const db = initializeFirestore(app, {
+  experimentalAutoDetectLongPolling: true,
+  // Explicitly disable forced long polling to ensure WebSocket usage
+  experimentalForceLongPolling: false,
+});

@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { getFlagUrlSync } from '../utils/flagUtils';
 import { buildLocalizedPath, getBaseLanguage, stripLocalePrefix } from '../utils/localeRouting';
+import { startPrefetch } from '../utils/dataPrefetch';
 import './Navbar.css';
 
 export function Navbar() {
@@ -14,10 +15,19 @@ export function Navbar() {
   const navigate = useNavigate();
   const location = useLocation();
   const currentLanguage = getBaseLanguage(i18n.language);
+  const prefetchTriggered = useRef(false);
 
   // Profile flag comes directly from user context now (cached in localStorage)
   const profileFlag = user?.profileFlag || null;
   const flagUrl = profileFlag ? getFlagUrlSync(profileFlag) : null;
+
+  // Intent-based prefetching: only trigger when user shows interest in leaderboards
+  const handleLeaderboardHover = () => {
+    if (!prefetchTriggered.current) {
+      prefetchTriggered.current = true;
+      startPrefetch();
+    }
+  };
 
   useEffect(() => {
     const handleResize = () => {
@@ -109,6 +119,7 @@ export function Navbar() {
               <button
                 className={`nav-link ${isActive('/leaderboards') ? 'active' : ''}`}
                 onClick={() => handleNavClick('/leaderboards')}
+                onMouseEnter={handleLeaderboardHover}
               >
                 {t('nav.leaderboards')}
               </button>
@@ -220,6 +231,7 @@ export function Navbar() {
               <button
                 className={`mobile-nav-link ${isActive('/leaderboards') ? 'active' : ''}`}
                 onClick={() => handleNavClick('/leaderboards')}
+                onTouchStart={handleLeaderboardHover}
               >
                 🏆 {t('nav.leaderboards')}
               </button>

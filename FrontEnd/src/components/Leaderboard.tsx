@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import './Leaderboard.css';
 import { getTodayDateString } from "../utils/dateUtils";
 import { buildLocalizedPath } from '../utils/localeRouting';
+import { prefetchCache } from '../utils/dataPrefetch';
 
 // Define the structure of a streak document
 interface StreakEntry {
@@ -33,6 +34,7 @@ interface GuessCountryEntry {
 type GameMode = 'flag-match' | 'cards-match' | 'guess-country';
 
 // Cache for leaderboard data (prevents excessive reads on filter switching)
+// This cache is now also populated by the prefetch module for instant load
 const leaderboardCache: {
   'flag-match': {
     today: { data: StreakEntry[]; timestamp: number } | null;
@@ -63,13 +65,24 @@ const leaderboardCache: {
 
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minute cache to reduce Firebase reads
 
-// Hook for leaderboard data - fetches top 10 with caching
+// Hook for leaderboard data - fetches top 10 with caching and prefetch support
 function useLeaderboard(gameMode: GameMode, timeFilter: 'today' | 'allTime') {
   const [entries, setEntries] = useState<StreakEntry[] | ScoreEntry[] | GuessCountryEntry[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchLeaderboard = useCallback(async (forceRefresh = false) => {
-    // Check cache first (unless force refresh)
+    // First, check if we have prefetched data (this runs in parallel with Auth)
+    const prefetched = prefetchCache[gameMode][timeFilter];
+    if (prefetched && !forceRefresh) {
+      // Use prefetched data immediately - no loading state!
+      setEntries(prefetched.data as any);
+      setLoading(false);
+      // Also update local cache with prefetched data
+      (leaderboardCache[gameMode][timeFilter] as any) = prefetched;
+      return;
+    }
+
+    // Check local cache (unless force refresh)
     const cached = leaderboardCache[gameMode][timeFilter];
     const now = Date.now();
 
@@ -177,7 +190,7 @@ function useLeaderboard(gameMode: GameMode, timeFilter: 'today' | 'allTime') {
 
   useEffect(() => {
     fetchLeaderboard();
-    
+
     // Auto-refresh every 10 minutes (force refresh to bypass cache) - optimized for Firebase free tier
     const interval = setInterval(() => fetchLeaderboard(true), 10 * 60 * 1000);
     return () => clearInterval(interval);
