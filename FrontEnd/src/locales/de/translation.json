@@ -223,13 +223,11 @@
     "pregameDescription": "Ordnen Sie Karten so schnell wie möglich zu und bauen Sie Serien für Bonuspunkte auf.",
     "howToPlay": "So wird gespielt",
     "rules": {
-      "matchPairs": "Ordnen Sie passende Paare zu (Flagge-Land, Land-Hauptstadt und mehr).",
-      "baseScore": "Richtige Zuordnung: +100 Punkte.",
-      "wrongPenalty": "Falsche Zuordnung: -50 Punkte.",
-      "streak5": "5er-Serie: +50 Bonus.",
-      "streak10": "10er-Serie: +100 Bonus.",
-      "streak15": "15er-Serie: +150 Bonus.",
-      "streak20": "20er-Serie: +200 Bonus."
+      "matchCategories": "Ordnen Sie die gewählten Kategorien so schnell wie möglich zu.",
+      "baseScore": "Basis-Punktzahl beginnt bei 1500 Punkten pro Zuordnung.",
+      "timeDecay": "Punkte sinken mit der Zeit - seien Sie schnell für maximale Punktzahl!",
+      "wrongPenalty": "Falsche Zuordnung: -1 Sekunde Zeitstrafe.",
+      "streakBonus": "Serien-Multiplikatoren: 5x = 1,5x, 10x = 2x, 15x = 2,5x, 20x+ = 3x Punkte."
     },
     "matchFrom": "Zuordnen von",
     "matchTo": "Zuordnen zu",
@@ -321,7 +319,7 @@
     "flagsAvailable": "{{count}} Flaggen verfügbar"
   },
   "timeBar": {
-    "matchPoints": "TREFFERPUNKTE"
+    "matchPoints": "PUNKTE"
   },
   "physicalGeoGame": {
     "title": "Physische Geographie",

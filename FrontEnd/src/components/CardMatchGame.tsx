@@ -140,7 +140,7 @@ function GameCard({
     return 'game-card-text no-legend';
   };
 
-  const textFontSize = `clamp(12px, ${Math.max(2, 3 - ((card.text || card.name).length / 20))}vw, 22px)`;
+  const textFontSize = `clamp(10px, ${Math.max(1.8, 3.5 - ((card.text || card.name).length / 15))}vw, 24px)`;
 
   return (
     <button
@@ -259,7 +259,12 @@ export default function CardMatchGame() {
         await saveCardsMatchScore(user, score);
         setSavedToLeaderboard(true);
       } catch (err) {
-        console.error("Failed to save score:", err);
+        // Log error details for debugging 400 errors
+        console.error("Failed to save cards match score:", err);
+        if (err instanceof Error) {
+          console.error("Error message:", err.message);
+          console.error("Error stack:", err.stack);
+        }
       }
     })();
   }, [game.gameOver, game.score, user, savedToLeaderboard]);
@@ -277,14 +282,15 @@ export default function CardMatchGame() {
     game.startNewGame();
   };
 
-  const handleBack = async () => {
-    // Save score if abandoning game with points
+  const handleBack = () => {
+    // Save score asynchronously (don't block navigation)
     if (game.gameStarted && !game.gameOver && game.score > 0 && !savedToLeaderboard) {
-      try {
-        await saveCardsMatchScore(user, game.score);
-      } catch (e) {
-        console.error("Failed to save on exit:", e);
-      }
+      saveCardsMatchScore(user, game.score).catch((e) => {
+        console.error("Failed to save score on exit:", e);
+        if (e instanceof Error) {
+          console.error("Exit save error details:", e.message);
+        }
+      });
     }
     navigate(buildLocalizedPath("/", i18n.language));
   };
@@ -427,13 +433,11 @@ export default function CardMatchGame() {
               {t("cardMatch.howToPlay")}
             </h3>
             <ul className="card-match-instructions-list">
-              <li>{t("cardMatch.rules.matchPairs")}</li>
+              <li>{t("cardMatch.rules.matchCategories")}</li>
               <li>{t("cardMatch.rules.baseScore")}</li>
+              <li>{t("cardMatch.rules.timeDecay")}</li>
               <li>{t("cardMatch.rules.wrongPenalty")}</li>
-              <li>{t("cardMatch.rules.streak5")}</li>
-              <li>{t("cardMatch.rules.streak10")}</li>
-              <li>{t("cardMatch.rules.streak15")}</li>
-              <li>{t("cardMatch.rules.streak20")}</li>
+              <li>{t("cardMatch.rules.streakBonus")}</li>
             </ul>
           </div>
 
@@ -662,8 +666,8 @@ export default function CardMatchGame() {
             position: "relative",
             top: "auto",
             left: "auto",
-            padding: "8px 16px", 
-            fontSize: "clamp(12px, 2.5vw, 15px)", 
+            padding: "clamp(10px, 2.5vw, 14px) clamp(16px, 4vw, 20px)", 
+            fontSize: "clamp(14px, 3.5vw, 18px)", 
             whiteSpace: "nowrap",
             flexShrink: 0,
           }}

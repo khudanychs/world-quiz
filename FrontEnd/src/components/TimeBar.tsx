@@ -142,17 +142,21 @@ export function TimeBar({
       animation: dangerPulse,
       transition: 'background 120ms linear, border-color 120ms linear, box-shadow 120ms linear'
     }}>
-      <div style={{ 
-        display: 'flex', 
-        justifyContent: 'space-between', 
+      <div style={{
+        display: 'flex',
+        justifyContent: 'space-between',
         alignItems: 'center',
         marginBottom: 'clamp(4px, 1.5vw, 8px)',
-        gap: 'clamp(16px, 4vw, 32px)'
+        gap: 'clamp(8px, 2vw, 16px)',
+        minWidth: 0 // Allow flex children to shrink below their minimum content size
       }}>
         <div style={{
           display: 'flex',
           alignItems: 'center',
-          gap: '6px'
+          gap: '6px',
+          minWidth: 0, // Allow shrinking
+          flex: '1 1 auto', // Allow growing and shrinking
+          overflow: 'hidden' // Handle overflow
         }}>
           <span style={{
             fontSize: 'clamp(11px, 2.5vw, 14px)',
@@ -160,7 +164,10 @@ export function TimeBar({
             background: 'linear-gradient(135deg, #60a5fa, #a78bfa)',
             WebkitBackgroundClip: 'text',
             WebkitTextFillColor: 'transparent',
-            letterSpacing: '0.5px'
+            letterSpacing: '0.5px',
+            whiteSpace: 'nowrap', // Prevent text wrapping
+            overflow: 'hidden', // Hide overflow text
+            textOverflow: 'ellipsis' // Show ellipsis for long text
           }}>⚡ {t('timeBar.matchPoints')}</span>
         </div>
         <span style={{
@@ -168,7 +175,8 @@ export function TimeBar({
           fontWeight: '800',
           color: '#fff',
           textShadow: `0 0 20px ${glowColor}, 0 2px 4px rgba(0,0,0,0.3)`,
-          letterSpacing: '0.5px'
+          letterSpacing: '0.5px',
+          flexShrink: 0 // Prevent number from shrinking
         }}>{currentPoints}</span>
       </div>
       

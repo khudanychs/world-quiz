@@ -128,6 +128,11 @@ function getFeatureVisual(feature: PhysicalFeature, currentFeatureName: string |
   const isCurrentTarget = feature.name === currentFeatureName;
   const isDesert = feature.type === "desert";
 
+  // Always check correctSet and skippedSet first to maintain their colors
+  if (correctSet.has(feature.name)) return { color: "#4caf50", opacity: 0.7, fillOpacity: baseFillOpacity * 0.5, glow: false };
+  if (skippedSet.has(feature.name)) return { color: isDesert ? "#60a5fa" : "#f59e0b", opacity: 0.78, fillOpacity: isDesert ? Math.max(baseFillOpacity * 0.65, 0.35) : baseFillOpacity * 0.5, glow: false };
+
+  // Then check if showing result feedback for current interaction
   if (showingResult && lastResult) {
     if (lastResult.correct && isCurrentTarget) return { color: "#4caf50", opacity: 1, fillOpacity: 0.55, glow: true };
     if (!lastResult.correct) {
@@ -135,8 +140,6 @@ function getFeatureVisual(feature: PhysicalFeature, currentFeatureName: string |
       if (isCurrentTarget) return { color: isDesert ? "#22d3ee" : "#ffc107", opacity: 1, fillOpacity: isDesert ? 0.62 : 0.55, glow: true };
     }
   }
-  if (correctSet.has(feature.name)) return { color: "#4caf50", opacity: 0.7, fillOpacity: baseFillOpacity * 0.5, glow: false };
-  if (skippedSet.has(feature.name)) return { color: isDesert ? "#60a5fa" : "#f59e0b", opacity: 0.78, fillOpacity: isDesert ? Math.max(baseFillOpacity * 0.65, 0.35) : baseFillOpacity * 0.5, glow: false };
 
   return { color: baseColor, opacity: 1, fillOpacity: baseFillOpacity, glow: false };
 }
@@ -252,12 +255,29 @@ export function renderWaterUnderlay({ projection, zoom, isDesktop, modeStyleOver
         let strokeColor = modeStyle.marine.strokeColor;
         let strokeW = sw;
 
-        if (showingResult && lastResult) {
-          if (lastResult.correct && feature.name === currentFeatureName) { fillColor = "#2e7d32"; strokeColor = "#4caf50"; strokeW = sw * 2; }
-          else if (!lastResult.correct && feature.name === lastResult.clickedName) { fillColor = "#7f1d1d"; strokeColor = "#ef4444"; strokeW = sw * 2; }
-          else if (!lastResult.correct && feature.name === currentFeatureName) { fillColor = "#7c6300"; strokeColor = "#ffc107"; strokeW = sw * 2; }
-        } else if (correctSet.has(feature.name)) { fillColor = "#1b5e20"; strokeColor = "#4caf50"; }
-        else if (skippedSet.has(feature.name)) { fillColor = "#5c4800"; strokeColor = "#f59e0b"; }
+        // Check correctSet/skippedSet first to maintain their colors
+        if (correctSet.has(feature.name)) { 
+          fillColor = "#1b5e20"; 
+          strokeColor = "#4caf50"; 
+        } else if (skippedSet.has(feature.name)) { 
+          fillColor = "#5c4800"; 
+          strokeColor = "#f59e0b"; 
+        } else if (showingResult && lastResult) {
+          // Only override colors for features involved in current result
+          if (lastResult.correct && feature.name === currentFeatureName) { 
+            fillColor = "#2e7d32"; 
+            strokeColor = "#4caf50"; 
+            strokeW = sw * 2; 
+          } else if (!lastResult.correct && feature.name === lastResult.clickedName) { 
+            fillColor = "#7f1d1d"; 
+            strokeColor = "#ef4444"; 
+            strokeW = sw * 2; 
+          } else if (!lastResult.correct && feature.name === currentFeatureName) { 
+            fillColor = "#7c6300"; 
+            strokeColor = "#ffc107"; 
+            strokeW = sw * 2; 
+          }
+        }
 
         if (d) {
           return (
@@ -338,12 +358,9 @@ export function renderLandOverlay({ projection, zoom, isDesktop, modeStyleOverri
           const patternId = feature.type === "desert" ? LITE_DESERT_PATTERN_ID : LITE_MOUNTAIN_PATTERN_ID;
           const isHighlighted = showingResult && highlightedLandNames.has(feature.name);
           
-          const baseFillColor = FEATURE_COLORS[feature.type];
-          const fillColor = showingResult
-            ? (isHighlighted ? vis.color : baseFillColor)
-            : vis.color;
+          // Use vis.color which already respects correctSet/skippedSet priorities
+          const fillColor = vis.color;
             
-          // ZMĚNA ZDE: Pokud je to zvýrazněné (hlavně po kliknutí), zruš průhlednost!
           // Keep terrain fills opaque so enclosed polygons do not blend with parent polygons.
           const stableFillOpacity = 1.0;
             
