@@ -27,9 +27,9 @@
   width: 100%;
   background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
   color: white;
-  padding: max(12px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right))
-    max(12px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
-  gap: 24px;
+  padding: max(16px, env(safe-area-inset-top)) max(20px, env(safe-area-inset-right))
+    max(16px, env(safe-area-inset-bottom)) max(20px, env(safe-area-inset-left));
+  gap: clamp(24px, 3vw, 40px);
   overflow: hidden;
   position: relative;
 }
@@ -37,11 +37,12 @@
 .card-match-sidebar {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  min-width: 140px;
-  max-width: 200px;
+  gap: 16px;
+  min-width: 200px;
+  max-width: 280px;
+  width: clamp(200px, 20vw, 280px);
   background: rgba(0, 0, 0, 0.3);
-  padding: 16px;
+  padding: 20px;
   border-radius: 16px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(10px);
@@ -51,8 +52,8 @@
 }
 
 .card-match-stat-box {
-  padding: 10px;
-  border-radius: 8px;
+  padding: 14px 12px;
+  border-radius: 10px;
   text-align: center;
 }
 
@@ -81,26 +82,29 @@
 }
 
 .card-match-stat-label {
-  font-size: 12px;
-  opacity: 0.8;
-  margin-bottom: 4px;
+  font-size: 13px;
+  opacity: 0.85;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .card-match-stat-value {
-  font-size: 20px;
+  font-size: 26px;
   font-weight: bold;
 }
 
 .card-match-stat-value.large {
-  font-size: 18px;
+  font-size: 22px;
 }
 
 .card-match-matches-footer {
   margin-top: auto;
-  padding-top: 12px;
+  padding-top: 16px;
   text-align: center;
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.6);
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 500;
 }
 
 .card-match-grid-container {
@@ -110,7 +114,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  max-width: 80vh;
+  max-width: min(90vh, 70vw);
   gap: 12px;
 }
 
@@ -152,7 +156,7 @@
 
 .card-match-grid {
   display: grid;
-  gap: clamp(4px, 1vh, 12px);
+  gap: clamp(6px, 1.2vh, 14px);
   width: 100%;
   height: auto;
   max-height: 100%;
@@ -165,12 +169,12 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: clamp(8px, 2vw, 16px);
-  gap: clamp(4px, 1vw, 8px);
+  gap: clamp(6px, 1.5vw, 12px);
 }
 
 .card-match-stats-row {
   display: flex;
-  gap: clamp(4px, 1.5vw, 12px);
+  gap: clamp(8px, 2.5vw, 16px);
   align-items: center;
   flex-wrap: nowrap;
   overflow-x: auto;
@@ -184,13 +188,14 @@
 }
 
 .card-match-stat-badge {
-  padding: clamp(4px, 1vw, 8px) clamp(8px, 2vw, 12px);
-  border-radius: 6px;
-  font-size: clamp(12px, 3vw, 18px);
+  padding: clamp(8px, 2vw, 12px) clamp(16px, 4vw, 24px);
+  border-radius: 8px;
+  font-size: clamp(15px, 4vw, 22px);
   font-weight: bold;
   text-align: center;
   white-space: nowrap;
   flex-shrink: 0;
+  min-width: clamp(90px, 22vw, 140px);
 }
 
 .card-match-stat-badge.timer {
@@ -527,15 +532,18 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 8px;
+  padding: 6px;
+  overflow: hidden;
 }
 
 .game-card-text {
   font-weight: 700;
   text-align: center;
-  line-height: 1.15;
+  line-height: 1.1;
   word-break: break-word;
   hyphens: auto;
+  overflow-wrap: break-word;
+  max-width: 100%;
 }
 
 .game-card-text.no-legend {

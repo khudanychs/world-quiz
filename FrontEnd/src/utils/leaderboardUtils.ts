@@ -106,6 +106,15 @@ export async function saveCardsMatchScore(user: any, score: number) {
     }
   } catch (error) {
     console.error("Error saving cards match score:", error);
+    // Log additional details for debugging
+    if (error instanceof Error) {
+      console.error("Error name:", error.name);
+      console.error("Error message:", error.message);
+    }
+    // Check if it's a Firebase error with code
+    if (typeof error === 'object' && error !== null && 'code' in error) {
+      console.error("Firebase error code:", (error as any).code);
+    }
     throw error;
   }
 }

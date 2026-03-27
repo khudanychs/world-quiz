@@ -164,6 +164,9 @@ const RANGES: PhysicalFeature[] = [
   { name: "Sierra Nevada (US)", type: "mountain_range", difficulty: "hard", shape: { kind: "path", points: [
     [-121.5, 40.0], [-120.5, 39.0], [-119.5, 38.0], [-119.0, 37.0], [-118.5, 36.0], [-118.0, 35.5],
   ]}},
+  { name: "Sierra Nevada (EU)", type: "mountain_range", difficulty: "hard", shape: { kind: "path", points: [
+    [-3.5, 37.0], [-3.0, 37.1], [-2.5, 37.1],
+  ]}},
   { name: "Sierra Madre Oriental", type: "mountain_range", difficulty: "hard", shape: { kind: "path", points: [
     [-100.0, 25.0], [-99.5, 23.5], [-98.0, 22.0], [-97.0, 20.5], [-96.5, 19.0],
   ]}},

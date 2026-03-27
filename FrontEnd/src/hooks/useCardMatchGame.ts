@@ -123,7 +123,10 @@ export function useCardMatchGame(pair: { first: CardKind; second: CardKind }) {
 
         // Load REST Countries data for flags
         const restRes = await fetch("/countries-full.json");
-        if (!restRes.ok) throw new Error(`Failed to load countries: ${restRes.status}`);
+        if (!restRes.ok) {
+          console.error("Failed to load countries-full.json:", restRes.status, restRes.statusText);
+          throw new Error(`Failed to load countries (HTTP ${restRes.status})`);
+        }
         const restData = (await restRes.json()) as Array<{
           name: { common: string };
           cca2: string;
@@ -137,7 +140,10 @@ export function useCardMatchGame(pair: { first: CardKind; second: CardKind }) {
 
         // Load TopoJSON for country shapes
         const topoRes = await fetch("/countries-110m.json");
-        if (!topoRes.ok) throw new Error(`Failed to load map: ${topoRes.status}`);
+        if (!topoRes.ok) {
+          console.error("Failed to load countries-110m.json:", topoRes.status, topoRes.statusText);
+          throw new Error(`Failed to load map (HTTP ${topoRes.status})`);
+        }
         const topology = await topoRes.json();
 
         if (!alive) return;
@@ -148,6 +154,7 @@ export function useCardMatchGame(pair: { first: CardKind; second: CardKind }) {
         setState((s) => ({ ...s, loading: false }));
       } catch (err) {
         if (!alive) return;
+        console.error("Error loading game data:", err);
         setState((s) => ({
           ...s,
           loading: false,
@@ -396,11 +403,13 @@ export function useCardMatchGame(pair: { first: CardKind; second: CardKind }) {
       loading: false,
       loadError: "",
     });
-    
-    // Generate new session ID for this game
-    setGameSessionId(Math.random().toString(36));
-    setMatchCount(0);
-    
+
+    // Reset match-related state for TimeBar
+    setCurrentMatchPoints(BASE_POINTS); // Reset to base points
+    setMatchElapsedMs(0); // Reset elapsed time
+    setGameSessionId(Math.random().toString(36)); // Generate new session ID
+    setMatchCount(0); // Reset match count
+
     // Generate first card set
     generateNewCardSet();
   }

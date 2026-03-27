@@ -105,7 +105,7 @@ export default function PhysicalGeoHUD({
           style={{
             fontSize: "clamp(14px, 3vw, 20px)",
             color: lastResult.correct ? "#10b981" : "#ef4444",
-            minWidth: "clamp(90px, 22vw, 140px)",
+            minWidth: "clamp(120px, 26vw, 170px)",
             textAlign: "center",
           }}
         >
@@ -123,7 +123,7 @@ export default function PhysicalGeoHUD({
           style={{
             marginLeft: 4, padding: "4px 8px", borderRadius: 6,
             background: "rgba(59,130,246,0.18)", border: "1px solid rgba(59,130,246,0.35)",
-            fontSize: "clamp(12px, 2.8vw, 17px)", fontWeight: 600, color: "#60a5fa", whiteSpace: "nowrap",
+            fontSize: "clamp(13px, 3vw, 18px)", fontWeight: 600, color: "#60a5fa", whiteSpace: "nowrap",
           }}
         >
           {t('physicalGeoHUD.score', { score, total: featuresLength })}
@@ -137,7 +137,7 @@ export default function PhysicalGeoHUD({
     <>
       <div style={{ display: "flex", alignItems: "center", gap: "clamp(6px, 1.5vw, 10px)", flexShrink: 0 }}>
         <span style={{ fontSize: "clamp(24px, 5vw, 40px)" }}>{catInfo.emoji}</span>
-        <div style={{ display: "flex", flexDirection: "column", minWidth: "clamp(100px, 24vw, 180px)" }}>
+        <div style={{ display: "flex", flexDirection: "column", minWidth: "clamp(140px, 28vw, 220px)" }}>
           <strong style={{ fontSize: "clamp(13px, 2.8vw, 18px)", lineHeight: 1.2 }}>
             {currentFeatureDisplayName}
           </strong>
@@ -165,13 +165,13 @@ export default function PhysicalGeoHUD({
         title={t('physicalGeoHUD.skipThisFeature')}
         style={{
           marginLeft: 4,
-          padding: "clamp(4px, 1.5vw, 6px) clamp(8px, 2vw, 10px)",
-          minWidth: "clamp(50px, 14vw, 60px)",
+          padding: "clamp(4px, 1.5vw, 6px) clamp(10px, 2.5vw, 14px)",
+          minWidth: "clamp(60px, 16vw, 80px)",
           borderRadius: "clamp(6px, 1.8vw, 8px)",
           border: "1px solid rgba(234,179,8,0.4)",
           background: "rgba(234,179,8,0.15)",
           color: "#eab308",
-          fontSize: "clamp(10px, 2.4vw, 13px)",
+          fontSize: "clamp(11px, 2.6vw, 14px)",
           cursor: "pointer",
           fontWeight: 500,
         }}
@@ -180,10 +180,10 @@ export default function PhysicalGeoHUD({
       </button>
       <span
         style={{
-          marginLeft: 4, padding: "clamp(4px, 1.5vw, 6px) clamp(10px, 2.4vw, 14px)",
+          marginLeft: 4, padding: "clamp(4px, 1.5vw, 6px) clamp(12px, 2.8vw, 18px)",
           borderRadius: "clamp(6px, 1.8vw, 8px)",
           background: "rgba(59,130,246,0.18)", border: "1px solid rgba(59,130,246,0.35)",
-          fontSize: "clamp(12px, 2.8vw, 17px)", fontWeight: 600, color: "#60a5fa", whiteSpace: "nowrap",
+          fontSize: "clamp(13px, 3vw, 18px)", fontWeight: 600, color: "#60a5fa", whiteSpace: "nowrap",
         }}
       >
         {t('physicalGeoHUD.score', { score, total: featuresLength })}

@@ -223,13 +223,11 @@
     "pregameDescription": "Match cards as quickly as possible and build streaks for bonus points.",
     "howToPlay": "How to Play",
     "rules": {
-      "matchPairs": "Match related pairs (flag-country, country-capital, and more).",
-      "baseScore": "Correct match: +100 points.",
-      "wrongPenalty": "Wrong match: -50 points.",
-      "streak5": "5x streak: +50 bonus.",
-      "streak10": "10x streak: +100 bonus.",
-      "streak15": "15x streak: +150 bonus.",
-      "streak20": "20x streak: +200 bonus."
+      "matchCategories": "Match chosen categories as quickly as possible.",
+      "baseScore": "Base score starts at 1500 points per match.",
+      "timeDecay": "Points decrease over time - be fast to maximize your score!",
+      "wrongPenalty": "Wrong match: -1 second time penalty.",
+      "streakBonus": "Streak multipliers: 5x = 1.5x, 10x = 2x, 15x = 2.5x, 20x+ = 3x points."
     },
     "matchFrom": "Match from",
     "matchTo": "Match to",

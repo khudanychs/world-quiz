@@ -223,13 +223,11 @@
     "pregameDescription": "Přiřazujte karty co nejrychleji a sbírejte série pro bonusové body.",
     "howToPlay": "Jak hrát",
     "rules": {
-      "matchPairs": "Přiřazujte související dvojice (vlajka-země, země-hlavní město a další).",
-      "baseScore": "Správné přiřazení: +100 bodů.",
-      "wrongPenalty": "Špatné přiřazení: -50 bodů.",
-      "streak5": "Série 5x: +50 bonus.",
-      "streak10": "Série 10x: +100 bonus.",
-      "streak15": "Série 15x: +150 bonus.",
-      "streak20": "Série 20x: +200 bonus."
+      "matchCategories": "Přiřazujte vybrané kategorie co nejrychleji.",
+      "baseScore": "Základní skóre začíná na 1500 bodech za shodu.",
+      "timeDecay": "Body klesají s časem - buďte rychlí pro maximální skóre!",
+      "wrongPenalty": "Špatné přiřazení: -1 sekunda časové pokuty.",
+      "streakBonus": "Multiplikátory série: 5x = 1,5x, 10x = 2x, 15x = 2,5x, 20x+ = 3x bodů."
     },
     "matchFrom": "Přiřazovat z",
     "matchTo": "Přiřazovat k",
