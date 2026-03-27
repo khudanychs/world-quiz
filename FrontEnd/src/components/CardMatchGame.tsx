@@ -140,7 +140,7 @@ function GameCard({
     return 'game-card-text no-legend';
   };
 
-  const textFontSize = `clamp(10px, ${Math.max(1.8, 3.5 - ((card.text || card.name).length / 15))}vw, 24px)`;
+  const textFontSize = `clamp(12px, ${Math.max(2, 3 - ((card.text || card.name).length / 20))}vw, 22px)`;
 
   return (
     <button
@@ -282,15 +282,17 @@ export default function CardMatchGame() {
     game.startNewGame();
   };
 
-  const handleBack = () => {
-    // Save score asynchronously (don't block navigation)
+  const handleBack = async () => {
+    // Save score if abandoning game with points
     if (game.gameStarted && !game.gameOver && game.score > 0 && !savedToLeaderboard) {
-      saveCardsMatchScore(user, game.score).catch((e) => {
+      try {
+        await saveCardsMatchScore(user, game.score);
+      } catch (e) {
         console.error("Failed to save score on exit:", e);
         if (e instanceof Error) {
           console.error("Exit save error details:", e.message);
         }
-      });
+      }
     }
     navigate(buildLocalizedPath("/", i18n.language));
   };
@@ -666,8 +668,8 @@ export default function CardMatchGame() {
             position: "relative",
             top: "auto",
             left: "auto",
-            padding: "clamp(10px, 2.5vw, 14px) clamp(16px, 4vw, 20px)", 
-            fontSize: "clamp(14px, 3.5vw, 18px)", 
+            padding: "8px 16px", 
+            fontSize: "clamp(12px, 2.5vw, 15px)", 
             whiteSpace: "nowrap",
             flexShrink: 0,
           }}
