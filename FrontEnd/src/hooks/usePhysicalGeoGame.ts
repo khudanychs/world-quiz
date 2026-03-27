@@ -72,16 +72,29 @@ export function usePhysicalGeoGame(categoryKey: string = "all"): PhysicalGeoGame
 
   const loadCategoryFeatures = useCallback(async (key: string): Promise<PhysicalFeature[]> => {
     let baseFeatures: PhysicalFeature[];
+    let featureTypes: Array<"rivers" | "waters" | "lakes"> | undefined;
+    
     if (key === "mountains") {
       baseFeatures = await loadMountainElevationFeatures(i18n.language);
-      return localizePhysicalFeatures(baseFeatures, i18n.language);
-    }
-    if (key === "deserts") {
+      // Mountains don't need any of the marine/river/lake datasets
+      featureTypes = [];
+    } else if (key === "deserts") {
       baseFeatures = await loadDesertPolygonFeatures(i18n.language);
-      return localizePhysicalFeatures(baseFeatures, i18n.language);
+      // Deserts don't need any of the marine/river/lake datasets
+      featureTypes = [];
+    } else if (key === "rivers") {
+      baseFeatures = await getFeaturesByCategoryAsync(key);
+      featureTypes = ["rivers"];
+    } else if (key === "waters") {
+      baseFeatures = await getFeaturesByCategoryAsync(key);
+      featureTypes = ["waters", "lakes"];
+    } else {
+      baseFeatures = await getFeaturesByCategoryAsync(key);
+      // For unknown categories, load all (shouldn't happen but safe fallback)
+      featureTypes = ["rivers", "waters", "lakes"];
     }
-    baseFeatures = await getFeaturesByCategoryAsync(key);
-    return localizePhysicalFeatures(baseFeatures, i18n.language);
+    
+    return localizePhysicalFeatures(baseFeatures, i18n.language, featureTypes);
   }, [i18n.language]);
 
   const initializeCategory = useCallback(async (key: string) => {

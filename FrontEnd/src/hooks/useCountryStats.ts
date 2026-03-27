@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { fetchCountriesData } from '../utils/countriesData';
 
 interface CountryStats {
   population: number;
@@ -117,13 +118,7 @@ let borderCountryIndexPromise: Promise<Map<string, { cca2: string; name: string 
 
 async function getBorderCountryIndex(): Promise<Map<string, { cca2: string; name: string }>> {
   if (!borderCountryIndexPromise) {
-    borderCountryIndexPromise = fetch('/countries-full.json')
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error('Failed to load countries-full.json');
-        }
-        return response.json();
-      })
+    borderCountryIndexPromise = fetchCountriesData()
       .then((allCountries: any[]) => new Map(
         allCountries.map((c: any) => [c.cca3, { cca2: c.cca2, name: c.name.common }])
       ))
@@ -143,20 +138,36 @@ async function getBorderCountryIndex(): Promise<Map<string, { cca2: string; name
  * Fetches country statistics from REST Countries API (only for detailed stats)
  * Uses local countries-full.json for border country mapping (ISO3 to ISO2)
  * Only fetches when cca2 is provided (when detail view is opened)
+ * 
+ * OPTIMIZATION: Check cache first before setting loading state to prevent flicker
  */
 export function useCountryStats(cca2: string | null): CountryStats {
-  const [data, setData] = useState<CountryStats>({
-    population: 0,
-    area: 0,
-    currencies: {},
-    region: '',
-    subregion: '',
-    officialLanguages: [],
-    timezones: [],
-    borders: [],
-    borderCountries: [],
-    loading: false,
-    error: null,
+  const [data, setData] = useState<CountryStats>(() => {
+    // Initialize with cached data if available (prevents initial loading flash)
+    if (cca2) {
+      const normalizedCca2 = cca2.toUpperCase();
+      const cached = getValidCachedValue(countryStatsCache, normalizedCca2, COUNTRY_STATS_TTL_MS);
+      if (cached) {
+        return {
+          ...cached,
+          loading: false,
+          error: null,
+        };
+      }
+    }
+    return {
+      population: 0,
+      area: 0,
+      currencies: {},
+      region: '',
+      subregion: '',
+      officialLanguages: [],
+      timezones: [],
+      borders: [],
+      borderCountries: [],
+      loading: false,
+      error: null,
+    };
   });
 
   useEffect(() => {
@@ -180,10 +191,18 @@ export function useCountryStats(cca2: string | null): CountryStats {
     const normalizedCca2 = cca2.toUpperCase();
     const cached = getValidCachedValue(countryStatsCache, normalizedCca2, COUNTRY_STATS_TTL_MS);
     if (cached) {
-      setData({
-        ...cached,
-        loading: false,
-        error: null,
+      // Only update if data changed to prevent re-renders
+      setData(prev => {
+        const isSameData = prev.population === cached.population && 
+                          prev.area === cached.area &&
+                          !prev.loading;
+        if (isSameData) return prev;
+        
+        return {
+          ...cached,
+          loading: false,
+          error: null,
+        };
       });
       return;
     }

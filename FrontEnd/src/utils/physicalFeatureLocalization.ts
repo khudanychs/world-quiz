@@ -17,13 +17,13 @@ interface TopologyLike {
   objects?: Record<string, { geometries?: FeatureLike[] }>;
 }
 
-const LOCALIZED_DATASETS = [
-  "/fixed_rivers.json",
-  "/FinalMarines10m.json",
-  "/lakes.json",
-] as const;
+const LOCALIZED_DATASETS: Record<string, string> = {
+  rivers: "/fixed_rivers.json",
+  waters: "/FinalMarines10m.json",
+  lakes: "/lakes.json",
+};
 
-const translationLookupByLanguage = new Map<BaseLanguage, Promise<Map<string, string>>>();
+const translationLookupByLanguageAndDataset = new Map<string, Promise<Map<string, string>>>();
 
 function getBaseLanguage(language: string): BaseLanguage {
   const value = (language || "en").toLowerCase().split("-")[0];
@@ -72,14 +72,17 @@ function toPropertyItems(raw: unknown): FeatureLike[] {
   return [];
 }
 
-async function buildTranslationLookup(language: BaseLanguage): Promise<Map<string, string>> {
+async function buildTranslationLookup(
+  language: BaseLanguage,
+  datasetUrls: string[]
+): Promise<Map<string, string>> {
   if (language === "en") {
     return new Map();
   }
 
   const lookup = new Map<string, string>();
   const datasets = await Promise.all(
-    LOCALIZED_DATASETS.map(async (url) => {
+    datasetUrls.map(async (url) => {
       const response = await fetch(url);
       if (!response.ok) {
         return null;
@@ -124,11 +127,15 @@ async function buildTranslationLookup(language: BaseLanguage): Promise<Map<strin
   return lookup;
 }
 
-async function getTranslationLookup(language: BaseLanguage): Promise<Map<string, string>> {
-  let cached = translationLookupByLanguage.get(language);
+async function getTranslationLookup(
+  language: BaseLanguage,
+  datasetUrls: string[]
+): Promise<Map<string, string>> {
+  const cacheKey = `${language}-${datasetUrls.sort().join(",")}`;
+  let cached = translationLookupByLanguageAndDataset.get(cacheKey);
   if (!cached) {
-    cached = buildTranslationLookup(language);
-    translationLookupByLanguage.set(language, cached);
+    cached = buildTranslationLookup(language, datasetUrls);
+    translationLookupByLanguageAndDataset.set(cacheKey, cached);
   }
   return cached;
 }
@@ -144,13 +151,32 @@ function applyTranslatedName(featureName: string, translatedBaseName: string): s
 export async function localizePhysicalFeatures(
   features: PhysicalFeature[],
   language: string,
+  featureTypes?: Array<"rivers" | "waters" | "lakes">
 ): Promise<PhysicalFeature[]> {
   const baseLanguage = getBaseLanguage(language);
   if (baseLanguage === "en") {
     return features;
   }
 
-  const lookup = await getTranslationLookup(baseLanguage);
+  // Determine which datasets to load based on feature types
+  const datasetUrls: string[] = [];
+  if (featureTypes && featureTypes.length > 0) {
+    for (const type of featureTypes) {
+      const url = LOCALIZED_DATASETS[type];
+      if (url) {
+        datasetUrls.push(url);
+      }
+    }
+  } else {
+    // If no types specified, load all (backwards compatibility, but shouldn't happen)
+    datasetUrls.push(...Object.values(LOCALIZED_DATASETS));
+  }
+
+  if (datasetUrls.length === 0) {
+    return features;
+  }
+
+  const lookup = await getTranslationLookup(baseLanguage, datasetUrls);
   if (lookup.size === 0) {
     return features;
   }

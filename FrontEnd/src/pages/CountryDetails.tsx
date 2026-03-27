@@ -180,7 +180,6 @@ export default function CountryDetails({ country, onClose, onCountryClick }: Cou
               <div className="currency-converter">
                 <div className="currency-pair">
                   <span className="currency-amount">{t('countryDetails.oneUsd')}</span>
-                  <span className="currency-symbol">=</span>
                   <span className="currency-amount">
                     {exchangeRate.loading ? (
                       '...'

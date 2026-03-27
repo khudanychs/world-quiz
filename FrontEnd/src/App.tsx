@@ -1,8 +1,9 @@
-import React, { useState, lazy, Suspense, useEffect, useRef } from 'react';
+import React, { useState, lazy, Suspense, useEffect, useRef, useMemo } from 'react';
 import { Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Navbar } from './components/Navbar';
 import { useAuth } from './contexts/AuthContext';
+import { AppInitializer } from './components/AppInitializer';
 import {
   SUPPORTED_LOCALE_PREFIXES,
   stripLocalePrefix,
@@ -12,7 +13,6 @@ import {
 } from './utils/localeRouting';
 import './App.css';
 
-// Lazy load all route components for code splitting
 const Auth = lazy(() => import('./components/Auth').then(m => ({ default: m.Auth })));
 const SetNickname = lazy(() => import('./components/SetNickname').then(m => ({ default: m.SetNickname })));
 const Settings = lazy(() => import('./components/Settings').then(m => ({ default: m.Settings })));
@@ -28,7 +28,6 @@ const NotFound = lazy(() => import('./pages/NotFound'));
 const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'));
 const TermsConditions = lazy(() => import('./pages/TermsConditions'));
   
-// Loading fallback component
 const LoadingFallback = () => (
   <div style={{
     height: '100vh',
@@ -42,19 +41,13 @@ const LoadingFallback = () => (
   </div>
 );
 
-// Route that shows verification screen for unverified users, but allows guests
 function VerifiedOrGuestRoute({ children }: { children: React.ReactNode }) {
-  const {user, loading, logout } = useAuth();
+  const { user, logout } = useAuth();
   const [checking, setChecking] = useState(false);
   const [error, setError] = useState('');
   
-  if (loading) {
-    return <LoadingFallback />;
-  }
-  
   const isEmailPasswordUser = user && user.email && !user.photoURL;
   if (user && !user.emailVerified && isEmailPasswordUser) {
-    
     const handleCheckVerification = async () => {
       setChecking(true);
       setError('');
@@ -62,18 +55,12 @@ function VerifiedOrGuestRoute({ children }: { children: React.ReactNode }) {
         const { auth } = await import('./firebase');
         if (auth.currentUser) {
           await auth.currentUser.reload();
-          const freshUser = auth.currentUser;
-          
-          if (freshUser.emailVerified) {
-            setError('');
-            setChecking(false);
+          if (auth.currentUser.emailVerified) {
             window.location.reload();
             return;
           } else {
-            setError('Email not verified yet. Please check your inbox and click the verification link.');
+            setError('Email not verified yet. Please check your inbox.');
           }
-        } else {
-          setError('Session expired. Please refresh the page.');
         }
       } catch (e) {
         setError('Failed to check verification status. Please try again.');
@@ -82,67 +69,16 @@ function VerifiedOrGuestRoute({ children }: { children: React.ReactNode }) {
     };
     
     return (
-      <div style={{
-        height: '100vh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-        padding: '20px'
-      }}>
-        <div style={{
-          background: 'white',
-          borderRadius: '16px',
-          padding: '40px',
-          maxWidth: '500px',
-          textAlign: 'center',
-          boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)'
-        }}>
+      <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', padding: '20px' }}>
+        <div style={{ background: 'white', borderRadius: '16px', padding: '40px', maxWidth: '500px', textAlign: 'center' }}>
           <h2 style={{color: '#1a1a1a', marginBottom: '20px'}}>📧 Verify Your Email</h2>
-          <p style={{color: '#666', fontSize: '16px', lineHeight: '1.6'}}>
-            Please check your email inbox and click the verification link before you can use your account.
-          </p>
-          <p style={{color: '#666', fontSize: '14px', marginTop: '16px'}}>
-            Email sent to: <strong>{user.email}</strong>
-          </p>
-          {error && (
-            <p style={{color: '#e53e3e', fontSize: '14px', marginTop: '16px', padding: '10px', background: '#fff5f5', borderRadius: '8px'}}>
-              {error}
-            </p>
-          )}
-          <div style={{ display: 'flex', gap: '12px', marginTop: '24px', justifyContent: 'center', flexWrap: 'wrap' }}>
-            <button
-              onClick={handleCheckVerification}
-              disabled={checking}
-              style={{
-                padding: '12px 24px',
-                background: checking ? '#a0aec0' : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                color: 'white',
-                border: 'none',
-                borderRadius: '8px',
-                fontSize: '16px',
-                fontWeight: '600',
-                cursor: checking ? 'not-allowed' : 'pointer'
-              }}
-            >
+          <p style={{color: '#666', fontSize: '16px', lineHeight: '1.6'}}>Please check your email inbox.</p>
+          {error && <p style={{color: '#e53e3e', fontSize: '14px', marginTop: '16px'}}>{error}</p>}
+          <div style={{ display: 'flex', gap: '12px', marginTop: '24px', justifyContent: 'center' }}>
+            <button onClick={handleCheckVerification} disabled={checking} style={{ padding: '12px 24px', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: 'white', borderRadius: '8px', cursor: 'pointer' }}>
               {checking ? 'Checking...' : "I've Verified My Email"}
             </button>
-            <button
-              onClick={async () => {
-                await logout();
-                window.location.href = '/';
-              }}
-              style={{
-                padding: '12px 24px',
-                background: 'rgba(0, 0, 0, 0.1)',
-                color: '#666',
-                border: '1px solid #ddd',
-                borderRadius: '8px',
-                fontSize: '16px',
-                fontWeight: '600',
-                cursor: 'pointer'
-              }}
-            >
+            <button onClick={async () => { await logout(); window.location.href = '/'; }} style={{ padding: '12px 24px', background: 'rgba(0, 0, 0, 0.1)', border: '1px solid #ddd', borderRadius: '8px', cursor: 'pointer' }}>
               Logout & Play as Guest
             </button>
           </div>
@@ -150,21 +86,35 @@ function VerifiedOrGuestRoute({ children }: { children: React.ReactNode }) {
       </div>
     );
   }
-  
   return <>{children}</>;
 }
 
 function GuestRoute({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, loading } = useAuth();
-  if (loading) return <LoadingFallback />;
+  const { isAuthenticated } = useAuth();
   return !isAuthenticated ? <>{children}</> : <Navigate to='/' replace />;
 }
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, loading } = useAuth();
-  if (loading) return <LoadingFallback />;
+  const { isAuthenticated } = useAuth();
   return isAuthenticated ? <>{children}</> : <Navigate to='/auth' replace />;
 }
+
+// Konfigurace cest venku z komponenty, aby se předešlo zbytečným re-renderům
+const appRoutes = [
+  { path: 'auth', element: <GuestRoute><Auth /></GuestRoute> },
+  { path: 'set-nickname', element: <ProtectedRoute><SetNickname /></ProtectedRoute> },
+  { path: '', element: <VerifiedOrGuestRoute><MainMenu /></VerifiedOrGuestRoute> },
+  { path: 'leaderboards', element: <VerifiedOrGuestRoute><LeaderboardsPage /></VerifiedOrGuestRoute> },
+  { path: 'countries/:countryCode?', element: <VerifiedOrGuestRoute><CountryIndex /></VerifiedOrGuestRoute> },
+  { path: 'map', element: <VerifiedOrGuestRoute><WorldMap /></VerifiedOrGuestRoute> },
+  { path: 'game/flags/:regionKey?', element: <VerifiedOrGuestRoute><FlagMatchGame /></VerifiedOrGuestRoute> },
+  { path: 'game/guess-country', element: <VerifiedOrGuestRoute><GuessCountryGame /></VerifiedOrGuestRoute> },
+  { path: 'game/physical-geo/:modeKey?', element: <VerifiedOrGuestRoute><PhysicalGeoGame /></VerifiedOrGuestRoute> },
+  { path: 'settings', element: <ProtectedRoute><Settings /></ProtectedRoute> },
+  { path: 'terms', element: <TermsConditions /> },
+  { path: 'game/shape-match', element: <VerifiedOrGuestRoute><CardMatchGame /></VerifiedOrGuestRoute> },
+  { path: 'privacy', element: <PrivacyPolicy /> },
+];
 
 export default function App() {
   const { i18n } = useTranslation();
@@ -177,38 +127,36 @@ export default function App() {
   const languageFromPath = getLanguageFromLocalePrefix(prefixSegment);
   const plainPathname = stripLocalePrefix(location.pathname);
 
-  const { loading, user } = useAuth();
+  const { user } = useAuth();
   const isMapRoute = plainPathname.startsWith('/map');
   const isGameRoute = plainPathname.startsWith('/game');
   const isAuthRoute = ['/auth', '/set-nickname'].some(p => plainPathname.startsWith(p));
-  const isPrivacyRoute = plainPathname === '/privacy';
-  const isTermsRoute = plainPathname === '/terms';
-  const isPublicRoute = isPrivacyRoute || isTermsRoute;
+  const isPublicRoute = plainPathname === '/privacy' || plainPathname === '/terms';
 
-  // SEO / i18n Redirect logic
-  useEffect(() => {
-    if (languageFromPath) return;
-    const localizedPath = buildLocalizedPath(location.pathname, i18n.language);
-    navigate(`${localizedPath}${location.search}${location.hash}`, { replace: true });
-  }, [i18n.language, languageFromPath, location.hash, location.pathname, location.search, navigate]);
-
-  // Redirect URL to match stored language preference
-  // This ensures consistent language even when using back button
-  useEffect(() => {
-    if (!languageFromPath) return;
+  const shouldRedirect = useMemo(() => {
+    if (!languageFromPath) {
+      return { 
+        to: `${buildLocalizedPath(location.pathname, i18n.language)}${location.search}${location.hash}`
+      };
+    }
     const preferredLanguage = getBaseLanguage(i18n.language);
     if (preferredLanguage !== languageFromPath) {
-      // User's stored language preference differs from URL language
-      // Redirect to the preferred language version
-      const localizedPath = buildLocalizedPath(location.pathname, preferredLanguage);
-      navigate(`${localizedPath}${location.search}${location.hash}`, { replace: true });
+      return {
+        to: `${buildLocalizedPath(location.pathname, preferredLanguage)}${location.search}${location.hash}`
+      };
     }
-  }, [i18n.language, languageFromPath, location.hash, location.pathname, location.search, navigate]);
+    return null;
+  }, [languageFromPath, location, i18n.language]);
+
+  useEffect(() => {
+    if (shouldRedirect) {
+      navigate(shouldRedirect.to, { replace: true });
+    }
+  }, [shouldRedirect, navigate]);
 
   useEffect(() => {
     const previousPath = previousPlainPathRef.current;
     const currentPath = plainPathname;
-
     const isCountriesPath = (path: string) => path === '/countries' || path.startsWith('/countries/');
     const shouldKeepCountriesScroll = isCountriesPath(previousPath) && isCountriesPath(currentPath);
 
@@ -216,37 +164,23 @@ export default function App() {
       contentRef.current?.scrollTo({ top: 0, left: 0, behavior: 'auto' });
       window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
     }
-
     previousPlainPathRef.current = currentPath;
   }, [plainPathname]);
   
-  const isEmailPasswordUser = user && user.email && !user.photoURL;
-  const isUnverified = user && !user.emailVerified && isEmailPasswordUser;
+  const isUnverified = user && !user.emailVerified && user.email && !user.photoURL;
   const hideNav = isMapRoute || isGameRoute || isAuthRoute || (isUnverified && !isPublicRoute);
-  
-  if (loading && !isPublicRoute) {
-    return <LoadingFallback />;
-  }
 
-  // Configuration of all app routes to keep the code DRY
-  const appRoutes = [
-    { path: 'auth', element: <GuestRoute><Auth /></GuestRoute> },
-    { path: 'set-nickname', element: <ProtectedRoute><SetNickname /></ProtectedRoute> },
-    { path: '', element: <VerifiedOrGuestRoute><MainMenu /></VerifiedOrGuestRoute> },
-    { path: 'leaderboards', element: <VerifiedOrGuestRoute><LeaderboardsPage /></VerifiedOrGuestRoute> },
-    { path: 'countries/:countryCode?', element: <VerifiedOrGuestRoute><CountryIndex /></VerifiedOrGuestRoute> },
-    { path: 'map', element: <VerifiedOrGuestRoute><WorldMap /></VerifiedOrGuestRoute> },
-    { path: 'game/flags/:regionKey?', element: <VerifiedOrGuestRoute><FlagMatchGame /></VerifiedOrGuestRoute> },
-    { path: 'game/guess-country', element: <VerifiedOrGuestRoute><GuessCountryGame /></VerifiedOrGuestRoute> },
-    { path: 'game/physical-geo/:modeKey?', element: <VerifiedOrGuestRoute><PhysicalGeoGame /></VerifiedOrGuestRoute> },
-    { path: 'settings', element: <ProtectedRoute><Settings /></ProtectedRoute> },
-    { path: 'terms', element: <TermsConditions /> },
-    { path: 'game/shape-match', element: <VerifiedOrGuestRoute><CardMatchGame /></VerifiedOrGuestRoute> },
-    { path: 'privacy', element: <PrivacyPolicy /> },
-  ];
+  // Záchranná brzda proti problikávání - dokud se neujasní adresa, nic dalšího se nespustí!
+  if (shouldRedirect) {
+    return (
+      <AppInitializer>
+        <LoadingFallback />
+      </AppInitializer>
+    );
+  }
   
   return (
-    <>
+    <AppInitializer>
       {!hideNav && <Navbar />}
       <div
         ref={contentRef}
@@ -261,20 +195,13 @@ export default function App() {
       >
         <Suspense fallback={<LoadingFallback />}>
           <Routes>
-            {/* Map over the routes array to generate base and localized routes */}
             {appRoutes.map(({ path, element }) => (
               <React.Fragment key={path}>
-                {/* 1. Base route (without lang prefix) - gets caught by useEffect redirect */}
-                <Route path={`/${path}`} element={element} />
-                
-                {/* 2. Localized routes (e.g., /en/..., /cz/..., /de/...) */}
                 {SUPPORTED_LOCALE_PREFIXES.map((lang) => (
                   <Route key={`${lang}-${path}`} path={`/${lang}${path ? `/${path}` : ''}`} element={element} />
                 ))}
               </React.Fragment>
             ))}
-
-            {/* Catch-all 404s */}
             {SUPPORTED_LOCALE_PREFIXES.map((lang) => (
               <Route key={`404-${lang}`} path={`/${lang}/*`} element={<NotFound />} />
             ))}
@@ -282,6 +209,6 @@ export default function App() {
           </Routes>
         </Suspense>
       </div>
-    </>
+    </AppInitializer>
   );
 }
