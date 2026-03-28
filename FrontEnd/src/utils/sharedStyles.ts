@@ -4,9 +4,9 @@ import { CSSProperties } from "react";
 
 /** Common back button style used in FlagMatchGame and WorldMap */
 export const BACK_BUTTON_STYLE: CSSProperties = {
-  position: "absolute",
-  top: 16,
-  left: 16,
+  position: "fixed",
+  top: "max(16px, calc(env(safe-area-inset-top) + 8px))",
+  left: "max(16px, env(safe-area-inset-left))",
   zIndex: 10,
   display: "inline-flex",
   alignItems: "center",

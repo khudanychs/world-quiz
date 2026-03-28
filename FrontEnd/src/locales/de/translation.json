@@ -414,7 +414,7 @@
     "historyEmpty": "Ihre Tipps erscheinen hier.",
     "playAgain": "Erneut spielen",
     "guessLabel": "Tipp #{{index}}",
-    "locked": "Gesperrt",
+    "locked": "🔒",
     "km": "{{value}} km",
     "hints": {
       "continent": "Kontinent",
@@ -422,7 +422,7 @@
       "population": "Bevölkerung",
       "area": "Fläche",
       "direction": "Richtung",
-      "exactDistance": "Exakte Entfernung"
+      "exactDistance": "KM"
     },
     "tooltip": {
       "population": "Ab Tipp 2 freigeschaltet",

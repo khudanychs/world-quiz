@@ -1,5 +1,6 @@
 .leaderboards-page {
   min-height: 100vh;
+  min-height: 100dvh;
   background: linear-gradient(135deg, #0b1020 0%, #1a1f35 100%);
   padding-top: 64px; /* navbar height */
   display: flex;

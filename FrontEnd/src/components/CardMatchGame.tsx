@@ -351,7 +351,7 @@ export default function CardMatchGame() {
           canonicalUrl={toCanonicalUrlWithLanguage(seo.path, currentLanguage)}
           ogImage={getSeoOgImage(seo)}
         />
-        <div className="card-match-results-container" style={PAGE_CONTAINER_STYLE}>
+        <div className="card-match-results-container" style={{...PAGE_CONTAINER_STYLE, overflow: "auto"}}>
           <div className="card-match-results-card">
           <h2 className="card-match-results-title">
             {t("cardMatch.gameOverTitle")}
@@ -421,7 +421,7 @@ export default function CardMatchGame() {
           canonicalUrl={toCanonicalUrlWithLanguage(seo.path, currentLanguage)}
           ogImage={getSeoOgImage(seo)}
         />
-        <div className="card-match-pregame-container" style={PAGE_CONTAINER_STYLE}>
+        <div className="card-match-pregame-container" style={{...PAGE_CONTAINER_STYLE, overflow: "auto"}}>
           <div className="card-match-pregame-card">
           <h1 className="card-match-pregame-title">
             {t("cardMatch.pregameTitle")}

@@ -1,5 +1,6 @@
 .country-index-wrap {
   min-height: 100vh;
+  min-height: 100dvh;
   width: 100%;
   padding: 80px 24px 32px;
   background: #0b1020;
