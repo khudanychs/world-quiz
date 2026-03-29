@@ -1,46 +1,34 @@
 import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
+import { 
+  onAuthStateChanged,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  signInWithPopup,
+  GoogleAuthProvider,
+  signOut,
+  updateProfile,
+  sendEmailVerification,
+  reauthenticateWithPopup,
+  reauthenticateWithCredential,
+  EmailAuthProvider,
+  User as FirebaseUser,
+} from 'firebase/auth';
+import {
+  doc,
+  getDoc,
+  setDoc,
+  collection,
+  query,
+  where,
+  getDocs,
+  updateDoc,
+  deleteDoc,
+  serverTimestamp,
+} from 'firebase/firestore';
+import { auth, db } from '../firebase';
 import { getFirebaseErrorMessage } from '../utils/firebaseErrors';
 import i18n from '../i18n';
 import { getBaseLanguage } from '../utils/localeRouting';
-
-// Firebase User type (minimal definition to avoid importing the full module)
-interface FirebaseUser {
-  uid: string;
-  displayName: string | null;
-  email: string | null;
-  photoURL: string | null;
-  emailVerified: boolean;
-  metadata: { creationTime?: string };
-  providerData: Array<{ providerId: string }>;
-  delete: () => Promise<void>;
-}
-
-// Lazy-loaded Firebase modules to avoid blocking initial render
-let firebaseAuth: typeof import('firebase/auth') | null = null;
-let firebaseFirestore: typeof import('firebase/firestore') | null = null;
-let authInstance: import('firebase/auth').Auth | null = null;
-let dbInstance: import('firebase/firestore').Firestore | null = null;
-
-// Initialize Firebase lazily
-async function getFirebaseModules() {
-  if (!firebaseAuth || !firebaseFirestore) {
-    const [authModule, firestoreModule, firebaseModule] = await Promise.all([
-      import('firebase/auth'),
-      import('firebase/firestore'),
-      import('../firebase'),
-    ]);
-    firebaseAuth = authModule;
-    firebaseFirestore = firestoreModule;
-    authInstance = firebaseModule.auth;
-    dbInstance = firebaseModule.db;
-  }
-  return { 
-    auth: firebaseAuth!, 
-    firestore: firebaseFirestore!, 
-    authInstance: authInstance!, 
-    db: dbInstance! 
-  };
-}
 
 // A custom User type to combine Firebase User and our custom fields if needed
 // For now, it will mostly mirror FirebaseUser's relevant fields
@@ -74,196 +62,169 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-  const [firebaseReady, setFirebaseReady] = useState(false);
 
-  // Initialize Firebase and set up auth listener
+  // CRITICAL: Initialize Firebase auth listener immediately with static imports
+  // No dynamic import waterfall - Firebase auth/firestore are pre-bundled by Vite
   useEffect(() => {
-    let unsubscribe: (() => void) | null = null;
     let disposed = false;
     
-    (async () => {
-      try {
-        const { auth, firestore, authInstance, db } = await getFirebaseModules();
-        if (disposed) return;
-        setFirebaseReady(true);
+    // Start auth listener immediately - Firebase resolves from IndexedDB cache (~50ms)
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      if (disposed) return;
+      
+      if (firebaseUser) {
+        // STEP 1: Immediately unlock UI with basic auth data from IndexedDB cache
+        // This happens synchronously - no network round-trip needed
+        const cachedFlag = localStorage.getItem(`profileFlag_${firebaseUser.uid}`);
         
-        const authUnsubscribe = auth.onAuthStateChanged(authInstance, async (firebaseUser) => {
+        const basicUser: User = {
+          uid: firebaseUser.uid,
+          displayName: firebaseUser.displayName,
+          email: firebaseUser.email,
+          photoURL: firebaseUser.photoURL,
+          emailVerified: firebaseUser.emailVerified,
+          createdAt: firebaseUser.metadata.creationTime || null,
+          profileFlag: cachedFlag, // Use cached flag immediately
+        };
+        
+        setUser(basicUser);
+        setLoading(false); // ✅ UNLOCK UI IMMEDIATELY
+        
+        // STEP 2: Background fetch of Firestore profile data (non-blocking)
+        // This happens asynchronously after UI is already interactive
+        (async () => {
           if (disposed) return;
-          if (firebaseUser) {
-            // Check if username exists in Firestore, if not create it
-            // This is a fallback in case registration failed to create it
-            if (firebaseUser.displayName) {
-              try {
-                const usernameDoc = await firestore.getDoc(firestore.doc(db, 'usernames', firebaseUser.uid));
-                if (!usernameDoc.exists()) {
-                  // Check if username is already taken, add suffix if needed
-                  let username = firebaseUser.displayName;
-                  let usernameToUse = username;
-                  let suffix = 1;
-                  
-                  while (true) {
-                    const usernameQuery = firestore.query(
-                      firestore.collection(db, 'usernames'),
-                      firestore.where('username_lower', '==', usernameToUse.toLowerCase())
-                    );
-                    const existingUsername = await firestore.getDocs(usernameQuery);
-                    
-                    if (existingUsername.empty) {
-                      break;
-                    }
-                    suffix++;
-                    usernameToUse = `${username}${suffix}`;
-                  }
-                  
-                  // Update displayName if suffix was added
-                  if (usernameToUse !== username) {
-                    await auth.updateProfile(firebaseUser, { displayName: usernameToUse });
-                  }
-                  
-                  await firestore.setDoc(firestore.doc(db, 'usernames', firebaseUser.uid), {
-                    username: usernameToUse,
-                    username_lower: usernameToUse.toLowerCase(),
-                    userId: firebaseUser.uid,
-                    createdAt: new Date()
-                  }, { merge: false });
-                }
-              } catch (error) {
-                console.error('Failed to sync username to Firestore:', error);
-                // Don't block login if this fails
-              }
-            }
-            
-            // Load profile flag from Firestore or localStorage cache
-            let profileFlag: string | null = null;
-            let preferredLanguage: 'en' | 'cs' | 'de' | null = null;
-            const cachedFlag = localStorage.getItem(`profileFlag_${firebaseUser.uid}`);
-            
-            if (cachedFlag) {
-              profileFlag = cachedFlag;
-            }
-            
-            // Fetch from Firestore (in background if cached)
+          
+          // Ensure username exists in Firestore (fallback for failed registrations)
+          if (firebaseUser.displayName) {
             try {
-              const userDocRef = firestore.doc(db, 'users', firebaseUser.uid);
-              const userDocSnap = await firestore.getDoc(userDocRef);
-              if (userDocSnap.exists()) {
-                const userData = userDocSnap.data();
-                if (userData.profileFlag) {
-                  profileFlag = userData.profileFlag;
-                  localStorage.setItem(`profileFlag_${firebaseUser.uid}`, userData.profileFlag);
-                } else if (cachedFlag) {
-                  // Flag was removed, clear cache
-                  localStorage.removeItem(`profileFlag_${firebaseUser.uid}`);
-                  profileFlag = null;
+              const usernameDoc = await getDoc(doc(db, 'usernames', firebaseUser.uid));
+              if (!usernameDoc.exists()) {
+                let username = firebaseUser.displayName;
+                let usernameToUse = username;
+                let suffix = 1;
+                
+                // Find unique username
+                while (true) {
+                  const usernameQuery = query(
+                    collection(db, 'usernames'),
+                    where('username_lower', '==', usernameToUse.toLowerCase())
+                  );
+                  const existingUsername = await getDocs(usernameQuery);
+                  
+                  if (existingUsername.empty) break;
+                  suffix++;
+                  usernameToUse = `${username}${suffix}`;
                 }
-
-                if (typeof userData.preferredLanguage === 'string') {
-                  preferredLanguage = getBaseLanguage(userData.preferredLanguage);
+                
+                if (usernameToUse !== username) {
+                  await updateProfile(firebaseUser, { displayName: usernameToUse });
                 }
+                
+                await setDoc(doc(db, 'usernames', firebaseUser.uid), {
+                  username: usernameToUse,
+                  username_lower: usernameToUse.toLowerCase(),
+                  userId: firebaseUser.uid,
+                  createdAt: new Date()
+                }, { merge: false });
               }
             } catch (error) {
-              console.error('Error loading profile flag:', error);
-              // Use cached value if fetch fails
+              console.error('Failed to sync username to Firestore:', error);
             }
-
+          }
+          
+          // Fetch profile flag and language preference from Firestore
+          try {
+            const userDocRef = doc(db, 'users', firebaseUser.uid);
+            const userDocSnap = await getDoc(userDocRef);
+            
+            let profileFlag: string | null = cachedFlag;
+            let preferredLanguage: 'en' | 'cs' | 'de' | null = null;
+            
+            if (userDocSnap.exists()) {
+              const userData = userDocSnap.data();
+              
+              if (userData.profileFlag) {
+                profileFlag = userData.profileFlag;
+                localStorage.setItem(`profileFlag_${firebaseUser.uid}`, userData.profileFlag);
+              } else if (cachedFlag) {
+                localStorage.removeItem(`profileFlag_${firebaseUser.uid}`);
+                profileFlag = null;
+              }
+              
+              if (typeof userData.preferredLanguage === 'string') {
+                preferredLanguage = getBaseLanguage(userData.preferredLanguage);
+              }
+            }
+            
+            // Update language if needed (non-blocking)
             if (preferredLanguage && getBaseLanguage(i18n.language) !== preferredLanguage) {
               await i18n.changeLanguage(preferredLanguage);
             }
             
-            const formattedUser: User = {
-              uid: firebaseUser.uid,
-              displayName: firebaseUser.displayName,
-              email: firebaseUser.email,
-              photoURL: firebaseUser.photoURL,
-              emailVerified: firebaseUser.emailVerified,
-              createdAt: firebaseUser.metadata.creationTime || null,
-              profileFlag,
-            };
+            // Update user state with fresh Firestore data
             if (!disposed) {
-              setUser(formattedUser);
+              setUser(prev => prev ? { ...prev, profileFlag } : null);
             }
-          } else {
-            if (!disposed) {
-              setUser(null);
-            }
+          } catch (error) {
+            console.error('Error loading profile data:', error);
+            // UI is already interactive with cached data
           }
-          if (!disposed) {
-            setLoading(false);
-          }
-        });
-
-        if (disposed) {
-          authUnsubscribe();
-          return;
-        }
-        unsubscribe = authUnsubscribe;
-      } catch (error) {
-        console.error('Failed to initialize Firebase:', error);
-        if (!disposed) {
-          setLoading(false);
-        }
+        })();
+      } else {
+        // No user - unlock UI immediately
+        setUser(null);
+        setLoading(false);
       }
-    })();
+    });
 
-    // Cleanup subscription on unmount
     return () => {
       disposed = true;
-      if (unsubscribe) unsubscribe();
+      unsubscribe();
     };
   }, []);
 
   const login = useCallback(async (email: string, password: string) => {
-    const { auth, authInstance } = await getFirebaseModules();
     try {
-      const userCredential = await auth.signInWithEmailAndPassword(authInstance, email, password);
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
       if (!userCredential.user.emailVerified) {
-        // Sign out immediately if email not verified
-        await auth.signOut(authInstance);
+        await signOut(auth);
         throw new Error('Please verify your email before logging in. Check your inbox for the verification link.');
       }
-      // onAuthStateChanged will handle setting the user
     } catch (error: any) {
       throw new Error(getFirebaseErrorMessage(error));
     }
   }, []);
 
   const register = useCallback(async (username: string, email: string, password: string) => {
-    const { auth, firestore, authInstance, db } = await getFirebaseModules();
     try {
       // Check if username is already taken
-      const usernameQuery = firestore.query(
-        firestore.collection(db, 'usernames'), 
-        firestore.where('username_lower', '==', username.toLowerCase())
+      const usernameQuery = query(
+        collection(db, 'usernames'), 
+        where('username_lower', '==', username.toLowerCase())
       );
-      const usernameSnapshot = await firestore.getDocs(usernameQuery);
+      const usernameSnapshot = await getDocs(usernameQuery);
       
       if (!usernameSnapshot.empty) {
         throw new Error('Username already in use. Please choose a different one.');
       }
       
       // Create user account
-      const userCredential = await auth.createUserWithEmailAndPassword(authInstance, email, password);
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       
-      // CRITICAL: Do all these operations sequentially and wait for each
+      // CRITICAL: Do all these operations sequentially
       try {
-        // 1. Update display name
-        await auth.updateProfile(userCredential.user, { displayName: username });
+        await updateProfile(userCredential.user, { displayName: username });
         
-        // 2. Reserve the username in Firestore - critical for uniqueness
-        await firestore.setDoc(firestore.doc(db, 'usernames', userCredential.user.uid), {
+        await setDoc(doc(db, 'usernames', userCredential.user.uid), {
           username: username,
           username_lower: username.toLowerCase(),
           userId: userCredential.user.uid,
           createdAt: new Date()
         }, { merge: false });
         
-        // 3. Send verification email
-        await auth.sendEmailVerification(userCredential.user);
-        
-        // User stays logged in with emailVerified=false
-        // They will see verification screen via VerifiedOrGuestRoute
+        await sendEmailVerification(userCredential.user);
       } catch (firestoreError: any) {
-        // If anything fails, delete the auth account to keep things consistent
         console.error('Failed to complete registration:', firestoreError);
         try {
           await userCredential.user.delete();
@@ -279,46 +240,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const loginWithGoogle = useCallback(async () => {
-    const { auth, firestore, authInstance, db } = await getFirebaseModules();
     try {
-      const provider = new auth.GoogleAuthProvider();
-      const result = await auth.signInWithPopup(authInstance, provider);
+      const provider = new GoogleAuthProvider();
+      const result = await signInWithPopup(auth, provider);
       
-      // Always check if username exists in Firestore, if not, create it
       if (result.user.displayName) {
-        const usernameDoc = await firestore.getDoc(firestore.doc(db, 'usernames', result.user.uid));
+        const usernameDoc = await getDoc(doc(db, 'usernames', result.user.uid));
         
         if (!usernameDoc.exists()) {
-          // User doesn't have a username record, create one
-          // But first check if the Google displayName is already taken
           let username = result.user.displayName;
           let usernameToUse = username;
           let suffix = 1;
           
-          // Keep trying with incremented suffix until we find unique username
           while (true) {
-            const usernameQuery = firestore.query(
-              firestore.collection(db, 'usernames'),
-              firestore.where('username_lower', '==', usernameToUse.toLowerCase())
+            const usernameQuery = query(
+              collection(db, 'usernames'),
+              where('username_lower', '==', usernameToUse.toLowerCase())
             );
-            const existingUsername = await firestore.getDocs(usernameQuery);
+            const existingUsername = await getDocs(usernameQuery);
             
-            if (existingUsername.empty) {
-              // This username is available
-              break;
-            }
+            if (existingUsername.empty) break;
             
-            // Username taken, try with suffix
             suffix++;
             usernameToUse = `${username}${suffix}`;
           }
           
-          // Update Firebase Auth displayName if we added suffix
           if (usernameToUse !== username) {
-            await auth.updateProfile(result.user, { displayName: usernameToUse });
+            await updateProfile(result.user, { displayName: usernameToUse });
           }
           
-          await firestore.setDoc(firestore.doc(db, 'usernames', result.user.uid), {
+          await setDoc(doc(db, 'usernames', result.user.uid), {
             username: usernameToUse,
             username_lower: usernameToUse.toLowerCase(),
             userId: result.user.uid,
@@ -326,32 +277,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           });
         }
       }
-      
-      // onAuthStateChanged will handle setting the user
     } catch (error: any) {
       throw new Error(getFirebaseErrorMessage(error));
     }
   }, []);
 
   const refreshUser = useCallback(async () => {
-    const { authInstance, firestore, db } = await getFirebaseModules();
-    await authInstance.currentUser?.reload();
-    const firebaseUser = authInstance.currentUser;
+    await auth.currentUser?.reload();
+    const firebaseUser = auth.currentUser;
     if (firebaseUser) {
-      // Fetch fresh data from Firestore
       let profileFlag: string | null = null;
       let preferredLanguage: 'en' | 'cs' | 'de' | null = null;
       
       try {
-        const userDocRef = firestore.doc(db, 'users', firebaseUser.uid);
-        const userDocSnap = await firestore.getDoc(userDocRef);
+        const userDocRef = doc(db, 'users', firebaseUser.uid);
+        const userDocSnap = await getDoc(userDocRef);
         if (userDocSnap.exists()) {
           const userData = userDocSnap.data();
           if (userData.profileFlag) {
             profileFlag = userData.profileFlag;
             localStorage.setItem(`profileFlag_${firebaseUser.uid}`, userData.profileFlag);
           } else {
-            // Flag was removed, clear cache
             localStorage.removeItem(`profileFlag_${firebaseUser.uid}`);
             profileFlag = null;
           }
@@ -362,7 +308,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
       } catch (error) {
         console.error('Error loading profile flag:', error);
-        // Fallback to localStorage cache if fetch fails
         const cachedFlag = localStorage.getItem(`profileFlag_${firebaseUser.uid}`);
         profileFlag = cachedFlag;
       }
@@ -387,11 +332,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const sendVerificationEmail = useCallback(async () => {
-    const { auth, authInstance } = await getFirebaseModules();
-    const currentUser = authInstance.currentUser;
+    const currentUser = auth.currentUser;
     if (currentUser && !currentUser.emailVerified) {
       try {
-        await auth.sendEmailVerification(currentUser);
+        await sendEmailVerification(currentUser);
       } catch (error: any) {
         throw new Error(getFirebaseErrorMessage(error));
       }
@@ -406,19 +350,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const NICK_COOLDOWN_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
 
   const setNickname = useCallback(async (username: string) => {
-    const { auth, firestore, authInstance, db } = await getFirebaseModules();
-    const currentUser = authInstance.currentUser;
+    const currentUser = auth.currentUser;
     if (currentUser) {
       try {
         // Check if username is already taken by someone else
-        const usernameQuery = firestore.query(
-          firestore.collection(db, 'usernames'), 
-          firestore.where('username_lower', '==', username.toLowerCase())
+        const usernameQuery = query(
+          collection(db, 'usernames'), 
+          where('username_lower', '==', username.toLowerCase())
         );
-        const usernameSnapshot = await firestore.getDocs(usernameQuery);
+        const usernameSnapshot = await getDocs(usernameQuery);
         
         if (!usernameSnapshot.empty) {
-          // Check if it's taken by another user
           const existingDoc = usernameSnapshot.docs[0];
           if (existingDoc.id !== currentUser.uid) {
             throw new Error('Username already in use. Please choose a different one.');
@@ -426,8 +368,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
         
         // Get current username document for rate limit enforcement
-        const usernameDocRef = firestore.doc(db, 'usernames', currentUser.uid);
-        const currentUsernameDoc = await firestore.getDoc(usernameDocRef);
+        const usernameDocRef = doc(db, 'usernames', currentUser.uid);
+        const currentUsernameDoc = await getDoc(usernameDocRef);
 
         const now = new Date();
         const currentMonthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
@@ -439,12 +381,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           const storedCount: number = typeof data.nickChangesCount === 'number' ? data.nickChangesCount : 0;
           const lastChangedAt: Date | null = data.lastNickChangeAt?.toDate?.() ?? null;
 
-          // Enforce monthly limit
           if (storedMonthKey === currentMonthKey && storedCount >= NICK_CHANGE_LIMIT) {
             throw new Error(`You can only change your nickname ${NICK_CHANGE_LIMIT} times per month. Try again next month.`);
           }
 
-          // Enforce cooldown between changes
           if (lastChangedAt) {
             const elapsed = now.getTime() - lastChangedAt.getTime();
             if (elapsed < NICK_COOLDOWN_MS) {
@@ -458,40 +398,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           newNickChangesCount = storedMonthKey === currentMonthKey ? storedCount + 1 : 1;
         }
         
-        // Update Firebase Auth profile
-        await auth.updateProfile(currentUser, { displayName: username });
+        await updateProfile(currentUser, { displayName: username });
         
-        // Update username document in Firestore with rate-limit tracking
-        await firestore.setDoc(usernameDocRef, {
+        await setDoc(usernameDocRef, {
           username: username,
           username_lower: username.toLowerCase(),
           userId: currentUser.uid,
-          updatedAt: firestore.serverTimestamp(),
+          updatedAt: serverTimestamp(),
           nickChangesCount: newNickChangesCount,
           nickChangesMonthKey: currentMonthKey,
-          lastNickChangeAt: firestore.serverTimestamp(),
+          lastNickChangeAt: serverTimestamp(),
         }, { merge: true });
         
-        // Update username in user's all-time streak record (document ID = user.uid)
-        const streakDocRef = firestore.doc(db, 'streaks', currentUser.uid);
-        const streakDoc = await firestore.getDoc(streakDocRef);
+        // Update username in streak records
+        const streakDocRef = doc(db, 'streaks', currentUser.uid);
+        const streakDoc = await getDoc(streakDocRef);
         
         if (streakDoc.exists()) {
-          await firestore.updateDoc(streakDocRef, { username: username });
+          await updateDoc(streakDocRef, { username: username });
         }
         
-        // Update username in user's daily streak records
-        const dailyStreaksQuery = firestore.query(
-          firestore.collection(db, 'dailyStreaks'),
-          firestore.where('userId', '==', currentUser.uid)
+        const dailyStreaksQuery = query(
+          collection(db, 'dailyStreaks'),
+          where('userId', '==', currentUser.uid)
         );
-        const dailyStreaksSnapshot = await firestore.getDocs(dailyStreaksQuery);
+        const dailyStreaksSnapshot = await getDocs(dailyStreaksQuery);
         
         for (const dailyDoc of dailyStreaksSnapshot.docs) {
-          await firestore.updateDoc(dailyDoc.ref, { username: username });
+          await updateDoc(dailyDoc.ref, { username: username });
         }
         
-        // Manually trigger a refresh to get the updated user object
         await refreshUser();
       } catch (error: any) {
         throw new Error(getFirebaseErrorMessage(error));
@@ -502,24 +438,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [refreshUser]);
 
   const setProfileFlag = useCallback(async (flag: string | null) => {
-    const { firestore, authInstance, db } = await getFirebaseModules();
-    const currentUser = authInstance.currentUser;
+    const currentUser = auth.currentUser;
     if (!currentUser) {
       throw new Error('No user is currently signed in.');
     }
 
     try {
-      const userDocRef = firestore.doc(db, 'users', currentUser.uid);
-      await firestore.setDoc(userDocRef, { profileFlag: flag }, { merge: true });
+      const userDocRef = doc(db, 'users', currentUser.uid);
+      await setDoc(userDocRef, { profileFlag: flag }, { merge: true });
       
-      // Update localStorage cache
       if (flag) {
         localStorage.setItem(`profileFlag_${currentUser.uid}`, flag);
       } else {
         localStorage.removeItem(`profileFlag_${currentUser.uid}`);
       }
       
-      // Update user state immediately
       if (user) {
         setUser({ ...user, profileFlag: flag });
       }
@@ -529,48 +462,40 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [user]);
 
   const deleteAccount = useCallback(async (password?: string) => {
-    const { auth, firestore, authInstance, db } = await getFirebaseModules();
-    const currentUser = authInstance.currentUser;
+    const currentUser = auth.currentUser;
     if (!currentUser) {
       throw new Error('No user is currently signed in.');
     }
 
     try {
-      // Re-authenticate user before deletion (required by Firebase)
       const isGoogleUser = currentUser.providerData.some(
         provider => provider.providerId === 'google.com'
       );
 
       if (isGoogleUser) {
-        // Re-authenticate with Google
-        const provider = new auth.GoogleAuthProvider();
-        await auth.reauthenticateWithPopup(currentUser, provider);
+        const provider = new GoogleAuthProvider();
+        await reauthenticateWithPopup(currentUser, provider);
       } else {
-        // Re-authenticate with email/password
         if (!password) {
           throw new Error('Password is required to delete your account.');
         }
         if (!currentUser.email) {
           throw new Error('Email not found.');
         }
-        const credential = auth.EmailAuthProvider.credential(currentUser.email, password);
-        await auth.reauthenticateWithCredential(currentUser, credential);
+        const credential = EmailAuthProvider.credential(currentUser.email, password);
+        await reauthenticateWithCredential(currentUser, credential);
       }
 
-      // Delete username from Firestore
-      await firestore.deleteDoc(firestore.doc(db, 'usernames', currentUser.uid));
+      await deleteDoc(doc(db, 'usernames', currentUser.uid));
       
-      // Delete all user's scores
-      const scoresQuery = firestore.query(
-        firestore.collection(db, 'scores'),
-        firestore.where('userId', '==', currentUser.uid)
+      const scoresQuery = query(
+        collection(db, 'scores'),
+        where('userId', '==', currentUser.uid)
       );
-      const scoresSnapshot = await firestore.getDocs(scoresQuery);
-      const deletePromises = scoresSnapshot.docs.map(doc => firestore.deleteDoc(doc.ref));
+      const scoresSnapshot = await getDocs(scoresQuery);
+      const deletePromises = scoresSnapshot.docs.map(doc => deleteDoc(doc.ref));
       await Promise.all(deletePromises);
       
-      // Delete the authentication account
-      // Note: Firebase Delete User Data extension will handle remaining cleanup
       await currentUser.delete();
     } catch (error: any) {
       throw new Error(getFirebaseErrorMessage(error));
@@ -578,10 +503,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const logout = useCallback(async () => {
-    const { auth, authInstance } = await getFirebaseModules();
     try {
-      await auth.signOut(authInstance);
-      // onAuthStateChanged will handle setting the user to null
+      await signOut(auth);
     } catch (error: any) {
       throw new Error(getFirebaseErrorMessage(error));
     }

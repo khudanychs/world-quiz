@@ -1,6 +1,5 @@
-import { useState, useEffect, ReactNode } from 'react';
+import { ReactNode } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { useTranslation } from 'react-i18next';
 
 const LoadingFallback = () => (
   <div style={{
@@ -11,7 +10,7 @@ const LoadingFallback = () => (
     background: '#0b1020',
     color: '#fff'
   }}>
-    <div>Loading...</div>
+    <div className="animate-pulse">Loading...</div>
   </div>
 );
 
@@ -21,39 +20,16 @@ interface AppInitializerProps {
 
 export function AppInitializer({ children }: AppInitializerProps) {
   const { loading: authLoading } = useAuth();
-  const { i18n } = useTranslation();
-  const [i18nReady, setI18nReady] = useState(false);
-
-  useEffect(() => {
-    // Check if i18n is already initialized
-    if (i18n.isInitialized) {
-      setI18nReady(true);
-      return;
-    }
-
-    // Wait for i18n to initialize
-    const checkI18nReady = () => {
-      if (i18n.isInitialized) {
-        setI18nReady(true);
-      }
-    };
-
-    // Poll every 50ms until i18n is ready (it should be very fast)
-    const interval = setInterval(checkI18nReady, 50);
-    
-    // Also listen for the initialized event if available
-    i18n.on('initialized', checkI18nReady);
-
-    return () => {
-      clearInterval(interval);
-      i18n.off('initialized', checkI18nReady);
-    };
-  }, [i18n]);
-
-  // Show loading until both auth and i18n are initialized
-  if (authLoading || !i18nReady) {
+  
+  // App Shell & Auth Readiness Pattern:
+  // Block rendering ONLY until Firebase onAuthStateChanged resolves (typically <100ms).
+  // No artificial timeouts, no i18n polling - rely strictly on Firebase's native flow.
+  // This ensures we never flash unauthenticated content or trigger premature redirects.
+  if (authLoading) {
     return <LoadingFallback />;
   }
 
+  // Once Firebase confirms identity, render the entire app shell.
+  // React Router will now resolve routes and begin background chunk loading.
   return <>{children}</>;
 }

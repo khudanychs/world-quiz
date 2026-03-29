@@ -42,9 +42,12 @@ const LoadingFallback = () => (
 );
 
 function VerifiedOrGuestRoute({ children }: { children: React.ReactNode }) {
-  const { user, logout } = useAuth();
+  const { user, logout, loading } = useAuth();
   const [checking, setChecking] = useState(false);
   const [error, setError] = useState('');
+
+  // CRITICAL: Never evaluate isAuthenticated or navigate while Firebase is resolving
+  if (loading) return <LoadingFallback />;
   
   const isEmailPasswordUser = user && user.email && !user.photoURL;
   if (user && !user.emailVerified && isEmailPasswordUser) {
@@ -90,12 +93,20 @@ function VerifiedOrGuestRoute({ children }: { children: React.ReactNode }) {
 }
 
 function GuestRoute({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, loading } = useAuth();
+
+  // CRITICAL: Block routing decisions until auth is resolved
+  if (loading) return <LoadingFallback />;
+
   return !isAuthenticated ? <>{children}</> : <Navigate to='/' replace />;
 }
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, loading } = useAuth();
+
+  // CRITICAL: Block routing decisions until auth is resolved
+  if (loading) return <LoadingFallback />;
+
   return isAuthenticated ? <>{children}</> : <Navigate to='/auth' replace />;
 }
 

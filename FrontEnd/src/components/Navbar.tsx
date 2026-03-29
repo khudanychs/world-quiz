@@ -9,7 +9,7 @@ import './Navbar.css';
 
 export function Navbar() {
   const { t, i18n } = useTranslation();
-  const { user, isAuthenticated, logout } = useAuth();
+  const { user, isAuthenticated, logout, loading } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 1000);
   const navigate = useNavigate();
@@ -158,7 +158,10 @@ export function Navbar() {
           {/* Desktop Auth Menu */}
           {!isMobile && (
             <div className="navbar-menu">
-              {isAuthenticated ? (
+              {loading ? (
+                // App Shell: Hide auth UI completely during initial Firebase resolution
+                <div style={{ width: '150px', height: '40px' }} aria-hidden="true" />
+              ) : isAuthenticated ? (
                 <>
                   <button
                     className={`navbar-user-button ${isActive('/settings') ? 'active' : ''}`}
@@ -254,7 +257,10 @@ export function Navbar() {
 
             {/* Auth Section */}
             <div className="mobile-auth-section">
-              {isAuthenticated ? (
+              {loading ? (
+                // App Shell: Hide auth UI completely during initial Firebase resolution
+                <div style={{ height: '60px' }} aria-hidden="true" />
+              ) : isAuthenticated ? (
                 <>
                   <button 
                     className={`mobile-user-button ${isActive('/settings') ? 'active' : ''}`}
