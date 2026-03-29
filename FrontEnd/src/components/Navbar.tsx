@@ -16,6 +16,8 @@ export function Navbar() {
   const location = useLocation();
   const currentLanguage = getBaseLanguage(i18n.language);
   const prefetchTriggered = useRef(false);
+  const languageChangeRequestRef = useRef(0);
+  const latestPathRef = useRef(location.pathname);
 
   // Profile flag comes directly from user context now (cached in localStorage)
   const profileFlag = user?.profileFlag || null;
@@ -47,6 +49,10 @@ export function Navbar() {
     setIsMobileMenuOpen(false);
   }, [location.pathname]);
 
+  useEffect(() => {
+    latestPathRef.current = location.pathname;
+  }, [location.pathname]);
+
   const isActive = (path: string) => stripLocalePrefix(location.pathname) === path;
 
   const handleNavClick = (path: string) => {
@@ -55,10 +61,19 @@ export function Navbar() {
   };
 
   const handleLanguageChange = async (nextLanguage: 'en' | 'cs' | 'de') => {
+    const requestId = ++languageChangeRequestRef.current;
+    const sourcePath = latestPathRef.current;
+
     if (nextLanguage !== currentLanguage) {
       await i18n.changeLanguage(nextLanguage);
     }
-    navigate(buildLocalizedPath(location.pathname, nextLanguage), { replace: true });
+
+    // Avoid late async completion sending user back to a stale route.
+    if (requestId !== languageChangeRequestRef.current || latestPathRef.current !== sourcePath) {
+      return;
+    }
+
+    navigate(buildLocalizedPath(sourcePath, nextLanguage), { replace: true });
   };
 
   const renderGuestLanguageSwitcher = (mobile = false) => (

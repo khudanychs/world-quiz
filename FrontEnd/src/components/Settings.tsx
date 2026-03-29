@@ -1,4 +1,4 @@
-import { useState, useEffect, lazy, Suspense } from 'react';
+import { useState, useEffect, lazy, Suspense, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
@@ -21,6 +21,8 @@ export const Settings = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const currentLanguage = getBaseLanguage(i18n.language);
+  const languageChangeRequestRef = useRef(0);
+  const latestPathRef = useRef(location.pathname);
   const [username, setUsername] = useState('');
   const [avatarUrl, setAvatarUrl] = useState('');
   const [selectedFlag, setSelectedFlag] = useState<string | null>(null);
@@ -45,6 +47,10 @@ export const Settings = () => {
     changesLeft: number;
     cooldownDaysLeft: number | null;
   } | null>(null);
+
+  useEffect(() => {
+    latestPathRef.current = location.pathname;
+  }, [location.pathname]);
 
   useEffect(() => {
     if (user) {
@@ -322,6 +328,9 @@ export const Settings = () => {
   };
 
   const handleLanguageChange = async (nextLanguage: 'en' | 'cs' | 'de') => {
+    const requestId = ++languageChangeRequestRef.current;
+    const sourcePath = latestPathRef.current;
+
     if (nextLanguage !== currentLanguage) {
       await i18n.changeLanguage(nextLanguage);
 
@@ -342,8 +351,13 @@ export const Settings = () => {
       }
     }
 
+    // If user navigated away while language change was in-flight, do not force stale navigation.
+    if (requestId !== languageChangeRequestRef.current || latestPathRef.current !== sourcePath) {
+      return;
+    }
+
     // Replace history entry so Back button ignores language-only switches.
-    navigate(buildLocalizedPath(location.pathname, nextLanguage), { replace: true });
+    navigate(buildLocalizedPath(sourcePath, nextLanguage), { replace: true });
   };
 
   return (
