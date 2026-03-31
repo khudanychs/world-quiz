@@ -198,6 +198,7 @@
   text-align: center;
   color: #666;
   font-size: 14px;
+  overflow-wrap: anywhere;
 }
 
 .auth-footer a {
@@ -219,6 +220,8 @@
   cursor: pointer;
   padding: 0;
   font-size: inherit;
+  display: inline;
+  overflow-wrap: anywhere;
 }
 
 .auth-link:hover {

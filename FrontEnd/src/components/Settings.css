@@ -30,6 +30,8 @@
 .settings-header {
   display: flex;
   align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
   padding: 24px 32px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   background: rgba(26, 31, 53, 0.95);
@@ -200,6 +202,8 @@
   cursor: pointer;
   transition: all 0.2s ease;
   box-shadow: 0 2px 8px rgba(249, 115, 22, 0.3);
+  min-height: 44px;
+  white-space: normal;
 }
 
 .change-flag-button:hover {
@@ -297,6 +301,8 @@
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 0 4px 12px rgba(118, 75, 162, 0.3);
+  min-height: 48px;
+  white-space: normal;
 }
 
 .settings-save-button:hover:not(:disabled) {
@@ -370,6 +376,8 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
   padding: 12px 0;
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
@@ -388,6 +396,7 @@
   font-size: 15px;
   font-weight: 600;
   font-family: monospace;
+  overflow-wrap: anywhere;
 }
 
 /* Stats Section */
@@ -443,6 +452,8 @@
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
+  min-height: 46px;
+  white-space: normal;
 }
 
 .delete-account-button:hover {
@@ -473,6 +484,8 @@
   cursor: pointer;
   transition: all 0.2s;
   box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+  min-height: 46px;
+  white-space: normal;
 }
 
 .confirm-delete-button:hover:not(:disabled) {
@@ -492,6 +505,8 @@
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s;
+  min-height: 46px;
+  white-space: normal;
 }
 
 .cancel-delete-button:hover:not(:disabled) {
@@ -671,6 +686,10 @@
   .settings-page-wrapper {
     padding: 20px 16px;
   }
+
+  .settings-page-card {
+    border-radius: 18px;
+  }
   
   .settings-content {
     padding: 24px;
@@ -678,6 +697,10 @@
   
   .settings-header {
     padding: 20px 24px;
+  }
+
+  .settings-header > button {
+    margin-right: 0 !important;
   }
   
   .settings-header h2 {
@@ -706,10 +729,12 @@
   
   .settings-header {
     padding: 16px 20px;
+    align-items: flex-start;
   }
   
   .settings-header h2 {
     font-size: 20px;
+    line-height: 1.2;
   }
   
   .settings-section {

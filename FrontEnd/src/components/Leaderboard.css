@@ -90,6 +90,7 @@
   font-size: 0.9rem;
   font-weight: 500;
   transition: all 0.2s ease;
+  white-space: normal;
 }
 
 .toggle-btn:hover {
@@ -166,6 +167,7 @@
   font-weight: 500;
   flex-grow: 1;
   color: #e5e7eb;
+  overflow-wrap: anywhere;
 }
 
 .leaderboard-streak {
@@ -219,9 +221,30 @@
   font-weight: 600;
   cursor: pointer;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
+  max-width: 100%;
+  white-space: normal;
 }
 
 .cta-button:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(249, 115, 22, 0.3);
+}
+
+@media (max-width: 520px) {
+  .leaderboard-toggle {
+    flex-direction: column;
+  }
+
+  .toggle-btn {
+    width: 100%;
+  }
+
+  .leaderboard-item {
+    align-items: flex-start;
+  }
+
+  .leaderboard-streak,
+  .leaderboard-score {
+    font-size: 1rem;
+  }
 }

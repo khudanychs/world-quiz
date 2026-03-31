@@ -558,6 +558,18 @@
   overflow-y: auto;
 }
 
+@media (max-width: 360px) {
+  .mobile-menu {
+    width: 100vw;
+    max-width: 100vw;
+  }
+
+  .mobile-menu-content {
+    padding: 16px;
+    gap: 18px;
+  }
+}
+
 .mobile-menu.open {
   transform: translateX(0);
 }

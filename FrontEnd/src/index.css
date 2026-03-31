@@ -28,7 +28,7 @@ html, body, #root {
   width: 100%;
   margin: 0;
   padding: 0;
-  overflow: hidden;
+  overflow-x: hidden;
 }
 
 /* Remove centering so the map can fill the entire window */
@@ -38,6 +38,15 @@ body {
   min-height: 100vh;
   min-height: 100dvh;
   box-sizing: border-box;
+}
+
+/* Avoid accidental horizontal clipping from long localized button labels. */
+button,
+a,
+input,
+select,
+textarea {
+  max-width: 100%;
 }
 
 * {

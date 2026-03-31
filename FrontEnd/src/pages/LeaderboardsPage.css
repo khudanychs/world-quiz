@@ -67,6 +67,7 @@
   cursor: pointer;
   transition: all 0.2s ease;
   min-width: 140px;
+  white-space: normal;
 }
 
 .mode-btn:hover {
@@ -99,4 +100,11 @@
 .leaderboards-grid .leaderboard-card {
   margin-top: 0;
   max-width: 100%;
+}
+
+@media (max-width: 520px) {
+  .mode-btn {
+    width: 100%;
+    min-width: 0;
+  }
 }
