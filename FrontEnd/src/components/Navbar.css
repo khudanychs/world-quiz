@@ -69,6 +69,7 @@
   gap: 8px;
   margin-left: auto;
   margin-right: auto;
+  min-width: 0;
 }
 
 .nav-link {
@@ -112,6 +113,7 @@
   gap: 4px;
   flex-shrink: 0;
   flex-wrap: nowrap;
+  min-width: 0;
 }
 
 @media (min-width: 576px) {
@@ -186,6 +188,54 @@
 @media (min-width: 992px) {
   .navbar-menu {
     gap: 16px;
+  }
+}
+
+@media (max-width: 1320px) {
+  .navbar-custom .container-fluid {
+    gap: 10px;
+    padding: 0 12px;
+  }
+
+  .navbar-nav-links {
+    gap: 4px;
+  }
+
+  .nav-link {
+    padding: 8px 12px;
+    font-size: 14px;
+  }
+
+  .navbar-menu {
+    gap: 6px;
+  }
+
+  .navbar-language-switcher {
+    gap: 3px;
+    padding: 3px;
+    margin-right: 2px;
+  }
+
+  .navbar-lang-btn {
+    min-width: 36px;
+    padding: 6px 8px;
+    font-size: 11px;
+  }
+
+  .navbar-button,
+  .navbar-button-secondary {
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 1180px) {
+  .navbar-brand h1 {
+    font-size: 20px;
+  }
+
+  .navbar-logo {
+    height: 48px;
   }
 }
 

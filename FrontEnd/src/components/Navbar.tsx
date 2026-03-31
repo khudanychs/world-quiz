@@ -7,11 +7,15 @@ import { buildLocalizedPath, getBaseLanguage, stripLocalePrefix } from '../utils
 import { startPrefetch } from '../utils/dataPrefetch';
 import './Navbar.css';
 
+const MOBILE_BREAKPOINT_PX = 1120;
+
+const isMobileViewport = () => window.innerWidth < MOBILE_BREAKPOINT_PX;
+
 export function Navbar() {
   const { t, i18n } = useTranslation();
   const { user, isAuthenticated, logout, loading } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 1000);
+  const [isMobile, setIsMobile] = useState(isMobileViewport());
   const navigate = useNavigate();
   const location = useLocation();
   const currentLanguage = getBaseLanguage(i18n.language);
@@ -33,7 +37,7 @@ export function Navbar() {
 
   useEffect(() => {
     const handleResize = () => {
-      const mobile = window.innerWidth < 1000;
+      const mobile = isMobileViewport();
       setIsMobile(mobile);
       if (!mobile) {
         setIsMobileMenuOpen(false);

@@ -5,6 +5,7 @@
   justify-content: center;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   padding: 20px;
+  overflow-x: hidden;
 }
 
 .auth-card {
@@ -162,6 +163,12 @@
   gap: 12px;
 }
 
+.btn-primary,
+.btn-google {
+  min-height: 48px;
+  overflow-wrap: anywhere;
+}
+
 .btn-google:hover {
   background: #f8f9fa;
   border-color: #dadce0;
@@ -216,4 +223,51 @@
 
 .auth-link:hover {
   text-decoration: underline;
+}
+
+@media (max-width: 640px) {
+  .auth-container {
+    padding: 16px;
+    align-items: flex-start;
+  }
+
+  .auth-card {
+    margin-top: 14px;
+    padding: 28px 20px;
+    border-radius: 14px;
+  }
+
+  .auth-card h2 {
+    font-size: 24px;
+    margin-bottom: 20px;
+  }
+
+  .btn-primary,
+  .btn-google {
+    font-size: 15px;
+    padding: 12px;
+  }
+}
+
+@media (max-width: 420px) {
+  .auth-container {
+    padding: 12px;
+  }
+
+  .auth-card {
+    padding: 22px 14px;
+  }
+
+  .auth-card h2 {
+    font-size: 21px;
+  }
+
+  .form-group {
+    margin-bottom: 16px;
+  }
+
+  .auth-footer,
+  .privacy-consent {
+    font-size: 13px;
+  }
 }
