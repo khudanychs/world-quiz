@@ -1,4 +1,12 @@
 /// <reference lib="webworker" />
+
+/**
+ * Web Worker: Offloads heavy GeoJSON parsing to background thread
+ * 
+ * Extracts and processes large map geometry data without blocking the main thread.
+ * This enables smooth UI interactions during initial map load and mode switches.
+ */
+
 import { extractGeoFeatureCollection, extractLandGeometry, GEO_LAND_URL, MARINE_URL } from "../components/physicalGeoGame/geo";
 import { geoArea } from "d3-geo";
 

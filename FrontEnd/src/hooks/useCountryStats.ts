@@ -257,7 +257,7 @@ export function useCountryStats(cca2: string | null): CountryStats {
                 return mapped ? { cca2: mapped.cca2, cca3, name: mapped.name } : { cca2: cca3, cca3, name: cca3 };
               });
           } catch (err) {
-            console.error('Failed to map border countries:', err);
+            // Border mapping failed, continue without border data
           }
         }
 

@@ -68,6 +68,7 @@ export function usePhysicalGeoGame(categoryKey: string = "all"): PhysicalGeoGame
   const winTimerRef = useRef<number | null>(null);
   const requestIdRef = useRef(0);
 
+  // --- DATA SELECTORS ---
   const currentFeature = features[currentIdx];
 
   const loadCategoryFeatures = useCallback(async (key: string): Promise<PhysicalFeature[]> => {

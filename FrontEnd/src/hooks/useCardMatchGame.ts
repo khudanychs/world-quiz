@@ -124,7 +124,6 @@ export function useCardMatchGame(pair: { first: CardKind; second: CardKind }) {
         // Load REST Countries data for flags
         const restRes = await fetch("/countries-full.json");
         if (!restRes.ok) {
-          console.error("Failed to load countries-full.json:", restRes.status, restRes.statusText);
           throw new Error(`Failed to load countries (HTTP ${restRes.status})`);
         }
         const restData = (await restRes.json()) as Array<{
@@ -136,12 +135,10 @@ export function useCardMatchGame(pair: { first: CardKind; second: CardKind }) {
 
         const lookup = buildRestLookup(restData, i18n.language);
         const caps = buildCountryLookupWithCapitals(restData, i18n.language);
-        // REST Countries loaded successfully
 
         // Load TopoJSON for country shapes
         const topoRes = await fetch("/countries-110m.json");
         if (!topoRes.ok) {
-          console.error("Failed to load countries-110m.json:", topoRes.status, topoRes.statusText);
           throw new Error(`Failed to load map (HTTP ${topoRes.status})`);
         }
         const topology = await topoRes.json();
@@ -210,12 +207,7 @@ export function useCardMatchGame(pair: { first: CardKind; second: CardKind }) {
       const key2 = stripDiacritics(key1);
       const info = restLookup[key1] || restLookup[key2];
 
-      if (!info) {
-        continue;
-      }
-      
-      if (!info.flag) {
-        console.warn("No flag for country:", info.name);
+      if (!info || !info.flag) {
         continue;
       }
 
@@ -278,8 +270,6 @@ export function useCardMatchGame(pair: { first: CardKind; second: CardKind }) {
         
         playableCountries.push({ info, geometry });
         seenCountryCodes.add(info.cca2);
-      } else {
-        console.warn("No geometry for:", info.name, "cca2:", info.cca2);
       }
     }
     
@@ -329,7 +319,6 @@ export function useCardMatchGame(pair: { first: CardKind; second: CardKind }) {
     const gameCards: CountryCard[] = [];
     for (const country of selectedCountries) {
       if (!country.info || !country.info.flag) {
-        console.error("Invalid country data:", country);
         continue;
       }
 
@@ -373,8 +362,7 @@ export function useCardMatchGame(pair: { first: CardKind; second: CardKind }) {
       ...s,
       cards: gameCards,
       selectedCards: [],
-      matchedPairs: new Set(), // Reset for new set
-      // Keep existing score, streak, maxStreak, and totalMatches if game already started
+      matchedPairs: new Set(),
       totalMatches: s.gameStarted ? s.totalMatches : 0,
       score: s.gameStarted ? s.score : 0,
       streak: s.gameStarted ? s.streak : 0,
@@ -405,10 +393,10 @@ export function useCardMatchGame(pair: { first: CardKind; second: CardKind }) {
     });
 
     // Reset match-related state for TimeBar
-    setCurrentMatchPoints(BASE_POINTS); // Reset to base points
-    setMatchElapsedMs(0); // Reset elapsed time
-    setGameSessionId(Math.random().toString(36)); // Generate new session ID
-    setMatchCount(0); // Reset match count
+    setCurrentMatchPoints(BASE_POINTS);
+    setMatchElapsedMs(0);
+    setGameSessionId(Math.random().toString(36));
+    setMatchCount(0);
 
     // Generate first card set
     generateNewCardSet();
@@ -458,7 +446,6 @@ export function useCardMatchGame(pair: { first: CardKind; second: CardKind }) {
       }
 
       // Check if they match (same country code, different types)
-      // Also prevent matching same type (including text types)
       const isMatch =
         firstCard.cca2 === secondCard.cca2 && firstCard.type !== secondCard.type;
 
@@ -514,8 +501,6 @@ export function useCardMatchGame(pair: { first: CardKind; second: CardKind }) {
   // Auto-generate new cards when all pairs are matched (continuous gameplay)
   useEffect(() => {
     if (state.gameStarted && !state.gameOver && state.matchedPairs.size === GRID_SIZE / 2 && state.cards.length > 0) {
-      // All pairs matched! Generate new set immediately
-      // All pairs matched - generate new set
       generateNewCardSet();
     }
   }, [state.matchedPairs.size, state.gameStarted, state.gameOver, topoData, restLookup]);

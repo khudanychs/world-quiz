@@ -124,16 +124,9 @@ export async function getFeaturesByCategoryAsync(categoryKey: string): Promise<P
 }
 
 /**
- * DEPRECATED: Synchronous version kept for backward compatibility
- * This will load ALL features if called (not lazy)
- * Use getFeaturesByCategoryAsync() instead for lazy loading
+ * @deprecated Use getFeaturesByCategoryAsync() for lazy loading
  */
 export function getFeaturesByCategory(categoryKey: string): PhysicalFeature[] {
-  console.warn('getFeaturesByCategory() is deprecated and loads all features. Use getFeaturesByCategoryAsync() instead.');
-
-  // For backward compatibility, we need to provide a synchronous fallback
-  // This will require loading all features synchronously (not ideal)
-  // Components should migrate to the async version
   if (allFeaturesCache) {
     const group = CATEGORY_GROUPS.find(g => g.key === categoryKey);
     if (!group || categoryKey === "all") return allFeaturesCache;

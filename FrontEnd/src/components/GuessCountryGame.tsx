@@ -322,8 +322,8 @@ export default function GuessCountryGame() {
       try {
         await incrementGuessCountryWins(user);
         setStatSaved(true);
-      } catch (error) {
-        console.error("Failed to save Guess Country stat:", error);
+      } catch {
+        // Stat save failed, continue game normally
       }
     })();
   }, [user, isGameOver, hasWon, statSaved]);

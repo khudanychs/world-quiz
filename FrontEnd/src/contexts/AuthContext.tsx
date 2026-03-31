@@ -30,8 +30,6 @@ import { getFirebaseErrorMessage } from '../utils/firebaseErrors';
 import i18n from '../i18n';
 import { getBaseLanguage } from '../utils/localeRouting';
 
-// A custom User type to combine Firebase User and our custom fields if needed
-// For now, it will mostly mirror FirebaseUser's relevant fields
 export interface User {
   uid: string;
   displayName: string | null;
@@ -39,7 +37,7 @@ export interface User {
   photoURL: string | null;
   emailVerified: boolean;
   createdAt: string | null;
-  profileFlag: string | null; // Country code for profile picture flag
+  profileFlag: string | null;
 }
 
 interface AuthContextType {
@@ -63,18 +61,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // CRITICAL: Initialize Firebase auth listener immediately with static imports
-  // No dynamic import waterfall - Firebase auth/firestore are pre-bundled by Vite
+  /**
+   * Route Protection Architecture
+   * 
+   * Two-phase auth state initialization:
+   * 1. Instant unlock: Firebase auth state from IndexedDB cache (~50ms)
+   * 2. Background sync: Firestore profile data fetched asynchronously
+   * 
+   * This prevents the common auth waterfall that blocks UI rendering.
+   */
   useEffect(() => {
     let disposed = false;
     
-    // Start auth listener immediately - Firebase resolves from IndexedDB cache (~50ms)
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (disposed) return;
       
       if (firebaseUser) {
-        // STEP 1: Immediately unlock UI with basic auth data from IndexedDB cache
-        // This happens synchronously - no network round-trip needed
         const cachedFlag = localStorage.getItem(`profileFlag_${firebaseUser.uid}`);
         
         const basicUser: User = {
@@ -84,18 +86,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           photoURL: firebaseUser.photoURL,
           emailVerified: firebaseUser.emailVerified,
           createdAt: firebaseUser.metadata.creationTime || null,
-          profileFlag: cachedFlag, // Use cached flag immediately
+          profileFlag: cachedFlag,
         };
         
         setUser(basicUser);
-        setLoading(false); // ✅ UNLOCK UI IMMEDIATELY
+        setLoading(false);
         
-        // STEP 2: Background fetch of Firestore profile data (non-blocking)
-        // This happens asynchronously after UI is already interactive
         (async () => {
           if (disposed) return;
           
-          // Ensure username exists in Firestore (fallback for failed registrations)
           if (firebaseUser.displayName) {
             try {
               const usernameDoc = await getDoc(doc(db, 'usernames', firebaseUser.uid));
@@ -104,7 +103,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 let usernameToUse = username;
                 let suffix = 1;
                 
-                // Find unique username
                 while (true) {
                   const usernameQuery = query(
                     collection(db, 'usernames'),
@@ -133,7 +131,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             }
           }
           
-          // Fetch profile flag and language preference from Firestore
           try {
             const userDocRef = doc(db, 'users', firebaseUser.uid);
             const userDocSnap = await getDoc(userDocRef);
@@ -157,22 +154,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               }
             }
             
-            // Update language if needed (non-blocking)
             if (preferredLanguage && getBaseLanguage(i18n.language) !== preferredLanguage) {
               await i18n.changeLanguage(preferredLanguage);
             }
             
-            // Update user state with fresh Firestore data
             if (!disposed) {
               setUser(prev => prev ? { ...prev, profileFlag } : null);
             }
           } catch (error) {
             console.error('Error loading profile data:', error);
-            // UI is already interactive with cached data
           }
         })();
       } else {
-        // No user - unlock UI immediately
         setUser(null);
         setLoading(false);
       }
@@ -198,7 +191,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const register = useCallback(async (username: string, email: string, password: string) => {
     try {
-      // Check if username is already taken
       const usernameQuery = query(
         collection(db, 'usernames'), 
         where('username_lower', '==', username.toLowerCase())
@@ -209,10 +201,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         throw new Error('Username already in use. Please choose a different one.');
       }
       
-      // Create user account
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       
-      // CRITICAL: Do all these operations sequentially
       try {
         await updateProfile(userCredential.user, { displayName: username });
         
@@ -347,13 +337,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const NICK_CHANGE_LIMIT = 2;
-  const NICK_COOLDOWN_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
+  const NICK_COOLDOWN_MS = 7 * 24 * 60 * 60 * 1000;
 
   const setNickname = useCallback(async (username: string) => {
     const currentUser = auth.currentUser;
     if (currentUser) {
       try {
-        // Check if username is already taken by someone else
         const usernameQuery = query(
           collection(db, 'usernames'), 
           where('username_lower', '==', username.toLowerCase())
@@ -367,7 +356,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           }
         }
         
-        // Get current username document for rate limit enforcement
         const usernameDocRef = doc(db, 'usernames', currentUser.uid);
         const currentUsernameDoc = await getDoc(usernameDocRef);
 
@@ -410,7 +398,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           lastNickChangeAt: serverTimestamp(),
         }, { merge: true });
         
-        // Update username in streak records
         const streakDocRef = doc(db, 'streaks', currentUser.uid);
         const streakDoc = await getDoc(streakDocRef);
         

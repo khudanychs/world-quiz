@@ -114,8 +114,7 @@ export default function FlagMatchGame() {
         });
       }
     } catch (error) {
-      console.error("Error saving streak:", error);
-      streakSavedRef.current = false; // Allow retry on error
+      streakSavedRef.current = false;
     }
   }, [user, selectedRegion]);
 

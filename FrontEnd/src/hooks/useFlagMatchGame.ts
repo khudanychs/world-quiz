@@ -31,7 +31,7 @@ export function useFlagMatchGame(
   const [loading, setLoading] = useState<boolean>(true);
   const [loadError, setLoadError] = useState<string>("");
 
-  // Playable target list and current target
+  // --- GAME STATE ---
   const [targets, setTargets] = useState<CountryInfo[]>([]);
   const [currentIdx, setCurrentIdx] = useState<number>(0);
   const currentTarget = targets[currentIdx];

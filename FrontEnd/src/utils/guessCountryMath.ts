@@ -19,7 +19,10 @@ function toDegrees(rad: number): number {
   return (rad * 180) / Math.PI;
 }
 
-/** Great-circle distance between two points in kilometers using Haversine. */
+/**
+ * Haversine Formula: Great-circle distance between two points on Earth's surface
+ * Returns distance in kilometers
+ */
 export function haversineDistanceKm(from: GeoPoint, to: GeoPoint): number {
   const dLat = toRadians(to.lat - from.lat);
   const dLng = toRadians(to.lng - from.lng);
@@ -35,7 +38,6 @@ export function haversineDistanceKm(from: GeoPoint, to: GeoPoint): number {
   return EARTH_RADIUS_KM * c;
 }
 
-/** Initial bearing from point A to point B, normalized to [0, 360). */
 export function bearingDegrees(from: GeoPoint, to: GeoPoint): number {
   const fromLat = toRadians(from.lat);
   const toLat = toRadians(to.lat);
@@ -50,7 +52,6 @@ export function bearingDegrees(from: GeoPoint, to: GeoPoint): number {
   return (bearing + 360) % 360;
 }
 
-/** 8-way compass emoji from bearing degrees. */
 export function bearingToCompassEmoji(bearing: number): string {
   const normalized = ((bearing % 360) + 360) % 360;
 
@@ -64,7 +65,6 @@ export function bearingToCompassEmoji(bearing: number): string {
   return "↖️";
 }
 
-/** Direction emoji from country A toward country B. */
 export function directionEmoji(from: GeoPoint, to: GeoPoint): string {
   const avgLatRad = toRadians((from.lat + to.lat) / 2);
   const dx = (to.lng - from.lng) * Math.cos(avgLatRad);
@@ -75,7 +75,6 @@ export function directionEmoji(from: GeoPoint, to: GeoPoint): string {
 
   if (absX < 1e-6 && absY < 1e-6) return "✅";
 
-  // Bias toward diagonals unless one axis is much stronger.
   const cardinalDominance = 2.6;
   if (absY > absX * cardinalDominance) {
     return dy > 0 ? "⬆️" : "⬇️";
@@ -91,8 +90,7 @@ export function directionEmoji(from: GeoPoint, to: GeoPoint): string {
 }
 
 /**
- * Compares guess value to target value.
- * Returns arrow showing where the target sits relative to the guess.
+ * Compare guess to target value, returns directional hint emoji
  */
 export function compareHintEmoji(
   guessedValue: number | null | undefined,

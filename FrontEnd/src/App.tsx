@@ -41,12 +41,22 @@ const LoadingFallback = () => (
   </div>
 );
 
+/**
+ * Route Protection Guards
+ * 
+ * - VerifiedOrGuestRoute: Blocks unverified email/password users
+ * - GuestRoute: Only accessible to non-authenticated users
+ * - ProtectedRoute: Requires authentication
+ * 
+ * All guards wait for `loading` to resolve before making routing decisions,
+ * preventing flicker and incorrect redirects during auth initialization.
+ */
+
 function VerifiedOrGuestRoute({ children }: { children: React.ReactNode }) {
   const { user, logout, loading } = useAuth();
   const [checking, setChecking] = useState(false);
   const [error, setError] = useState('');
 
-  // CRITICAL: Never evaluate isAuthenticated or navigate while Firebase is resolving
   if (loading) return <LoadingFallback />;
   
   const isEmailPasswordUser = user && user.email && !user.photoURL;
@@ -95,7 +105,6 @@ function VerifiedOrGuestRoute({ children }: { children: React.ReactNode }) {
 function GuestRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, loading } = useAuth();
 
-  // CRITICAL: Block routing decisions until auth is resolved
   if (loading) return <LoadingFallback />;
 
   return !isAuthenticated ? <>{children}</> : <Navigate to='/' replace />;
@@ -104,13 +113,11 @@ function GuestRoute({ children }: { children: React.ReactNode }) {
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, loading } = useAuth();
 
-  // CRITICAL: Block routing decisions until auth is resolved
   if (loading) return <LoadingFallback />;
 
   return isAuthenticated ? <>{children}</> : <Navigate to='/auth' replace />;
 }
 
-// Konfigurace cest venku z komponenty, aby se předešlo zbytečným re-renderům
 const appRoutes = [
   { path: 'auth', element: <GuestRoute><Auth /></GuestRoute> },
   { path: 'set-nickname', element: <ProtectedRoute><SetNickname /></ProtectedRoute> },
@@ -181,7 +188,6 @@ export default function App() {
   const isUnverified = user && !user.emailVerified && user.email && !user.photoURL;
   const hideNav = isMapRoute || isGameRoute || isAuthRoute || (isUnverified && !isPublicRoute);
 
-  // Záchranná brzda proti problikávání - dokud se neujasní adresa, nic dalšího se nespustí!
   if (shouldRedirect) {
     return (
       <AppInitializer>
