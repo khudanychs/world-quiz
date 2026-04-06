@@ -14,6 +14,7 @@ const defaultConcurrency = Number.parseInt(process.env.PRERENDER_CONCURRENCY || 
 const prerenderConcurrency = Number.isFinite(defaultConcurrency) && defaultConcurrency > 0
   ? defaultConcurrency
   : 12;
+const LOCALE_PREFIX_PATTERN = /^\/(en|cs|de)(\/|$)/;
 
 const MIME_TYPES = {
   ".html": "text/html; charset=utf-8",
@@ -182,7 +183,7 @@ async function main() {
       const routeUrl = `${origin}${routePath}`;
       await page.goto(routeUrl, { waitUntil: "domcontentloaded", timeout: 90000 });
 
-      const isAlreadyLocalizedRoute = /^\/(en|de|cs|cz)(\/|$)/.test(routePath);
+      const isAlreadyLocalizedRoute = LOCALE_PREFIX_PATTERN.test(routePath);
 
       // Wait for client-side language redirects only on non-localized routes.
       // Localized routes are already final and should not pay redirect wait cost.
@@ -192,7 +193,7 @@ async function main() {
             page.waitForURL(
               (url) => {
                 const finalPath = url.pathname;
-                return finalPath !== routePath || /^\/(en|de|cs|cz)(\/|$)/.test(finalPath);
+                return finalPath !== routePath || LOCALE_PREFIX_PATTERN.test(finalPath);
               },
               { timeout: 5000 },
             ),
