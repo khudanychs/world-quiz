@@ -4,6 +4,12 @@ import { fileURLToPath } from "node:url";
 
 const BASE_URL = "https://world-quiz.com";
 
+const LOCALE_CONFIG = [
+  { code: "en", prefix: "" },
+  { code: "cs", prefix: "/cs" },
+  { code: "de", prefix: "/de" },
+];
+
 const SPECIAL_PLAYABLE_TERRITORIES = new Set([
   "TW",
   "EH",
@@ -63,10 +69,30 @@ function joinUrl(routePath) {
   return new URL(routePath, BASE_URL).toString();
 }
 
-function createUrlNode({ path: routePath, lastmod, changefreq, priority }) {
+function localizeRoutePath(routePath, localePrefix) {
+  if (!localePrefix) {
+    return routePath;
+  }
+
+  if (routePath === "/") {
+    return `${localePrefix}/`;
+  }
+
+  return `${localePrefix}${routePath}`;
+}
+
+function createUrlNode({ path: routePath, lastmod, changefreq, priority, alternates }) {
+  const alternateNodes = alternates
+    .map(
+      (alternate) =>
+        `    <xhtml:link rel="alternate" hreflang="${escapeXml(alternate.hreflang)}" href="${escapeXml(alternate.href)}" />`,
+    )
+    .join("\n");
+
   return [
     "  <url>",
     `    <loc>${escapeXml(joinUrl(routePath))}</loc>`,
+    alternateNodes,
     `    <lastmod>${lastmod}</lastmod>`,
     `    <changefreq>${changefreq}</changefreq>`,
     `    <priority>${priority.toFixed(1)}</priority>`,
@@ -234,17 +260,37 @@ async function main() {
     new Map(allRouteEntries.map((entry) => [entry.path, entry])).values(),
   ).sort((a, b) => a.path.localeCompare(b.path));
 
+  const localizedEntries = dedupedEntries
+    .flatMap((entry) => {
+      const alternateVariants = LOCALE_CONFIG.map((locale) => ({
+        hreflang: locale.code,
+        href: joinUrl(localizeRoutePath(entry.path, locale.prefix)),
+      }));
+
+      const xDefaultHref = joinUrl(entry.path);
+
+      return LOCALE_CONFIG.map((locale) => ({
+        ...entry,
+        path: localizeRoutePath(entry.path, locale.prefix),
+        alternates: [
+          ...alternateVariants,
+          { hreflang: "x-default", href: xDefaultHref },
+        ],
+      }));
+    })
+    .sort((a, b) => a.path.localeCompare(b.path));
+
   const xml = [
     "<?xml version=\"1.0\" encoding=\"UTF-8\"?>",
-    "<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">",
-    ...dedupedEntries.map(createUrlNode),
+    "<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\" xmlns:xhtml=\"http://www.w3.org/1999/xhtml\">",
+    ...localizedEntries.map(createUrlNode),
     "</urlset>",
     "",
   ].join("\n");
 
   await fs.writeFile(sitemapPath, xml, "utf8");
 
-  console.log(`Generated sitemap with ${dedupedEntries.length} URLs at ${sitemapPath}`);
+  console.log(`Generated sitemap with ${localizedEntries.length} URLs at ${sitemapPath}`);
 }
 
 main().catch((error) => {
