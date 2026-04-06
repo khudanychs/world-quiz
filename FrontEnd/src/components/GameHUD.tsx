@@ -117,11 +117,11 @@ export default function GameHUD({
           objectFit: "contain",
         }}
       />
-      <div style={{ display: "flex", flexDirection: "column", minWidth: "clamp(100px, 24vw, 150px)" }}>
-        <strong style={{ fontSize: "clamp(12px, 2.6vw, 18px)" }}>{t('gameHUD.findThisFlag')}</strong>
-        <span style={{ opacity: 0.7, fontSize: "clamp(9px, 2.2vw, 13px)" }}>{t('gameHUD.tapCountry')}</span>
+      <div style={{ display: "flex", flexDirection: "column", minWidth: "clamp(100px, 24vw, 150px)", maxWidth: "min(44vw, 300px)", overflowWrap: "break-word", wordBreak: "break-word", hyphens: "auto" }}>
+        <strong style={{ fontSize: "clamp(12px, 2.6vw, 18px)", lineHeight: 1.25 }}>{t('gameHUD.findThisFlag')}</strong>
+        <span style={{ opacity: 0.7, fontSize: "clamp(9px, 2.2vw, 13px)", lineHeight: 1.25 }}>{t('gameHUD.tapCountry')}</span>
       </div>
-      <span style={{ marginLeft: 4, opacity: 0.8, fontSize: "clamp(10px, 2.4vw, 14px)", whiteSpace: "nowrap" }}>
+      <span style={{ marginLeft: 4, opacity: 0.8, fontSize: "clamp(10px, 2.4vw, 14px)", lineHeight: 1.2 }}>
         {currentIdx + 1}/{targetsLength}
       </span>
       {currentStreak >= 3 && (
@@ -135,7 +135,7 @@ export default function GameHUD({
             color: "#fb923c",
             fontSize: "clamp(10px, 2.4vw, 13px)",
             fontWeight: 600,
-            whiteSpace: "nowrap",
+            lineHeight: 1.2,
           }}
         >
           🔥 {currentStreak}
@@ -154,6 +154,11 @@ export default function GameHUD({
           color: "#fff",
           fontSize: "clamp(10px, 2.4vw, 13px)",
           cursor: "pointer",
+          lineHeight: 1.25,
+          whiteSpace: "normal",
+          overflowWrap: "break-word",
+          wordBreak: "break-word",
+          hyphens: "auto",
         }}
       >
         {showNamePanel ? t('gameHUD.hideName') : t('gameHUD.showName')}
@@ -172,7 +177,11 @@ export default function GameHUD({
           fontSize: "clamp(10px, 2.4vw, 13px)",
           cursor: "pointer",
           fontWeight: 500,
-          whiteSpace: "nowrap",
+          lineHeight: 1.25,
+          whiteSpace: "normal",
+          overflowWrap: "break-word",
+          wordBreak: "break-word",
+          hyphens: "auto",
           flexShrink: 0,
         }}
       >
@@ -188,7 +197,11 @@ export default function GameHUD({
           fontSize: "clamp(12px, 2.8vw, 17px)",
           fontWeight: 600,
           color: "#60a5fa",
-          whiteSpace: "nowrap",
+          lineHeight: 1.2,
+          whiteSpace: "normal",
+          overflowWrap: "break-word",
+          wordBreak: "break-word",
+          hyphens: "auto",
         }}
       >
         {t('gameHUD.score', { score, total: targetsLength })}

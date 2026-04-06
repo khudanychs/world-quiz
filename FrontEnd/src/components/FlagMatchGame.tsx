@@ -312,6 +312,7 @@ export default function FlagMatchGame() {
           ...PAGE_CONTAINER_STYLE,
           gap: isPortrait ? "clamp(16px, 3vh, 32px)" : "0",
         }}
+        lang={currentLanguage}
       >
       <BackButton onClick={handleBack} label={t('flagMatch.menu')} />
 
@@ -328,7 +329,7 @@ export default function FlagMatchGame() {
           zIndex: 4,
           display: "flex",
           alignItems: "center",
-          flexWrap: isPortrait ? "wrap" : "nowrap",
+          flexWrap: "wrap",
           justifyContent: "center",
           gap: isPortrait ? "clamp(8px, 2vw, 14px)" : "clamp(6px, 1.4vw, 12px)",
           padding: isPortrait 
@@ -340,7 +341,7 @@ export default function FlagMatchGame() {
           backdropFilter: "blur(8px)",
           boxShadow: "0 4px 12px rgba(0,0,0,0.4)",
           maxWidth: isPortrait ? "94vw" : "96vw",
-          overflow: "hidden",
+          overflow: "visible",
         }}
       >
         <GameHUD
@@ -377,14 +378,18 @@ export default function FlagMatchGame() {
               fontWeight: 600,
               display: "flex",
               alignItems: "center",
+              flexWrap: "wrap",
               gap: "clamp(4px, 1vw, 8px)",
               flexShrink: 1,
               minWidth: 0,
               marginLeft: "clamp(4px, 1vw, 8px)",
               marginRight: "clamp(4px, 1vw, 8px)",
+              overflowWrap: "break-word",
+              wordBreak: "break-word",
+              hyphens: "auto",
             }}
           >
-            <span style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{t('flagMatch.practiceMode')}</span>
+            <span>{t('flagMatch.practiceMode')}</span>
             <button
               onClick={() => setShowRegionalIndicator(false)}
               style={{
@@ -396,6 +401,7 @@ export default function FlagMatchGame() {
                 fontSize: "clamp(12px, 2.5vw, 16px)",
                 lineHeight: 1,
                 opacity: 0.7,
+                flexShrink: 0,
               }}
               onMouseEnter={(e) => e.currentTarget.style.opacity = "1"}
               onMouseLeave={(e) => e.currentTarget.style.opacity = "0.7"}

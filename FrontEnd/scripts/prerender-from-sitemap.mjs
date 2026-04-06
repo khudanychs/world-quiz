@@ -182,7 +182,7 @@ async function main() {
       const routeUrl = `${origin}${routePath}`;
       await page.goto(routeUrl, { waitUntil: "domcontentloaded", timeout: 90000 });
 
-      const isAlreadyLocalizedRoute = /^\/(en|de|cz)(\/|$)/.test(routePath);
+      const isAlreadyLocalizedRoute = /^\/(en|de|cs|cz)(\/|$)/.test(routePath);
 
       // Wait for client-side language redirects only on non-localized routes.
       // Localized routes are already final and should not pay redirect wait cost.
@@ -192,7 +192,7 @@ async function main() {
             page.waitForURL(
               (url) => {
                 const finalPath = url.pathname;
-                return finalPath !== routePath || /^\/(en|de|cz)(\/|$)/.test(finalPath);
+                return finalPath !== routePath || /^\/(en|de|cs|cz)(\/|$)/.test(finalPath);
               },
               { timeout: 5000 },
             ),

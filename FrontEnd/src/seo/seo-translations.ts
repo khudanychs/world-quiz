@@ -1,6 +1,6 @@
 export const SEO_BASE_URL = "https://world-quiz.com";
 
-const LOCALE_PREFIX_PATTERN = /^\/(en|de|cz|cs)(\/|$)/i;
+const LOCALE_PREFIX_PATTERN = /^\/(en|de|cs|cz)(\/|$)/i;
 
 function normalizePathInput(path: string): string {
   const value = (path || "/").trim();
@@ -12,17 +12,17 @@ function normalizePathInput(path: string): string {
 }
 
 function normalizeLocalePrefix(pathname: string): string {
-  return pathname.replace(/^\/cs(\/|$)/i, "/cz$1");
+  return pathname.replace(/^\/cz(\/|$)/i, "/cs$1");
 }
 
 function isLocalizedPath(pathname: string): boolean {
   return LOCALE_PREFIX_PATTERN.test(pathname);
 }
 
-function toLocalePrefix(language?: string): "en" | "de" | "cz" {
+function toLocalePrefix(language?: string): "en" | "de" | "cs" {
   const base = (language || "").toLowerCase().split("-")[0];
   if (base === "de") return "de";
-  if (base === "cs" || base === "cz") return "cz";
+  if (base === "cs" || base === "cz") return "cs";
   return "en";
 }
 
@@ -128,9 +128,9 @@ export function toCanonicalUrl(path: string): string {
  * - Root path canonicalizes to the current language root, with English fallback.
  *
  * Examples:
- * - toCanonicalUrlWithLanguage('/cz/countries') => https://world-quiz.com/cz/countries
+ * - toCanonicalUrlWithLanguage('/cz/countries') => https://world-quiz.com/cs/countries
  * - toCanonicalUrlWithLanguage('/de/countries') => https://world-quiz.com/de/countries
- * - toCanonicalUrlWithLanguage('/countries', 'cs') => https://world-quiz.com/cz/countries
+ * - toCanonicalUrlWithLanguage('/countries', 'cs') => https://world-quiz.com/cs/countries
  * - toCanonicalUrlWithLanguage('/') => https://world-quiz.com/en/
  */
 export function toCanonicalUrlWithLanguage(path: string, currentLanguage?: string): string {
@@ -150,7 +150,7 @@ export function toCanonicalUrlWithLanguage(path: string, currentLanguage?: strin
  */
 export function getAlternateLanguageUrls(basePath: string): { lang: string, url: string }[] {
   const normalized = normalizeLocalePrefix(normalizePathInput(basePath));
-  // Replace the locale prefix (e.g. /cz/) with a single slash (/)
+  // Replace the locale prefix (e.g. /cs/) with a single slash (/)
   let cleanPath = normalized.replace(LOCALE_PREFIX_PATTERN, "/");
   // Remove duplicate slashes if they occurred, e.g. //countries -> /countries
   cleanPath = cleanPath.replace(/\/+/g, "/");
@@ -160,7 +160,7 @@ export function getAlternateLanguageUrls(basePath: string): { lang: string, url:
 
   return [
     { lang: "en", url: new URL(`/en${suffix}`, SEO_BASE_URL).toString() },
-    { lang: "cs", url: new URL(`/cz${suffix}`, SEO_BASE_URL).toString() },
+    { lang: "cs", url: new URL(`/cs${suffix}`, SEO_BASE_URL).toString() },
     { lang: "de", url: new URL(`/de${suffix}`, SEO_BASE_URL).toString() },
     { lang: "x-default", url: new URL(`/en${suffix}`, SEO_BASE_URL).toString() },
   ];

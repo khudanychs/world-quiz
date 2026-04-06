@@ -1,4 +1,5 @@
-export const SUPPORTED_LOCALE_PREFIXES = ['en', 'cz', 'de'] as const;
+export const SUPPORTED_LOCALE_PREFIXES = ['en', 'cs', 'de'] as const;
+const LEGACY_LOCALE_PREFIXES = ['cz'] as const;
 
 export type LocalePrefix = (typeof SUPPORTED_LOCALE_PREFIXES)[number];
 
@@ -12,7 +13,7 @@ export function getBaseLanguage(language: string): 'en' | 'cs' | 'de' {
 
 export function getLocalePrefixFromLanguage(language: string): LocalePrefix {
   const base = getBaseLanguage(language);
-  if (base === 'cs') return 'cz';
+  if (base === 'cs') return 'cs';
   if (base === 'de') return 'de';
   return 'en';
 }
@@ -32,7 +33,10 @@ export function stripLocalePrefix(pathname: string): string {
   if (parts.length === 0) return '/';
 
   const first = parts[0].toLowerCase();
-  if (!SUPPORTED_LOCALE_PREFIXES.includes(first as LocalePrefix)) {
+  const isSupportedPrefix = SUPPORTED_LOCALE_PREFIXES.includes(first as LocalePrefix);
+  const isLegacyPrefix = LEGACY_LOCALE_PREFIXES.includes(first as (typeof LEGACY_LOCALE_PREFIXES)[number]);
+
+  if (!isSupportedPrefix && !isLegacyPrefix) {
     return pathname.startsWith('/') ? pathname : `/${pathname}`;
   }
 

@@ -1,5 +1,5 @@
 import { geoNaturalEarth1, geoPath, geoCentroid } from "d3-geo";
-import { useEffect, useState, useLayoutEffect } from "react";
+import { useEffect, useRef, useState, useLayoutEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../contexts/AuthContext";
@@ -123,6 +123,24 @@ function GameCard({
   const isCorrectFeedback = isFeedback && isMatched;
   const isWrongFeedback = isFeedback && !isMatched;
   
+  // --- DEBUGGING REFERENCE ---
+  const textRef = useRef<HTMLDivElement>(null);
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  const textValue = card.text || card.name || "";
+
+  useEffect(() => {
+    // Toto pošle do F12 konzole hlášení, pokud text fyzicky přeteče kartu
+    if (textRef.current && wrapperRef.current) {
+      const textHeight = textRef.current.getBoundingClientRect().height;
+      const wrapperHeight = wrapperRef.current.getBoundingClientRect().height;
+      
+      if (textHeight > wrapperHeight) {
+        console.warn(`🚨 PŘETÉKÁNÍ: "${textValue}" | Text chce ${textHeight.toFixed(1)}px, ale karta má jen ${wrapperHeight.toFixed(1)}px!`);
+      }
+    }
+  }, [textValue]);
+  // ---------------------------
+
   const cardClasses = [
     'game-card',
     isSelected && 'selected',
@@ -140,13 +158,21 @@ function GameCard({
     return 'game-card-text no-legend';
   };
 
-  const textFontSize = `clamp(12px, ${Math.max(2, 3 - ((card.text || card.name).length / 20))}vw, 22px)`;
+  const textLength = textValue.length;
+  // Brutálnější zmenšení pro ta nejdelší německá slova (nad 25 písmen)
+  const textFontSize = textLength >= 25
+    ? "clamp(8px, 0.8vw, 11px)"
+    : textLength >= 20
+      ? "clamp(9px, 1vw, 13px)"
+      : textLength >= 14
+        ? "clamp(10px, 1.2vw, 15px)"
+        : "clamp(11px, 1.45vw, 18px)";
 
   return (
     <button
       onClick={onClick}
       disabled={isMatched}
-      className={cardClasses}
+      className={`${cardClasses} ${card.type === "flag" || card.type === "shape" ? "" : "text-card"}`.trim()}
     >
       {card.type === "flag" ? (
         <img
@@ -159,28 +185,21 @@ function GameCard({
       ) : card.type === "shape" ? (
         <CountryShapeSVG card={card} />
       ) : (
-        <div className="game-card-text-wrapper">
-          <span
-            title={card.text || card.name}
+        <div className="game-card-text-wrapper" ref={wrapperRef}>
+          {/* ZMĚNA ZE SPAN NA DIV (aby fungoval line-clamp a tečky) */}
+          <div
+            ref={textRef}
+            title={textValue}
             className={getTextClasses()}
             style={{ fontSize: textFontSize }}
           >
-            {card.type === "country" ? (card.text || card.name) : (card.text || "")}
-          </span>
+            {card.type === "country" ? textValue : (card.text || "")}
+          </div>
         </div>
       )}
 
-      {/* Overlay for matched state */}
-      {isMatched && (
-        <div className="game-card-checkmark">
-          ✓
-        </div>
-      )}
-
-      {/* Time penalty feedback on wrong match */}
-      {isWrongFeedback && (
-        <div className="game-card-time-penalty">-1s</div>
-      )}
+      {isMatched && <div className="game-card-checkmark">✓</div>}
+      {isWrongFeedback && <div className="game-card-time-penalty">-1s</div>}
     </button>
   );
 }
@@ -351,7 +370,7 @@ export default function CardMatchGame() {
           canonicalUrl={toCanonicalUrlWithLanguage(seo.path, currentLanguage)}
           ogImage={getSeoOgImage(seo)}
         />
-        <div className="card-match-results-container" style={{...PAGE_CONTAINER_STYLE, overflow: "auto"}}>
+        <div className="card-match-results-container" style={{...PAGE_CONTAINER_STYLE, overflow: "auto"}} lang={currentLanguage}>
           <div className="card-match-results-card">
           <h2 className="card-match-results-title">
             {t("cardMatch.gameOverTitle")}
@@ -421,7 +440,7 @@ export default function CardMatchGame() {
           canonicalUrl={toCanonicalUrlWithLanguage(seo.path, currentLanguage)}
           ogImage={getSeoOgImage(seo)}
         />
-        <div className="card-match-pregame-container" style={{...PAGE_CONTAINER_STYLE, overflow: "auto"}}>
+        <div className="card-match-pregame-container" style={{...PAGE_CONTAINER_STYLE, overflow: "auto"}} lang={currentLanguage}>
           <div className="card-match-pregame-card">
           <h1 className="card-match-pregame-title">
             {t("cardMatch.pregameTitle")}
@@ -540,7 +559,7 @@ export default function CardMatchGame() {
           canonicalUrl={toCanonicalUrlWithLanguage(seo.path, currentLanguage)}
           ogImage={getSeoOgImage(seo)}
         />
-        <div className="card-match-landscape-container">
+        <div className="card-match-landscape-container" lang={currentLanguage}>
           {/* Sidebar for Stats */}
           <div className="card-match-sidebar">
           <BackButton 
@@ -645,7 +664,7 @@ export default function CardMatchGame() {
         canonicalUrl={toCanonicalUrlWithLanguage(seo.path, currentLanguage)}
         ogImage={getSeoOgImage(seo)}
       />
-      <div className="card-match-game-container">
+      <div className="card-match-game-container" lang={currentLanguage}>
       {/* TimeBar */}
       <div style={{ marginBottom: "clamp(8px, 2vw, 12px)" }}>
         <TimeBar
@@ -670,7 +689,6 @@ export default function CardMatchGame() {
             left: "auto",
             padding: "8px 16px", 
             fontSize: "clamp(12px, 2.5vw, 15px)", 
-            whiteSpace: "nowrap",
             flexShrink: 0,
           }}
           label={t("cardMatch.menu")}
@@ -701,11 +719,11 @@ export default function CardMatchGame() {
         <div className="card-match-color-legend" style={{ marginBottom: "clamp(8px, 2vw, 12px)" }}>
           <div className="card-match-legend-item">
             <div className="card-match-legend-color countries" style={{ width: "clamp(10px, 2.5vw, 14px)", height: "clamp(10px, 2.5vw, 14px)" }} />
-            <span className="card-match-legend-text" style={{ whiteSpace: "nowrap" }}>{t("cardMatch.types.country")}</span>
+            <span className="card-match-legend-text">{t("cardMatch.types.country")}</span>
           </div>
           <div className="card-match-legend-item">
             <div className="card-match-legend-color capitals" style={{ width: "clamp(10px, 2.5vw, 14px)", height: "clamp(10px, 2.5vw, 14px)" }} />
-            <span className="card-match-legend-text" style={{ whiteSpace: "nowrap" }}>{t("cardMatch.types.capital")}</span>
+            <span className="card-match-legend-text">{t("cardMatch.types.capital")}</span>
           </div>
         </div>
       )}
