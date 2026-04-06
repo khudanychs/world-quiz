@@ -21,6 +21,7 @@ export function getLocalePrefixFromLanguage(language: string): LocalePrefix {
 export function getLanguageFromLocalePrefix(prefix: string): 'en' | 'cs' | 'de' | null {
   const value = (prefix || '').toLowerCase();
   if (value === 'en') return 'en';
+  if (value === 'cs') return 'cs';
   if (value === 'cz') return 'cs';
   if (value === 'de') return 'de';
   return null;
