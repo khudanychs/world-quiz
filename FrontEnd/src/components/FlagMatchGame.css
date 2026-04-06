@@ -68,7 +68,13 @@
 /* World Button */
 .region-btn-world {
   padding: clamp(14px, 3vw, 18px) clamp(18px, 4vw, 24px);
+  min-height: clamp(48px, 8vw, 64px);
   font-size: clamp(15px, 3.2vw, 18px);
+  line-height: 1.25;
+  white-space: normal;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  hyphens: auto;
 }
 
 .region-button-grid.landscape .region-btn-world {
@@ -78,11 +84,17 @@
 /* Region Buttons - Base Style */
 .region-btn {
   padding: clamp(12px, 2.8vw, 16px) clamp(16px, 3.5vw, 20px);
+  min-height: clamp(44px, 7vw, 58px);
   border-radius: clamp(8px, 2vw, 12px);
   border: 2px solid;
   color: #fff;
   font-size: clamp(14px, 3vw, 16px);
   font-weight: 600;
+  line-height: 1.25;
+  white-space: normal;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  hyphens: auto;
   cursor: pointer;
   transition: all 0.2s ease;
 }
@@ -149,12 +161,18 @@
 /* Back button */
 .region-selector-back-btn {
   padding: clamp(10px, 2.2vw, 12px) clamp(18px, 3.8vw, 22px);
+  min-height: clamp(42px, 6.5vw, 54px);
   border-radius: clamp(6px, 1.5vw, 10px);
   border: 2px solid rgba(255, 255, 255, 0.3);
   background: rgba(255, 255, 255, 0.08);
   color: #fff;
   font-size: clamp(13px, 2.8vw, 15px);
   font-weight: 600;
+  line-height: 1.25;
+  white-space: normal;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  hyphens: auto;
   cursor: pointer;
   transition: all 0.2s ease;
 }
@@ -255,12 +273,18 @@
 
 .win-home-btn {
   padding: clamp(10px, 2.5vw, 14px) clamp(20px, 5vw, 32px);
+  min-height: clamp(44px, 7vw, 58px);
   border-radius: clamp(8px, 2vw, 12px);
   border: 2px solid rgba(255, 255, 255, 0.4);
   background: rgba(255, 255, 255, 0.1);
   color: #fff;
   font-size: clamp(14px, 3.5vw, 18px);
   font-weight: 600;
+  line-height: 1.25;
+  white-space: normal;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  hyphens: auto;
   cursor: pointer;
   transition: all 0.2s ease;
 }
@@ -277,7 +301,13 @@
 
 .win-new-game-btn {
   padding: clamp(10px, 2.5vw, 14px) clamp(20px, 5vw, 32px);
+  min-height: clamp(44px, 7vw, 58px);
   font-size: clamp(14px, 3.5vw, 18px);
+  line-height: 1.25;
+  white-space: normal;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  hyphens: auto;
   transition: all 0.2s ease;
 }
 
@@ -325,6 +355,10 @@
   max-width: 92vw;
   font-size: clamp(12px, 3vw, 16px);
   font-weight: 600;
+  line-height: 1.3;
   text-align: center;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  hyphens: auto;
   color: rgba(255, 255, 255, 0.95);
 }

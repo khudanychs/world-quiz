@@ -155,6 +155,10 @@
 
 .card-match-legend-text {
   color: rgba(255, 255, 255, 0.9);
+  white-space: normal;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  hyphens: auto;
 }
 
 .card-match-grid {
@@ -179,8 +183,9 @@
   display: flex;
   gap: clamp(8px, 2.5vw, 16px);
   align-items: center;
-  flex-wrap: nowrap;
-  overflow-x: auto;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  overflow-x: visible;
   padding-bottom: 2px;
   scrollbar-width: none;
   -ms-overflow-style: none;
@@ -192,11 +197,19 @@
 
 .card-match-stat-badge {
   padding: clamp(8px, 2vw, 12px) clamp(16px, 4vw, 24px);
+  min-height: clamp(44px, 10vw, 58px);
   border-radius: 8px;
   font-size: clamp(15px, 4vw, 22px);
   font-weight: bold;
   text-align: center;
-  white-space: nowrap;
+  line-height: 1.2;
+  white-space: normal;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  hyphens: auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
   min-width: clamp(90px, 22vw, 140px);
 }
@@ -496,12 +509,16 @@
   border-radius: 12px;
   cursor: pointer;
   transition: all 0.12s ease;
-  padding: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-  isolation: isolate;
+  /* Zmenšený padding, aby měl text víc místa: */
+  padding: 4px !important; 
+  
+  /* AGRESIVNÍ ZÁMEK PROTI PŘETÉKÁNÍ Z TLAČÍTKA: */
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  overflow: hidden !important; 
+  min-width: 0 !important;
+  min-height: 0 !important;
 }
 
 .game-card.default {
@@ -549,24 +566,43 @@
   display: block;
 }
 
+/* 2. OBAL TEXTU */
 .game-card-text-wrapper {
   width: 100%;
   height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 6px;
-  overflow: hidden;
+  
+  /* NESMÍ SE NAFOUKNOUT: */
+  overflow: hidden !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
 }
 
+/* 3. SAMOTNÝ TEXT */
 .game-card-text {
-  font-weight: 700;
+  width: 100%;
+  max-height: 100%;
+  
+  /* MAGIE PRO ZALAMOVÁNÍ A TŘI TEČKY: */
+  display: -webkit-box !important;
+  -webkit-line-clamp: 4 !important;
+  line-clamp: 4 !important;
+  -webkit-box-orient: vertical !important;
+  overflow: hidden !important;
+  
   text-align: center;
-  line-height: 1.1;
+  font-weight: 700;
+  line-height: 1.05; /* Těsnější řádky */
   word-break: break-word;
-  hyphens: auto;
   overflow-wrap: break-word;
-  max-width: 100%;
+  hyphens: auto;
+  margin: 0;
+}
+
+.game-card.text-card {
+  padding: 2px; /* Zmenšený padding ze 6px na 2px = mnohem více místa pro text uvnitř čtverce */
 }
 
 .game-card-text.no-legend {

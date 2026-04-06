@@ -142,6 +142,7 @@ export default function App() {
   const previousPlainPathRef = useRef<string>(stripLocalePrefix(location.pathname));
 
   const prefixSegment = location.pathname.split('/').filter(Boolean)[0] || '';
+  const lowerPrefixSegment = prefixSegment.toLowerCase();
   const languageFromPath = getLanguageFromLocalePrefix(prefixSegment);
   const plainPathname = stripLocalePrefix(location.pathname);
 
@@ -152,6 +153,12 @@ export default function App() {
   const isPublicRoute = plainPathname === '/privacy' || plainPathname === '/terms';
 
   const shouldRedirect = useMemo(() => {
+    if (lowerPrefixSegment === 'cz') {
+      return {
+        to: `${buildLocalizedPath(location.pathname, 'cs')}${location.search}${location.hash}`,
+      };
+    }
+
     if (!languageFromPath) {
       return { 
         to: `${buildLocalizedPath(location.pathname, i18n.language)}${location.search}${location.hash}`
@@ -164,7 +171,7 @@ export default function App() {
       };
     }
     return null;
-  }, [languageFromPath, location, i18n.language]);
+  }, [languageFromPath, location, i18n.language, lowerPrefixSegment]);
 
   useEffect(() => {
     if (shouldRedirect) {
@@ -184,6 +191,10 @@ export default function App() {
     }
     previousPlainPathRef.current = currentPath;
   }, [plainPathname]);
+
+  useEffect(() => {
+    document.documentElement.lang = getBaseLanguage(i18n.language);
+  }, [i18n.language]);
   
   const isUnverified = user && !user.emailVerified && user.email && !user.photoURL;
   const hideNav = isMapRoute || isGameRoute || isAuthRoute || (isUnverified && !isPublicRoute);

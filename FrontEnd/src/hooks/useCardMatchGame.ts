@@ -207,7 +207,7 @@ export function useCardMatchGame(pair: { first: CardKind; second: CardKind }) {
       const key2 = stripDiacritics(key1);
       const info = restLookup[key1] || restLookup[key2];
 
-      if (!info || !info.flag) {
+      if (!info || !info.flag || info.cca2 === "AQ") {
         continue;
       }
 
@@ -285,7 +285,7 @@ export function useCardMatchGame(pair: { first: CardKind; second: CardKind }) {
       const key2 = stripDiacritics(key1);
       const info = restLookup[key1] || restLookup[key2];
 
-      if (!info || !info.flag || seenCountryCodes.has(info.cca2)) continue;
+      if (!info || !info.flag || seenCountryCodes.has(info.cca2) || info.cca2 === "AQ") continue;
 
       // Try to find the geometry in the features
       const matchingFeature = features.find((feat: GeoJsonFeature) => {

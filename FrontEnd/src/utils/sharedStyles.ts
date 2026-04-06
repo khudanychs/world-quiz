@@ -10,8 +10,10 @@ export const BACK_BUTTON_STYLE: CSSProperties = {
   zIndex: 10,
   display: "inline-flex",
   alignItems: "center",
+  flexWrap: "wrap",
   gap: 10,
   padding: "10px 18px",
+  minHeight: "44px",
   borderRadius: "14px",
   border: "1px solid rgba(255, 255, 255, 0.15)",
   background: "rgba(30, 41, 59, 0.7)",
@@ -23,6 +25,9 @@ export const BACK_BUTTON_STYLE: CSSProperties = {
   boxShadow: "0 8px 32px rgba(0, 0, 0, 0.3), inset 0 0 0 1px rgba(255, 255, 255, 0.05)",
   transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
   userSelect: "none",
+  overflowWrap: "break-word",
+  wordBreak: "break-word",
+  hyphens: "auto",
 };
 
 /** Back button hover handlers */

@@ -34,6 +34,11 @@
   letter-spacing: 0.01em;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
   pointer-events: none;
+  text-align: center;
+  white-space: normal;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  hyphens: auto;
 }
 
 .guess-country-start-dot {
@@ -68,6 +73,7 @@
   display: flex;
   align-items: center;
   justify-content: flex-start;
+  flex-wrap: wrap;
   gap: 12px;
   padding: 10px 12px;
   border-radius: 12px;
@@ -75,6 +81,13 @@
   background: rgba(10, 18, 34, 0.86);
   backdrop-filter: blur(6px);
   font-size: 16px;
+}
+
+.guess-country-status-panel > div {
+  min-width: 0;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  hyphens: auto;
 }
 
 .guess-country-loading {
@@ -91,6 +104,9 @@
   border-radius: 12px;
   border: 1px solid rgba(255, 255, 255, 0.16);
   background: rgba(10, 18, 34, 0.82);
+  overflow-wrap: break-word;
+  word-break: break-word;
+  hyphens: auto;
 }
 
 .guess-country-legend {
@@ -153,6 +169,9 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+  min-width: 0;
   color: #edf4ff;
   font-size: 14px;
 }
@@ -161,9 +180,14 @@
   margin-top: 6px;
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 10px;
   color: #dbe8ff;
   font-size: 14px;
+  min-width: 0;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  hyphens: auto;
 }
 
 .guess-country-chip-row {

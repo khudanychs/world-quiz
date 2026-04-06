@@ -21,8 +21,6 @@ const HIDDEN_FROM_MAP: string[] = [
 
 /**
  * UNCLICKABLE TERRITORIES IN GAME MODES
- * Visible on map but clicking does nothing (won't break streaks).
- * Still fully interactive in Explore Map mode.
  */
 const UNCLICKABLE_IN_GAMES: string[] = [
   // French territories
@@ -297,6 +295,7 @@ export function buildCountryLookupWithCapitals(
     const info = { name: localizedName, cca2: c.cca2, flag, capitals: c.capital || [] };
     
     addEntry(englishName, info);
+    addEntry(localizedName, info);
     
     for (const [mapName, displayName] of Object.entries(MAP_TO_DISPLAY)) {
       if (displayName === englishName || DISPLAY_TO_REST[displayName] === englishName) {

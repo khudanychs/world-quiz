@@ -94,6 +94,18 @@
         ]
       }
     ],
+    "redirects": [
+      {
+        "regex": "^/cz$",
+        "destination": "/cs",
+        "type": 301
+      },
+      {
+        "regex": "^/cz/(.*)$",
+        "destination": "/cs/$1",
+        "type": 301
+      }
+    ],
     "rewrites": [
       {
         "source": "**",
