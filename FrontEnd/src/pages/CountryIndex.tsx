@@ -289,7 +289,7 @@ export default function CountryIndex() {
     const normalizedCode = countryCode.toUpperCase();
     const country = countries.find(c => c.cca2 === normalizedCode);
     
-    if (country && (!selectedCountry || selectedCountry.cca2 !== country.cca2)) {
+    if (country && (!selectedCountry || selectedCountry !== country)) {
       setSelectedCountry(country);
       return;
     }

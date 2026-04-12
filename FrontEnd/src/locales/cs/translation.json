@@ -369,7 +369,7 @@
   },
   "countryIndex": {
     "loading": "Načítám databázi...",
-    "title": "Zeměpisná encyklopedie",
+    "title": "Encyklopedie vlajek",
     "subtitle": "Kompletní přehled {{count}} států a závislých území.",
     "stats": {
       "countries": "Států celkem",

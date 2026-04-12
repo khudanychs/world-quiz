@@ -29,7 +29,15 @@ export default function CountryDetails({ country, onClose, onCountryClick }: Cou
   const { t, i18n } = useTranslation();
   const currentLanguage = getBaseLanguage(i18n.language);
   const stats = useCountryStats(country.cca2);
-  const displayCountryName = getLocalizedName(country, currentLanguage, 'officialName');
+  const displayCountryName = getLocalizedName(
+    {
+      officialName: country.officialName,
+      officialName_cs: country.officialName_cs || country.name_cs,
+      officialName_de: country.officialName_de || country.name_de,
+    },
+    currentLanguage,
+    'officialName'
+  );
   
   const handleBorderClick = (borderCode: string, e: React.MouseEvent) => {
     e.stopPropagation();
