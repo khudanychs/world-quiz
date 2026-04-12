@@ -302,19 +302,18 @@ export default function CardMatchGame() {
     game.startNewGame();
   };
 
-  const handleBack = async () => {
-    // Save score if abandoning game with points
+  const handleBack = () => {
+    // Navigate immediately; save score in background so menu click never feels blocked.
+    navigate(buildLocalizedPath("/", i18n.language));
+
     if (game.gameStarted && !game.gameOver && game.score > 0 && !savedToLeaderboard) {
-      try {
-        await saveCardsMatchScore(user, game.score);
-      } catch (e) {
+      void saveCardsMatchScore(user, game.score).catch((e) => {
         console.error("Failed to save score on exit:", e);
         if (e instanceof Error) {
           console.error("Exit save error details:", e.message);
         }
-      }
+      });
     }
-    navigate(buildLocalizedPath("/", i18n.language));
   };
 
   if (game.loading) {
