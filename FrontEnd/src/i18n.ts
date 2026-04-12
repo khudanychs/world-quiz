@@ -57,6 +57,11 @@ function getCookieValue(name: string): string | null {
 function detectInitialLanguage(): SupportedLanguage {
   if (typeof window === 'undefined') return 'en';
 
+  const prefix = window.location.pathname.split('/').filter(Boolean)[0] || '';
+  if (prefix) {
+    return normalizeLanguageCode(prefix);
+  }
+
   const stored = window.localStorage.getItem('i18nextLng');
   if (stored) {
     return normalizeLanguageCode(stored);
@@ -65,11 +70,6 @@ function detectInitialLanguage(): SupportedLanguage {
   const cookieLng = getCookieValue('i18next');
   if (cookieLng) {
     return normalizeLanguageCode(cookieLng);
-  }
-
-  const prefix = window.location.pathname.split('/').filter(Boolean)[0] || '';
-  if (prefix) {
-    return normalizeLanguageCode(prefix);
   }
 
   return normalizeLanguageCode(window.navigator.language || 'en');
@@ -118,7 +118,7 @@ const initPromise = (async () => {
       fallbackLng: 'en',
       partialBundledLanguages: true,
       detection: {
-        order: ['localStorage', 'cookie', 'path', 'querystring', 'navigator', 'htmlTag'],
+        order: ['path', 'localStorage', 'cookie', 'querystring', 'navigator', 'htmlTag'],
         lookupFromPathIndex: 0,
         caches: ['localStorage', 'cookie'],
         convertDetectedLanguage: (lng: string) => normalizeLanguageCode(lng),

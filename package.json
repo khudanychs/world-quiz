@@ -7,7 +7,7 @@
     "dev": "npm run dev --prefix FrontEnd",
     "build": "npm run build --prefix FrontEnd",
     "build:seo": "npm run build:frontend:seo",
-    "build:frontend:seo": "npm run build:seo --prefix FrontEnd",
+    "build:frontend:seo": "npm run build:seo:strict --prefix FrontEnd",
     "preview": "npm run preview --prefix FrontEnd",
     "install:frontend": "cd FrontEnd && npm install",
     "deploy": "npm run build:frontend:seo && firebase deploy"

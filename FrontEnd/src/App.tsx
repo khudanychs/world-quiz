@@ -11,6 +11,7 @@ import {
   getBaseLanguage,
   buildLocalizedPath,
 } from './utils/localeRouting';
+import { changeAppLanguage } from './i18n';
 import './App.css';
 
 const Auth = lazy(() => import('./components/Auth').then(m => ({ default: m.Auth })));
@@ -36,7 +37,7 @@ const LoadingFallback = () => (
     justifyContent: 'center',
     background: '#0b1020',
     color: '#fff'
-  }}>
+  }} data-app-loading="true">
     <div>Loading...</div>
   </div>
 );
@@ -162,15 +163,10 @@ export default function App() {
 
     if (!languageFromPath) {
       return { 
-        to: `${buildLocalizedPath(location.pathname, i18n.language)}${location.search}${location.hash}`
+        to: `${buildLocalizedPath(location.pathname, getBaseLanguage(i18n.language))}${location.search}${location.hash}`
       };
     }
-    const preferredLanguage = getBaseLanguage(i18n.language);
-    if (preferredLanguage !== languageFromPath) {
-      return {
-        to: `${buildLocalizedPath(location.pathname, preferredLanguage)}${location.search}${location.hash}`
-      };
-    }
+
     return null;
   }, [languageFromPath, location, i18n.language, lowerPrefixSegment]);
 
@@ -179,6 +175,16 @@ export default function App() {
       navigate(shouldRedirect.to, { replace: true });
     }
   }, [shouldRedirect, navigate]);
+
+  useEffect(() => {
+    if (!languageFromPath) {
+      return;
+    }
+
+    if (getBaseLanguage(i18n.language) !== languageFromPath) {
+      void changeAppLanguage(languageFromPath);
+    }
+  }, [languageFromPath, i18n.language]);
 
   useEffect(() => {
     const previousPath = previousPlainPathRef.current;
