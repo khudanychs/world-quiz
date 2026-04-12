@@ -509,10 +509,7 @@
   border-radius: 12px;
   cursor: pointer;
   transition: all 0.12s ease;
-  /* Zmenšený padding, aby měl text víc místa: */
-  padding: 4px !important; 
-  
-  /* AGRESIVNÍ ZÁMEK PROTI PŘETÉKÁNÍ Z TLAČÍTKA: */
+  padding: 2px !important; 
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
@@ -585,7 +582,6 @@
   width: 100%;
   max-height: 100%;
   
-  /* MAGIE PRO ZALAMOVÁNÍ A TŘI TEČKY: */
   display: -webkit-box !important;
   -webkit-line-clamp: 4 !important;
   line-clamp: 4 !important;
@@ -594,11 +590,13 @@
   
   text-align: center;
   font-weight: 700;
-  line-height: 1.05; /* Těsnější řádky */
-  word-break: break-word;
+  line-height: 1.1;
+  word-break: normal;
   overflow-wrap: break-word;
   hyphens: auto;
   margin: 0;
+  
+  font-size: clamp(12px, 4vmin, 26px) !important; 
 }
 
 .game-card.text-card {
@@ -772,5 +770,19 @@
 
   .card-match-pregame-actions {
     margin-top: 16px;
+  }
+}
+@media (max-width: 480px) {
+  .game-card-text {
+    font-size: clamp(11px, 4.5vmin, 16px) !important;
+    line-height: 1.15;
+    word-break: break-all; 
+  }
+}
+@media (min-width: 768px) {
+  .game-card-text {
+    font-size: clamp(16px, 3.5vmin, 34px) !important;
+    -webkit-line-clamp: 5 !important;
+    line-clamp: 5 !important;
   }
 }

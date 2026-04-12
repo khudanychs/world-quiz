@@ -17,25 +17,25 @@
   },
   "mainMenu": {
     "title": "Choose a Game Mode",
-    "subtitle": "Pick a mode below, or explore the interactive world map.",
+    "subtitle": "Pick a mode below, or explore our interactive world map quiz.",
     "exploreMap": "🗺️ Explore Map",
     "games": {
       "physicalGeo": {
         "title": "Physical Geography",
-        "description": "Locate mountains, rivers, deserts, seas and more!",
+        "description": "Locate mountains, rivers, deserts, seas and more in this interactive geography game!",
         "tag": "New"
       },
       "flags": {
         "title": "Flag Match",
-        "description": "Match countries to their flags."
+        "description": "The ultimate country flag matching game. Test your memory and speed!"
       },
       "shapeMatch": {
         "title": "Cards Match",
-        "description": "Match Flags, Countries, Capitals, or Shapes on a timer!"
+        "description": "Match Flags, Countries, Capitals, or Shapes on a fast-paced timer!"
       },
       "guessCountry": {
         "title": "Guess the Country",
-        "description": "Guess the hidden country using distance and direction hints.",
+        "description": "Guess the hidden country using precise distance and direction hints.",
         "tag": "New"
       }
     }
@@ -191,8 +191,8 @@
     "score": "Score: {{score}}/{{total}}",
     "correct": "✓ Correct!",
     "wrong": "✗ Wrong!",
-    "youClicked": "You clicked: {{name}}"
-    ,"featureTypes": {
+    "youClicked": "You clicked: {{name}}",
+    "featureTypes": {
       "mountain": "Mountain",
       "mountain_range": "Mountain Range",
       "river": "River",
@@ -267,7 +267,7 @@
   },
   "leaderboardsPage": {
     "title": "Leaderboards",
-    "subtitle": "See who dominates each game mode.",
+    "subtitle": "See who dominates each game mode in our interactive geography game.",
     "mode": {
       "flagMatch": "Flag Match",
       "cardsMatch": "Cards Match",
@@ -404,36 +404,36 @@
   "seo": {
     "routes": {
       "home": {
-        "title": "Country Flag Matching Game | World Quiz",
-        "description": "Play a country flag matching game, test world map skills, and climb global leaderboards in World Quiz."
+        "title": "Country Flag Matching Game & World Map Quiz",
+        "description": "Play the ultimate country flag matching game! Test your geography skills on our interactive world map quiz and climb the global leaderboards."
       },
       "leaderboards": {
-        "title": "Flag Match Leaderboards | World Quiz",
-        "description": "See top scores for flag match, cards match, and guess country. Compare daily and all-time rankings."
+        "title": "Flag Match & Map Quiz Leaderboards | World Quiz",
+        "description": "See top scores for the flag match game, cards match, and guess country. Compare daily and all-time geography rankings."
       },
       "map": {
-        "title": "Interactive World Map Explorer | World Quiz",
-        "description": "Explore countries, capitals, and flags on an interactive world map built for fast geography practice."
+        "title": "Interactive World Map & Geography Game",
+        "description": "Explore countries, capitals, and flags with our interactive geography game and world map. Perfect for fast learning and practice."
       },
       "countries": {
-        "title": "Country Encyclopedia and Flags | World Quiz",
-        "description": "Browse country facts, flags, capitals, languages, and neighbors in the World Quiz country encyclopedia."
+        "title": "Country Encyclopedia & Flags | World Quiz",
+        "description": "Browse country facts, world flags, capitals, languages, and neighbors in the ultimate World Quiz geography encyclopedia."
       },
       "flagMatch": {
-        "title": "Flag Matching Game | Flag Match World Quiz",
-        "description": "Play flag matching game in world or region mode. Train memory and improve speed in every flag match round."
+        "title": "Play Country Flag Matching Game | World Quiz",
+        "description": "Master the country flag matching game in world or region mode. Train your memory, learn world flags, and improve your speed."
       },
       "shapeMatch": {
         "title": "Cards Match Geography Game | World Quiz",
-        "description": "Match flags, countries, capitals, and shapes against the clock in this fast geography cards game."
+        "description": "Match flags, countries, capitals, and country shapes against the clock in this fast-paced interactive geography game."
       },
       "physicalGeo": {
-        "title": "Physical Geography Quiz Game | World Quiz",
-        "description": "Locate mountains, rivers, lakes, deserts, and seas in a fast physical geography quiz challenge."
+        "title": "Physical Geography Map Quiz | World Quiz",
+        "description": "Locate mountains, rivers, lakes, deserts, and seas in a fast-paced physical geography interactive map challenge."
       },
       "guessCountry": {
         "title": "Guess the Country Map Quiz | World Quiz",
-        "description": "Find the hidden country in five attempts using distance, direction, and region hints on the world map."
+        "description": "Find the hidden country in five attempts using precise distance, direction, and region hints on our interactive world map."
       },
       "terms": {
         "title": "Terms and Conditions | World Quiz",
@@ -445,7 +445,7 @@
       },
       "auth": {
         "title": "Sign In to World Quiz",
-        "description": "Sign in or create your World Quiz account to save scores and join leaderboards."
+        "description": "Sign in or create your World Quiz account to save scores and join global leaderboards."
       },
       "setNickname": {
         "title": "Set Your Nickname | World Quiz",
@@ -457,14 +457,14 @@
       },
       "notFound": {
         "title": "Page Not Found | World Quiz",
-        "description": "This page could not be found. Explore World Quiz games, maps, and country encyclopedia."
+        "description": "This page could not be found. Explore World Quiz games, interactive maps, and our country encyclopedia."
       }
     },
     "h1": {
-      "mainMenu": "Country Flag Matching Game",
+      "mainMenu": "Country Flag Matching Game & World Quiz",
       "worldMap": "Interactive World Map Explorer",
       "flagMatch": "Flag Matching Game",
-      "physicalGeo": "Physical Geography Quiz",
+      "physicalGeo": "Physical Geography Map Quiz",
       "shapeMatch": "Cards Match Geography Game",
       "guessCountry": "Guess the Country Quiz"
     }
