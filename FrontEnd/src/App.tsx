@@ -57,7 +57,8 @@ function VerifiedOrGuestRoute({ children }: { children: React.ReactNode }) {
   const [checking, setChecking] = useState(false);
   const [error, setError] = useState('');
 
-  if (loading) return <LoadingFallback />;
+  // Guest-first rendering keeps the home route responsive while auth resolves.
+  if (loading) return <>{children}</>;
   
   const isEmailPasswordUser = user && user.email && !user.photoURL;
   if (user && !user.emailVerified && isEmailPasswordUser) {
@@ -195,6 +196,39 @@ export default function App() {
   useEffect(() => {
     document.documentElement.lang = getBaseLanguage(i18n.language);
   }, [i18n.language]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    const connection = (navigator as Navigator & { connection?: { saveData?: boolean; effectiveType?: string } }).connection;
+    const shouldSkipPrefetch = connection?.saveData || connection?.effectiveType === '2g';
+    if (shouldSkipPrefetch) {
+      return;
+    }
+
+    let cancelled = false;
+    const warmMapData = () => {
+      if (cancelled) return;
+      void fetch('/countries-110m.json', { cache: 'force-cache' }).catch(() => {});
+      void fetch('/countries-full.json', { cache: 'force-cache' }).catch(() => {});
+    };
+
+    const useIdleCallback = 'requestIdleCallback' in window;
+    const idleId = useIdleCallback
+      ? window.requestIdleCallback(warmMapData, { timeout: 1500 })
+      : window.setTimeout(warmMapData, 1200);
+
+    return () => {
+      cancelled = true;
+      if (useIdleCallback && 'cancelIdleCallback' in window) {
+        window.cancelIdleCallback(idleId);
+      } else {
+        window.clearTimeout(idleId as number);
+      }
+    };
+  }, []);
   
   const isUnverified = user && !user.emailVerified && user.email && !user.photoURL;
   const hideNav = isMapRoute || isGameRoute || isAuthRoute || (isUnverified && !isPublicRoute);

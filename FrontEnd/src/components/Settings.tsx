@@ -7,6 +7,7 @@ import { getFlagUrlSync } from '../utils/flagUtils';
 import { SEOHelmet } from './SEOHelmet';
 import { SEO_TRANSLATIONS, toCanonicalUrlWithLanguage, getSeoOgImage } from '../seo/seo-translations';
 import { buildLocalizedPath, getBaseLanguage } from '../utils/localeRouting';
+import { changeAppLanguage } from '../i18n';
 import './Settings.css';
 
 // Cache for user streak data (survives component remounts)
@@ -332,7 +333,7 @@ export const Settings = () => {
     const sourcePath = latestPathRef.current;
 
     if (nextLanguage !== currentLanguage) {
-      await i18n.changeLanguage(nextLanguage);
+      await changeAppLanguage(nextLanguage);
 
       // Persist preferred language for authenticated users.
       if (user?.uid) {
