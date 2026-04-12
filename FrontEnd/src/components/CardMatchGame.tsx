@@ -256,6 +256,7 @@ function useOrientation() {
 export default function CardMatchGame() {
   const seo = SEO_TRANSLATIONS.routes.shapeMatch;
   const { t, i18n } = useTranslation();
+  const seoH1 = t("seo.h1.shapeMatch");
   const currentLanguage = getBaseLanguage(i18n.language);
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -325,6 +326,7 @@ export default function CardMatchGame() {
           canonicalUrl={toCanonicalUrlWithLanguage(seo.path, currentLanguage)}
           ogImage={getSeoOgImage(seo)}
         />
+        <h1 className="sr-only">{seoH1}</h1>
         <div style={{ ...PAGE_CONTAINER_STYLE, alignItems: "center", justifyContent: "center" }}>
           <div style={{ color: "#fff", fontSize: "18px" }}>{t("cardMatch.loadingGame")}</div>
         </div>
@@ -341,6 +343,7 @@ export default function CardMatchGame() {
           canonicalUrl={toCanonicalUrlWithLanguage(seo.path, currentLanguage)}
           ogImage={getSeoOgImage(seo)}
         />
+        <h1 className="sr-only">{seoH1}</h1>
         <div style={{ ...PAGE_CONTAINER_STYLE, alignItems: "center", justifyContent: "center" }}>
           <div style={{ color: "#ef4444", fontSize: "18px" }}>{t("cardMatch.errorPrefix")} {game.loadError}</div>
           <BackButton
@@ -370,6 +373,7 @@ export default function CardMatchGame() {
           canonicalUrl={toCanonicalUrlWithLanguage(seo.path, currentLanguage)}
           ogImage={getSeoOgImage(seo)}
         />
+        <h1 className="sr-only">{seoH1}</h1>
         <div className="card-match-results-container" style={{...PAGE_CONTAINER_STYLE, overflow: "auto"}} lang={currentLanguage}>
           <div className="card-match-results-card">
           <h2 className="card-match-results-title">
@@ -440,11 +444,12 @@ export default function CardMatchGame() {
           canonicalUrl={toCanonicalUrlWithLanguage(seo.path, currentLanguage)}
           ogImage={getSeoOgImage(seo)}
         />
+        <h1 className="sr-only">{seoH1}</h1>
         <div className="card-match-pregame-container" style={{...PAGE_CONTAINER_STYLE, overflow: "auto"}} lang={currentLanguage}>
           <div className="card-match-pregame-card">
-          <h1 className="card-match-pregame-title">
+          <h2 className="card-match-pregame-title">
             {t("cardMatch.pregameTitle")}
-          </h1>
+          </h2>
           <p className="card-match-pregame-description">
             {t("cardMatch.pregameDescription")}
           </p>
@@ -559,6 +564,7 @@ export default function CardMatchGame() {
           canonicalUrl={toCanonicalUrlWithLanguage(seo.path, currentLanguage)}
           ogImage={getSeoOgImage(seo)}
         />
+        <h1 className="sr-only">{seoH1}</h1>
         <div className="card-match-landscape-container" lang={currentLanguage}>
           {/* Sidebar for Stats */}
           <div className="card-match-sidebar">
@@ -664,6 +670,7 @@ export default function CardMatchGame() {
         canonicalUrl={toCanonicalUrlWithLanguage(seo.path, currentLanguage)}
         ogImage={getSeoOgImage(seo)}
       />
+      <h1 className="sr-only">{seoH1}</h1>
       <div className="card-match-game-container" lang={currentLanguage}>
       {/* TimeBar */}
       <div style={{ marginBottom: "clamp(8px, 2vw, 12px)" }}>

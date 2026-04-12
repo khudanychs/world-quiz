@@ -36,6 +36,7 @@ const FLAG_REGION_ROUTES: Record<string, string | null> = {
 
 export default function FlagMatchGame() {
   const { t, i18n } = useTranslation();
+  const seoH1 = t("seo.h1.flagMatch");
   const currentLanguage = getBaseLanguage(i18n.language);
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -220,13 +221,14 @@ export default function FlagMatchGame() {
         canonicalUrl={toCanonicalUrlWithLanguage(canonicalFlagPath, currentLanguage)}
         ogImage={getSeoOgImage(SEO_TRANSLATIONS.routes.home)}
       />
+      <h1 className="sr-only">{seoH1}</h1>
       {/* Region Selector Modal */}
       {showRegionSelector && (
         <div className="region-selector-overlay">
           <div className="region-selector-content">
-            <h1 className="region-selector-title">
+            <h2 className="region-selector-title">
               🌍 {t('flagMatch.regionSelectorTitle')}
-            </h1>
+            </h2>
             <p className="region-selector-subtitle">
               {t('flagMatch.regionSelectorSubtitle')}
             </p>
@@ -419,9 +421,9 @@ export default function FlagMatchGame() {
             <div className="win-emoji">
               {game.bestStreak === game.targets.length ? "🏆" : "🎉"}
             </div>
-            <h1 className={`win-title ${game.bestStreak === game.targets.length ? 'legendary' : 'perfect'}`}>
+            <h2 className={`win-title ${game.bestStreak === game.targets.length ? 'legendary' : 'perfect'}`}>
               {game.bestStreak === game.targets.length ? t('flagMatch.legendary') : t('flagMatch.perfect')}
-            </h1>
+            </h2>
             <p className="win-message">
               {game.bestStreak === game.targets.length 
                 ? t('flagMatch.legendaryMessage', { count: game.targets.length }) 

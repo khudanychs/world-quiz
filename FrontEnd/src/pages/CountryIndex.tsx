@@ -303,6 +303,7 @@ export default function CountryIndex() {
         description={selectedCountry ? t('countryIndex.seoDescriptionWithCountry', { country: selectedCountry.officialName }) : seo.description}
         canonicalUrl={selectedCountry ? toCanonicalUrlWithLanguage(`/countries/${selectedCountry.cca2.toLowerCase()}`, currentLanguage) : toCanonicalUrlWithLanguage(seo.path, currentLanguage)}
         ogImage={getSeoOgImage(seo)}
+        preserveExplicitMeta={!!selectedCountry}
       />
       
       {/* OPRAVA: Wrapper a Container se renderují vždycky, Modal je pouze nad nima! */}

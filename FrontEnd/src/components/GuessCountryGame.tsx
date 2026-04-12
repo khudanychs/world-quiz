@@ -136,6 +136,7 @@ function getCountryFromMapName(
 
 export default function GuessCountryGame() {
   const { t, i18n } = useTranslation();
+  const seoH1 = t("seo.h1.guessCountry");
   const currentLanguage = getBaseLanguage(i18n.language);
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -411,6 +412,7 @@ export default function GuessCountryGame() {
         canonicalUrl={toCanonicalUrlWithLanguage("/game/guess-country", currentLanguage)}
         ogImage={getSeoOgImage(SEO_TRANSLATIONS.routes.home)}
       />
+      <h1 className="sr-only">{seoH1}</h1>
       <div
         style={{
           ...PAGE_CONTAINER_STYLE,

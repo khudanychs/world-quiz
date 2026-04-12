@@ -35,6 +35,7 @@ const InteractiveMap = lazy(() => import("./InteractiveMap"));
 
 export default function PhysicalGeoGame() {
   const { t, i18n } = useTranslation();
+  const seoH1 = t("seo.h1.physicalGeo");
   const currentLanguage = getBaseLanguage(i18n.language);
   const navigate = useNavigate();
   const { modeKey } = useParams<{ modeKey?: string }>();
@@ -293,10 +294,11 @@ export default function PhysicalGeoGame() {
         canonicalUrl={toCanonicalUrlWithLanguage(canonicalPhysicalGeoPath, currentLanguage)}
         ogImage={getSeoOgImage(SEO_TRANSLATIONS.routes.home)}
       />
+      <h1 className="sr-only">{seoH1}</h1>
       {showSelector && (
         <div className="phys-category-overlay">
           <div className="phys-category-content">
-            <h1 className="phys-category-title">🌍 {t("physicalGeoGame.title")}</h1>
+            <h2 className="phys-category-title">🌍 {t("physicalGeoGame.title")}</h2>
             <p className="phys-category-subtitle">{t("physicalGeoGame.chooseCategory")}</p>
 
             <div className={`phys-category-grid ${isPortrait ? "portrait" : "landscape"}`}>
@@ -381,7 +383,7 @@ export default function PhysicalGeoGame() {
               <div className="phys-win-emoji">
                 {game.bestStreak === game.features.length ? "🏆" : "🎉"}
               </div>
-              <h1
+              <h2
                 className={`phys-win-title ${
                   game.bestStreak === game.features.length
                     ? "legendary"
@@ -395,7 +397,7 @@ export default function PhysicalGeoGame() {
                   : game.score === game.features.length
                   ? t("physicalGeoGame.perfect")
                   : t("physicalGeoGame.wellDone")}
-              </h1>
+              </h2>
               <p className="phys-win-message">
                 {game.bestStreak === game.features.length
                   ? t("physicalGeoGame.legendaryMessage", { count: game.features.length })

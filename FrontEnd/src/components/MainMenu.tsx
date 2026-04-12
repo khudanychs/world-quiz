@@ -7,6 +7,7 @@ import './MainMenu.css';
 
 export default function MainMenu() {
   const { t, i18n } = useTranslation();
+  const seoH1 = t('seo.h1.mainMenu');
   const seo = SEO_TRANSLATIONS.routes.home;
   const navigate = useNavigate();
   const currentLanguage = getBaseLanguage(i18n.language);
@@ -29,6 +30,7 @@ export default function MainMenu() {
         ogImage={getSeoOgImage(seo)}
         structuredData={homeStructuredData}
       />
+      <h1 className="sr-only">{seoH1}</h1>
       <div className="menu-wrap">
         <header className="menu-header">
           <h2>{t('mainMenu.title')}</h2>

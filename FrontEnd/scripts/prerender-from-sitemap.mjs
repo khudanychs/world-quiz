@@ -219,16 +219,59 @@ async function main() {
             (document.querySelector('meta[name="description"]')?.getAttribute("content") || "")
               .trim()
               .length > 0;
+          const hasCanonical =
+            (document.querySelector('link[rel="canonical"]')?.getAttribute("href") || "")
+              .trim()
+              .length > 0;
+          const hreflangCount = document.querySelectorAll('link[rel="alternate"][hreflang]').length;
+          const hasJsonLd = document.querySelectorAll('script[type="application/ld+json"]').length > 0;
 
-          return hasBodyContent && !hasLoadingShell && titleReady && hasDescription;
+          return (
+            hasBodyContent &&
+            !hasLoadingShell &&
+            titleReady &&
+            hasDescription &&
+            hasCanonical &&
+            hreflangCount >= 4 &&
+            hasJsonLd
+          );
         },
         { timeout: 45000 },
       );
 
-      const html = await page.content();
+      const seoSnapshot = await page.evaluate(() => {
+        const canonical =
+          document.querySelector('link[rel="canonical"]')?.getAttribute("href")?.trim() || "";
+        const hreflangs = document.querySelectorAll('link[rel="alternate"][hreflang]').length;
+        const jsonLd = document.querySelectorAll('script[type="application/ld+json"]').length;
+        const title = document.title.trim();
+        const description =
+          document.querySelector('meta[name="description"]')?.getAttribute("content")?.trim() || "";
+        return {
+          canonical,
+          hreflangs,
+          jsonLd,
+          title,
+          description,
+          html: `<!doctype html>\n${document.documentElement.outerHTML}`,
+        };
+      });
+
+      if (!seoSnapshot.title || !seoSnapshot.description || !seoSnapshot.canonical) {
+        throw new Error(`SEO tags missing after render for route ${routePath}`);
+      }
+
+      if (seoSnapshot.hreflangs < 4) {
+        throw new Error(`Expected at least 4 hreflang links for ${routePath}, got ${seoSnapshot.hreflangs}`);
+      }
+
+      if (seoSnapshot.jsonLd < 1) {
+        throw new Error(`Expected JSON-LD structured data for ${routePath}`);
+      }
+
       const outputPath = toOutputHtmlPath(routePath);
       await fs.mkdir(path.dirname(outputPath), { recursive: true });
-      await fs.writeFile(outputPath, `${html}\n`, "utf8");
+      await fs.writeFile(outputPath, `${seoSnapshot.html}\n`, "utf8");
     };
 
     const workers = Array.from({ length: workerCount }, async () => {

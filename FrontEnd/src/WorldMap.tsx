@@ -26,6 +26,7 @@ const InteractiveMap = lazy(() => import('./components/InteractiveMap'));
 
 export default function WorldMap() {
   const { t, i18n } = useTranslation();
+  const seoH1 = t("seo.h1.worldMap");
   const currentLanguage = getBaseLanguage(i18n.language);
   const seo = SEO_TRANSLATIONS.routes.map;
   const navigate = useNavigate();
@@ -138,6 +139,7 @@ export default function WorldMap() {
         canonicalUrl={toCanonicalUrlWithLanguage(seo.path, currentLanguage)}
         ogImage={getSeoOgImage(seo)}
       />
+      <h1 className="sr-only">{seoH1}</h1>
       <div
         style={{
           ...PAGE_CONTAINER_STYLE,

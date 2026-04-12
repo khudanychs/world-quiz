@@ -401,6 +401,74 @@
     "loadingMap": "Loading map...",
     "interactiveGlobeAria": "Interactive globe"
   },
+  "seo": {
+    "routes": {
+      "home": {
+        "title": "Country Flag Matching Game | World Quiz",
+        "description": "Play a country flag matching game, test world map skills, and climb global leaderboards in World Quiz."
+      },
+      "leaderboards": {
+        "title": "Flag Match Leaderboards | World Quiz",
+        "description": "See top scores for flag match, cards match, and guess country. Compare daily and all-time rankings."
+      },
+      "map": {
+        "title": "Interactive World Map Explorer | World Quiz",
+        "description": "Explore countries, capitals, and flags on an interactive world map built for fast geography practice."
+      },
+      "countries": {
+        "title": "Country Encyclopedia and Flags | World Quiz",
+        "description": "Browse country facts, flags, capitals, languages, and neighbors in the World Quiz country encyclopedia."
+      },
+      "flagMatch": {
+        "title": "Flag Matching Game | Flag Match World Quiz",
+        "description": "Play flag matching game in world or region mode. Train memory and improve speed in every flag match round."
+      },
+      "shapeMatch": {
+        "title": "Cards Match Geography Game | World Quiz",
+        "description": "Match flags, countries, capitals, and shapes against the clock in this fast geography cards game."
+      },
+      "physicalGeo": {
+        "title": "Physical Geography Quiz Game | World Quiz",
+        "description": "Locate mountains, rivers, lakes, deserts, and seas in a fast physical geography quiz challenge."
+      },
+      "guessCountry": {
+        "title": "Guess the Country Map Quiz | World Quiz",
+        "description": "Find the hidden country in five attempts using distance, direction, and region hints on the world map."
+      },
+      "terms": {
+        "title": "Terms and Conditions | World Quiz",
+        "description": "Read the World Quiz terms and conditions, account rules, and fair-play requirements."
+      },
+      "privacy": {
+        "title": "Privacy Policy | World Quiz",
+        "description": "Learn how World Quiz handles personal data, cookies, and account information."
+      },
+      "auth": {
+        "title": "Sign In to World Quiz",
+        "description": "Sign in or create your World Quiz account to save scores and join leaderboards."
+      },
+      "setNickname": {
+        "title": "Set Your Nickname | World Quiz",
+        "description": "Choose your public World Quiz nickname for scores, rankings, and profile display."
+      },
+      "settings": {
+        "title": "Account Settings | World Quiz",
+        "description": "Manage language, nickname, and profile settings for your World Quiz account."
+      },
+      "notFound": {
+        "title": "Page Not Found | World Quiz",
+        "description": "This page could not be found. Explore World Quiz games, maps, and country encyclopedia."
+      }
+    },
+    "h1": {
+      "mainMenu": "Country Flag Matching Game",
+      "worldMap": "Interactive World Map Explorer",
+      "flagMatch": "Flag Matching Game",
+      "physicalGeo": "Physical Geography Quiz",
+      "shapeMatch": "Cards Match Geography Game",
+      "guessCountry": "Guess the Country Quiz"
+    }
+  },
   "game": {
     "startHint": "Start by tapping any country on the map",
     "loading": "Loading...",

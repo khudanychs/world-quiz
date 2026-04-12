@@ -401,6 +401,74 @@
     "loadingMap": "Načítání mapy...",
     "interactiveGlobeAria": "Interaktivní glóbus"
   },
+  "seo": {
+    "routes": {
+      "home": {
+        "title": "Country Flag Matching Game | World Quiz",
+        "description": "Hrajte country flag matching game, trénujte mapu světa a stoupejte v globálních žebříčcích World Quiz."
+      },
+      "leaderboards": {
+        "title": "Žebříčky Flag Match | World Quiz",
+        "description": "Sledujte nejlepší skóre pro flag match, cards match a hádání zemí v denním i celkovém pořadí."
+      },
+      "map": {
+        "title": "Interaktivní mapa světa | World Quiz",
+        "description": "Prozkoumejte státy, hlavní města a vlajky na interaktivní mapě světa pro rychlý trénink geografie."
+      },
+      "countries": {
+        "title": "Encyklopedie zemí a vlajek | World Quiz",
+        "description": "Procházejte fakta o zemích, vlajkách, hlavních městech, jazycích a sousedech v encyklopedii World Quiz."
+      },
+      "flagMatch": {
+        "title": "Flag Matching Game | Flag Match World Quiz",
+        "description": "Hrajte flag matching game v režimu svět i region. Zlepšujte paměť a rychlost v každém kole flag match."
+      },
+      "shapeMatch": {
+        "title": "Karetní geografická hra | World Quiz",
+        "description": "Přiřazujte vlajky, země, hlavní města a tvary proti času v rychlé geografické karetní hře."
+      },
+      "physicalGeo": {
+        "title": "Kvíz fyzické geografie | World Quiz",
+        "description": "Najděte hory, řeky, jezera, pouště a moře v dynamické hře fyzické geografie."
+      },
+      "guessCountry": {
+        "title": "Hádej zemi na mapě | World Quiz",
+        "description": "Najděte skrytou zemi na pět pokusů pomocí nápověd vzdálenosti, směru a regionu."
+      },
+      "terms": {
+        "title": "Podmínky služby | World Quiz",
+        "description": "Přečtěte si podmínky World Quiz, pravidla účtu a zásady férové hry."
+      },
+      "privacy": {
+        "title": "Zásady soukromí | World Quiz",
+        "description": "Zjistěte, jak World Quiz zpracovává osobní údaje, cookies a informace o účtu."
+      },
+      "auth": {
+        "title": "Přihlášení do World Quiz",
+        "description": "Přihlaste se nebo si vytvořte účet World Quiz pro ukládání skóre a žebříčky."
+      },
+      "setNickname": {
+        "title": "Nastavte přezdívku | World Quiz",
+        "description": "Vyberte veřejnou přezdívku pro zobrazení skóre, žebříčků a profilu ve World Quiz."
+      },
+      "settings": {
+        "title": "Nastavení účtu | World Quiz",
+        "description": "Spravujte jazyk, přezdívku a profilové nastavení svého účtu World Quiz."
+      },
+      "notFound": {
+        "title": "Stránka nenalezena | World Quiz",
+        "description": "Tuto stránku se nepodařilo najít. Pokračujte na hry, mapu a encyklopedii World Quiz."
+      }
+    },
+    "h1": {
+      "mainMenu": "Country Flag Matching Game",
+      "worldMap": "Interaktivní mapa světa",
+      "flagMatch": "Flag Matching Game",
+      "physicalGeo": "Kvíz fyzické geografie",
+      "shapeMatch": "Karetní geografická hra",
+      "guessCountry": "Hádej zemi"
+    }
+  },
   "game": {
     "startHint": "Začněte klepnutím na libovolnou zemi na mapě",
     "loading": "Načítání...",

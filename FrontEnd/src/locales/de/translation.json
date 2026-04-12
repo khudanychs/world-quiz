@@ -401,6 +401,74 @@
     "loadingMap": "Karte wird geladen...",
     "interactiveGlobeAria": "Interaktiver Globus"
   },
+  "seo": {
+    "routes": {
+      "home": {
+        "title": "Country Flag Matching Game | World Quiz",
+        "description": "Spiele country flag matching game, trainiere Weltkartenwissen und steige in den globalen World-Quiz-Rankings auf."
+      },
+      "leaderboards": {
+        "title": "Flag Match Bestenlisten | World Quiz",
+        "description": "Sieh Top-Ergebnisse fur flag match, cards match und Landerraten in Tages- und Gesamtwertung."
+      },
+      "map": {
+        "title": "Interaktive Weltkarte | World Quiz",
+        "description": "Erkunde Lander, Hauptstadte und Flaggen auf einer interaktiven Weltkarte fur schnelles Geografie-Training."
+      },
+      "countries": {
+        "title": "Landerlexikon und Flaggen | World Quiz",
+        "description": "Durchsuche Fakten zu Landern, Flaggen, Hauptstadten, Sprachen und Nachbarstaaten im World-Quiz-Lexikon."
+      },
+      "flagMatch": {
+        "title": "Flag Matching Game | Flag Match World Quiz",
+        "description": "Spiele flag matching game im Welt- oder Regionenmodus. Verbessere Tempo und Merkfahigkeit in jeder flag match Runde."
+      },
+      "shapeMatch": {
+        "title": "Geografie-Kartenmatch | World Quiz",
+        "description": "Ordne Flaggen, Lander, Hauptstadte und Formen gegen die Uhr in diesem schnellen Geografie-Spiel zu."
+      },
+      "physicalGeo": {
+        "title": "Quiz zur physischen Geografie | World Quiz",
+        "description": "Finde Berge, Flusse, Seen, Wusten und Meere in einer schnellen physischen Geografie-Challenge."
+      },
+      "guessCountry": {
+        "title": "Land auf der Karte erraten | World Quiz",
+        "description": "Finde das Zielland in funf Versuchen mit Distanz-, Richtungs- und Regionshinweisen."
+      },
+      "terms": {
+        "title": "Nutzungsbedingungen | World Quiz",
+        "description": "Lies die World-Quiz-Nutzungsbedingungen, Kontoregeln und Fair-Play-Vorgaben."
+      },
+      "privacy": {
+        "title": "Datenschutzrichtlinie | World Quiz",
+        "description": "Erfahre, wie World Quiz personenbezogene Daten, Cookies und Kontoinformationen verarbeitet."
+      },
+      "auth": {
+        "title": "Bei World Quiz anmelden",
+        "description": "Melde dich an oder erstelle ein World-Quiz-Konto, um Ergebnisse zu speichern und Ranglisten beizutreten."
+      },
+      "setNickname": {
+        "title": "Spitznamen festlegen | World Quiz",
+        "description": "Wahle einen offentlichen Spitznamen fur Ergebnisse, Ranglisten und dein Profil in World Quiz."
+      },
+      "settings": {
+        "title": "Kontoeinstellungen | World Quiz",
+        "description": "Verwalte Sprache, Spitznamen und Profiloptionen fur dein World-Quiz-Konto."
+      },
+      "notFound": {
+        "title": "Seite nicht gefunden | World Quiz",
+        "description": "Diese Seite wurde nicht gefunden. Wechsle zu den Spielen, Karten und dem World-Quiz-Landerlexikon."
+      }
+    },
+    "h1": {
+      "mainMenu": "Country Flag Matching Game",
+      "worldMap": "Interaktive Weltkarte",
+      "flagMatch": "Flag Matching Game",
+      "physicalGeo": "Quiz zur physischen Geografie",
+      "shapeMatch": "Geografie-Kartenmatch",
+      "guessCountry": "Land erraten"
+    }
+  },
   "game": {
     "startHint": "Beginnen Sie, indem Sie ein beliebiges Land auf der Karte antippen",
     "loading": "Wird geladen...",
