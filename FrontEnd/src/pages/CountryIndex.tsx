@@ -13,11 +13,11 @@ import './CountryIndex.css';
 
 interface Country {
   name: string;
-  name_cs?: string;
-  name_de?: string;
+  name_cs: string;
+  name_de: string;
   officialName: string;
-  officialName_cs?: string;
-  officialName_de?: string;
+  officialName_cs: string;
+  officialName_de: string;
   cca2: string;
   cca3: string;
   capital: string[];
@@ -116,6 +116,7 @@ export default function CountryIndex() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedRegion, setSelectedRegion] = useState('all');
   const [selectedCountry, setSelectedCountry] = useState<Country | null>(null);
+  const isDetailsOpen = selectedCountry !== null;
 
   const getLocalizedOfficialName = (country: Country) => getLocalizedName(
     {
@@ -175,11 +176,11 @@ export default function CountryIndex() {
             
             return {
               name: getLocalizedName(localizedCommonNameProps, currentLanguage, 'name'),
-              name_cs: localizedCommonNameProps.name_cs,
-              name_de: localizedCommonNameProps.name_de,
+              name_cs: localizedCommonNameProps.name_cs || '',
+              name_de: localizedCommonNameProps.name_de || '',
               officialName: displayNameBase,
-              officialName_cs: displayNameCs,
-              officialName_de: displayNameDe,
+              officialName_cs: displayNameCs || '',
+              officialName_de: displayNameDe || '',
               cca2: c.cca2,
               cca3: c.cca3,
               capital: Array.isArray(c.capital) ? c.capital : [c.capital || 'N/A'],
@@ -319,77 +320,81 @@ export default function CountryIndex() {
       {/* OPRAVA: Wrapper a Container se renderují vždycky, Modal je pouze nad nima! */}
       <div className="country-index-wrap">
         <div className="country-index-container">
-          <header className="country-index-header">
-            <h1>{t('countryIndex.title')}</h1>
-            <p>{t('countryIndex.subtitle', { count: countries.length })}</p>
-          </header>
+          {!isDetailsOpen && (
+            <>
+              <header className="country-index-header">
+                <h1>{t('countryIndex.title')}</h1>
+                <p>{t('countryIndex.subtitle', { count: countries.length })}</p>
+              </header>
 
-          <div className="country-stats-summary">
-            <div className="stat-card">
-              <h3>{countries.length}</h3>
-              <p>{t('countryIndex.stats.countries')}</p>
-            </div>
-            <div className="stat-card">
-              <h3>{filteredCountries.length}</h3>
-              <p>{t('countryIndex.stats.showing')}</p>
-            </div>
-          </div>
+              <div className="country-stats-summary">
+                <div className="stat-card">
+                  <h3>{countries.length}</h3>
+                  <p>{t('countryIndex.stats.countries')}</p>
+                </div>
+                <div className="stat-card">
+                  <h3>{filteredCountries.length}</h3>
+                  <p>{t('countryIndex.stats.showing')}</p>
+                </div>
+              </div>
 
-          <div className="country-search-section">
-            <input
-              id="country-search"
-              type="text"
-              className="country-search-input"
-              placeholder={t('countryIndex.searchPlaceholder')}
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-            <select
-              id="country-region"
-              className="country-filter-select"
-              value={selectedRegion}
-              onChange={(e) => setSelectedRegion(e.target.value)}
-            >
-              <option value="all">{t('countryIndex.allRegions')}</option>
-              {regions.filter(r => r !== 'all').map(region => (
-                <option key={region} value={region}>{getRegionLabel(region)}</option>
-              ))}
-            </select>
-          </div>
-
-          {filteredCountries.length === 0 ? (
-            <div className="country-empty">
-              <h3>{t('countryIndex.noCountriesFound')}</h3>
-              <p>{t('countryIndex.tryAdjustingFilters')}</p>
-            </div>
-          ) : (
-            <div className="country-grid">
-              {filteredCountries.map((country, index) => (
-                <article
-                  key={country.cca2}
-                  className="country-card"
-                  onClick={() => handleCountryClick(country)}
+              <div className="country-search-section">
+                <input
+                  id="country-search"
+                  type="text"
+                  className="country-search-input"
+                  placeholder={t('countryIndex.searchPlaceholder')}
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+                <select
+                  id="country-region"
+                  className="country-filter-select"
+                  value={selectedRegion}
+                  onChange={(e) => setSelectedRegion(e.target.value)}
                 >
-                  <LazyFlag code={country.cca2} name={country.name} eager={index < 36} />
-                  <div className="country-card-info">
-                    <h2 className="country-card-name">
-                      {getLocalizedName(
-                        {
-                          officialName: country.officialName,
-                          officialName_cs: country.officialName_cs,
-                          officialName_de: country.officialName_de,
-                        },
-                        currentLanguage,
-                        'officialName'
-                      )}
-                    </h2>
-                    <p className="country-card-capital">
-                      {country.capital[0] || 'N/A'}
-                    </p>
-                  </div>
-                </article>
-              ))}
-            </div>
+                  <option value="all">{t('countryIndex.allRegions')}</option>
+                  {regions.filter(r => r !== 'all').map(region => (
+                    <option key={region} value={region}>{getRegionLabel(region)}</option>
+                  ))}
+                </select>
+              </div>
+
+              {filteredCountries.length === 0 ? (
+                <div className="country-empty">
+                  <h3>{t('countryIndex.noCountriesFound')}</h3>
+                  <p>{t('countryIndex.tryAdjustingFilters')}</p>
+                </div>
+              ) : (
+                <div className="country-grid">
+                  {filteredCountries.map((country, index) => (
+                    <article
+                      key={country.cca2}
+                      className="country-card"
+                      onClick={() => handleCountryClick(country)}
+                    >
+                      <LazyFlag code={country.cca2} name={country.name} eager={index < 36} />
+                      <div className="country-card-info">
+                        <h2 className="country-card-name">
+                          {getLocalizedName(
+                            {
+                              officialName: country.officialName,
+                              officialName_cs: country.officialName_cs,
+                              officialName_de: country.officialName_de,
+                            },
+                            currentLanguage,
+                            'officialName'
+                          )}
+                        </h2>
+                        <p className="country-card-capital">
+                          {country.capital[0] || 'N/A'}
+                        </p>
+                      </div>
+                    </article>
+                  ))}
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>
