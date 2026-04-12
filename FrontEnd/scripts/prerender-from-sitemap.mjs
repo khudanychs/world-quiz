@@ -4,6 +4,8 @@ import { createServer } from "node:http";
 import { fileURLToPath } from "node:url";
 import { chromium } from "playwright-core";
 
+const strictSeoMode = process.argv.includes("--strict-seo");
+
 const thisFilePath = fileURLToPath(import.meta.url);
 const rootDir = path.resolve(path.dirname(thisFilePath), "..");
 const distDir = path.join(rootDir, "dist");
@@ -30,7 +32,41 @@ const defaultSeoWaitTimeoutMs = Number.parseInt(process.env.PRERENDER_SEO_WAIT_T
 const prerenderSeoWaitTimeoutMs = Number.isFinite(defaultSeoWaitTimeoutMs) && defaultSeoWaitTimeoutMs > 0
   ? defaultSeoWaitTimeoutMs
   : 5000;
+const defaultStrictSeoWaitTimeoutMs = Number.parseInt(process.env.PRERENDER_STRICT_SEO_WAIT_TIMEOUT_MS || "45000", 10);
+const prerenderStrictSeoWaitTimeoutMs = Number.isFinite(defaultStrictSeoWaitTimeoutMs) && defaultStrictSeoWaitTimeoutMs > 0
+  ? defaultStrictSeoWaitTimeoutMs
+  : 45000;
 const LOCALE_PREFIX_PATTERN = /^\/(en|cs|de)(\/|$)/;
+
+function normalizePathname(pathname) {
+  return pathname.replace(/\/+$/, "") || "/";
+}
+
+function getExpectedFinalPathCandidates(routePath) {
+  const normalizedRoute = normalizePathname(routePath);
+  if (LOCALE_PREFIX_PATTERN.test(normalizedRoute)) {
+    return [normalizedRoute];
+  }
+
+  if (normalizedRoute === "/") {
+    return ["/", "/en"];
+  }
+
+  return [normalizedRoute, normalizePathname(`/en${normalizedRoute}`)];
+}
+
+function buildExpectedCanonical(routePath, finalPathname) {
+  if (routePath === "/") {
+    return "https://world-quiz.com/en";
+  }
+  return `https://world-quiz.com${normalizePathname(finalPathname)}`;
+}
+
+function routeSuffixFromFinalPath(finalPathname) {
+  const normalized = normalizePathname(finalPathname);
+  const withoutLocale = normalized.replace(/^\/(en|cs|de)(?=\/|$)/, "");
+  return withoutLocale || "/";
+}
 
 const MIME_TYPES = {
   ".html": "text/html; charset=utf-8",
@@ -171,7 +207,7 @@ async function main() {
 
   const totalRoutes = routes.length;
   console.log(
-    `[prerender] Starting ${totalRoutes} routes | concurrency=${Math.min(prerenderConcurrency, totalRoutes)} | redirectWait=${prerenderRedirectWaitMs}ms`,
+    `[prerender] Starting ${totalRoutes} routes | mode=${strictSeoMode ? "strict-seo" : "fast"} | concurrency=${Math.min(prerenderConcurrency, totalRoutes)} | redirectWait=${prerenderRedirectWaitMs}ms`,
   );
 
   const { server, origin } = await startStaticServer();
@@ -252,11 +288,94 @@ async function main() {
       }
 
       try {
-        await page.waitForFunction(() => document.title.trim().length > 0, {
-          timeout: prerenderSeoWaitTimeoutMs,
-        });
+        await page.waitForFunction(
+          () => document.title.trim().length > 0,
+          undefined,
+          { timeout: prerenderSeoWaitTimeoutMs },
+        );
       } catch {
         // Keep prerender moving; missing title will be reported as an SEO warning.
+      }
+
+      if (strictSeoMode) {
+        const expectedFinalPathCandidates = getExpectedFinalPathCandidates(routePath);
+        const requiresCountryMetadata = expectedFinalPathCandidates.some((candidatePath) =>
+          routeSuffixFromFinalPath(candidatePath).startsWith("/countries/"),
+        );
+
+        await page.waitForFunction(
+          ({ expectedFinalPathCandidates: expectedFinalPaths, requiresCountryMetadata: needsCountryMeta }) => {
+            const normalizePath = (input) => input.replace(/\/+$/, "") || "/";
+            const routeSuffixFromPath = (input) => {
+              const normalized = normalizePath(input);
+              const withoutLocale = normalized.replace(/^\/(en|cs|de)(?=\/|$)/, "");
+              return withoutLocale || "/";
+            };
+
+            const finalPathname = normalizePath(window.location.pathname || "/");
+            if (!expectedFinalPaths.includes(finalPathname)) {
+              return false;
+            }
+
+            if (document.querySelector('[data-app-loading="true"]')) {
+              return false;
+            }
+
+            const canonical =
+              (document.querySelector('link[rel="canonical"]')?.getAttribute("href") || "")
+                .trim();
+            const hreflangs = document.querySelectorAll('link[rel="alternate"][hreflang]').length;
+            const hasJsonLd = document.querySelectorAll('script[type="application/ld+json"]').length > 0;
+            const hasTitle = document.title.trim().length > 0;
+            const hasDescription =
+              (document.querySelector('meta[name="description"]')?.getAttribute("content") || "")
+                .trim()
+                .length > 0;
+
+            const expectedCanonical =
+              finalPathname === "/" ? "https://world-quiz.com/en" : `https://world-quiz.com${finalPathname}`;
+            if (canonical !== expectedCanonical) {
+              return false;
+            }
+
+            if (needsCountryMeta) {
+              const routeSuffix = routeSuffixFromPath(finalPathname);
+              if (!routeSuffix.startsWith("/countries/")) {
+                return false;
+              }
+
+              const alternateLinks = Array.from(
+                document.querySelectorAll('link[rel="alternate"][hreflang]'),
+              ).map((link) => ({
+                hreflang: (link.getAttribute("hreflang") || "").trim().toLowerCase(),
+                href: (link.getAttribute("href") || "").trim(),
+              }));
+              const alternateByLang = new Map(
+                alternateLinks
+                  .filter((entry) => entry.hreflang && entry.href)
+                  .map((entry) => [entry.hreflang, entry.href]),
+              );
+
+              const expectedEn = `https://world-quiz.com/en${routeSuffix}`;
+              const expectedCs = `https://world-quiz.com/cs${routeSuffix}`;
+              const expectedDe = `https://world-quiz.com/de${routeSuffix}`;
+              const expectedXDefault = expectedEn;
+
+              if (alternateByLang.get("en") !== expectedEn) return false;
+              if (alternateByLang.get("cs") !== expectedCs) return false;
+              if (alternateByLang.get("de") !== expectedDe) return false;
+              if (alternateByLang.get("x-default") !== expectedXDefault) return false;
+            }
+
+            // Wait for SEOHelmet-injected tags plus basic document metadata.
+            return hasTitle && hasDescription && canonical && hreflangs >= 4 && hasJsonLd;
+          },
+          {
+            expectedFinalPathCandidates,
+            requiresCountryMetadata,
+          },
+          { timeout: prerenderStrictSeoWaitTimeoutMs },
+        );
       }
 
       const seoSnapshot = await page.evaluate(() => {
@@ -264,12 +383,18 @@ async function main() {
           document.querySelector('link[rel="canonical"]')?.getAttribute("href")?.trim() || "";
         const hreflangs = document.querySelectorAll('link[rel="alternate"][hreflang]').length;
         const jsonLd = document.querySelectorAll('script[type="application/ld+json"]').length;
+        const alternateLinks = Array.from(document.querySelectorAll('link[rel="alternate"][hreflang]')).map((link) => ({
+          hreflang: link.getAttribute("hreflang")?.trim().toLowerCase() || "",
+          href: link.getAttribute("href")?.trim() || "",
+        }));
         const title = document.title.trim();
         const description =
           document.querySelector('meta[name="description"]')?.getAttribute("content")?.trim() || "";
         return {
+          finalPathname: window.location.pathname || "/",
           canonical,
           hreflangs,
+          alternateLinks,
           jsonLd,
           title,
           description,
@@ -284,7 +409,52 @@ async function main() {
       if (seoSnapshot.hreflangs < 4) missingBits.push(`hreflang(<4: ${seoSnapshot.hreflangs})`);
       if (seoSnapshot.jsonLd < 1) missingBits.push("jsonld");
 
+      const finalPathname = normalizePathname(seoSnapshot.finalPathname || new URL(page.url()).pathname);
+      const expectedFinalPathCandidates = getExpectedFinalPathCandidates(routePath);
+      if (!expectedFinalPathCandidates.includes(finalPathname)) {
+        missingBits.push(`final-path(expected one of ${expectedFinalPathCandidates.join(", ")}, got ${finalPathname})`);
+      }
+
+      if (await page.$('[data-app-loading="true"]')) {
+        missingBits.push("app-still-loading");
+      }
+
+      const expectedCanonical = buildExpectedCanonical(routePath, finalPathname);
+      if (seoSnapshot.canonical !== expectedCanonical) {
+        missingBits.push(`canonical(expected ${expectedCanonical}, got ${seoSnapshot.canonical || "<empty>"})`);
+      }
+
+      const routeSuffix = routeSuffixFromFinalPath(finalPathname);
+      if (routeSuffix.startsWith("/countries/")) {
+        const alternateByLang = new Map(
+          seoSnapshot.alternateLinks
+            .filter((entry) => entry.hreflang && entry.href)
+            .map((entry) => [entry.hreflang, entry.href]),
+        );
+
+        const expectedEn = `https://world-quiz.com/en${routeSuffix}`;
+        const expectedCs = `https://world-quiz.com/cs${routeSuffix}`;
+        const expectedDe = `https://world-quiz.com/de${routeSuffix}`;
+        const expectedXDefault = expectedEn;
+
+        if (alternateByLang.get("en") !== expectedEn) {
+          missingBits.push(`hreflang-en(expected ${expectedEn})`);
+        }
+        if (alternateByLang.get("cs") !== expectedCs) {
+          missingBits.push(`hreflang-cs(expected ${expectedCs})`);
+        }
+        if (alternateByLang.get("de") !== expectedDe) {
+          missingBits.push(`hreflang-de(expected ${expectedDe})`);
+        }
+        if (alternateByLang.get("x-default") !== expectedXDefault) {
+          missingBits.push(`hreflang-x-default(expected ${expectedXDefault})`);
+        }
+      }
+
       if (missingBits.length > 0) {
+        if (strictSeoMode) {
+          throw new Error(`Strict SEO validation failed: ${missingBits.join(", ")}`);
+        }
         seoWarningCount += 1;
         if (seoWarningCount <= 20) {
           console.warn(`[prerender][seo-warning] ${routePath} missing: ${missingBits.join(", ")}`);
@@ -371,7 +541,7 @@ async function main() {
 
   const durationSeconds = ((Date.now() - startedAt) / 1000).toFixed(2);
   logProgress("completed");
-  if (seoWarningCount > 0) {
+  if (!strictSeoMode && seoWarningCount > 0) {
     console.warn(`[prerender] Completed with ${seoWarningCount} SEO warning route(s).`);
   }
   console.log(

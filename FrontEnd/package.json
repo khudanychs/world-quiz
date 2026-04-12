@@ -7,10 +7,12 @@
     "dev": "vite",
     "generate:sitemap": "node ./scripts/generate-sitemap.mjs",
     "prerender": "node ./scripts/prerender-from-sitemap.mjs",
+    "prerender:strict": "node ./scripts/prerender-from-sitemap.mjs --strict-seo",
     "verify:prerender": "node ./scripts/verify-prerender-count.mjs",
     "build": "vite build",
     "build:with-sitemap": "npm run generate:sitemap && vite build",
     "build:seo": "npm run build:with-sitemap && npm run prerender && npm run verify:prerender",
+    "build:seo:strict": "npm run build:with-sitemap && npm run prerender:strict && npm run verify:prerender",
     "preview": "vite preview"
   },
   "dependencies": {

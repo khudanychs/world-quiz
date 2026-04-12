@@ -1,5 +1,5 @@
 import { Helmet } from "react-helmet-async";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useLocation } from "react-router-dom";
 import {
@@ -149,6 +149,29 @@ export function SEOHelmet({
 
     return [defaultStructuredData, ...baseNodes];
   }, [defaultStructuredData, structuredData]);
+
+  useEffect(() => {
+    if (typeof document === "undefined") {
+      return;
+    }
+
+    const marker = "data-wq-jsonld";
+    const previous = document.head.querySelectorAll(`script[${marker}="true"]`);
+    previous.forEach((node) => node.remove());
+
+    for (const node of structuredDataNodes) {
+      const script = document.createElement("script");
+      script.type = "application/ld+json";
+      script.setAttribute(marker, "true");
+      script.text = JSON.stringify(node);
+      document.head.appendChild(script);
+    }
+
+    return () => {
+      const current = document.head.querySelectorAll(`script[${marker}="true"]`);
+      current.forEach((node) => node.remove());
+    };
+  }, [structuredDataNodes]);
 
   return (
     <Helmet prioritizeSeoTags>
