@@ -5,6 +5,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { getFlagUrlSync } from '../utils/flagUtils';
 import { buildLocalizedPath, getBaseLanguage, stripLocalePrefix } from '../utils/localeRouting';
 import { startPrefetch } from '../utils/dataPrefetch';
+import { changeAppLanguage } from '../i18n';
 import './Navbar.css';
 
 const MOBILE_BREAKPOINT_PX = 1120;
@@ -69,7 +70,7 @@ export function Navbar() {
     const sourcePath = latestPathRef.current;
 
     if (nextLanguage !== currentLanguage) {
-      await i18n.changeLanguage(nextLanguage);
+      await changeAppLanguage(nextLanguage);
     }
 
     // Avoid late async completion sending user back to a stale route.
@@ -116,7 +117,14 @@ export function Navbar() {
         <div className="container-fluid">
           {/* Logo / Brand - clickable to home */}
           <div className="navbar-brand" onClick={() => handleNavClick('/')}>
-            <img src="/newlogo.png" alt={t('nav.appName')} className="navbar-logo" />
+            <img
+              src="/newlogo.webp"
+              alt={t('nav.appName')}
+              className="navbar-logo"
+              width={56}
+              height={56}
+              decoding="async"
+            />
             <h1 className="m-0">{t('nav.appName')}</h1>
           </div>
 

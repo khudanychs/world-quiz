@@ -27,7 +27,7 @@ import {
 } from 'firebase/firestore';
 import { auth, db } from '../firebase';
 import { getFirebaseErrorMessage } from '../utils/firebaseErrors';
-import i18n from '../i18n';
+import i18n, { changeAppLanguage } from '../i18n';
 import { getBaseLanguage } from '../utils/localeRouting';
 
 export interface User {
@@ -155,7 +155,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             }
             
             if (preferredLanguage && getBaseLanguage(i18n.language) !== preferredLanguage) {
-              await i18n.changeLanguage(preferredLanguage);
+              await changeAppLanguage(preferredLanguage);
             }
             
             if (!disposed) {
@@ -303,7 +303,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       if (preferredLanguage && getBaseLanguage(i18n.language) !== preferredLanguage) {
-        await i18n.changeLanguage(preferredLanguage);
+        await changeAppLanguage(preferredLanguage);
       }
       
       const formattedUser: User = {

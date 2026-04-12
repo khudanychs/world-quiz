@@ -1,8 +1,32 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import { ViteImageOptimizer } from 'vite-plugin-image-optimizer'
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    react(),
+    ViteImageOptimizer({
+      // Use sharp/svgo-backed optimization for better maintenance and quality controls.
+      includePublic: true,
+      cache: true,
+      cacheLocation: '.cache/vite-image-optimizer',
+      png: {
+        quality: 82,
+      },
+      jpeg: {
+        quality: 78,
+      },
+      jpg: {
+        quality: 78,
+      },
+      webp: {
+        quality: 80,
+      },
+      avif: {
+        quality: 58,
+      },
+    }),
+  ],
   server: {
     host: true,
   },
@@ -26,19 +50,50 @@ export default defineConfig({
     },
     rollupOptions: {
       output: {
-        manualChunks: {
-          // Split Firebase into its own critical chunk (preloaded)
-          firebase: [
-            'firebase/app',
-            'firebase/auth',
-            'firebase/firestore',
-          ],
-          // Split i18n libraries (critical for initial render)
-          i18n: ['i18next', 'react-i18next', 'i18next-browser-languagedetector'],
-          // Split map libraries into their own chunk (loaded when map pages are accessed)
-          maps: ['react-simple-maps', 'd3-geo'],
-          // Split React core
-          vendor: ['react', 'react-dom', 'react-router-dom'],
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            if (id.includes('/react/') || id.includes('/react-dom/') || id.includes('/react-router-dom/')) {
+              return 'react-core';
+            }
+
+            if (id.includes('/firebase/')) {
+              return 'firebase-core';
+            }
+
+            if (id.includes('/i18next') || id.includes('/react-i18next') || id.includes('/i18next-browser-languagedetector')) {
+              return 'i18n-core';
+            }
+
+            if (id.includes('/react-simple-maps/') || id.includes('/d3-geo/') || id.includes('/topojson-client/')) {
+              return 'map-core';
+            }
+          }
+
+          if (id.includes('/src/components/InteractiveMap.tsx')) {
+            return 'map-interactive';
+          }
+
+          if (
+            id.includes('/src/components/FlagMatchGame.tsx') ||
+            id.includes('/src/hooks/useFlagMatchGame.ts')
+          ) {
+            return 'game-flag-match';
+          }
+
+          if (
+            id.includes('/src/components/PhysicalGeoGame.tsx') ||
+            id.includes('/src/components/physicalGeoGame/') ||
+            id.includes('/src/hooks/usePhysicalGeoGame.ts')
+          ) {
+            return 'game-physical-geo';
+          }
+
+          if (
+            id.includes('/src/components/GuessCountryGame.tsx') ||
+            id.includes('/src/components/GuessResultRow.tsx')
+          ) {
+            return 'game-guess-country';
+          }
         },
       },
     },
