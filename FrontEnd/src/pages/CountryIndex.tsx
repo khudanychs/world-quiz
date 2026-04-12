@@ -117,6 +117,16 @@ export default function CountryIndex() {
   const [selectedRegion, setSelectedRegion] = useState('all');
   const [selectedCountry, setSelectedCountry] = useState<Country | null>(null);
 
+  const getLocalizedOfficialName = (country: Country) => getLocalizedName(
+    {
+      officialName: country.officialName,
+      officialName_cs: country.officialName_cs,
+      officialName_de: country.officialName_de,
+    },
+    currentLanguage,
+    'officialName'
+  );
+
   useEffect(() => {
     const cachedCountries = countriesCacheByLanguage.get(currentLanguage);
     if (cachedCountries) {
@@ -299,8 +309,8 @@ export default function CountryIndex() {
   return (
     <>
       <SEOHelmet
-        title={selectedCountry ? t('countryIndex.seoTitleWithCountry', { country: selectedCountry.officialName }) : seo.title}
-        description={selectedCountry ? t('countryIndex.seoDescriptionWithCountry', { country: selectedCountry.officialName }) : seo.description}
+        title={selectedCountry ? t('countryIndex.seoTitleWithCountry', { country: getLocalizedOfficialName(selectedCountry) }) : seo.title}
+        description={selectedCountry ? t('countryIndex.seoDescriptionWithCountry', { country: getLocalizedOfficialName(selectedCountry) }) : seo.description}
         canonicalUrl={selectedCountry ? toCanonicalUrlWithLanguage(`/countries/${selectedCountry.cca2.toLowerCase()}`, currentLanguage) : toCanonicalUrlWithLanguage(seo.path, currentLanguage)}
         ogImage={getSeoOgImage(seo)}
         preserveExplicitMeta={!!selectedCountry}

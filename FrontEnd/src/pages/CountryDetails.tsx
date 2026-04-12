@@ -2,11 +2,17 @@ import { useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useCountryStats, useExchangeRate } from '../hooks/useCountryStats';
 import { BackButton } from '../components/BackButton';
+import { getBaseLanguage } from '../utils/localeRouting';
+import { getLocalizedName } from '../utils/i18nUtils';
 import './CountryDetails.css';
 
 interface Country {
   name: string;
+  name_cs?: string;
+  name_de?: string;
   officialName: string;
+  officialName_cs?: string;
+  officialName_de?: string;
   cca2: string;
   capital: string[];
   region: string;
@@ -20,8 +26,10 @@ interface CountryDetailsProps {
 }
 
 export default function CountryDetails({ country, onClose, onCountryClick }: CountryDetailsProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const currentLanguage = getBaseLanguage(i18n.language);
   const stats = useCountryStats(country.cca2);
+  const displayCountryName = getLocalizedName(country, currentLanguage, 'officialName');
   
   const handleBorderClick = (borderCode: string, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -129,11 +137,11 @@ export default function CountryDetails({ country, onClose, onCountryClick }: Cou
           <header className="country-detail-header">
             <img
               src={`/flags-v2/${country.cca2.toLowerCase()}.svg`}
-              alt={t('countryDetails.flagOf', { country: country.officialName })}
+              alt={t('countryDetails.flagOf', { country: displayCountryName })}
               className="country-detail-flag"
             />
             <div className="country-detail-title">
-              <h1>{country.officialName}</h1>
+              <h1>{displayCountryName}</h1>
               <p className="capital">
                 {t('countryDetails.capital')}: {country.capital[0] || t('countryDetails.notAvailable')}
               </p>
