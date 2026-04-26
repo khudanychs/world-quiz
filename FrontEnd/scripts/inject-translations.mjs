@@ -334,9 +334,12 @@ function injectIntoCountries(records, dictionaryIndex) {
       normalizeTerm(rec?.name?.official);
 
     if (englishName) {
-      rec.name_cs = translate(dictionaryIndex, englishName, "cs");
-      rec.name_de = translate(dictionaryIndex, englishName, "de");
-      touched += 1;
+      const match = resolveDictionaryMatch(dictionaryIndex, englishName);
+      if (match) {
+        rec.name_cs = translate(dictionaryIndex, englishName, "cs");
+        rec.name_de = translate(dictionaryIndex, englishName, "de");
+        touched += 1;
+      }
     }
 
     if (rec.languages) {
