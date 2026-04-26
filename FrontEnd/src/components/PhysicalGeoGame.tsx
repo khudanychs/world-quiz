@@ -7,8 +7,8 @@ import PhysicalGeoHUD from "./PhysicalGeoHUD";
 import { MERGED_URL, buildGeoFeatureGetter } from "./physicalGeoGame/geo";
 import { getPhysicalGeoMode } from "./physicalGeoGame/modes";
 import {
-  renderLandOverlay as renderLandOverlaySvg,
-  renderWaterUnderlay as renderWaterUnderlaySvg,
+  LandOverlay,
+  WaterUnderlay,
   type Proj,
 } from "./physicalGeoGame/renderers";
 import { MemoizedOverlay } from "./physicalGeoGame/MemoizedOverlay";
@@ -204,22 +204,22 @@ export default function PhysicalGeoGame() {
   );
 
   const renderWaterUnderlay = useCallback((projection: Proj, zoom: number, isDesktop: boolean) => {
-    return renderWaterUnderlaySvg({
-      projection,
-      zoom,
-      isDesktop,
-      modeStyleOverrides: activeMode.styleOverrides,
-      waterFeatures,
-      backgroundMarineNames: allMarineFeatureNames,
-      getPrecomputedPath,
-      canClick,
-      onFeatureClick: handleFeatureClickWithZoom,
-      showingResult: showingResultRef.current,
-      lastResult: lastResultRef.current,
-      currentFeatureName: currentFeatureRef.current?.name,
-      correctSet: correctSetRef.current,
-      skippedSet: skippedSetRef.current,
-    });
+    return <WaterUnderlay
+      projection={projection}
+      zoom={zoom}
+      isDesktop={isDesktop}
+      modeStyleOverrides={activeMode.styleOverrides}
+      waterFeatures={waterFeatures}
+      backgroundMarineNames={allMarineFeatureNames}
+      getPrecomputedPath={getPrecomputedPath}
+      canClick={canClick}
+      onFeatureClick={handleFeatureClickWithZoom}
+      showingResult={showingResultRef.current}
+      lastResult={lastResultRef.current}
+      currentFeatureName={currentFeatureRef.current?.name}
+      correctSet={correctSetRef.current}
+      skippedSet={skippedSetRef.current}
+    />;
   }, [
     activeMode.styleOverrides,
     waterFeatures,
@@ -230,21 +230,21 @@ export default function PhysicalGeoGame() {
   ]);
 
   const renderLandOnlyOverlay = useCallback((projection: Proj, zoom: number, isDesktop: boolean) => {
-    return renderLandOverlaySvg({
-      projection,
-      zoom,
-      isDesktop,
-      modeStyleOverrides: activeMode.styleOverrides,
-      landFeatures,
-      getPrecomputedPath,
-      canClick,
-      onFeatureClick: handleFeatureClickWithZoom,
-      showingResult: showingResultRef.current,
-      lastResult: lastResultRef.current,
-      currentFeatureName: currentFeatureRef.current?.name,
-      correctSet: correctSetRef.current,
-      skippedSet: skippedSetRef.current,
-    });
+    return <LandOverlay
+      projection={projection}
+      zoom={zoom}
+      isDesktop={isDesktop}
+      modeStyleOverrides={activeMode.styleOverrides}
+      landFeatures={landFeatures}
+      getPrecomputedPath={getPrecomputedPath}
+      canClick={canClick}
+      onFeatureClick={handleFeatureClickWithZoom}
+      showingResult={showingResultRef.current}
+      lastResult={lastResultRef.current}
+      currentFeatureName={currentFeatureRef.current?.name}
+      correctSet={correctSetRef.current}
+      skippedSet={skippedSetRef.current}
+    />;
   }, [
     activeMode.styleOverrides,
     landFeatures,
