@@ -11,6 +11,7 @@ export default function MainMenu() {
   const seo = SEO_TRANSLATIONS.routes.home;
   const navigate = useNavigate();
   const currentLanguage = getBaseLanguage(i18n.language);
+  const bangUrl = currentLanguage === 'cs' ? 'https://bang.honzaa.cz/cs' : 'https://bang.honzaa.cz/en';
   const canonicalHome = toCanonicalUrlWithLanguage(seo.path, currentLanguage);
   const homeStructuredData = {
     "@context": "https://schema.org",
@@ -64,6 +65,19 @@ export default function MainMenu() {
             <span className="menu-tag" style={{background:'#0ea5e9'}}>{t('mainMenu.games.guessCountry.tag')}</span>
           </div>
         </button>
+        <a 
+          href={bangUrl} 
+          target="_blank" 
+          rel="noopener noreferrer nofollow"
+          className="menu-card partner"
+          style={{ textDecoration: 'none', color: 'inherit' }}
+        >
+          <div className="menu-card-body">
+            <h3>{t('mainMenu.games.bangOnline.title')} ↗</h3>
+            <p>{t('mainMenu.games.bangOnline.description')}</p>
+            <span className="menu-tag" style={{background:'#8b5cf6'}}>{t('mainMenu.games.bangOnline.tag')}</span>
+          </div>
+        </a>
       </section>
 
         <footer className="menu-footer">

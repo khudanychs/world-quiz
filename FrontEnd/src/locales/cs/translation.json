@@ -37,6 +37,11 @@
         "title": "Hádej zemi",
         "description": "Odhalte skrytou zemi pomocí přesných nápověd o vzdálenosti a směru.",
         "tag": "Nové"
+      },
+      "bangOnline": {
+        "title": "Bang! Online",
+        "description": "Zahrajte si legendární karetní hru z divokého západu přímo ve svém prohlížeči.",
+        "tag": "Partner"
       }
     }
   },

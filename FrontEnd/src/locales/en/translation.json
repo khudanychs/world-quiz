@@ -37,6 +37,11 @@
         "title": "Guess the Country",
         "description": "Guess the hidden country using precise distance and direction hints.",
         "tag": "New"
+      },
+      "bangOnline": {
+        "title": "Bang! Online",
+        "description": "Play the legendary wild west card game directly in your browser.",
+        "tag": "Partner"
       }
     }
   },
