@@ -7,9 +7,10 @@ import { normalizeCountryName, isClickableInGameMode, isHiddenTerritory } from "
 import { getLocalizedName } from "../utils/i18nUtils";
 import { SMALL_ISLAND_MARKERS } from "../utils/markerPositions";
 import { getBaseLanguage } from "../utils/localeRouting";
+import { withStaticDataVersion } from "../utils/staticAssetVersion";
 
 const PROJECTION = "geoNaturalEarth1" as const;
-const DEFAULT_GEO_URL = "/countries-110m.json";
+const DEFAULT_GEO_URL = withStaticDataVersion('/countries-110m.json');
 const HOVER_THROTTLE_MS = 33;
 
 /* ============================================================================

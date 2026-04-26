@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { SEOHelmet } from '../components/SEOHelmet';
 import { SEO_TRANSLATIONS, toCanonicalUrlWithLanguage, getSeoOgImage } from '../seo/seo-translations';
 import CountryDetails from './CountryDetails';
-import { FLAG_MATCH_SPECIAL_TERRITORIES } from '../utils/countries';
+import { FLAG_MATCH_SPECIAL_TERRITORIES, getLocalizedCapitals, getLocalizedCountryName } from '../utils/countries';
 import { getLocalizedName } from '../utils/i18nUtils';
 import { buildLocalizedPath } from '../utils/localeRouting';
 import { getBaseLanguage } from '../utils/localeRouting';
@@ -52,6 +52,7 @@ function warmFlagImage(src: string): void {
 }
 
 function LazyFlag({ code, name, eager = false }: { code: string; name: string; eager?: boolean }) {
+  const { t } = useTranslation();
   const flagSrc = getFlagSrc(code);
   const [shouldLoad, setShouldLoad] = useState(eager || warmedFlagSrcs.has(flagSrc));
   const [loaded, setLoaded] = useState(warmedFlagSrcs.has(flagSrc));
@@ -92,7 +93,7 @@ function LazyFlag({ code, name, eager = false }: { code: string; name: string; e
     <img
       ref={imageRef}
       src={shouldLoad ? flagSrc : undefined}
-      alt={`${name} flag`}
+      alt={t('countryIndex.flagAlt', { name })}
       className={`country-card-flag ${loaded ? 'is-loaded' : ''}`}
       loading={eager ? 'eager' : 'lazy'}
       decoding="async"
@@ -174,7 +175,7 @@ export default function CountryIndex() {
               : localizedCommonNameProps.name_de;
             
             return {
-              name: getLocalizedName(localizedCommonNameProps, currentLanguage, 'name'),
+              name: getLocalizedCountryName(c, currentLanguage, { preferOfficial: false }) || getLocalizedName(localizedCommonNameProps, currentLanguage, 'name'),
               name_cs: localizedCommonNameProps.name_cs || '',
               name_de: localizedCommonNameProps.name_de || '',
               officialName: displayNameBase,
@@ -182,7 +183,7 @@ export default function CountryIndex() {
               officialName_de: displayNameDe || '',
               cca2: c.cca2,
               cca3: c.cca3,
-              capital: Array.isArray(c.capital) ? c.capital : [c.capital || 'N/A'],
+              capital: getLocalizedCapitals(c, currentLanguage),
               region: c.region || 'Unknown',
               subregion: c.subregion || '',
             };
@@ -385,7 +386,7 @@ export default function CountryIndex() {
                         )}
                       </h2>
                       <p className="country-card-capital">
-                        {country.capital[0] || 'N/A'}
+                        {country.capital.length ? country.capital.join(', ') : 'N/A'}
                       </p>
                     </div>
                   </article>

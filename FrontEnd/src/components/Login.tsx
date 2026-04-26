@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
 import { GoogleIcon } from './Icons';
 import { buildLocalizedPath } from '../utils/localeRouting';
+import { translateError } from '../utils/translateErrors';
 import './Auth.css';
 
 export function Login() {
@@ -24,7 +25,7 @@ export function Login() {
       await login(email, password);
       navigate(buildLocalizedPath('/', i18n.language), { replace: true }); // Replace history so back can't return to login
     } catch (err: any) {
-      setError(err.message);
+      setError(translateError(err.message));
     } finally {
       setLoading(false);
     }
@@ -56,7 +57,7 @@ export function Login() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              placeholder="••••••••"
+              placeholder={t('auth.passwordPlaceholderBullets')}
             />
           </div>
 

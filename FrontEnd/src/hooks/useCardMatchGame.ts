@@ -10,6 +10,7 @@ import {
   buildCountryLookupWithCapitals
 } from "../utils/countries";
 import { SMALL_ISLAND_MARKERS } from "../utils/markerPositions";
+import { withStaticDataVersion } from "../utils/staticAssetVersion";
 
 // Type definitions to replace 'any'
 type Position = number[];
@@ -122,7 +123,7 @@ export function useCardMatchGame(pair: { first: CardKind; second: CardKind }) {
         setState((s) => ({ ...s, loading: true, loadError: "" }));
 
         // Load REST Countries data for flags
-        const restRes = await fetch("/countries-full.json");
+        const restRes = await fetch(withStaticDataVersion('/countries-full.json'), { cache: 'no-store' });
         if (!restRes.ok) {
           throw new Error(`Failed to load countries (HTTP ${restRes.status})`);
         }
@@ -137,7 +138,7 @@ export function useCardMatchGame(pair: { first: CardKind; second: CardKind }) {
         const caps = buildCountryLookupWithCapitals(restData, i18n.language);
 
         // Load TopoJSON for country shapes
-        const topoRes = await fetch("/countries-110m.json");
+        const topoRes = await fetch(withStaticDataVersion('/countries-110m.json'), { cache: 'no-store' });
         if (!topoRes.ok) {
           throw new Error(`Failed to load map (HTTP ${topoRes.status})`);
         }
@@ -343,7 +344,7 @@ export function useCardMatchGame(pair: { first: CardKind; second: CardKind }) {
         // capital
         const capInfo = capLookup[normalizeApos(country.info.name)] || capLookup[stripDiacritics(normalizeApos(country.info.name))];
         const capitals = capInfo?.capitals || [];
-        const mainCapital = capitals.length > 0 ? capitals[0] : "";
+        const mainCapital = capitals.length > 0 ? capitals.join(", ") : "";
         return { ...base, type: "capital", id: `${country.info.cca2}-capital`, text: mainCapital };
       };
 

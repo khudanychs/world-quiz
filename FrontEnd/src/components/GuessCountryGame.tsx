@@ -16,6 +16,8 @@ import {
   buildCountryHintLookup,
   buildRestLookup,
   FLAG_MATCH_SPECIAL_TERRITORIES,
+  getCanonicalCountryName,
+  getLocalizedCountryName,
   isClickableInGameMode,
   normalizeApos,
   normalizeCountryName,
@@ -34,6 +36,7 @@ import { incrementGuessCountryWins } from "../utils/leaderboardUtils";
 import { useAuth } from "../contexts/AuthContext";
 import { buildLocalizedPath, getBaseLanguage } from "../utils/localeRouting";
 import { SEO_TRANSLATIONS, toCanonicalUrlWithLanguage, getSeoOgImage } from "../seo/seo-translations";
+import { withStaticDataVersion } from "../utils/staticAssetVersion";
 import "./GuessCountryGame.css";
 import "./FlagMatchGame.css";
 
@@ -210,8 +213,8 @@ export default function GuessCountryGame() {
         setLoadError("");
 
         const [countriesRes, topologyRes] = await Promise.all([
-          fetch("/countries-full.json"),
-          fetch("/countries-110m.json"),
+          fetch(withStaticDataVersion('/countries-full.json'), { cache: 'no-store' }),
+          fetch(withStaticDataVersion('/countries-110m.json'), { cache: 'no-store' }),
         ]);
 
         if (!countriesRes.ok) {
@@ -269,7 +272,9 @@ export default function GuessCountryGame() {
         for (const c of mergedCountries) {
           const eligible = c.independent === true || c.unMember === true || FLAG_MATCH_SPECIAL_TERRITORIES.has(c.cca2);
           if (!eligible) continue;
-          if (!isClickableInGameMode(c.name.common)) continue;
+          const canonicalName = getCanonicalCountryName(c as any);
+          const localizedName = getLocalizedCountryName(c as any, i18n.language);
+          if (!isClickableInGameMode(canonicalName)) continue;
 
           const coords = centroidByCode.get(c.cca2);
           if (!coords) continue;
@@ -277,7 +282,6 @@ export default function GuessCountryGame() {
           const hint = hintLookup[c.cca2];
           const isRussia = c.cca2 === "RU";
           const resolvedContinent = isRussia ? "Asia" : (hint?.continent || c.region || "");
-          const localizedName = builtLookup[c.name.common]?.name || c.name.common;
           const resolvedDisplayName = isRussia ? `${localizedName} (Asia)` : localizedName;
           playable.set(c.cca2, {
             name: localizedName,

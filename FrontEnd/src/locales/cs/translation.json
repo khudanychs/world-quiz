@@ -55,7 +55,10 @@
       "changeFlag": "Změnit vlajku",
       "useGooglePhoto": "Použít fotku z Google",
       "selectFlag": "Vyberte si vlajku",
-      "saveFlag": "Uložit vlajku"
+      "saveFlag": "Uložit vlajku",
+      "profileAlt": "profil",
+      "avatarAlt": "avatar",
+      "placeholderClass": "profile-picture-placeholder"
     },
     "nickname": {
       "title": "Přezdívka",
@@ -91,6 +94,7 @@
       "deleteWord": "DELETE",
       "passwordLabel": "Zadejte své heslo:",
       "passwordPlaceholder": "Heslo",
+      "passwordBullets": "••••••••",
       "deleteAccount": "Smazat účet"
     },
     "saveChanges": "Uložit změny",
@@ -142,10 +146,49 @@
     "logInLink": "Přihlaste se",
     "noAccount": "Ještě nemáte účet?",
     "signUpLink": "Zaregistrujte se",
+    "passwordPlaceholderBullets": "••••••••",
+    "verification": {
+      "emailNotVerified": "Email ještě není ověřen. Prosím zkontrolujte svou schránku.",
+      "checkingStatus": "Kontroluji...",
+      "verifyButton": "Ověřil jsem svůj e-mail",
+      "logoutGuest": "Odhlásit se a hrát jako host",
+      "title": "📧 Ověřte svůj e-mail",
+      "instruction": "Prosím zkontrolujte svou e-mailovou schránku.",
+      "checkFailed": "Kontrola stavu selhala. Zkuste to prosím znovu.",
+      "checkEmailBefore": "Prosím ověřte svůj e-mail před přihlášením. Zkontrolujte svou schránku na ověřovací odkaz."
+    },
+    "appLoading": "Načítám...",
     "errors": {
       "passwordsDoNotMatch": "Zadaná hesla se neshodují",
       "passwordMinLength": "Heslo musí mít alespoň 8 znaků",
       "passwordComplexity": "Heslo musí obsahovat velké i malé písmeno a číslici"
+    },
+    "firebaseErrors": {
+      "email-already-in-use": "Tento e-mail je již registrován. Prosím přihlaste se.",
+      "invalid-email": "Prosím zadejte platnou e-mailovou adresu.",
+      "weak-password": "Heslo je příliš slabé. Použijte alespoň 8 znaků.",
+      "user-not-found": "Není nalezen účet s tímto e-mailem. Prosím zaregistrujte se nejdříve.",
+      "wrong-password": "Nesprávné heslo. Zkuste to prosím znovu.",
+      "invalid-credential": "Neplatný e-mail nebo heslo. Prosím zkontrolujte a zkuste znovu.",
+      "too-many-requests": "Příliš mnoho neúspěšných pokusů. Zkuste to prosím později.",
+      "user-disabled": "Tento účet byl zakázán. Prosím kontaktujte podporu.",
+      "operation-not-allowed": "Tato metoda přihlášení není povolena. Prosím kontaktujte podporu.",
+      "account-exists-with-different-credential": "Účet s tímto e-mailem již existuje, ale s jinou metodou přihlášení.",
+      "popup-closed-by-user": "Přihlašovací okno bylo zavřeno. Zkuste to prosím znovu.",
+      "popup-blocked": "Vaš prohlížeč blokuje vyskakovací okna. Prosím povolte jej a zkuste znovu.",
+      "network-request-failed": "Chyba sítě. Prosím zkontrolujte své připojení a zkuste znovu.",
+      "resource-exhausted": "Server je přetížen. Zkuste to prosím za pár minut.",
+      "quota-exceeded": "Denní limit dosažen. Zkuste to prosím zítra.",
+      "unavailable": "Služba není dočasně dostupná. Zkuste to prosím později.",
+      "permission-denied": "Přístup odepřen. Prosím přihlaste se znovu.",
+      "duplicate-username": "Tato přezdívka je již používána. Prosím zvolte si jinou.",
+      "no-user-signed-in": "Žádný uživatel není přihlášen.",
+      "email-already-verified": "E-mail je již ověřen.",
+      "nickname-limit": "Přezdívku můžete změnit pouze 2x za měsíc. Zkuste to prosím příští měsíc.",
+      "nickname-cooldown": "Prosím počkejte {{count}} dnů, než si budete moci přezdívku změnit.",
+      "password-required": "Heslo je vyžadováno pro smazání účtu.",
+      "email-not-found": "E-mail nebyl nalezen.",
+      "default": "Vyskytla se chyba. Zkuste to prosím znovu."
     },
     "messages": {
       "registrationSuccess": "Registrace byla úspěšná! Před přihlášením si prosím ověřte svůj e-mail."
@@ -313,6 +356,12 @@
       "failedToSet": "Přezdívku se nepodařilo uložit."
     }
   },
+  "navbar": {
+    "profileAlt": "profil",
+    "avatarAlt": "avatar",
+    "placeholderClass": "navbar-avatar-placeholder",
+    "mobileAvatarPlaceholderClass": "mobile-avatar-placeholder"
+  },
   "flagSelector": {
     "title": "Výběr profilové vlajky",
     "searchPlaceholder": "Vyhledejte stát...",
@@ -389,7 +438,8 @@
     "noCountriesFound": "Nic jsme nenašli",
     "tryAdjustingFilters": "Zkuste změnit hledaný výraz nebo vybraný kontinent.",
     "seoTitleWithCountry": "{{country}} – Základní informace a vlajka | World Quiz",
-    "seoDescriptionWithCountry": "Vše o státu {{country}}: hlavní město, počet obyvatel, rozloha, úřední jazyky a sousední státy."
+    "seoDescriptionWithCountry": "Vše o státu {{country}}: hlavní město, počet obyvatel, rozloha, úřední jazyky a sousední státy.",
+    "flagAlt": "{{name}} vlajka"
   },
   "worldMap": {
     "loading": "Načítám data...",

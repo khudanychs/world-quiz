@@ -1,3 +1,59 @@
+/**
+ * Get the i18n key for a Firebase error
+ * Use this with i18next's t() function to get translated error messages
+ */
+export function getFirebaseErrorKey(error: any): string {
+  const errorCode = error.code;
+  
+  switch (errorCode) {
+    // Authentication errors
+    case 'auth/email-already-in-use':
+      return 'auth.firebaseErrors.email-already-in-use';
+    case 'auth/invalid-email':
+      return 'auth.firebaseErrors.invalid-email';
+    case 'auth/weak-password':
+      return 'auth.firebaseErrors.weak-password';
+    case 'auth/user-not-found':
+      return 'auth.firebaseErrors.user-not-found';
+    case 'auth/wrong-password':
+      return 'auth.firebaseErrors.wrong-password';
+    case 'auth/invalid-credential':
+      return 'auth.firebaseErrors.invalid-credential';
+    case 'auth/too-many-requests':
+      return 'auth.firebaseErrors.too-many-requests';
+    case 'auth/user-disabled':
+      return 'auth.firebaseErrors.user-disabled';
+    case 'auth/operation-not-allowed':
+      return 'auth.firebaseErrors.operation-not-allowed';
+    case 'auth/account-exists-with-different-credential':
+      return 'auth.firebaseErrors.account-exists-with-different-credential';
+    case 'auth/popup-closed-by-user':
+      return 'auth.firebaseErrors.popup-closed-by-user';
+    case 'auth/popup-blocked':
+      return 'auth.firebaseErrors.popup-blocked';
+    case 'auth/network-request-failed':
+      return 'auth.firebaseErrors.network-request-failed';
+    
+    // Firestore quota/billing errors (free tier limits)
+    case 'resource-exhausted':
+      return 'auth.firebaseErrors.resource-exhausted';
+    case 'quota-exceeded':
+      return 'auth.firebaseErrors.quota-exceeded';
+    case 'unavailable':
+      return 'auth.firebaseErrors.unavailable';
+    case 'permission-denied':
+      return 'auth.firebaseErrors.permission-denied';
+    
+    // Default fallback
+    default:
+      return 'auth.firebaseErrors.default';
+  }
+}
+
+/**
+ * Get the English error message for a Firebase error
+ * Use getFirebaseErrorKey() with i18next.t() for translated messages
+ */
 export function getFirebaseErrorMessage(error: any): string {
   const errorCode = error.code;
   
