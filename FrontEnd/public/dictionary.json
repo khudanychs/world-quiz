@@ -11,10 +11,6 @@
     "cs": "Egejské moře",
     "de": "Ägäisches Meer"
   },
-  "Afghanistan": {
-    "cs": "Afghánistán",
-    "de": "Afghanistan"
-  },
   "Ahag": {
     "cs": "Ahaggar",
     "de": "Ahaggar"
@@ -23,17 +19,9 @@
     "cs": "Pohoří Aïr",
     "de": "Aïr-Gebirge"
   },
-  "Åland Islands": {
-    "cs": "Ålandy",
-    "de": "Ålandinseln"
-  },
   "Alaska Range": {
     "cs": "Aljašské hory",
     "de": "Alaskakette"
-  },
-  "Albania": {
-    "cs": "Albánie",
-    "de": "Albanien"
   },
   "Albemarle Sound": {
     "cs": "Záliv Albemarle",
@@ -42,10 +30,6 @@
   "Alboran Sea": {
     "cs": "Alboránské moře",
     "de": "Alborán-Meer"
-  },
-  "Algeria": {
-    "cs": "Alžírsko",
-    "de": "Algerien"
   },
   "Alps": {
     "cs": "Alpy",
@@ -62,10 +46,6 @@
   "Amazon River": {
     "cs": "Amazonka",
     "de": "Amazonas"
-  },
-  "American Samoa": {
-    "cs": "Americká Samoa",
-    "de": "Amerikanisch-Samoa"
   },
   "Amu Darya": {
     "cs": "Amudarja",
@@ -91,33 +71,13 @@
     "cs": "Andy",
     "de": "Anden"
   },
-  "Andorra": {
-    "cs": "Andorra",
-    "de": "Andorra"
-  },
-  "Angola": {
-    "cs": "Angola",
-    "de": "Angola"
-  },
-  "Anguilla": {
-    "cs": "Anguilla",
-    "de": "Anguilla"
-  },
   "Annamite Range": {
     "cs": "Annamské pohoří",
     "de": "Annamitisches Gebirge"
   },
-  "Antarctica": {
-    "cs": "Antarktida",
-    "de": "Antarktis"
-  },
   "Anti-Atlas": {
     "cs": "Antiatlas",
     "de": "Antiatlas"
-  },
-  "Antigua and Barbuda": {
-    "cs": "Antigua a Barbuda",
-    "de": "Antigua und Barbuda"
   },
   "Antongila Bay": {
     "cs": "Antongilský záliv",
@@ -155,21 +115,9 @@
     "cs": "Severní ledový oceán",
     "de": "Arktischer Ozean"
   },
-  "Argentina": {
-    "cs": "Argentina",
-    "de": "Argentinien"
-  },
   "Arkansas River": {
     "cs": "Arkansas",
     "de": "Arkansas"
-  },
-  "Armenia": {
-    "cs": "Arménie",
-    "de": "Armenien"
-  },
-  "Aruba": {
-    "cs": "Aruba",
-    "de": "Aruba"
   },
   "Ashmore and Cartier Is.": {
     "cs": "Ashmorovy a Cartierovy ostrovy",
@@ -195,18 +143,6 @@
     "cs": "Atlas",
     "de": "Atlas"
   },
-  "Australia": {
-    "cs": "Austrálie",
-    "de": "Australien"
-  },
-  "Austria": {
-    "cs": "Rakousko",
-    "de": "Österreich"
-  },
-  "Azerbaijan": {
-    "cs": "Ázerbájdžán",
-    "de": "Aserbaidschan"
-  },
   "Bab el Mandeb": {
     "cs": "Bab-al-Mandab",
     "de": "Bab al-Mandab"
@@ -215,10 +151,6 @@
     "cs": "Baffinův záliv",
     "de": "Baffinbucht"
   },
-  "Bahamas": {
-    "cs": "Bahamy",
-    "de": "Bahamas"
-  },
   "Bahía Blanca": {
     "cs": "Bahía Blanca",
     "de": "Bahía Blanca"
@@ -226,10 +158,6 @@
   "Bahía Grande": {
     "cs": "Bahía Grande",
     "de": "Bahía Grande"
-  },
-  "Bahrain": {
-    "cs": "Bahrajn",
-    "de": "Bahrain"
   },
   "Baia de Maputo": {
     "cs": "Maputský záliv",
@@ -266,14 +194,6 @@
   "Banda Sea": {
     "cs": "Bandské moře",
     "de": "Bandasee"
-  },
-  "Bangladesh": {
-    "cs": "Bangladéš",
-    "de": "Bangladesch"
-  },
-  "Barbados": {
-    "cs": "Barbados",
-    "de": "Barbados"
   },
   "Barents Sea": {
     "cs": "Barentsovo moře",
@@ -315,37 +235,13 @@
     "cs": "Beaufortovo moře",
     "de": "Beaufortsee"
   },
-  "Belarus": {
-    "cs": "Bělorusko",
-    "de": "Belarus"
-  },
-  "Belgium": {
-    "cs": "Belgie",
-    "de": "Belgien"
-  },
-  "Belize": {
-    "cs": "Belize",
-    "de": "Belize"
-  },
   "Bellingshausen Sea": {
     "cs": "Bellingshausenovo moře",
     "de": "Bellingshausensee"
   },
-  "Benin": {
-    "cs": "Benin",
-    "de": "Benin"
-  },
   "Bering Sea": {
     "cs": "Beringovo moře",
     "de": "Beringmeer"
-  },
-  "Bermuda": {
-    "cs": "Bermudy",
-    "de": "Bermuda"
-  },
-  "Bhutan": {
-    "cs": "Bhútán",
-    "de": "Bhutan"
   },
   "Bight of Benin": {
     "cs": "Beninský záliv",
@@ -383,25 +279,9 @@
     "cs": "Boknafjord",
     "de": "Boknafjord"
   },
-  "Bolivia": {
-    "cs": "Bolívie",
-    "de": "Bolivien"
-  },
-  "Bosnia and Herzegovina": {
-    "cs": "Bosna a Hercegovina",
-    "de": "Bosnien und Herzegowina"
-  },
   "Bosporus": {
     "cs": "Bospor",
     "de": "Bosporus"
-  },
-  "Botswana": {
-    "cs": "Botswana",
-    "de": "Botsuana"
-  },
-  "Bouvet Island": {
-    "cs": "Bouvetův ostrov",
-    "de": "Bouvetinsel"
   },
   "Brahmaputra": {
     "cs": "Brahmaputra",
@@ -415,10 +295,6 @@
     "cs": "Jezero Bras d'Or",
     "de": "Bras d'Or Lake"
   },
-  "Brazil": {
-    "cs": "Brazílie",
-    "de": "Brasilien"
-  },
   "Bristol Bay": {
     "cs": "Bristolský záliv",
     "de": "Bristolbucht"
@@ -427,49 +303,13 @@
     "cs": "Bristolský průliv",
     "de": "Bristolkanal"
   },
-  "British Indian Ocean Territory": {
-    "cs": "Britské indickooceánské území",
-    "de": "Britisches Territorium im Indischen Ozean"
-  },
-  "British Virgin Islands": {
-    "cs": "Britské Panenské ostrovy",
-    "de": "Britische Jungferninseln"
-  },
   "Brooks Range": {
     "cs": "Pohoří Brooks",
     "de": "Brooks-Gebirge"
   },
-  "Brunei": {
-    "cs": "Brunej",
-    "de": "Brunei Darussalam"
-  },
-  "Bulgaria": {
-    "cs": "Bulharsko",
-    "de": "Bulgarien"
-  },
-  "Burkina Faso": {
-    "cs": "Burkina Faso",
-    "de": "Burkina Faso"
-  },
-  "Burundi": {
-    "cs": "Burundi",
-    "de": "Burundi"
-  },
   "Caatinga": {
     "cs": "Caatinga",
     "de": "Caatinga"
-  },
-  "Cambodia": {
-    "cs": "Kambodža",
-    "de": "Kambodscha"
-  },
-  "Cameroon": {
-    "cs": "Kamerun",
-    "de": "Kamerun"
-  },
-  "Canada": {
-    "cs": "Kanada",
-    "de": "Kanada"
   },
   "Canal do Norte": {
     "cs": "Canal do Norte",
@@ -486,14 +326,6 @@
   "Cantabrian Mountains": {
     "cs": "Kantaberské pohoří",
     "de": "Kantabrisches Gebirge"
-  },
-  "Cape Verde": {
-    "cs": "Kapverdy",
-    "de": "Cabo Verde"
-  },
-  "Caribbean Netherlands": {
-    "cs": "Karibské Nizozemsko",
-    "de": "Karibische Niederlande"
   },
   "Caribbean Sea": {
     "cs": "Karibské moře",
@@ -523,25 +355,13 @@
     "cs": "Kavkaz",
     "de": "Kaukasus"
   },
-  "Cayman Islands": {
-    "cs": "Kajmanské ostrovy",
-    "de": "Kaimaninseln"
-  },
   "Celebes Sea": {
     "cs": "Celebeské moře",
     "de": "Celebessee"
   },
-  "Central African Republic": {
-    "cs": "Středoafrická republika",
-    "de": "Zentralafrikanische Republik"
-  },
   "Ceram Sea": {
     "cs": "Ceramské moře",
     "de": "Ceramsee"
-  },
-  "Chad": {
-    "cs": "Čad",
-    "de": "Tschad"
   },
   "Chao Phraya": {
     "cs": "Čao Praja",
@@ -559,21 +379,9 @@
     "cs": "Čivavská poušť",
     "de": "Chihuahua-Wüste"
   },
-  "Chile": {
-    "cs": "Chile",
-    "de": "Chile"
-  },
   "Chimborazo volcano": {
     "cs": "Sopka Chimborazo",
     "de": "Vulkan Chimborazo"
-  },
-  "China": {
-    "cs": "Čína",
-    "de": "China"
-  },
-  "Christmas Island": {
-    "cs": "Vánoční ostrov",
-    "de": "Weihnachtsinsel"
   },
   "Chukchi Sea": {
     "cs": "Čukotské moře",
@@ -591,14 +399,6 @@
     "cs": "Pobřežní hory",
     "de": "Küstengebirge"
   },
-  "Cocos (Keeling) Islands": {
-    "cs": "Kokosové ostrovy",
-    "de": "Kokosinseln"
-  },
-  "Colombia": {
-    "cs": "Kolumbie",
-    "de": "Kolumbien"
-  },
   "Colorado River": {
     "cs": "Colorado",
     "de": "Colorado River"
@@ -611,10 +411,6 @@
     "cs": "Řeka Columbia",
     "de": "Columbia River"
   },
-  "Comoros": {
-    "cs": "Komory",
-    "de": "Komoren"
-  },
   "Congo": {
     "cs": "Kongo",
     "de": "Kongo"
@@ -624,10 +420,6 @@
     "de": "Cook Inlet"
   },
   "Cook Is.": {
-    "cs": "Cookovy ostrovy",
-    "de": "Cookinseln"
-  },
-  "Cook Islands": {
     "cs": "Cookovy ostrovy",
     "de": "Cookinseln"
   },
@@ -643,37 +435,13 @@
     "cs": "Zátoka Cordova",
     "de": "Cordova-Bucht"
   },
-  "Costa Rica": {
-    "cs": "Kostarika",
-    "de": "Costa Rica"
-  },
-  "Croatia": {
-    "cs": "Chorvatsko",
-    "de": "Kroatien"
-  },
-  "Cuba": {
-    "cs": "Kuba",
-    "de": "Kuba"
-  },
   "Cumberland Sound": {
     "cs": "Cumberlandský záliv",
     "de": "Cumberland Sound"
   },
-  "Curaçao": {
-    "cs": "Curaçao",
-    "de": "Curaçao"
-  },
-  "Cyprus": {
-    "cs": "Kypr",
-    "de": "Zypern"
-  },
   "Czech": {
     "cs": "Čeština",
     "de": "Tschechisch"
-  },
-  "Czechia": {
-    "cs": "Česko",
-    "de": "Tschechien"
   },
   "Danube": {
     "cs": "Dunaj",
@@ -719,10 +487,6 @@
     "cs": "Denali",
     "de": "Denali"
   },
-  "Denmark": {
-    "cs": "Dánsko",
-    "de": "Dänemark"
-  },
   "Denmark Strait": {
     "cs": "Dánský průliv",
     "de": "Dänemarkstraße"
@@ -743,10 +507,6 @@
     "cs": "Dixonova úžina",
     "de": "Dixon Entrance"
   },
-  "Djibouti": {
-    "cs": "Džibutsko",
-    "de": "Dschibuti"
-  },
   "Dmitriy Laptev Strait": {
     "cs": "Průliv Dmitrije Laptěva",
     "de": "Dmitri-Laptew-Straße"
@@ -759,14 +519,6 @@
     "cs": "Dněstr",
     "de": "Dnister"
   },
-  "Dominica": {
-    "cs": "Dominika",
-    "de": "Dominica"
-  },
-  "Dominican Republic": {
-    "cs": "Dominikánská republika",
-    "de": "Dominikanische Republik"
-  },
   "Don": {
     "cs": "Don",
     "de": "Don"
@@ -774,10 +526,6 @@
   "Douro": {
     "cs": "Douro",
     "de": "Douro"
-  },
-  "DR Congo": {
-    "cs": "DR Kongo",
-    "de": "DR Kongo"
   },
   "Drake Passage": {
     "cs": "Drakeův průliv",
@@ -819,21 +567,9 @@
     "cs": "Průliv Eclipse",
     "de": "Eclipse Sound"
   },
-  "Ecuador": {
-    "cs": "Ekvádor",
-    "de": "Ecuador"
-  },
-  "Egypt": {
-    "cs": "Egypt",
-    "de": "Ägypten"
-  },
   "El Djouf": {
     "cs": "El Djouf",
     "de": "El Djouf"
-  },
-  "El Salvador": {
-    "cs": "Salvador",
-    "de": "El Salvador"
   },
   "Elbe": {
     "cs": "Labe",
@@ -851,33 +587,13 @@
     "cs": "Lamanšský průliv",
     "de": "Ärmelkanal"
   },
-  "Equatorial Guinea": {
-    "cs": "Rovníková Guinea",
-    "de": "Äquatorialguinea"
-  },
   "Erg Chech": {
     "cs": "Erg Šeš",
     "de": "Erg Chech"
   },
-  "Eritrea": {
-    "cs": "Eritrea",
-    "de": "Eritrea"
-  },
-  "Estonia": {
-    "cs": "Estonsko",
-    "de": "Estland"
-  },
   "Estrecho de Magellanes": {
     "cs": "Magalhãesův průliv",
     "de": "Magellanstraße"
-  },
-  "Eswatini": {
-    "cs": "Eswatini",
-    "de": "Eswatini"
-  },
-  "Ethiopia": {
-    "cs": "Etiopie",
-    "de": "Äthiopien"
   },
   "Ethiopian Highlands": {
     "cs": "Etiopská vysočina",
@@ -887,22 +603,6 @@
     "cs": "Eufrat",
     "de": "Euphrat"
   },
-  "Falkland Islands": {
-    "cs": "Falklandské ostrovy",
-    "de": "Falklandinseln"
-  },
-  "Faroe Islands": {
-    "cs": "Faerské ostrovy",
-    "de": "Färöer"
-  },
-  "Fiji": {
-    "cs": "Fidži",
-    "de": "Fidschi"
-  },
-  "Finland": {
-    "cs": "Finsko",
-    "de": "Finnland"
-  },
   "Flores Sea": {
     "cs": "Floresské moře",
     "de": "Floressee"
@@ -910,10 +610,6 @@
   "Foxe Basin": {
     "cs": "Foxův záliv",
     "de": "Foxe Basin"
-  },
-  "France": {
-    "cs": "Francie",
-    "de": "Frankreich"
   },
   "Franklin Bay": {
     "cs": "Franklinův záliv",
@@ -923,18 +619,6 @@
     "cs": "Fraser",
     "de": "Fraser"
   },
-  "French Guiana": {
-    "cs": "Francouzská Guyana",
-    "de": "Französisch-Guayana"
-  },
-  "French Polynesia": {
-    "cs": "Francouzská Polynésie",
-    "de": "Französisch-Polynesien"
-  },
-  "French Southern and Antarctic Lands": {
-    "cs": "Francouzská jižní území",
-    "de": "Französische Süd- und Antarktisgebiete"
-  },
   "Frobisher Bay": {
     "cs": "Frobisherův záliv",
     "de": "Frobisherbucht"
@@ -942,14 +626,6 @@
   "Fury and Hecla Strait": {
     "cs": "Průliv Fury and Hecla",
     "de": "Fury-und-Hecla-Straße"
-  },
-  "Gabon": {
-    "cs": "Gabon",
-    "de": "Gabun"
-  },
-  "Gambia": {
-    "cs": "Gambie",
-    "de": "Gambia"
   },
   "Ganges": {
     "cs": "Ganga",
@@ -971,25 +647,9 @@
     "cs": "Průliv Jiřího VI.",
     "de": "George-VI.-Sund"
   },
-  "Georgia": {
-    "cs": "Gruzie",
-    "de": "Georgien"
-  },
   "German": {
     "cs": "Němčina",
     "de": "Deutsch"
-  },
-  "Germany": {
-    "cs": "Německo",
-    "de": "Deutschland"
-  },
-  "Ghana": {
-    "cs": "Ghana",
-    "de": "Ghana"
-  },
-  "Gibraltar": {
-    "cs": "Gibraltar",
-    "de": "Gibraltar"
   },
   "Gibson Desert": {
     "cs": "Gibsonova poušť",
@@ -1091,37 +751,13 @@
     "cs": "Velký Chingan",
     "de": "Großer Hinggan"
   },
-  "Greece": {
-    "cs": "Řecko",
-    "de": "Griechenland"
-  },
-  "Greenland": {
-    "cs": "Grónsko",
-    "de": "Grönland"
-  },
   "Greenland Sea": {
     "cs": "Grónské moře",
     "de": "Grönlandsee"
   },
-  "Grenada": {
-    "cs": "Grenada",
-    "de": "Grenada"
-  },
   "Guadalquivir": {
     "cs": "Guadalquivir",
     "de": "Guadalquivir"
-  },
-  "Guadeloupe": {
-    "cs": "Guadeloupe",
-    "de": "Guadeloupe"
-  },
-  "Guam": {
-    "cs": "Guam",
-    "de": "Guam"
-  },
-  "Guatemala": {
-    "cs": "Guatemala",
-    "de": "Guatemala"
   },
   "Guaviare": {
     "cs": "Guaviare",
@@ -1131,21 +767,9 @@
     "cs": "Husí zátoka",
     "de": "Guba Gusinaya"
   },
-  "Guernsey": {
-    "cs": "Guernsey",
-    "de": "Guernsey"
-  },
   "Guiana Highlands": {
     "cs": "Guyanská vysočina",
     "de": "Bergland von Guayana"
-  },
-  "Guinea": {
-    "cs": "Guinea",
-    "de": "Guinea"
-  },
-  "Guinea-Bissau": {
-    "cs": "Guinea-Bissau",
-    "de": "Guinea-Bissau"
   },
   "Gulf of Aden": {
     "cs": "Adenský záliv",
@@ -1287,17 +911,9 @@
     "cs": "Záliv svatého Vincence",
     "de": "Sankt-Vincent-Golf"
   },
-  "Guyana": {
-    "cs": "Guyana",
-    "de": "Guyana"
-  },
   "Hadley Bay": {
     "cs": "Hadleyův záliv",
     "de": "Hadley-Bucht"
-  },
-  "Haiti": {
-    "cs": "Haiti",
-    "de": "Haiti"
   },
   "Hall Basin": {
     "cs": "Hallova pánev",
@@ -1323,10 +939,6 @@
     "cs": "Changčouský záliv",
     "de": "Hangzhou-Bucht"
   },
-  "Heard Island and McDonald Islands": {
-    "cs": "Heardův ostrov a McDonaldovy ostrovy",
-    "de": "Heard und McDonaldinseln"
-  },
   "Hecate Strait": {
     "cs": "Hecatin průliv",
     "de": "Hecate-Straße"
@@ -1351,14 +963,6 @@
     "cs": "Hindúkuš",
     "de": "Hindukusch"
   },
-  "Honduras": {
-    "cs": "Honduras",
-    "de": "Honduras"
-  },
-  "Hong Kong": {
-    "cs": "Hongkong",
-    "de": "Hongkong"
-  },
   "Hudson Bay": {
     "cs": "Hudsonův záliv",
     "de": "Hudson Bay"
@@ -1367,21 +971,9 @@
     "cs": "Hudsonův průliv",
     "de": "Hudsonstraße"
   },
-  "Hungary": {
-    "cs": "Maďarsko",
-    "de": "Ungarn"
-  },
   "Husky Lakes": {
     "cs": "Husky Lakes",
     "de": "Husky Lakes"
-  },
-  "Iceland": {
-    "cs": "Island",
-    "de": "Island"
-  },
-  "India": {
-    "cs": "Indie",
-    "de": "Indien"
   },
   "Indian Ocean": {
     "cs": "Indický oceán",
@@ -1394,10 +986,6 @@
   "Indigirka": {
     "cs": "Indigirka",
     "de": "Indigirka"
-  },
-  "Indonesia": {
-    "cs": "Indonésie",
-    "de": "Indonesien"
   },
   "Indus": {
     "cs": "Indus",
@@ -1415,18 +1003,6 @@
     "cs": "Jónské moře",
     "de": "Ionisches Meer"
   },
-  "Iran": {
-    "cs": "Írán",
-    "de": "Iran"
-  },
-  "Iraq": {
-    "cs": "Irák",
-    "de": "Irak"
-  },
-  "Ireland": {
-    "cs": "Irsko",
-    "de": "Irland"
-  },
   "Irish Sea": {
     "cs": "Irské moře",
     "de": "Irische See"
@@ -1435,37 +1011,13 @@
     "cs": "Iravádí",
     "de": "Irrawaddy"
   },
-  "Isle of Man": {
-    "cs": "Ostrov Man",
-    "de": "Isle of Man"
-  },
   "Ismoil Somoni Peak": {
     "cs": "Pik Ismoila Somoniho",
     "de": "Pik Ismoil Somoni"
   },
-  "Israel": {
-    "cs": "Izrael",
-    "de": "Israel"
-  },
-  "Italy": {
-    "cs": "Itálie",
-    "de": "Italien"
-  },
-  "Ivory Coast": {
-    "cs": "Pobřeží slonoviny",
-    "de": "Elfenbeinküste"
-  },
-  "Jamaica": {
-    "cs": "Jamajka",
-    "de": "Jamaika"
-  },
   "James Bay": {
     "cs": "Jamesova zátoka",
     "de": "James Bay"
-  },
-  "Japan": {
-    "cs": "Japonsko",
-    "de": "Japan"
   },
   "Japurá": {
     "cs": "Japurá",
@@ -1479,17 +1031,9 @@
     "cs": "Džabal Tubkal",
     "de": "Jbel Toubkal"
   },
-  "Jersey": {
-    "cs": "Jersey",
-    "de": "Jersey"
-  },
   "Jones Sound": {
     "cs": "Jonesův průliv",
     "de": "Jones Sound"
-  },
-  "Jordan": {
-    "cs": "Jordánsko",
-    "de": "Jordanien"
   },
   "Jordan River": {
     "cs": "Jordán",
@@ -1555,25 +1099,13 @@
     "cs": "Kattegat",
     "de": "Kattegat"
   },
-  "Kazakhstan": {
-    "cs": "Kazachstán",
-    "de": "Kasachstan"
-  },
   "Kennedy Channel": {
     "cs": "Kennedyho průliv",
     "de": "Kennedy-Kanal"
   },
-  "Kenya": {
-    "cs": "Keňa",
-    "de": "Kenia"
-  },
   "Khatanga Gulf": {
     "cs": "Chatangský záliv",
     "de": "Chatangagolf"
-  },
-  "Kiribati": {
-    "cs": "Kiribati",
-    "de": "Kiribati"
   },
   "Klyuchevskaya Sopka": {
     "cs": "Ključevskaja",
@@ -1586,10 +1118,6 @@
   "Korea Strait": {
     "cs": "Korejský průliv",
     "de": "Koreastraße"
-  },
-  "Kosovo": {
-    "cs": "Kosovo",
-    "de": "Kosovo"
   },
   "Kotzebue Sound": {
     "cs": "Kotzebuův záliv",
@@ -1606,14 +1134,6 @@
   "Kunlun Mountains": {
     "cs": "Kchun-lun",
     "de": "Kunlun"
-  },
-  "Kuwait": {
-    "cs": "Kuvajt",
-    "de": "Kuwait"
-  },
-  "Kyrgyzstan": {
-    "cs": "Kyrgyzstán",
-    "de": "Kirgisistan"
   },
   "Kyzyl Kum": {
     "cs": "Kyzylkum",
@@ -1719,29 +1239,13 @@
     "cs": "Winnipežské jezero",
     "de": "Winnipegsee"
   },
-  "Laos": {
-    "cs": "Laos",
-    "de": "Laos"
-  },
   "Laptev Sea": {
     "cs": "Moře Laptěvů",
     "de": "Laptewsee"
   },
-  "Latvia": {
-    "cs": "Lotyšsko",
-    "de": "Lettland"
-  },
-  "Lebanon": {
-    "cs": "Libanon",
-    "de": "Libanon"
-  },
   "Lena": {
     "cs": "Lena",
     "de": "Lena"
-  },
-  "Lesotho": {
-    "cs": "Lesotho",
-    "de": "Lesotho"
   },
   "Lesser Caucasus": {
     "cs": "Malý Kavkaz",
@@ -1755,14 +1259,6 @@
     "cs": "Leytský záliv",
     "de": "Golf von Leyte"
   },
-  "Liberia": {
-    "cs": "Libérie",
-    "de": "Liberia"
-  },
-  "Libya": {
-    "cs": "Libye",
-    "de": "Libyen"
-  },
   "Libyan Desert": {
     "cs": "Libyjská poušť",
     "de": "Libysche Wüste"
@@ -1770,10 +1266,6 @@
   "Liddon Gulf": {
     "cs": "Liddonův záliv",
     "de": "Liddon-Golf"
-  },
-  "Liechtenstein": {
-    "cs": "Lichtenštejnsko",
-    "de": "Liechtenstein"
   },
   "Ligurian Sea": {
     "cs": "Ligurské moře",
@@ -1787,10 +1279,6 @@
     "cs": "Lincolnské moře",
     "de": "Lincolnsee"
   },
-  "Lithuania": {
-    "cs": "Litva",
-    "de": "Litauen"
-  },
   "Loire": {
     "cs": "Loira",
     "de": "Loire"
@@ -1803,10 +1291,6 @@
     "cs": "Záliv Lützowa-Holma",
     "de": "Lützow-Holm-Bucht"
   },
-  "Luxembourg": {
-    "cs": "Lucembursko",
-    "de": "Luxemburg"
-  },
   "Luzon Strait": {
     "cs": "Luzonský průliv",
     "de": "Luzonstraße"
@@ -1816,10 +1300,6 @@
     "de": "M'Clure-Straße"
   },
   "Macao": {
-    "cs": "Macao",
-    "de": "Macau"
-  },
-  "Macau": {
     "cs": "Macao",
     "de": "Macau"
   },
@@ -1839,10 +1319,6 @@
     "cs": "Mackenzieho pohoří",
     "de": "Mackenziegebirge"
   },
-  "Madagascar": {
-    "cs": "Madagaskar",
-    "de": "Madagaskar"
-  },
   "Madeira": {
     "cs": "Madeira",
     "de": "Madeira"
@@ -1855,37 +1331,9 @@
     "cs": "Makassarský průliv",
     "de": "Straße von Makassar"
   },
-  "Malawi": {
-    "cs": "Malawi",
-    "de": "Malawi"
-  },
-  "Malaysia": {
-    "cs": "Malajsie",
-    "de": "Malaysia"
-  },
-  "Maldives": {
-    "cs": "Maledivy",
-    "de": "Malediven"
-  },
-  "Mali": {
-    "cs": "Mali",
-    "de": "Mali"
-  },
-  "Malta": {
-    "cs": "Malta",
-    "de": "Malta"
-  },
   "Marguerite Bay": {
     "cs": "Margueritin záliv",
     "de": "Marguerite Bay"
-  },
-  "Marshall Islands": {
-    "cs": "Marshallovy ostrovy",
-    "de": "Marshallinseln"
-  },
-  "Martinique": {
-    "cs": "Martinik",
-    "de": "Martinique"
   },
   "Massachusetts Bay": {
     "cs": "Massachusettský záliv",
@@ -1894,18 +1342,6 @@
   "Matochkin Shar Strait": {
     "cs": "Matočkin Šar",
     "de": "Matotschkin Schar"
-  },
-  "Mauritania": {
-    "cs": "Mauritánie",
-    "de": "Mauretanien"
-  },
-  "Mauritius": {
-    "cs": "Mauricius",
-    "de": "Mauritius"
-  },
-  "Mayotte": {
-    "cs": "Mayotte",
-    "de": "Mayotte"
   },
   "McMurdo Sound": {
     "cs": "McMurdo Sound",
@@ -1927,14 +1363,6 @@
     "cs": "Melvillův záliv",
     "de": "Melville-Bucht"
   },
-  "Mexico": {
-    "cs": "Mexiko",
-    "de": "Mexiko"
-  },
-  "Micronesia": {
-    "cs": "Mikronésie",
-    "de": "Mikronesien"
-  },
   "Minto Inlet": {
     "cs": "Minto Inlet",
     "de": "Minto Inlet"
@@ -1947,41 +1375,17 @@
     "cs": "Missouri",
     "de": "Missouri"
   },
-  "Moldova": {
-    "cs": "Moldavsko",
-    "de": "Republik Moldau"
-  },
   "Molucca Sea": {
     "cs": "Molucké moře",
     "de": "Molukkensee"
-  },
-  "Monaco": {
-    "cs": "Monako",
-    "de": "Monaco"
-  },
-  "Mongolia": {
-    "cs": "Mongolsko",
-    "de": "Mongolei"
   },
   "Mont Blanc": {
     "cs": "Mont Blanc",
     "de": "Mont Blanc"
   },
-  "Montenegro": {
-    "cs": "Černá Hora",
-    "de": "Montenegro"
-  },
   "Monterey Bay": {
     "cs": "Montereyský záliv",
     "de": "Monterey Bay"
-  },
-  "Montserrat": {
-    "cs": "Montserrat",
-    "de": "Montserrat"
-  },
-  "Morocco": {
-    "cs": "Maroko",
-    "de": "Marokko"
   },
   "Mount Chamberlin": {
     "cs": "Mount Chamberlin",
@@ -2027,10 +1431,6 @@
     "cs": "Mount Whitney",
     "de": "Mount Whitney"
   },
-  "Mozambique": {
-    "cs": "Mosambik",
-    "de": "Mosambik"
-  },
   "Mozambique Channel": {
     "cs": "Mosambický průliv",
     "de": "Straße von Mosambik"
@@ -2047,10 +1447,6 @@
     "cs": "Murzúcká poušť",
     "de": "Murzuq-Wüste"
   },
-  "Myanmar": {
-    "cs": "Myanmar (Barma)",
-    "de": "Myanmar"
-  },
   "N. Cyprus": {
     "cs": "Severní Kypr",
     "de": "Nordzypern"
@@ -2059,17 +1455,9 @@
     "cs": "Namib",
     "de": "Namib"
   },
-  "Namibia": {
-    "cs": "Namibie",
-    "de": "Namibia"
-  },
   "Narmada": {
     "cs": "Narmada",
     "de": "Narmada"
-  },
-  "Nauru": {
-    "cs": "Nauru",
-    "de": "Nauru"
   },
   "Negro": {
     "cs": "Rio Negro",
@@ -2079,73 +1467,21 @@
     "cs": "Nelson",
     "de": "Nelson River"
   },
-  "Nepal": {
-    "cs": "Nepál",
-    "de": "Nepal"
-  },
-  "Netherlands": {
-    "cs": "Nizozemsko",
-    "de": "Niederlande"
-  },
-  "New Caledonia": {
-    "cs": "Nová Kaledonie",
-    "de": "Neukaledonien"
-  },
   "New Guinea Highlands": {
     "cs": "Novoguinejská vysočina",
     "de": "New-Guinea-Hochland"
-  },
-  "New Zealand": {
-    "cs": "Nový Zéland",
-    "de": "Neuseeland"
-  },
-  "Nicaragua": {
-    "cs": "Nikaragua",
-    "de": "Nicaragua"
-  },
-  "Niger": {
-    "cs": "Niger",
-    "de": "Niger"
-  },
-  "Nigeria": {
-    "cs": "Nigérie",
-    "de": "Nigeria"
   },
   "Nile": {
     "cs": "Nil",
     "de": "Nil"
   },
-  "Niue": {
-    "cs": "Niue",
-    "de": "Niue"
-  },
-  "Norfolk Island": {
-    "cs": "Norfolk",
-    "de": "Norfolkinsel"
-  },
-  "North Korea": {
-    "cs": "Severní Korea",
-    "de": "Nordkorea"
-  },
-  "North Macedonia": {
-    "cs": "Severní Makedonie",
-    "de": "Nordmazedonien"
-  },
   "North Sea": {
     "cs": "Severní moře",
     "de": "Nordsee"
   },
-  "Northern Mariana Islands": {
-    "cs": "Severní Mariany",
-    "de": "Nördliche Marianen"
-  },
   "Norton Sound": {
     "cs": "Nortonův záliv",
     "de": "Norton-Sund"
-  },
-  "Norway": {
-    "cs": "Norsko",
-    "de": "Norwegen"
   },
   "Norwegian Sea": {
     "cs": "Norské moře",
@@ -2170,10 +1506,6 @@
   "Okavango": {
     "cs": "Okavango",
     "de": "Okavango"
-  },
-  "Oman": {
-    "cs": "Omán",
-    "de": "Oman"
   },
   "Orange River": {
     "cs": "Oranje",
@@ -2203,18 +1535,6 @@
     "cs": "Tichý oceán",
     "de": "Pazifischer Ozean"
   },
-  "Pakistan": {
-    "cs": "Pákistán",
-    "de": "Pakistan"
-  },
-  "Palau": {
-    "cs": "Palau",
-    "de": "Palau"
-  },
-  "Palestine": {
-    "cs": "Stát Palestina",
-    "de": "Palästina"
-  },
   "Palk Strait": {
     "cs": "Palkův průliv",
     "de": "Palkstraße"
@@ -2226,18 +1546,6 @@
   "Pamlico Sound": {
     "cs": "Pamlico Sound",
     "de": "Pamlico Sound"
-  },
-  "Panama": {
-    "cs": "Panama",
-    "de": "Panama"
-  },
-  "Papua New Guinea": {
-    "cs": "Papua-Nová Guinea",
-    "de": "Papua-Neuguinea"
-  },
-  "Paraguay": {
-    "cs": "Paraguay",
-    "de": "Paraguay"
   },
   "Paraguay River": {
     "cs": "Paraguay",
@@ -2271,27 +1579,15 @@
     "cs": "Perský záliv",
     "de": "Persischer Golf"
   },
-  "Peru": {
-    "cs": "Peru",
-    "de": "Peru"
-  },
   "Philippine Sea": {
     "cs": "Filipínské moře",
     "de": "Philippinensee"
-  },
-  "Philippines": {
-    "cs": "Filipíny",
-    "de": "Philippinen"
   },
   "Pico Bolívar": {
     "cs": "Pico Bolívar",
     "de": "Pico Bolívar"
   },
   "Pitcairn Is.": {
-    "cs": "Pitcairnovy ostrovy",
-    "de": "Pitcairninseln"
-  },
-  "Pitcairn Islands": {
     "cs": "Pitcairnovy ostrovy",
     "de": "Pitcairninseln"
   },
@@ -2303,10 +1599,6 @@
     "cs": "Pád",
     "de": "Po"
   },
-  "Poland": {
-    "cs": "Polsko",
-    "de": "Polen"
-  },
   "Pontic Mountains": {
     "cs": "Pontské pohoří",
     "de": "Pontisches Gebirge"
@@ -2314,10 +1606,6 @@
   "Porpoise Bay": {
     "cs": "Zátoka sviňuch",
     "de": "Porpoise Bay"
-  },
-  "Portugal": {
-    "cs": "Portugalsko",
-    "de": "Portugal"
   },
   "Prince ALbert Sound": {
     "cs": "Záliv prince Alberta",
@@ -2335,10 +1623,6 @@
     "cs": "Prydzův záliv",
     "de": "Prydzbucht"
   },
-  "Puerto Rico": {
-    "cs": "Portoriko",
-    "de": "Puerto Rico"
-  },
   "Puncak Jaya": {
     "cs": "Puncak Jaya",
     "de": "Puncak Jaya"
@@ -2354,10 +1638,6 @@
   "Pyrenees": {
     "cs": "Pyreneje",
     "de": "Pyrenäen"
-  },
-  "Qatar": {
-    "cs": "Katar",
-    "de": "Katar"
   },
   "Qiongzhou Strait": {
     "cs": "Chajnanský průliv",
@@ -2386,14 +1666,6 @@
   "Red Sea": {
     "cs": "Rudé moře",
     "de": "Rotes Meer"
-  },
-  "Republic of the Congo": {
-    "cs": "Kongo",
-    "de": "Republik Kongo"
-  },
-  "Réunion": {
-    "cs": "Réunion",
-    "de": "Réunion"
   },
   "Rhine": {
     "cs": "Rýn",
@@ -2427,10 +1699,6 @@
     "cs": "Skalnaté hory",
     "de": "Rocky Mountains"
   },
-  "Romania": {
-    "cs": "Rumunsko",
-    "de": "Rumänien"
-  },
   "Ronne Entrance": {
     "cs": "Ronneové průliv",
     "de": "Ronne Entrance"
@@ -2447,14 +1715,6 @@
     "cs": "Rub al-Chálí",
     "de": "Rub al-Chali"
   },
-  "Russia": {
-    "cs": "Rusko",
-    "de": "Russland"
-  },
-  "Rwanda": {
-    "cs": "Rwanda",
-    "de": "Ruanda"
-  },
   "S. Geo. and the Is.": {
     "cs": "Jižní Georgie a Jižní Sandwichovy ostrovy",
     "de": "Südgeorgien und die Südlichen Sandwichinseln"
@@ -2467,41 +1727,13 @@
     "cs": "Saharský Atlas",
     "de": "Saharaatlas"
   },
-  "Saint Barthélemy": {
-    "cs": "Svatý Bartoloměj",
-    "de": "Saint-Barthélemy"
-  },
   "Saint Helena": {
     "cs": "Svatá Helena",
     "de": "St. Helena"
   },
-  "Saint Helena, Ascension and Tristan da Cunha": {
-    "cs": "Svatá Helena, Ascension a Tristan da Cunha",
-    "de": "St. Helena, Ascension und Tristan da Cunha"
-  },
-  "Saint Kitts and Nevis": {
-    "cs": "Svatý Kryštof a Nevis",
-    "de": "St. Kitts und Nevis"
-  },
   "Saint Lawrence River": {
     "cs": "Řeka svatého Vavřince",
     "de": "Sankt-Lorenz-Strom"
-  },
-  "Saint Lucia": {
-    "cs": "Svatá Lucie",
-    "de": "St. Lucia"
-  },
-  "Saint Martin": {
-    "cs": "Svatý Martin (Francie)",
-    "de": "Saint-Martin"
-  },
-  "Saint Pierre and Miquelon": {
-    "cs": "Saint-Pierre a Miquelon",
-    "de": "Saint-Pierre und Miquelon"
-  },
-  "Saint Vincent and the Grenadines": {
-    "cs": "Svatý Vincenc a Grenadiny",
-    "de": "St. Vincent und die Grenadinen"
   },
   "Salish Sea": {
     "cs": "Sališské moře",
@@ -2515,25 +1747,13 @@
     "cs": "Samarské moře",
     "de": "Samarsee"
   },
-  "Samoa": {
-    "cs": "Samoa",
-    "de": "Samoa"
-  },
   "San Francisco Bay": {
     "cs": "Záliv San Francisco",
     "de": "Bucht von San Francisco"
   },
-  "San Marino": {
-    "cs": "San Marino",
-    "de": "San Marino"
-  },
   "São Francisco": {
     "cs": "São Francisco",
     "de": "Rio São Francisco"
-  },
-  "São Tomé and Príncipe": {
-    "cs": "Svatý Tomáš a Princův ostrov",
-    "de": "São Tomé und Príncipe"
   },
   "Sargasso Sea": {
     "cs": "Sargasové moře",
@@ -2542,10 +1762,6 @@
   "Saskatchewan": {
     "cs": "Saskatchewan",
     "de": "Saskatchewan River"
-  },
-  "Saudi Arabia": {
-    "cs": "Saúdská Arábie",
-    "de": "Saudi-Arabien"
   },
   "Savu Sea": {
     "cs": "Savuské moře",
@@ -2591,10 +1807,6 @@
     "cs": "Dampierův průliv",
     "de": "Dampierstraße"
   },
-  "Senegal": {
-    "cs": "Senegal",
-    "de": "Senegal"
-  },
   "Senegal River": {
     "cs": "Senegal",
     "de": "Senegal"
@@ -2607,17 +1819,9 @@
     "cs": "Seno Otway",
     "de": "Seno Otway"
   },
-  "Serbia": {
-    "cs": "Srbsko",
-    "de": "Serbien"
-  },
   "Serra do Mar": {
     "cs": "Serra do Mar",
     "de": "Serra do Mar"
-  },
-  "Seychelles": {
-    "cs": "Seychely",
-    "de": "Seychellen"
   },
   "Shabelle": {
     "cs": "Šebeli",
@@ -2647,10 +1851,6 @@
     "cs": "Sibuyanské moře",
     "de": "Sibuyansee"
   },
-  "Sierra Leone": {
-    "cs": "Sierra Leone",
-    "de": "Sierra Leone"
-  },
   "Sierra Madre del Sur": {
     "cs": "Sierra Madre del Sur",
     "de": "Sierra Madre del Sur"
@@ -2679,14 +1879,6 @@
     "cs": "Sierra Nevada (US)",
     "de": "Sierra Nevada (US)"
   },
-  "Singapore": {
-    "cs": "Singapur",
-    "de": "Singapur"
-  },
-  "Sint Maarten": {
-    "cs": "Svatý Martin (Nizozemsko)",
-    "de": "Sint Maarten"
-  },
   "Siwalik Hills": {
     "cs": "Siválik",
     "de": "Siwaliks"
@@ -2694,14 +1886,6 @@
   "Skagerrak": {
     "cs": "Skagerrak",
     "de": "Skagerrak"
-  },
-  "Slovakia": {
-    "cs": "Slovensko",
-    "de": "Slowakei"
-  },
-  "Slovenia": {
-    "cs": "Slovinsko",
-    "de": "Slowenien"
   },
   "Smith Sound": {
     "cs": "Smithův průliv",
@@ -2715,17 +1899,9 @@
     "cs": "Sognefjord",
     "de": "Sognefjord"
   },
-  "Solomon Islands": {
-    "cs": "Šalamounovy ostrovy",
-    "de": "Salomonen"
-  },
   "Solomon Sea": {
     "cs": "Šalomounovo moře",
     "de": "Salomonsee"
-  },
-  "Somalia": {
-    "cs": "Somálsko",
-    "de": "Somalia"
   },
   "Somaliland": {
     "cs": "Somaliland",
@@ -2735,25 +1911,9 @@
     "cs": "Sonorská poušť",
     "de": "Sonora-Wüste"
   },
-  "South Africa": {
-    "cs": "Jihoafrická republika",
-    "de": "Südafrika"
-  },
   "South China Sea": {
     "cs": "Jihočínské moře",
     "de": "Südchinesisches Meer"
-  },
-  "South Georgia": {
-    "cs": "Jižní Georgie",
-    "de": "Südgeorgien"
-  },
-  "South Korea": {
-    "cs": "Jižní Korea",
-    "de": "Südkorea"
-  },
-  "South Sudan": {
-    "cs": "Jižní Súdán",
-    "de": "Südsudan"
   },
   "Southern Ghats": {
     "cs": "Jižní Ghát",
@@ -2762,14 +1922,6 @@
   "Southern Ocean": {
     "cs": "Jižní oceán",
     "de": "Südlicher Ozean"
-  },
-  "Spain": {
-    "cs": "Španělsko",
-    "de": "Spanien"
-  },
-  "Sri Lanka": {
-    "cs": "Srí Lanka",
-    "de": "Sri Lanka"
   },
   "St-Barthélemy": {
     "cs": "Svatý Bartoloměj",
@@ -2835,10 +1987,6 @@
     "cs": "Floridský průliv",
     "de": "Floridastraße"
   },
-  "Sudan": {
-    "cs": "Súdán",
-    "de": "Sudan"
-  },
   "Sulu Sea": {
     "cs": "Suluské moře",
     "de": "Sulusee"
@@ -2851,29 +1999,9 @@
     "cs": "Průliv Surigao",
     "de": "Straße von Surigao"
   },
-  "Suriname": {
-    "cs": "Surinam",
-    "de": "Suriname"
-  },
-  "Svalbard and Jan Mayen": {
-    "cs": "Špicberky a Jan Mayen",
-    "de": "Spitzbergen und Jan Mayen"
-  },
-  "Sweden": {
-    "cs": "Švédsko",
-    "de": "Schweden"
-  },
-  "Switzerland": {
-    "cs": "Švýcarsko",
-    "de": "Schweiz"
-  },
   "Syr Darya": {
     "cs": "Syrdarja",
     "de": "Syrdarja"
-  },
-  "Syria": {
-    "cs": "Sýrie",
-    "de": "Syrien"
   },
   "Syrian Desert": {
     "cs": "Syrská poušť",
@@ -2883,25 +2011,13 @@
     "cs": "Tajo",
     "de": "Tejo"
   },
-  "Taiwan": {
-    "cs": "Tchaj-wan",
-    "de": "Taiwan"
-  },
   "Taiwan Strait": {
     "cs": "Tchajwanský průliv",
     "de": "Taiwanstraße"
   },
-  "Tajikistan": {
-    "cs": "Tádžikistán",
-    "de": "Tadschikistan"
-  },
   "Taklamakan": {
     "cs": "Taklamakan",
     "de": "Taklamakan"
-  },
-  "Tanzania": {
-    "cs": "Tanzanie",
-    "de": "Tansania"
   },
   "Tapajós": {
     "cs": "Tapajós",
@@ -2939,10 +2055,6 @@
     "cs": "Thabana Ntlenyana",
     "de": "Thabana Ntlenyana"
   },
-  "Thailand": {
-    "cs": "Thajsko",
-    "de": "Thailand"
-  },
   "Thames": {
     "cs": "Temže",
     "de": "Themse"
@@ -2975,25 +2087,9 @@
     "cs": "Timorské moře",
     "de": "Timorsee"
   },
-  "Timor-Leste": {
-    "cs": "Východní Timor",
-    "de": "Osttimor"
-  },
   "Tocantins": {
     "cs": "Tocantins",
     "de": "Rio Tocantins"
-  },
-  "Togo": {
-    "cs": "Togo",
-    "de": "Togo"
-  },
-  "Tokelau": {
-    "cs": "Tokelau",
-    "de": "Tokelau"
-  },
-  "Tonga": {
-    "cs": "Tonga",
-    "de": "Tonga"
   },
   "Torres Strait": {
     "cs": "Torresův průliv",
@@ -3003,10 +2099,6 @@
     "cs": "Transantarktické pohoří",
     "de": "Transantarktisches Gebirge"
   },
-  "Trinidad and Tobago": {
-    "cs": "Trinidad a Tobago",
-    "de": "Trinidad und Tobago"
-  },
   "Trondheimsfjorden": {
     "cs": "Trondheimsfjord",
     "de": "Trondheimsfjord"
@@ -3015,29 +2107,9 @@
     "cs": "Cugarský průliv",
     "de": "Tsugaru-Straße"
   },
-  "Tunisia": {
-    "cs": "Tunisko",
-    "de": "Tunesien"
-  },
-  "Turkey": {
-    "cs": "Turecko",
-    "de": "Türkei"
-  },
-  "Turkmenistan": {
-    "cs": "Turkmenistán",
-    "de": "Turkmenistan"
-  },
-  "Turks and Caicos Islands": {
-    "cs": "Turks a Caicos",
-    "de": "Turks- und Caicosinseln"
-  },
   "Turpan Depression": {
     "cs": "Turpanská proláklina",
     "de": "Turpan-Senke"
-  },
-  "Tuvalu": {
-    "cs": "Tuvalu",
-    "de": "Tuvalu"
   },
   "Tyrrhenian Sea": {
     "cs": "Tyrhénské moře",
@@ -3055,37 +2127,9 @@
     "cs": "Udský záliv",
     "de": "Uda-Bucht"
   },
-  "Uganda": {
-    "cs": "Uganda",
-    "de": "Uganda"
-  },
-  "Ukraine": {
-    "cs": "Ukrajina",
-    "de": "Ukraine"
-  },
   "Ungava Bay": {
     "cs": "Ungavský záliv",
     "de": "Ungavabucht"
-  },
-  "United Arab Emirates": {
-    "cs": "Spojené arabské emiráty",
-    "de": "Vereinigte Arabische Emirate"
-  },
-  "United Kingdom": {
-    "cs": "Spojené království",
-    "de": "Vereinigtes Königreich"
-  },
-  "United States": {
-    "cs": "Spojené státy",
-    "de": "Vereinigte Staaten"
-  },
-  "United States Minor Outlying Islands": {
-    "cs": "Menší odlehlé ostrovy USA",
-    "de": "Kleinere amerikanische Überseeinseln"
-  },
-  "United States Virgin Islands": {
-    "cs": "Americké Panenské ostrovy",
-    "de": "Amerikanische Jungferninseln"
   },
   "Ural Mountains": {
     "cs": "Ural",
@@ -3095,10 +2139,6 @@
     "cs": "Ural",
     "de": "Ural"
   },
-  "Uruguay": {
-    "cs": "Uruguay",
-    "de": "Uruguay"
-  },
   "Uruguay River": {
     "cs": "Uruguay",
     "de": "Uruguay"
@@ -3107,33 +2147,13 @@
     "cs": "Fjord Uummannaq",
     "de": "Uummannaq-Fjord"
   },
-  "Uzbekistan": {
-    "cs": "Uzbekistán",
-    "de": "Usbekistan"
-  },
-  "Vanuatu": {
-    "cs": "Vanuatu",
-    "de": "Vanuatu"
-  },
   "Vatican": {
     "cs": "Vatikán",
     "de": "Vatikan"
   },
-  "Vatican City": {
-    "cs": "Vatikán",
-    "de": "Vatikanstadt"
-  },
-  "Venezuela": {
-    "cs": "Venezuela",
-    "de": "Venezuela"
-  },
   "Vestfjorden": {
     "cs": "Vestfjord",
     "de": "Vestfjord"
-  },
-  "Vietnam": {
-    "cs": "Vietnam",
-    "de": "Vietnam"
   },
   "Vil'kitskogo Strait": {
     "cs": "Vilkitského průliv",
@@ -3175,10 +2195,6 @@
     "cs": "Wagerův záliv",
     "de": "Wager Bay"
   },
-  "Wallis and Futuna": {
-    "cs": "Wallis a Futuna",
-    "de": "Wallis und Futuna"
-  },
   "Weddell Sea": {
     "cs": "Weddellovo moře",
     "de": "Weddellsee"
@@ -3186,10 +2202,6 @@
   "Western Ghats": {
     "cs": "Západní Ghát",
     "de": "Westghats"
-  },
-  "Western Sahara": {
-    "cs": "Západní Sahara",
-    "de": "Westsahara"
   },
   "White Nile": {
     "cs": "Bílý Nil",
@@ -3231,10 +2243,6 @@
     "cs": "Žluté moře",
     "de": "Gelbes Meer"
   },
-  "Yemen": {
-    "cs": "Jemen",
-    "de": "Jemen"
-  },
   "Yenisei": {
     "cs": "Jenisej",
     "de": "Jenissei"
@@ -3258,13 +2266,5 @@
   "Zambezi": {
     "cs": "Zambezi",
     "de": "Sambezi"
-  },
-  "Zambia": {
-    "cs": "Zambie",
-    "de": "Sambia"
-  },
-  "Zimbabwe": {
-    "cs": "Zimbabwe",
-    "de": "Simbabwe"
   }
 }
