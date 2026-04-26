@@ -5,6 +5,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { SEOHelmet } from './SEOHelmet';
 import { SEO_TRANSLATIONS, toCanonicalUrlWithLanguage, getSeoOgImage } from '../seo/seo-translations';
 import { buildLocalizedPath, getBaseLanguage } from '../utils/localeRouting';
+import { translateError } from '../utils/translateErrors';
 import './Auth.css';
 
 export const SetNickname = () => {
@@ -33,7 +34,7 @@ export const SetNickname = () => {
       await setNickname(username);
       navigate(buildLocalizedPath('/', i18n.language), { replace: true }); // Replace history to avoid back to nickname
     } catch (err: any) {
-      setError(err.message || t('setNickname.errors.failedToSet'));
+      setError(translateError(err.message) || t('setNickname.errors.failedToSet'));
     } finally {
       setLoading(false);
     }

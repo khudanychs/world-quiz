@@ -11,6 +11,7 @@ import {
   getBaseLanguage,
   buildLocalizedPath,
 } from './utils/localeRouting';
+import { withStaticDataVersion } from './utils/staticAssetVersion';
 import { changeAppLanguage } from './i18n';
 import './App.css';
 
@@ -29,18 +30,21 @@ const NotFound = lazy(() => import('./pages/NotFound'));
 const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'));
 const TermsConditions = lazy(() => import('./pages/TermsConditions'));
   
-const LoadingFallback = () => (
-  <div style={{
-    height: '100vh',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    background: '#0b1020',
-    color: '#fff'
-  }} data-app-loading="true">
-    <div>Loading...</div>
-  </div>
-);
+const LoadingFallback = () => {
+  const { t } = useTranslation();
+  return (
+    <div style={{
+      height: '100vh',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      background: '#0b1020',
+      color: '#fff'
+    }} data-app-loading="true">
+      <div>{t('auth.appLoading')}</div>
+    </div>
+  );
+};
 
 /**
  * Route Protection Guards
@@ -55,6 +59,7 @@ const LoadingFallback = () => (
 
 function VerifiedOrGuestRoute({ children }: { children: React.ReactNode }) {
   const { user, logout, loading } = useAuth();
+  const { t } = useTranslation();
   const [checking, setChecking] = useState(false);
   const [error, setError] = useState('');
 
@@ -74,11 +79,11 @@ function VerifiedOrGuestRoute({ children }: { children: React.ReactNode }) {
             window.location.reload();
             return;
           } else {
-            setError('Email not verified yet. Please check your inbox.');
+            setError(t('auth.verification.emailNotVerified'));
           }
         }
       } catch (e) {
-        setError('Failed to check verification status. Please try again.');
+        setError(t('auth.verification.checkFailed'));
       }
       setChecking(false);
     };
@@ -86,15 +91,15 @@ function VerifiedOrGuestRoute({ children }: { children: React.ReactNode }) {
     return (
       <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', padding: '20px' }}>
         <div style={{ background: 'white', borderRadius: '16px', padding: '40px', maxWidth: '500px', textAlign: 'center' }}>
-          <h2 style={{color: '#1a1a1a', marginBottom: '20px'}}>📧 Verify Your Email</h2>
-          <p style={{color: '#666', fontSize: '16px', lineHeight: '1.6'}}>Please check your email inbox.</p>
+          <h2 style={{color: '#1a1a1a', marginBottom: '20px'}}>{t('auth.verification.title')}</h2>
+          <p style={{color: '#666', fontSize: '16px', lineHeight: '1.6'}}>{t('auth.verification.instruction')}</p>
           {error && <p style={{color: '#e53e3e', fontSize: '14px', marginTop: '16px'}}>{error}</p>}
           <div style={{ display: 'flex', gap: '12px', marginTop: '24px', justifyContent: 'center' }}>
             <button onClick={handleCheckVerification} disabled={checking} style={{ padding: '12px 24px', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: 'white', borderRadius: '8px', cursor: 'pointer' }}>
-              {checking ? 'Checking...' : "I've Verified My Email"}
+              {checking ? t('auth.verification.checkingStatus') : t('auth.verification.verifyButton')}
             </button>
             <button onClick={async () => { await logout(); window.location.href = '/'; }} style={{ padding: '12px 24px', background: 'rgba(0, 0, 0, 0.1)', border: '1px solid #ddd', borderRadius: '8px', cursor: 'pointer' }}>
-              Logout & Play as Guest
+              {t('auth.verification.logoutGuest')}
             </button>
           </div>
         </div>
@@ -217,8 +222,8 @@ export default function App() {
     let cancelled = false;
     const warmMapData = () => {
       if (cancelled) return;
-      void fetch('/countries-110m.json', { cache: 'force-cache' }).catch(() => {});
-      void fetch('/countries-full.json', { cache: 'force-cache' }).catch(() => {});
+      void fetch(withStaticDataVersion('/countries-110m.json'), { cache: 'no-store' }).catch(() => {});
+      void fetch(withStaticDataVersion('/countries-full.json'), { cache: 'no-store' }).catch(() => {});
     };
 
     const useIdleCallback = 'requestIdleCallback' in window;

@@ -3,6 +3,9 @@ import react from '@vitejs/plugin-react'
 import { ViteImageOptimizer } from 'vite-plugin-image-optimizer'
 
 export default defineConfig({
+  define: {
+    __STATIC_DATA_VERSION__: JSON.stringify(new Date().toISOString()),
+  },
   plugins: [
     react(),
     ViteImageOptimizer({

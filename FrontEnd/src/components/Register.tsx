@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
 import { GoogleIcon } from './Icons';
 import { buildLocalizedPath } from '../utils/localeRouting';
+import { translateError } from '../utils/translateErrors';
 import './Auth.css';
 
 export function Register() {
@@ -44,7 +45,7 @@ export function Register() {
       setSuccess(t('auth.messages.registrationSuccess'));
       setError('');
     } catch (err: any) {
-      setError(err.message);
+      setError(translateError(err.message));
       setSuccess('');
     } finally {
       setLoading(false);
@@ -97,7 +98,7 @@ export function Register() {
               onChange={(e) => setPassword(e.target.value)}
               required
               minLength={8}
-              placeholder="••••••••"
+              placeholder={t('auth.passwordPlaceholderBullets')}
             />
             <small>{t('auth.passwordHelp')}</small>
           </div>
@@ -110,7 +111,7 @@ export function Register() {
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               required
-              placeholder="••••••••"
+              placeholder={t('auth.passwordPlaceholderBullets')}
             />
           </div>
 

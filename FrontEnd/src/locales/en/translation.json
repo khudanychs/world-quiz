@@ -55,7 +55,10 @@
       "changeFlag": "Change Flag",
       "useGooglePhoto": "Use Google Photo",
       "selectFlag": "Select Your Flag",
-      "saveFlag": "Save Flag"
+      "saveFlag": "Save Flag",
+      "profileAlt": "Profile",
+      "avatarAlt": "avatar",
+      "placeholderClass": "profile-picture-placeholder"
     },
     "nickname": {
       "title": "Nickname",
@@ -91,6 +94,7 @@
       "deleteWord": "DELETE",
       "passwordLabel": "Enter your password:",
       "passwordPlaceholder": "Password",
+      "passwordBullets": "••••••••",
       "deleteAccount": "Delete Account"
     },
     "saveChanges": "Save Changes",
@@ -124,6 +128,7 @@
     "emailPlaceholder": "Enter your email",
     "passwordLabel": "Password",
     "passwordPlaceholder": "Enter your password",
+    "passwordPlaceholderBullets": "••••••••",
     "passwordHelp": "Use at least 8 characters with uppercase, lowercase, and a number.",
     "confirmPasswordLabel": "Confirm Password",
     "creatingAccount": "Creating account...",
@@ -142,10 +147,48 @@
     "logInLink": "Log in",
     "noAccount": "Don't have an account?",
     "signUpLink": "Sign up",
+    "verification": {
+      "emailNotVerified": "Email not verified yet. Please check your inbox.",
+      "checkingStatus": "Checking...",
+      "verifyButton": "I've Verified My Email",
+      "logoutGuest": "Logout & Play as Guest",
+      "title": "📧 Verify Your Email",
+      "instruction": "Please check your email inbox.",
+      "checkFailed": "Failed to check verification status. Please try again.",
+      "checkEmailBefore": "Please verify your email before logging in. Check your inbox for the verification link."
+    },
+    "appLoading": "Loading...",
     "errors": {
       "passwordsDoNotMatch": "Passwords do not match",
       "passwordMinLength": "Password must be at least 8 characters long",
       "passwordComplexity": "Password must contain at least one uppercase letter, one lowercase letter, and one number"
+    },
+    "firebaseErrors": {
+      "email-already-in-use": "This email is already registered. Please log in instead.",
+      "invalid-email": "Please enter a valid email address.",
+      "weak-password": "Password is too weak. Please use at least 8 characters.",
+      "user-not-found": "No account found with this email. Please sign up first.",
+      "wrong-password": "Incorrect password. Please try again.",
+      "invalid-credential": "Invalid email or password. Please check and try again.",
+      "too-many-requests": "Too many failed attempts. Please try again later.",
+      "user-disabled": "This account has been disabled. Please contact support.",
+      "operation-not-allowed": "This sign-in method is not enabled. Please contact support.",
+      "account-exists-with-different-credential": "An account already exists with the same email but different sign-in method.",
+      "popup-closed-by-user": "Sign-in popup was closed. Please try again.",
+      "popup-blocked": "Pop-up was blocked by your browser. Please allow pop-ups and try again.",
+      "network-request-failed": "Network error. Please check your connection and try again.",
+      "resource-exhausted": "Server is busy. Please try again in a few minutes.",
+      "quota-exceeded": "Daily limit reached. Please try again tomorrow.",
+      "unavailable": "Service temporarily unavailable. Please try again later.",
+      "permission-denied": "Access denied. Please log in again.",
+      "duplicate-username": "Username already in use. Please choose a different one.",
+      "no-user-signed-in": "No user is currently signed in.",
+      "email-already-verified": "Email is already verified.",
+      "nickname-limit": "You can only change your nickname 2 times per month. Try again next month.",
+      "nickname-cooldown": "Please wait {{count}} more day(s) before changing your nickname again.",
+      "password-required": "Password is required to delete your account.",
+      "email-not-found": "Email not found.",
+      "default": "An error occurred. Please try again."
     },
     "messages": {
       "registrationSuccess": "Registration successful! Please check your email to verify your account before logging in."
@@ -313,6 +356,12 @@
       "failedToSet": "Failed to set nickname"
     }
   },
+  "navbar": {
+    "profileAlt": "profile",
+    "avatarAlt": "avatar",
+    "placeholderClass": "navbar-avatar-placeholder",
+    "mobileAvatarPlaceholderClass": "mobile-avatar-placeholder"
+  },
   "flagSelector": {
     "title": "Choose Your Flag",
     "searchPlaceholder": "Search flags by country...",
@@ -389,7 +438,8 @@
     "noCountriesFound": "No countries found",
     "tryAdjustingFilters": "Try adjusting your search or region filter.",
     "seoTitleWithCountry": "{{country}} - Country Encyclopedia - World Quiz",
-    "seoDescriptionWithCountry": "Explore facts about {{country}}: capital, population, area, languages, and neighboring countries."
+    "seoDescriptionWithCountry": "Explore facts about {{country}}: capital, population, area, languages, and neighboring countries.",
+    "flagAlt": "{{name}} flag"
   },
   "worldMap": {
     "loading": "Loading world data...",

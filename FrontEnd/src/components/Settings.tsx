@@ -8,6 +8,7 @@ import { SEOHelmet } from './SEOHelmet';
 import { SEO_TRANSLATIONS, toCanonicalUrlWithLanguage, getSeoOgImage } from '../seo/seo-translations';
 import { buildLocalizedPath, getBaseLanguage } from '../utils/localeRouting';
 import { changeAppLanguage } from '../i18n';
+import { translateError } from '../utils/translateErrors';
 import './Settings.css';
 
 // Cache for user streak data (survives component remounts)
@@ -234,7 +235,7 @@ export const Settings = () => {
       // Refresh user data to show new nickname immediately
       await refreshUser();
     } catch (err: any) {
-      setError(err.message || t('settings.messages.nicknameUpdateFailed'));
+      setError(translateError(err.message) || t('settings.messages.nicknameUpdateFailed'));
     } finally {
       setLoading(false);
     }
@@ -256,7 +257,7 @@ export const Settings = () => {
         setProfileSuccess(t('settings.messages.profileFlagUpdated'));
       }, 300);
     } catch (err: any) {
-      setProfileError(err.message || t('settings.messages.profileFlagUpdateFailed'));
+      setProfileError(translateError(err.message) || t('settings.messages.profileFlagUpdateFailed'));
     } finally {
       setLoading(false);
     }
@@ -291,7 +292,7 @@ export const Settings = () => {
       
       setProfileSuccess(t('settings.messages.usingGooglePhoto'));
     } catch (err: any) {
-      setProfileError(err.message || t('settings.messages.profilePictureUpdateFailed'));
+      setProfileError(translateError(err.message) || t('settings.messages.profilePictureUpdateFailed'));
       // Revert on error
       if (user?.profileFlag) {
         setSelectedFlag(user.profileFlag);
@@ -323,7 +324,7 @@ export const Settings = () => {
       await deleteAccount(deletePassword || undefined);
       // User will be logged out automatically and redirected by protected route
     } catch (err: any) {
-      setError(err.message || t('settings.messages.deleteAccountFailed'));
+      setError(translateError(err.message) || t('settings.messages.deleteAccountFailed'));
       setLoading(false);
     }
   };
@@ -421,7 +422,7 @@ export const Settings = () => {
             
             <div className="profile-picture-container">
               {avatarUrl && !selectedFlag ? (
-                <img src={avatarUrl} alt="Profile" className="profile-picture-preview" />
+                <img src={avatarUrl} alt={t('settings.profile.profileAlt')} className="profile-picture-preview" />
               ) : selectedFlag && getFlagUrlSync(selectedFlag) ? (
                 <div className="profile-flag-wrapper">
                   <img 

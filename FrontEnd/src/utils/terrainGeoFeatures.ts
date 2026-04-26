@@ -1,6 +1,7 @@
 import type { PhysicalFeature } from "./physicalFeaturesTypes";
 import { feature as topoFeature } from "topojson-client";
 import type { GeometryCollection, Topology } from "topojson-specification";
+import { withStaticDataVersion } from "./staticAssetVersion";
 
 type Difficulty = PhysicalFeature["difficulty"];
 
@@ -32,9 +33,9 @@ interface PolygonFilterConfig {
   maxAreaRatio: number;
 }
 
-const MOUNTAIN_RANGES_URL = "/region_polys/Mountain ranges.json";
-const ELEVATION_POINTS_URL = "/region_polys/elev_points.json";
-const DESERTS_URL = "/region_polys/deserts.json";
+const MOUNTAIN_RANGES_URL = withStaticDataVersion('/region_polys/Mountain ranges.json');
+const ELEVATION_POINTS_URL = withStaticDataVersion('/region_polys/elev_points.json');
+const DESERTS_URL = withStaticDataVersion('/region_polys/deserts.json');
 
 const RANGE_NAME_KEYS = ["NAME_EN", "NAME", "LABEL", "NAMEALT"] as const;
 const DESERT_NAME_KEYS = ["NAME_EN", "NAME", "LABEL", "NAMEALT"] as const;
@@ -239,7 +240,7 @@ async function fetchGeoJson(
   url: string,
   preferredObjectKeys: readonly string[] = [],
 ): Promise<GeoJsonCollection> {
-  const response = await fetch(url);
+  const response = await fetch(url, { cache: 'no-store' });
   if (!response.ok) {
     throw new Error(`Failed to fetch ${url}`);
   }

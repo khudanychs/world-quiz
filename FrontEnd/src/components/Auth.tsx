@@ -5,6 +5,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { SEOHelmet } from './SEOHelmet';
 import { SEO_TRANSLATIONS, toCanonicalUrlWithLanguage, getSeoOgImage } from '../seo/seo-translations';
 import { buildLocalizedPath, getBaseLanguage } from '../utils/localeRouting';
+import { translateError } from '../utils/translateErrors';
 import './Auth.css';
 
 export function Auth() {
@@ -72,7 +73,7 @@ export function Auth() {
         navigate(buildLocalizedPath('/', i18n.language), { replace: true });
       }
     } catch (err: any) {
-      setError(err.message);
+      setError(translateError(err.message));
     } finally {
       setLoading(false);
     }
@@ -83,7 +84,7 @@ export function Auth() {
       await loginWithGoogle();
       navigate(buildLocalizedPath('/', i18n.language), { replace: true });
     } catch (err: any) {
-      setError(err.message);
+      setError(translateError(err.message));
     }
   };
 

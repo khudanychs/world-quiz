@@ -1,12 +1,14 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   buildRestLookup,
+  getCanonicalCountryName,
   normalizeApos,
   normalizeCountryName,
   stripDiacritics,
   FLAG_MATCH_SPECIAL_TERRITORIES,
   isClickableInGameMode,
 } from "../utils/countries";
+import { withStaticDataVersion } from "../utils/staticAssetVersion";
 
 type CountryInfo = { name: string; cca2: string; flag: string; region?: string };
 
@@ -68,15 +70,13 @@ export function useFlagMatchGame(
   const geosRef = useRef<any[] | null>(null);
 
   const countryRegionLookup = useMemo(() => {
-    const byName = new Map<string, string>();
     const byCode = new Map<string, string>();
 
     for (const country of allCountriesData) {
-      byName.set(normalizeCountryName(country.name.common), country.region || "");
       byCode.set(country.cca2, country.region || "");
     }
 
-    return { byName, byCode };
+    return { byCode };
   }, [allCountriesData]);
 
   function isCountryInSelectedRegion(nameRaw: string) {
@@ -87,11 +87,10 @@ export function useFlagMatchGame(
     const k2 = stripDiacritics(k1);
     const clickedCountry = restLookup[k1] || restLookup[k2];
 
-    const byNameRegion = countryRegionLookup.byName.get(norm);
     const byCodeRegion = clickedCountry?.cca2
       ? countryRegionLookup.byCode.get(clickedCountry.cca2)
       : undefined;
-    const countryRegion = byNameRegion ?? byCodeRegion;
+    const countryRegion = byCodeRegion;
 
     return countryRegion === selectedRegion;
   }
@@ -104,7 +103,7 @@ export function useFlagMatchGame(
         setLoading(true);
         setLoadError("");
         // Load from local file instead of external API
-        const res = await fetch("/countries-full.json");
+        const res = await fetch(withStaticDataVersion('/countries-full.json'), { cache: 'no-store' });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = (await res.json()) as Array<{
           name: { common: string };
@@ -164,7 +163,7 @@ export function useFlagMatchGame(
         continue;
       }
       
-      const norm = country.name.common;
+      const norm = getCanonicalCountryName(country as any);
       const key1 = normalizeApos(norm);
       const key2 = stripDiacritics(key1);
       const info = restLookup[key1] || restLookup[key2];

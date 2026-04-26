@@ -184,14 +184,14 @@ export function Navbar() {
                       {profileFlag && flagUrl ? (
                         <img 
                           src={flagUrl} 
-                          alt="profile" 
+                          alt={t('navbar.profileAlt')} 
                           className="navbar-avatar"
                           style={{ borderRadius: '50%' }}
                         />
                       ) : user?.photoURL ? (
                         <img 
                           src={user.photoURL} 
-                          alt="avatar" 
+                          alt={t('navbar.avatarAlt')} 
                           className="navbar-avatar"
                         />
                       ) : (
@@ -283,14 +283,14 @@ export function Navbar() {
                     {profileFlag && flagUrl ? (
                       <img 
                         src={flagUrl} 
-                        alt="profile" 
+                        alt={t('navbar.profileAlt')} 
                         className="mobile-avatar"
                         style={{ borderRadius: '50%' }}
                       />
                     ) : user?.photoURL ? (
                       <img 
                         src={user.photoURL} 
-                        alt="avatar" 
+                        alt={t('navbar.avatarAlt')} 
                         className="mobile-avatar"
                       />
                     ) : (

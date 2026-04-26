@@ -116,22 +116,142 @@ function getBaseLanguage(language: string): 'en' | 'cs' | 'de' {
   return 'en';
 }
 
+const OFFICIAL_NAME_OVERRIDES = new Set(['CZ']);
+
+type LocalizedNameFields = {
+  common: string;
+  official?: string;
+  nativeName?: Record<string, { common?: string; official?: string }>;
+};
+
+type LocalizedTranslationFields = {
+  ces?: { common?: string; official?: string };
+  deu?: { common?: string; official?: string };
+};
+
+export type CountryLocalizationInput = {
+  cca2: string;
+  name: LocalizedNameFields;
+  name_cs?: string;
+  name_de?: string;
+  official_name_cs?: string;
+  official_name_de?: string;
+  capital?: string[];
+  capital_cs?: string[];
+  capital_de?: string[];
+  capitals_cs?: string[];
+  capitals_de?: string[];
+  translations?: LocalizedTranslationFields;
+};
+
+function getNativeLocalizedName(
+  nativeName: Record<string, { common?: string; official?: string }> | undefined,
+  language: 'cs' | 'de',
+  variant: 'common' | 'official'
+): string | undefined {
+  if (!nativeName) return undefined;
+
+  const languagePreference =
+    language === 'cs'
+      ? ['ces', 'cze', 'slk']
+      : ['deu', 'ger', 'de'];
+
+  for (const code of languagePreference) {
+    const value = nativeName[code]?.[variant];
+    if (typeof value === 'string' && value.trim()) {
+      return value;
+    }
+  }
+
+  return undefined;
+}
+
+function pickLocalizedCountryName(
+  country: CountryLocalizationInput,
+  language: 'en' | 'cs' | 'de',
+  preferOfficial: boolean
+): string {
+  if (language === 'en') {
+    return preferOfficial && country.name.official ? country.name.official : country.name.common;
+  }
+
+  const isCs = language === 'cs';
+  const localizedCommon = isCs
+    ? country.name_cs || country.translations?.ces?.common || getNativeLocalizedName(country.name.nativeName, 'cs', 'common')
+    : country.name_de || country.translations?.deu?.common || getNativeLocalizedName(country.name.nativeName, 'de', 'common');
+
+  const localizedOfficial = isCs
+    ? country.official_name_cs || country.translations?.ces?.official || getNativeLocalizedName(country.name.nativeName, 'cs', 'official')
+    : country.official_name_de || country.translations?.deu?.official || getNativeLocalizedName(country.name.nativeName, 'de', 'official');
+
+  if (preferOfficial && localizedOfficial) {
+    return localizedOfficial;
+  }
+
+  return localizedCommon || localizedOfficial || country.name.common;
+}
+
+function localizeCapitals(
+  country: CountryLocalizationInput,
+  language: 'en' | 'cs' | 'de'
+): string[] {
+  const rawCapitals = Array.isArray(country.capital) ? country.capital : [];
+  if (language === 'en') {
+    return rawCapitals;
+  }
+
+  const explicitCapitals = language === 'cs'
+    ? (country.capital_cs || country.capitals_cs)
+    : (country.capital_de || country.capitals_de);
+
+  if (Array.isArray(explicitCapitals) && explicitCapitals.length > 0) {
+    return explicitCapitals;
+  }
+
+  return rawCapitals;
+}
+
+export function getLocalizedCountryName(
+  country: CountryLocalizationInput,
+  language: string = 'en',
+  options?: { preferOfficial?: boolean }
+): string {
+  const currentLanguage = getBaseLanguage(language);
+  const preferOfficial = options?.preferOfficial ?? OFFICIAL_NAME_OVERRIDES.has(country.cca2);
+  return pickLocalizedCountryName(country, currentLanguage, preferOfficial);
+}
+
+export function getLocalizedCapitals(
+  country: CountryLocalizationInput,
+  language: string = 'en'
+): string[] {
+  const currentLanguage = getBaseLanguage(language);
+  return localizeCapitals(country, currentLanguage);
+}
+
+export function getCanonicalCountryName(country: CountryLocalizationInput): string {
+  return normalizeCountryName(country.name.common);
+}
+
 // ============================================================================
 // REST COUNTRIES INTEGRATION
 // ============================================================================
 
 type CountryInfo = { name: string; cca2: string; flag: string; region?: string };
 type CountryData = {
-  name: { common: string; official?: string };
+  name: LocalizedNameFields;
   cca2: string;
   flags: { svg?: string; png?: string };
   region?: string;
   name_cs?: string;
   name_de?: string;
-  translations?: {
-    ces?: { common?: string; official?: string };
-    deu?: { common?: string; official?: string };
-  };
+  official_name_cs?: string;
+  official_name_de?: string;
+  capital_cs?: string[];
+  capital_de?: string[];
+  capitals_cs?: string[];
+  capitals_de?: string[];
+  translations?: LocalizedTranslationFields;
 };
 
 export type CountryHintSource = {
@@ -191,17 +311,13 @@ export function buildRestLookup(
 
   for (const c of countries) {
     const englishName = c.name.common;
-    const localizedName =
-      currentLanguage === 'cs'
-        ? c.name_cs || c.translations?.ces?.common || englishName
-        : currentLanguage === 'de'
-          ? c.name_de || c.translations?.deu?.common || englishName
-          : englishName;
+    const localizedName = getLocalizedCountryName(c, currentLanguage);
     const flag = `/flags-v2/${c.cca2.toLowerCase()}.svg`;
     const info = { name: localizedName, cca2: c.cca2, flag, region: c.region };
     
     // Add main entry
     addEntry(englishName, info);
+    addEntry(localizedName, info);
     
     // Add map name variations that point to this country
     for (const [mapName, displayName] of Object.entries(MAP_TO_DISPLAY)) {
@@ -261,21 +377,9 @@ export function initializeGameEligibleCountries(
 export type CountryInfoWithCapitals = { name: string; cca2: string; flag: string; capitals: string[] };
 
 export function buildCountryLookupWithCapitals(
-  countries: Array<{
-    name: { common: string };
-    cca2: string;
-    flags: { svg?: string; png?: string };
-    capital?: string[];
-    name_cs?: string;
-    name_de?: string;
-    translations?: {
-      ces?: { common?: string };
-      deu?: { common?: string };
-    };
-  }>,
+  countries: Array<CountryLocalizationInput & { flags: { svg?: string; png?: string } }>,
   language: string = 'en'
 ): Record<string, CountryInfoWithCapitals> {
-  const currentLanguage = getBaseLanguage(language);
   const lookup: Record<string, CountryInfoWithCapitals> = {};
   
   const addEntry = (key: string, val: CountryInfoWithCapitals) => {
@@ -285,14 +389,14 @@ export function buildCountryLookupWithCapitals(
 
   for (const c of countries) {
     const englishName = c.name.common;
-    const localizedName =
-      currentLanguage === 'cs'
-        ? c.name_cs || c.translations?.ces?.common || englishName
-        : currentLanguage === 'de'
-          ? c.name_de || c.translations?.deu?.common || englishName
-          : englishName;
+    const localizedName = getLocalizedCountryName(c, language);
     const flag = `/flags-v2/${c.cca2.toLowerCase()}.svg`;
-    const info = { name: localizedName, cca2: c.cca2, flag, capitals: c.capital || [] };
+    const info = {
+      name: localizedName,
+      cca2: c.cca2,
+      flag,
+      capitals: getLocalizedCapitals(c, language),
+    };
     
     addEntry(englishName, info);
     addEntry(localizedName, info);

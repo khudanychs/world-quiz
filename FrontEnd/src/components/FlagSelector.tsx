@@ -1,6 +1,7 @@
 import {useState, useEffect} from 'react';
 import { useTranslation } from 'react-i18next';
 import { getFlagUrlSync } from '../utils/flagUtils';
+import { withStaticDataVersion } from '../utils/staticAssetVersion';
 import './FlagSelector.css';
 
 interface FlagSelectorProps {
@@ -17,7 +18,7 @@ export const FlagSelector = ({ selectedFlag, onFlagSelect }: FlagSelectorProps) 
       let cancelled = false;
       const loadManifest = async () => {
         try {
-          const response = await fetch('/circle-flags-manifest.json', { cache: 'force-cache' });
+          const response = await fetch(withStaticDataVersion('/circle-flags-manifest.json'), { cache: 'no-store' });
           if (!response.ok) return;
           const data = (await response.json()) as string[];
           if (!cancelled) {

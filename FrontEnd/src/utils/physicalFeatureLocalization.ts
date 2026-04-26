@@ -1,5 +1,6 @@
 import type { PhysicalFeature } from "./physicalFeatures";
 import { toPhysicalFeatureDisplayName } from "./physicalFeatureNames";
+import { withStaticDataVersion } from "./staticAssetVersion";
 
 type BaseLanguage = "en" | "cs" | "de";
 
@@ -18,9 +19,9 @@ interface TopologyLike {
 }
 
 const LOCALIZED_DATASETS: Record<string, string> = {
-  rivers: "/fixed_rivers.json",
-  waters: "/FinalMarines10m.json",
-  lakes: "/lakes.json",
+  rivers: withStaticDataVersion('/fixed_rivers.json'),
+  waters: withStaticDataVersion('/FinalMarines10m.json'),
+  lakes: withStaticDataVersion('/lakes.json'),
 };
 
 const translationLookupByLanguageAndDataset = new Map<string, Promise<Map<string, string>>>();
@@ -83,7 +84,7 @@ async function buildTranslationLookup(
   const lookup = new Map<string, string>();
   const datasets = await Promise.all(
     datasetUrls.map(async (url) => {
-      const response = await fetch(url);
+      const response = await fetch(url, { cache: 'no-store' });
       if (!response.ok) {
         return null;
       }

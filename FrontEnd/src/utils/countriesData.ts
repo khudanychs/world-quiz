@@ -3,6 +3,8 @@
  * Prevents duplicate fetches across components by caching the promise
  */
 
+import { withStaticDataVersion } from './staticAssetVersion';
+
 interface CountryData {
   name: { common: string; official: string };
   cca2: string;
@@ -27,7 +29,7 @@ let countriesPromise: Promise<CountryData[]> | null = null;
  */
 export async function fetchCountriesData(): Promise<CountryData[]> {
   if (!countriesPromise) {
-    countriesPromise = fetch('/countries-full.json')
+    countriesPromise = fetch(withStaticDataVersion('/countries-full.json'), { cache: 'no-store' })
       .then((response) => {
         if (!response.ok) {
           throw new Error('Failed to load countries-full.json');

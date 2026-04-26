@@ -1,15 +1,16 @@
 import { geoArea, geoBounds, geoCentroid, type GeoPermissibleObjects } from "d3-geo";
 import { feature as topoFeature } from "topojson-client";
 import type { Topology, GeometryCollection } from "topojson-specification";
+import { withStaticDataVersion } from "../../utils/staticAssetVersion";
 
 export type GeoFeatureKind = "marine" | "river" | "lake";
 
 // Unified land base for all physical-geo modes (TopoJSON).
-export const GEO_LAND_URL = "/GeoLand.json";
-export const MARINE_URL = "/FinalMarines10m.json";
+export const GEO_LAND_URL = withStaticDataVersion('/GeoLand.json');
+export const MARINE_URL = withStaticDataVersion('/FinalMarines10m.json');
 export const MERGED_URL = GEO_LAND_URL;
-export const RIVERS_URL = "/fixed_rivers.json";
-export const LAKES_URL = "/lakes.json";
+export const RIVERS_URL = withStaticDataVersion('/fixed_rivers.json');
+export const LAKES_URL = withStaticDataVersion('/lakes.json');
 
 export interface GeoFeature {
   type: "Feature";

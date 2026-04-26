@@ -20,6 +20,7 @@ import {
 import { FRAME, FRAME_COLOR } from './utils/mapConstants';
 import { SEO_TRANSLATIONS, toCanonicalUrlWithLanguage, getSeoOgImage } from './seo/seo-translations';
 import { getBaseLanguage } from './utils/localeRouting';
+import { withStaticDataVersion } from './utils/staticAssetVersion';
 
 // Lazy load the heavy InteractiveMap component
 const InteractiveMap = lazy(() => import('./components/InteractiveMap'));
@@ -63,7 +64,7 @@ export default function WorldMap() {
     (async () => {
       try {
         setLoading(true);
-        const res = await fetch("/countries-full.json");
+        const res = await fetch(withStaticDataVersion('/countries-full.json'), { cache: 'no-store' });
         const data = (await res.json()) as Array<{
           name: { common: string };
           cca2: string;
