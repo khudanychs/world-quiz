@@ -1,5 +1,5 @@
 import { memo } from "react";
-import { renderLandOverlay as renderLandOverlaySvg, renderWaterUnderlay as renderWaterUnderlaySvg } from "./renderers";
+import { LandOverlay, WaterUnderlay } from "./renderers";
 import type { MemoizedOverlayProps } from "./types";
 
 export const MemoizedOverlay = memo(function MemoizedOverlay({
@@ -21,37 +21,37 @@ export const MemoizedOverlay = memo(function MemoizedOverlay({
 }: MemoizedOverlayProps) {
   return (
     <>
-      {renderWaterUnderlaySvg({
-        projection,
-        zoom,
-        isDesktop,
-        modeStyleOverrides,
-        waterFeatures,
-        backgroundMarineNames,
-        getPrecomputedPath,
-        canClick,
-        onFeatureClick,
-        showingResult,
-        lastResult,
-        currentFeatureName,
-        correctSet,
-        skippedSet,
-      })}
-      {renderLandOverlaySvg({
-        projection,
-        zoom,
-        isDesktop,
-        modeStyleOverrides,
-        landFeatures,
-        getPrecomputedPath,
-        canClick,
-        onFeatureClick,
-        showingResult,
-        lastResult,
-        currentFeatureName,
-        correctSet,
-        skippedSet,
-      })}
+      <WaterUnderlay
+        projection={projection}
+        zoom={zoom}
+        isDesktop={isDesktop}
+        modeStyleOverrides={modeStyleOverrides}
+        waterFeatures={waterFeatures}
+        backgroundMarineNames={backgroundMarineNames}
+        getPrecomputedPath={getPrecomputedPath}
+        canClick={canClick}
+        onFeatureClick={onFeatureClick}
+        showingResult={showingResult}
+        lastResult={lastResult}
+        currentFeatureName={currentFeatureName}
+        correctSet={correctSet}
+        skippedSet={skippedSet}
+      />
+      <LandOverlay
+        projection={projection}
+        zoom={zoom}
+        isDesktop={isDesktop}
+        modeStyleOverrides={modeStyleOverrides}
+        landFeatures={landFeatures}
+        getPrecomputedPath={getPrecomputedPath}
+        canClick={canClick}
+        onFeatureClick={onFeatureClick}
+        showingResult={showingResult}
+        lastResult={lastResult}
+        currentFeatureName={currentFeatureName}
+        correctSet={correctSet}
+        skippedSet={skippedSet}
+      />
     </>
   );
 }, (prevProps, nextProps) => {

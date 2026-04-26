@@ -199,19 +199,38 @@ export default function FlagMatchGame() {
 
   const FIT_SCALE = Math.max(1, Math.round(INNER_W * 0.32));
 
-  // Effect to save streak when game is over
-  useEffect(() => {
-    if (game.gameOver && game.bestStreak > 0) {
-      saveStreak(game.bestStreak);
+  const handleMoveEnd = useCallback(({ zoom, coordinates }: { zoom: number; coordinates: [number, number] }) => {
+    // Only allow manual position changes in World mode
+    // For regional mode, map is remounted on resize so position stays correct
+    if (!selectedRegion) {
+      setPos({ zoom, coordinates });
     }
-  }, [game.gameOver, game.bestStreak, saveStreak]);
+  }, [selectedRegion]);
 
-  // Reset streakSavedRef when starting a new game
-  useEffect(() => {
-    if (game.currentIdx === 0 && game.targets.length > 0 && !game.gameOver) {
-      streakSavedRef.current = false;
-    }
-  }, [game.currentIdx, game.targets.length, game.gameOver]);
+  const handleCountryClick = useCallback((nameRaw: string) => {
+    game.onCountryClick(nameRaw);
+  }, [game.onCountryClick]);
+
+  const handleGeographiesLoaded = useCallback((geographies: any[]) => {
+    game.handleGeographiesLoaded(geographies);
+  }, [game.handleGeographiesLoaded]);
+
+  const handleGetCountryFill = useCallback((nameRaw: string) => {
+    const norm = normalizeCountryName(nameRaw);
+    
+    const isCorrect = game.correctSet.has(norm);
+    const isSkipped = game.skippedSet.has(norm);
+    const defaultFill = "#e0d8c2";
+    const isLastWrong = game.lastClicked?.name === norm && game.lastClicked?.status === "wrong";
+    
+    return isCorrect
+      ? "#10b981"
+      : isSkipped
+      ? "#ff8c00"
+      : isLastWrong
+      ? "#ef4444"
+      : defaultFill;
+  }, [game.correctSet, game.skippedSet, game.lastClicked]);
 
   return (
     <>
@@ -507,35 +526,10 @@ export default function FlagMatchGame() {
             isDesktop={!isPortrait && window.innerWidth >= 768}
             gameMode={true}
             isCountryInteractive={selectedRegion ? game.isCountryInSelectedRegion : undefined}
-            onMoveEnd={({ zoom, coordinates }: { zoom: number; coordinates: [number, number] }) => {
-              // Only allow manual position changes in World mode
-              // For regional mode, map is remounted on resize so position stays correct
-              if (!selectedRegion) {
-                setPos({ zoom, coordinates });
-              }
-            }}
-            onCountryClick={(nameRaw: string) => {
-              game.onCountryClick(nameRaw);
-            }}
-            onGeographiesLoaded={(geographies) => {
-              game.handleGeographiesLoaded(geographies);
-            }}
-            getCountryFill={(nameRaw: string) => {
-              const norm = normalizeCountryName(nameRaw);
-              
-              const isCorrect = game.correctSet.has(norm);
-              const isSkipped = game.skippedSet.has(norm);
-              const defaultFill = "#e0d8c2";
-              const isLastWrong = game.lastClicked?.name === norm && game.lastClicked?.status === "wrong";
-              
-              return isCorrect
-                ? "#10b981"
-                : isSkipped
-                ? "#ff8c00"
-                : isLastWrong
-                ? "#ef4444"
-                : defaultFill;
-            }}
+            onMoveEnd={handleMoveEnd}
+            onCountryClick={handleCountryClick}
+            onGeographiesLoaded={handleGeographiesLoaded}
+            getCountryFill={handleGetCountryFill}
           />
         </Suspense>
       </div>

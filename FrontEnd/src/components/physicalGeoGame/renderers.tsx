@@ -1,4 +1,4 @@
-import { memo } from "react";
+import { memo, useMemo } from "react";
 import {
   FEATURE_COLORS,
   FEATURE_FILL_OPACITY,
@@ -184,36 +184,41 @@ function getWaterZBucket(featureName: string): number {
   return 2; // Seas in middle
 }
 
-export function renderWaterUnderlay({ projection, zoom, isDesktop, modeStyleOverrides, waterFeatures, backgroundMarineNames, getPrecomputedPath, canClick, onFeatureClick, showingResult, lastResult, currentFeatureName, correctSet, skippedSet }: WaterUnderlayArgs): JSX.Element | null {
+export const WaterUnderlay = memo(function WaterUnderlay({ projection, zoom, isDesktop, modeStyleOverrides, waterFeatures, backgroundMarineNames, getPrecomputedPath, canClick, onFeatureClick, showingResult, lastResult, currentFeatureName, correctSet, skippedSet }: WaterUnderlayArgs): JSX.Element | null {
   const modeStyle = resolveModeStyle(modeStyleOverrides);
   const sw = Math.max(0.5, 1.2 / Math.pow(zoom, 0.5));
-  
+
   // Keep draw order deterministic (independent of shuffled quiz order):
   // draw larger bodies first and smaller bodies last so small seas/reefs stay visible.
-  const orderedWaterFeatures = [...waterFeatures].sort((a, b) => {
-    const bucketDiff = getWaterZBucket(a.name) - getWaterZBucket(b.name);
-    if (bucketDiff !== 0) {
-      return bucketDiff;
-    }
+  const orderedWaterFeatures = useMemo(() => {
+    return [...waterFeatures].sort((a, b) => {
+      const bucketDiff = getWaterZBucket(a.name) - getWaterZBucket(b.name);
+      if (bucketDiff !== 0) {
+        return bucketDiff;
+      }
 
-    const areaDiff = getFeatureArea(b) - getFeatureArea(a);
-    if (areaDiff !== 0) {
-      return areaDiff;
-    }
-    return a.name.localeCompare(b.name);
-  });
-  
+      const areaDiff = getFeatureArea(b) - getFeatureArea(a);
+      if (areaDiff !== 0) {
+        return areaDiff;
+      }
+      return a.name.localeCompare(b.name);
+    });
+  }, [waterFeatures]);
+
   // Render background marine features (Indian Ocean, Southern Ocean, etc.) from GeoJSON
-  const backgroundMarineElements = [];
-  if (backgroundMarineNames && backgroundMarineNames.length > 0) {
-    const sortedBackgroundNames = [...backgroundMarineNames].sort((aName, bName) => {
+  const sortedBackgroundNames = useMemo(() => {
+    if (!backgroundMarineNames || backgroundMarineNames.length === 0) return [];
+    return [...backgroundMarineNames].sort((aName, bName) => {
       const bucketDiff = getWaterZBucket(aName) - getWaterZBucket(bName);
       if (bucketDiff !== 0) {
         return bucketDiff;
       }
       return aName.localeCompare(bName);
     });
+  }, [backgroundMarineNames]);
 
+  const backgroundMarineElements = useMemo(() => {
+    const elements = [];
     for (const featureName of sortedBackgroundNames) {
       // Skip if this is a clickable water feature (it will be drawn later)
       if (waterFeatures.some(f => f.name === featureName)) {
@@ -225,7 +230,7 @@ export function renderWaterUnderlay({ projection, zoom, isDesktop, modeStyleOver
         continue;
       }
 
-      backgroundMarineElements.push(
+      elements.push(
         <MemoizedFeatureShape
           key={`bg-${featureName}`}
           featureName={featureName}
@@ -240,17 +245,18 @@ export function renderWaterUnderlay({ projection, zoom, isDesktop, modeStyleOver
         />
       );
     }
-  }
-  
+    return elements;
+  }, [sortedBackgroundNames, waterFeatures, getPrecomputedPath, modeStyle.marine.fillColor, modeStyle.marine.strokeColor, sw]);
+
   return (
     <g>
         {/* Background marine features (non-interactive oceans and major seas) */}
         {backgroundMarineElements}
-      
+
       {orderedWaterFeatures.map(feature => {
         const clickable = canClick(feature);
         const d = getPrecomputedPath(feature.name, "marine") || (feature.shape.kind === "ellipse" ? projectEllipse(feature.shape.center, feature.shape.rx, feature.shape.ry, feature.shape.rotation || 0, projection, 48) : null);
-        
+
         let fillColor = modeStyle.marine.fillColor;
         let strokeColor = modeStyle.marine.strokeColor;
         let strokeW = sw;
@@ -299,26 +305,31 @@ export function renderWaterUnderlay({ projection, zoom, isDesktop, modeStyleOver
       })}
     </g>
   );
-}
+});
 
-export function renderLandOverlay({ projection, zoom, isDesktop, modeStyleOverrides, landFeatures, getPrecomputedPath, canClick, onFeatureClick, showingResult, lastResult, currentFeatureName, correctSet, skippedSet }: LandOverlayArgs): JSX.Element | null {
+export const LandOverlay = memo(function LandOverlay({ projection, zoom, isDesktop, modeStyleOverrides, landFeatures, getPrecomputedPath, canClick, onFeatureClick, showingResult, lastResult, currentFeatureName, correctSet, skippedSet }: LandOverlayArgs): JSX.Element | null {
   if (landFeatures.length === 0) return null;
   const modeStyle = resolveModeStyle(modeStyleOverrides);
-  
-  const orderedLandFeatures = [...landFeatures].sort((a, b) => {
-    if ((a.shape.kind === "marker") !== (b.shape.kind === "marker")) return (a.shape.kind === "marker" ? 1 : 0) - (b.shape.kind === "marker" ? 1 : 0);
-    return getFeatureArea(b) - getFeatureArea(a);
-  });
 
-  const highlightedLandNames = new Set<string>();
-  if (showingResult && lastResult) {
-    if (lastResult.clickedName) {
-      highlightedLandNames.add(lastResult.clickedName);
+  const orderedLandFeatures = useMemo(() => {
+    return [...landFeatures].sort((a, b) => {
+      if ((a.shape.kind === "marker") !== (b.shape.kind === "marker")) return (a.shape.kind === "marker" ? 1 : 0) - (b.shape.kind === "marker" ? 1 : 0);
+      return getFeatureArea(b) - getFeatureArea(a);
+    });
+  }, [landFeatures]);
+
+  const highlightedLandNames = useMemo(() => {
+    const set = new Set<string>();
+    if (showingResult && lastResult) {
+      if (lastResult.clickedName) {
+        set.add(lastResult.clickedName);
+      }
+      if (currentFeatureName) {
+        set.add(currentFeatureName);
+      }
     }
-    if (currentFeatureName) {
-      highlightedLandNames.add(currentFeatureName);
-    }
-  }
+    return set;
+  }, [showingResult, lastResult, currentFeatureName]);
 
   return (
     <g>
@@ -357,13 +368,13 @@ export function renderLandOverlay({ projection, zoom, isDesktop, modeStyleOverri
           const borderColor = feature.type === "desert" ? "rgba(64, 45, 24, 0.8)" : "rgba(56, 37, 27, 0.72)";
           const patternId = feature.type === "desert" ? LITE_DESERT_PATTERN_ID : LITE_MOUNTAIN_PATTERN_ID;
           const isHighlighted = showingResult && highlightedLandNames.has(feature.name);
-          
+
           // Use vis.color which already respects correctSet/skippedSet priorities
           const fillColor = vis.color;
-            
+
           // Keep terrain fills opaque so enclosed polygons do not blend with parent polygons.
           const stableFillOpacity = 1.0;
-            
+
           const accentStrokeWidth = scaleStroke(isHighlighted ? 1.8 : 1, zoom);
           return (
             <g key={feature.name}>
@@ -383,4 +394,4 @@ export function renderLandOverlay({ projection, zoom, isDesktop, modeStyleOverri
       })}
     </g>
   );
-}
+});

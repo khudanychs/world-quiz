@@ -21,6 +21,8 @@
   "author": "",
   "license": "Copyright © 2025-2026 Khudanychs. All Rights Reserved.",
   "dependencies": {
+    "@typescript-eslint/eslint-plugin": "^8.59.0",
+    "@typescript-eslint/parser": "^8.59.0",
     "react-circle-flags": "^0.0.25"
   }
 }
