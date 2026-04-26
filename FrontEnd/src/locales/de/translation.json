@@ -1,41 +1,41 @@
 {
   "nav": {
     "appName": "World Quiz",
-    "home": "Startseite",
+    "home": "Start",
     "countries": "Länder",
     "menu": "Menü",
-    "leaderboards": "Bestenlisten",
+    "leaderboards": "Ranking",
     "privacy": "Datenschutz",
-    "privacyPolicy": "Datenschutzrichtlinie",
-    "terms": "Bedingungen",
-    "termsConditions": "Nutzungsbedingungen",
-    "login": "Anmelden",
+    "privacyPolicy": "Datenschutz",
+    "terms": "AGB",
+    "termsConditions": "AGB",
+    "login": "Login",
     "join": "Mitmachen",
-    "logout": "Abmelden",
-    "settings": "Einstellungen",
-    "toggleMenu": "Menü umschalten"
+    "logout": "Logout",
+    "settings": "Optionen",
+    "toggleMenu": "Menü öffnen"
   },
   "mainMenu": {
-    "title": "Wähle einen Spielmodus",
+    "title": "Wähle ein Spiel",
     "subtitle": "Wähle ein Quiz oder erkunde die interaktive Weltkarte.",
-    "exploreMap": "🗺️ Karte erkunden",
+    "exploreMap": "🗺️ Karte öffnen",
     "games": {
       "physicalGeo": {
-        "title": "Physische Geografie",
+        "title": "Naturgeografie",
         "description": "Finde Berge, Flüsse, Wüsten und Meere auf der Karte!",
         "tag": "Neu"
       },
       "flags": {
         "title": "Flaggen-Quiz",
-        "description": "Das ultimative Flaggen-Quiz. Teste dein Gedächtnis und deine Schnelligkeit!"
+        "description": "Das ultimative Flaggen-Quiz. Teste dein Gedächtnis und Tempo!"
       },
       "shapeMatch": {
-        "title": "Geografie-Match",
+        "title": "Geo-Match",
         "description": "Ordne Flaggen, Länder, Hauptstädte oder Umrisse auf Zeit zu!"
       },
       "guessCountry": {
         "title": "Land erraten",
-        "description": "Finde das versteckte Land mithilfe von Entfernungs- und Richtungsangaben.",
+        "description": "Finde das versteckte Land durch Distanz- und Richtungshilfen.",
         "tag": "Neu"
       }
     }
@@ -44,197 +44,197 @@
     "title": "Einstellungen",
     "language": {
       "title": "Sprache",
-      "note": "Sprachänderungen leiten zur entsprechenden lokalen URL weiter.",
+      "note": "Leitet zur lokalen URL weiter.",
       "switcherAriaLabel": "Sprachauswahl"
     },
     "profile": {
       "title": "Profilbild",
-      "selectedFlag": "Du hast eine Flagge als Profilbild ausgewählt.",
-      "googlePhoto": "Dein Profilbild stammt von Google.",
-      "none": "Kein Profilbild festgelegt",
+      "selectedFlag": "Flagge als Profilbild aktiv.",
+      "googlePhoto": "Google-Profilbild aktiv.",
+      "none": "Kein Profilbild",
       "changeFlag": "Flagge ändern",
-      "useGooglePhoto": "Google-Foto verwenden",
-      "selectFlag": "Wähle deine Flagge",
-      "saveFlag": "Flagge speichern",
+      "useGooglePhoto": "Google-Foto nutzen",
+      "selectFlag": "Wähle eine Flagge",
+      "saveFlag": "Speichern",
       "profileAlt": "Profil",
       "avatarAlt": "Avatar",
       "placeholderClass": "profile-picture-placeholder"
     },
     "nickname": {
       "title": "Benutzername",
-      "cooldownActive": "Gesperrt - die nächste Änderung ist in {{count}} Tag(en) möglich.",
-      "monthlyLimitReached": "Monatliches Limit erreicht (2/2). Wird am 1. des nächsten Monats zurückgesetzt.",
-      "changesRemaining": "{{count}} von 2 Änderungen in diesem Monat verbleibend.",
-      "limitInfo": "Maximal 2 Änderungen pro Monat, mit 7 Tagen Wartezeit dazwischen.",
-      "usernameLabel": "Benutzername",
-      "usernamePlaceholder": "Gib deinen Benutzernamen ein",
-      "usernameTitle": "Der Benutzername darf nur Buchstaben, Zahlen, Unterstriche und Bindestriche enthalten.",
-      "usernameHelp": "3-50 Zeichen, nur Buchstaben, Zahlen, Unterstriche und Bindestriche"
+      "cooldownActive": "Gesperrt - nächste Änderung in {{count}} Tag(en).",
+      "monthlyLimitReached": "Limit erreicht (2/2). Reset am 1. des Monats.",
+      "changesRemaining": "{{count}} von 2 Änderungen im Monat übrig.",
+      "limitInfo": "Max. 2 Änderungen/Monat (7 Tage Wartezeit).",
+      "usernameLabel": "Name",
+      "usernamePlaceholder": "Name eingeben",
+      "usernameTitle": "Nur Buchstaben, Zahlen, Unter- und Bindestriche",
+      "usernameHelp": "3-50 Zeichen (Buchstaben, Zahlen, _ und -)"
     },
     "account": {
-      "title": "Kontoinformationen",
+      "title": "Konto-Infos",
       "emailLabel": "E-Mail:",
-      "accountTypeLabel": "Kontotyp:",
+      "accountTypeLabel": "Typ:",
       "googleAccount": "Google-Konto",
       "localAccount": "Lokales Konto",
-      "memberSinceLabel": "Mitglied seit:",
-      "notAvailable": "Nicht verfügbar"
+      "memberSinceLabel": "Dabei seit:",
+      "notAvailable": "N/A"
     },
     "stats": {
-      "title": "Deine Statistiken",
+      "title": "Deine Stats",
       "bestStreak": "Beste Serie",
-      "cardsMatchHighScore": "Match-Spiel Rekord",
+      "cardsMatchHighScore": "Match-Rekord",
       "countriesGuessed": "Erratene Länder"
     },
     "dangerZone": {
       "title": "Gefahrenzone",
-      "deleteMyAccount": "Mein Konto löschen",
-      "warning": "Diese Aktion kann nicht rückgängig gemacht werden. Alle deine Daten, Rekorde und Fortschritte werden dauerhaft gelöscht.",
+      "deleteMyAccount": "Konto löschen",
+      "warning": "Achtung: Alle Daten und Rekorde werden dauerhaft gelöscht!",
       "typeDelete": "Tippe DELETE zur Bestätigung:",
       "deleteWord": "DELETE",
-      "passwordLabel": "Gib dein Passwort ein:",
+      "passwordLabel": "Passwort eingeben:",
       "passwordPlaceholder": "Passwort",
       "passwordBullets": "••••••••",
-      "deleteAccount": "Konto löschen"
+      "deleteAccount": "Löschen"
     },
-    "saveChanges": "Änderungen speichern",
-    "saving": "Speichern...",
+    "saveChanges": "Speichern",
+    "saving": "Speichert...",
     "cancel": "Abbrechen",
     "close": "Schließen",
-    "deleting": "Löschen...",
+    "deleting": "Löscht...",
     "messages": {
-      "nicknameSame": "Dieser Benutzername wird bereits verwendet.",
-      "nicknameUpdated": "Benutzername erfolgreich aktualisiert!",
-      "nicknameUpdateFailed": "Fehler beim Aktualisieren des Benutzernamens.",
-      "profileFlagUpdated": "Profil-Flagge erfolgreich aktualisiert!",
-      "profileFlagUpdateFailed": "Fehler beim Aktualisieren der Flagge.",
-      "noGooglePhoto": "Kein Google-Profilbild verfügbar.",
-      "usingGooglePhoto": "Google-Profilbild wird nun verwendet.",
-      "profilePictureUpdateFailed": "Fehler beim Aktualisieren des Profilbilds.",
-      "typeDeleteToConfirm": "Bitte tippe DELETE zur Bestätigung ein.",
-      "passwordRequiredForDelete": "Bitte gib dein Passwort ein, um das Konto zu löschen.",
-      "deleteAccountFailed": "Fehler beim Löschen des Kontos."
+      "nicknameSame": "Name wird bereits genutzt.",
+      "nicknameUpdated": "Name erfolgreich geändert!",
+      "nicknameUpdateFailed": "Fehler bei der Namensänderung.",
+      "profileFlagUpdated": "Flagge erfolgreich geändert!",
+      "profileFlagUpdateFailed": "Fehler beim Flaggenwechsel.",
+      "noGooglePhoto": "Kein Google-Foto verfügbar.",
+      "usingGooglePhoto": "Google-Foto ist nun aktiv.",
+      "profilePictureUpdateFailed": "Fehler beim Profilbild.",
+      "typeDeleteToConfirm": "Bitte DELETE zum Bestätigen tippen.",
+      "passwordRequiredForDelete": "Passwort zur Bestätigung nötig.",
+      "deleteAccountFailed": "Fehler beim Löschen."
     }
   },
   "auth": {
-    "joinTitle": "Werde Teil von World Quiz",
+    "joinTitle": "Konto erstellen",
     "loginToWorldQuiz": "Bei World Quiz anmelden",
-    "createAccountTitle": "Konto erstellen",
+    "createAccountTitle": "Registrieren",
     "welcomeBackTitle": "Willkommen zurück",
-    "usernameLabel": "Benutzername",
-    "usernamePlaceholder": "Gib deinen Benutzernamen ein",
-    "usernameTitle": "Darf nur Buchstaben, Zahlen, Unterstriche und Bindestriche enthalten",
+    "usernameLabel": "Name",
+    "usernamePlaceholder": "Name eingeben",
+    "usernameTitle": "Nur Buchstaben, Zahlen, Unter- und Bindestriche",
     "emailLabel": "E-Mail",
-    "emailPlaceholder": "Gib deine E-Mail ein",
+    "emailPlaceholder": "E-Mail eingeben",
     "passwordLabel": "Passwort",
-    "passwordPlaceholder": "Gib dein Passwort ein",
-    "passwordHelp": "Mindestens 8 Zeichen, mit Groß- und Kleinbuchstaben sowie einer Zahl.",
-    "confirmPasswordLabel": "Passwort bestätigen",
-    "creatingAccount": "Konto wird erstellt...",
-    "loggingIn": "Anmeldung läuft...",
+    "passwordPlaceholder": "Passwort eingeben",
+    "passwordHelp": "Min. 8 Zeichen (Groß-, Kleinbuchstabe, Zahl).",
+    "confirmPasswordLabel": "Bestätigen",
+    "creatingAccount": "Erstellt...",
+    "loggingIn": "Loggt ein...",
     "signUp": "Registrieren",
-    "login": "Anmelden",
+    "login": "Login",
     "or": "oder",
-    "continueWithGoogle": "Mit Google fortfahren",
-    "privacyConsentPrefix": "Mit der Erstellung eines Kontos stimmst du unseren",
-    "bySigningInAgree": "Mit der Anmeldung stimmst du unseren",
-    "privacyPolicyAndTerms": "Datenschutzrichtlinien & Nutzungsbedingungen",
-    "termsOfService": "Nutzungsbedingungen",
+    "continueWithGoogle": "Weiter mit Google",
+    "privacyConsentPrefix": "Mit der Registrierung stimmst du unseren",
+    "bySigningInAgree": "Mit dem Login stimmst du unseren",
+    "privacyPolicyAndTerms": "Datenschutz & AGB zu",
+    "termsOfService": "AGB",
     "and": "und",
-    "privacyPolicy": "Datenschutzrichtlinien",
-    "alreadyHaveAccount": "Hast du bereits ein Konto?",
-    "logInLink": "Anmelden",
+    "privacyPolicy": "Datenschutz",
+    "alreadyHaveAccount": "Schon dabei?",
+    "logInLink": "Login",
     "noAccount": "Noch kein Konto?",
     "signUpLink": "Registrieren",
     "passwordPlaceholderBullets": "••••••••",
     "verification": {
-      "emailNotVerified": "E-Mail nicht verifiziert. Überprüfe bitte dein Postfach.",
-      "checkingStatus": "Überprüfung läuft...",
-      "verifyButton": "Ich habe meine E-Mail verifiziert",
-      "logoutGuest": "Abmelden und als Gast spielen",
-      "title": "📧 E-Mail verifizieren",
-      "instruction": "Bitte überprüfe dein E-Mail-Postfach.",
-      "checkFailed": "Überprüfung des Verifizierungsstatus fehlgeschlagen. Versuche es bitte noch einmal.",
-      "checkEmailBefore": "Bitte verifiziere deine E-Mail, bevor du dich anmeldest. Überprüfe dein Postfach auf den Bestätigungslink."
+      "emailNotVerified": "E-Mail unbestätigt. Bitte Postfach prüfen.",
+      "checkingStatus": "Prüft...",
+      "verifyButton": "E-Mail ist verifiziert",
+      "logoutGuest": "Logout & als Gast spielen",
+      "title": "📧 E-Mail bestätigen",
+      "instruction": "Bitte Postfach prüfen.",
+      "checkFailed": "Fehler beim Prüfen. Bitte neu laden.",
+      "checkEmailBefore": "Vor dem Login E-Mail bestätigen (Link im Postfach)."
     },
-    "appLoading": "Wird geladen...",
+    "appLoading": "Lädt...",
     "errors": {
-      "passwordsDoNotMatch": "Die Passwörter stimmen nicht überein",
-      "passwordMinLength": "Das Passwort muss mindestens 8 Zeichen lang sein",
-      "passwordComplexity": "Das Passwort muss mindestens einen Großbuchstaben, einen Kleinbuchstaben und eine Zahl enthalten"
+      "passwordsDoNotMatch": "Passwörter weichen ab",
+      "passwordMinLength": "Min. 8 Zeichen nötig",
+      "passwordComplexity": "Groß-, Kleinbuchstabe und Zahl nötig"
     },
     "firebaseErrors": {
-      "email-already-in-use": "Diese E-Mail ist bereits registriert. Bitte melde dich an.",
-      "invalid-email": "Bitte gib eine gültige E-Mail-Adresse ein.",
-      "weak-password": "Das Passwort ist zu schwach. Bitte verwende mindestens 8 Zeichen.",
-      "user-not-found": "Kein Konto mit dieser E-Mail gefunden. Bitte registriere dich zuerst.",
-      "wrong-password": "Falsches Passwort. Bitte versuche es noch einmal.",
-      "invalid-credential": "Ungültige E-Mail oder Passwort. Bitte überprüfe und versuche es erneut.",
-      "too-many-requests": "Zu viele fehlgeschlagene Versuche. Bitte versuche es später.",
-      "user-disabled": "Dieses Konto wurde deaktiviert. Bitte kontaktiere den Support.",
-      "operation-not-allowed": "Diese Anmeldemethode ist nicht aktiviert. Bitte kontaktiere den Support.",
-      "account-exists-with-different-credential": "Ein Konto mit dieser E-Mail existiert bereits, aber mit einer anderen Anmeldemethode.",
-      "popup-closed-by-user": "Anmeldefenster wurde geschlossen. Bitte versuche es erneut.",
-      "popup-blocked": "Dein Browser blockiert Popup-Fenster. Bitte erlaube Popups und versuche es erneut.",
-      "network-request-failed": "Netzwerkfehler. Bitte überprüfe deine Verbindung und versuche es erneut.",
-      "resource-exhausted": "Server ist beschäftigt. Bitte versuche es in einigen Minuten erneut.",
-      "quota-exceeded": "Tägliches Limit erreicht. Bitte versuche es morgen.",
-      "unavailable": "Dienst vorübergehend nicht verfügbar. Bitte versuche es später.",
-      "permission-denied": "Zugriff verweigert. Bitte melde dich erneut an.",
-      "duplicate-username": "Dieser Benutzername ist bereits vergeben. Bitte wähle einen anderen.",
-      "no-user-signed-in": "Kein Benutzer angemeldet.",
-      "email-already-verified": "E-Mail ist bereits verifiziert.",
-      "nickname-limit": "Du kannst deinen Benutzernamen nur 2-mal pro Monat ändern. Versuche es nächsten Monat.",
-      "nickname-cooldown": "Bitte warte {{count}} weitere Tag(e), bevor du deinen Benutzernamen ändern kannst.",
-      "password-required": "Passwort ist erforderlich, um dein Konto zu löschen.",
-      "email-not-found": "E-Mail nicht gefunden.",
-      "default": "Ein Fehler ist aufgetreten. Bitte versuche es erneut."
+      "email-already-in-use": "E-Mail existiert bereits. Bitte einloggen.",
+      "invalid-email": "Ungültige E-Mail-Adresse.",
+      "weak-password": "Passwort zu schwach (min. 8 Zeichen).",
+      "user-not-found": "Konto nicht gefunden. Bitte registrieren.",
+      "wrong-password": "Falsches Passwort.",
+      "invalid-credential": "E-Mail oder Passwort falsch.",
+      "too-many-requests": "Zu viele Versuche. Später erneut testen.",
+      "user-disabled": "Konto deaktiviert. Support kontaktieren.",
+      "operation-not-allowed": "Login-Methode inaktiv.",
+      "account-exists-with-different-credential": "E-Mail wird für anderen Login-Typ genutzt.",
+      "popup-closed-by-user": "Popup geschlossen.",
+      "popup-blocked": "Browser blockiert Popup.",
+      "network-request-failed": "Netzwerkfehler. Verbindung prüfen.",
+      "resource-exhausted": "Server überlastet. Kurz warten.",
+      "quota-exceeded": "Tageslimit erreicht. Morgen erneut testen.",
+      "unavailable": "Dienst offline. Später versuchen.",
+      "permission-denied": "Zugriff verweigert. Neu einloggen.",
+      "duplicate-username": "Name bereits vergeben.",
+      "no-user-signed-in": "Kein User eingeloggt.",
+      "email-already-verified": "E-Mail bereits bestätigt.",
+      "nickname-limit": "Nur 2 Namensänderungen pro Monat erlaubt.",
+      "nickname-cooldown": "Bitte {{count}} Tag(e) warten bis zum nächsten Namenswechsel.",
+      "password-required": "Passwort zum Löschen nötig.",
+      "email-not-found": "E-Mail unauffindbar.",
+      "default": "Ein Fehler trat auf."
     },
     "messages": {
-      "registrationSuccess": "Registrierung erfolgreich! Bitte überprüfe deine E-Mails, um dein Konto zu bestätigen."
+      "registrationSuccess": "Erfolg! Bitte E-Mail vor dem Login bestätigen."
     }
   },
   "gameHUD": {
-    "loadingFlags": "Flaggen werden geladen...",
+    "loadingFlags": "Lädt Flaggen...",
     "errorPrefix": "Fehler:",
     "legendaryTitle": "LEGENDÄR!",
     "perfectTitle": "Perfekt!",
-    "legendaryMessage": "Unglaublich! Du hast alle {{count}} Flaggen fehlerfrei zugeordnet.",
-    "perfectMessage": "Sehr gut! Du hast alle {{count}} Flaggen zugeordnet.",
+    "legendaryMessage": "Unglaublich! Alle {{count}} Flaggen fehlerfrei.",
+    "perfectMessage": "Stark! Alle {{count}} Flaggen zugeordnet.",
     "bestStreak": "Beste Serie: {{count}}",
     "roundFinished": "Runde beendet!",
     "matchedSummary": "Richtig: {{score}} / {{total}}",
     "skipped": "übersprungen",
-    "newGame": "Neues Spiel",
-    "loading": "Laden...",
+    "newGame": "Nochmal",
+    "loading": "Lädt...",
     "flagToMatchAlt": "Gesuchte Flagge",
-    "findThisFlag": "Finde diese Flagge",
-    "tapCountry": "Tippe auf das passende Land",
-    "showCurrentFlagName": "Ländernamen anzeigen",
+    "findThisFlag": "Finde die Flagge",
+    "tapCountry": "Tippe auf das Land",
+    "showCurrentFlagName": "Namen zeigen",
     "hideName": "Namen verbergen",
-    "showName": "Namen anzeigen",
-    "skipThisFlag": "Diese Flagge überspringen",
+    "showName": "Namen zeigen",
+    "skipThisFlag": "Flagge überspringen",
     "skip": "Überspringen",
     "score": "Punkte: {{score}}/{{total}}"
   },
   "physicalGeoHUD": {
-    "loading": "Geografische Merkmale werden geladen...",
+    "loading": "Lädt Orte...",
     "legendaryTitle": "LEGENDÄR!",
     "wellDoneTitle": "Gut gemacht!",
-    "legendaryMessage": "Perfekt! Du hast alle {{count}} Orte gefunden.",
+    "legendaryMessage": "Perfekt! Alle {{count}} Orte gefunden.",
     "locatedSummary": "Gefunden: {{score}} / {{total}}",
     "bestStreak": "Beste Serie: {{count}}",
     "roundFinished": "Runde beendet!",
     "locatedLabel": "Gefunden: {{score}} / {{total}}",
     "skipped": "übersprungen",
-    "newGame": "Neues Spiel",
-    "clickOnMap": "Finde auf der Karte: {{label}}",
-    "skipThisFeature": "Diesen Ort überspringen",
+    "newGame": "Nochmal",
+    "clickOnMap": "Finde: {{label}}",
+    "skipThisFeature": "Ort überspringen",
     "skip": "Überspringen",
     "score": "Punkte: {{score}}/{{total}}",
     "correct": "✓ Richtig!",
     "wrong": "✗ Falsch!",
-    "youClicked": "Dein Klick: {{name}}",
+    "youClicked": "Klick auf: {{name}}",
     "featureTypes": {
       "mountain": "Berg",
       "mountain_range": "Gebirge",
@@ -248,36 +248,36 @@
       "canal": "Kanal",
       "volcano": "Vulkan",
       "bay": "Bucht",
-      "channel": "Kanal / Meeresarm",
+      "channel": "Kanal",
       "passage": "Passage"
     }
   },
   "cardMatch": {
-    "loadingGame": "Spiel lädt...",
+    "loadingGame": "Lädt...",
     "errorPrefix": "Fehler:",
-    "backToMenu": "Zurück zum Menü",
-    "gameOverTitle": "Zeit abgelaufen!",
+    "backToMenu": "Zum Menü",
+    "gameOverTitle": "Zeit um!",
     "points": "Punkte",
-    "totalMatched": "Gesamt zugeordnet",
-    "maxStreak": "Längste Serie",
-    "home": "Startseite",
-    "playAgain": "Erneut spielen",
-    "pregameTitle": "Geografie-Match",
-    "pregameDescription": "Ordne Karten so schnell wie möglich zu. Baue Serien auf, um Bonuspunkte zu erhalten.",
+    "totalMatched": "Zugeordnet",
+    "maxStreak": "Top Serie",
+    "home": "Start",
+    "playAgain": "Nochmal",
+    "pregameTitle": "Geo-Match",
+    "pregameDescription": "Ordne Karten auf Zeit zu und baue Kombos für Extrapunkte auf.",
     "howToPlay": "Spielregeln",
     "rules": {
-      "matchCategories": "Ordne die gewählten Kategorien (z. B. Land zu Flagge) zu.",
-      "baseScore": "Grundwert: 1500 Punkte pro richtigem Paar.",
-      "timeDecay": "Die Punkte sinken mit der Zeit - sei schnell!",
-      "wrongPenalty": "Falsche Zuordnung: -1 Sekunde Strafzeit.",
-      "streakBonus": "Serien-Multiplikatoren: 5er = 1,5x, 10er = 2x, 15er = 2,5x, 20+ = 3x Punkte."
+      "matchCategories": "Ordne Spalte 1 und Spalte 2 zu.",
+      "baseScore": "1500 Punkte pro Paar.",
+      "timeDecay": "Punkte sinken mit der Zeit - sei schnell!",
+      "wrongPenalty": "Fehler: -1 Sekunde.",
+      "streakBonus": "Kombos: 5er = 1,5x, 10er = 2x, 15er = 2,5x, 20+ = 3x Punkte."
     },
     "matchFrom": "Spalte 1",
     "matchTo": "Spalte 2",
-    "startGame": "Spiel starten",
+    "startGame": "Start",
     "menu": "Menü",
     "timeLeft": "Zeit",
-    "score": "Punktzahl",
+    "score": "Punkte",
     "streak": "Serie",
     "matches": "Paare: {{count}}",
     "types": {
@@ -286,39 +286,39 @@
       "capital": "Hauptstadt",
       "shape": "Umriss"
     },
-    "totalMatchedWithCount": "Richtig zugeordnet: {{count}}"
+    "totalMatchedWithCount": "Zugeordnet: {{count}}"
   },
   "leaderboard": {
     "titles": {
-      "flagMatch": "Bestenliste: Flaggen-Quiz",
-      "cardsMatch": "Bestenliste: Geografie-Match",
-      "guessCountry": "Bestenliste: Land erraten"
+      "flagMatch": "Ranking: Flaggen",
+      "cardsMatch": "Ranking: Geo-Match",
+      "guessCountry": "Ranking: Land raten"
     },
-    "refresh": "Aktualisieren",
+    "refresh": "Update",
     "waitSeconds": "Warte {{count}}s",
     "today": "Heute",
     "allTime": "Gesamt",
-    "loading": "Bestenliste lädt...",
+    "loading": "Lädt Ranking...",
     "empty": {
-      "guessCountry": "Noch keine Spieler. Sei der Erste!",
-      "flagMatch": "Keine Serien vorhanden. Hol dir Platz 1!",
-      "cardsMatch": "Keine Rekorde. Zeig, was du kannst!"
+      "guessCountry": "Keine Spieler. Sei der Erste!",
+      "flagMatch": "Keine Serien. Hol dir Platz 1!",
+      "cardsMatch": "Keine Rekorde. Zeig was du kannst!"
     },
-    "anonymous": "Anonymer Spieler",
-    "guestCta": "Melde dich an, um dein Ergebnis in der Weltrangliste zu speichern.",
+    "anonymous": "Anonym",
+    "guestCta": "Logge dich ein, um dich im Ranking zu platzieren.",
     "joinNow": "Jetzt anmelden"
   },
   "leaderboardsPage": {
-    "title": "Weltweite Bestenlisten",
-    "subtitle": "Sieh dir an, wer in den einzelnen Geografie-Spielen dominiert.",
+    "title": "Globale Rankings",
+    "subtitle": "Sieh dir an, wer in den Geografie-Spielen dominiert.",
     "mode": {
       "flagMatch": "Flaggen-Quiz",
-      "cardsMatch": "Karten-Match",
+      "cardsMatch": "Geo-Match",
       "guessCountry": "Land erraten"
     }
   },
   "countryDetails": {
-    "loading": "Länderdaten werden geladen...",
+    "loading": "Lädt Daten...",
     "errorPrefix": "Fehler:",
     "close": "Schließen",
     "flagOf": "Flagge von {{country}}",
@@ -328,32 +328,32 @@
     "peopleCount": "Ca. {{count}}",
     "area": "Fläche",
     "areaValue": "{{area}} km²",
-    "density": "Bevölkerungsdichte",
-    "peoplePerKm2": "Einw./km²",
+    "density": "Dichte",
+    "peoplePerKm2": "pro km²",
     "currency": "Währung",
     "oneUsd": "1 USD =",
-    "exchangeRatesUpdated": "Kurse aktualisiert",
-    "languages": "Amtssprachen",
+    "exchangeRatesUpdated": "Stand aktuell",
+    "languages": "Sprachen",
     "timezones": "Zeitzonen",
-    "borderingCountries": "Nachbarländer"
+    "borderingCountries": "Nachbarn"
   },
   "notFound": {
-    "title": "Seite nicht gefunden",
-    "message": "Die gesuchte Seite existiert nicht oder wurde verschoben.",
+    "title": "Nicht gefunden",
+    "message": "Diese Seite existiert nicht oder wurde verschoben.",
     "goHome": "Zur Startseite",
-    "browseCountries": "Länderlexikon durchsuchen"
+    "browseCountries": "Länderlexikon"
   },
   "setNickname": {
-    "title": "Wähle deinen Benutzernamen",
-    "subtitle": "Lege deinen öffentlichen Namen für die Bestenlisten fest.",
-    "usernameLabel": "Benutzername",
-    "usernamePlaceholder": "Gib deinen Namen ein",
-    "usernameTitle": "Nur Buchstaben, Zahlen, Unterstriche und Bindestriche erlaubt",
+    "title": "Dein Spielername",
+    "subtitle": "Wähle einen Namen für die Rankings.",
+    "usernameLabel": "Name",
+    "usernamePlaceholder": "Name eingeben",
+    "usernameTitle": "Nur Buchstaben, Zahlen, Unter- und Bindestriche",
     "usernameHelp": "3 bis 50 Zeichen.",
-    "continueToGame": "Weiter zum Spiel",
-    "setting": "Wird gespeichert...",
+    "continueToGame": "Zum Spiel",
+    "setting": "Speichert...",
     "errors": {
-      "failedToSet": "Benutzername konnte nicht gespeichert werden."
+      "failedToSet": "Name konnte nicht gespeichert werden."
     }
   },
   "navbar": {
@@ -364,39 +364,39 @@
   },
   "flagSelector": {
     "title": "Wähle deine Flagge",
-    "searchPlaceholder": "Suche nach einem Land...",
-    "flagsAvailable": "{{count}} Flaggen verfügbar"
+    "searchPlaceholder": "Land suchen...",
+    "flagsAvailable": "{{count}} Flaggen wählbar"
   },
   "timeBar": {
-    "matchPoints": "GESCHWINDIGKEITS-PUNKTE"
+    "matchPoints": "TEMPO-BONUS"
   },
   "physicalGeoGame": {
-    "title": "Physische Geografie",
-    "chooseCategory": "Wähle eine Kategorie",
+    "title": "Naturgeografie",
+    "chooseCategory": "Kategorie wählen",
     "backToMenu": "Zurück",
     "menu": "Menü",
-    "legendary": "GEOGRAFIE-EXPERTE!",
+    "legendary": "EXPERTEN-LEVEL!",
     "perfect": "Perfekt!",
     "wellDone": "Gut gemacht!",
-    "legendaryMessage": "Legendär! Du hast alle {{count}} Orte fehlerfrei gefunden.",
+    "legendaryMessage": "Legendär! Alle {{count}} Orte fehlerfrei.",
     "locatedMessage": "Du hast {{score}} von {{total}} Orten gefunden.",
     "bestStreak": "Beste Serie: {{count}}",
-    "home": "Startseite",
-    "newGame": "Neues Spiel",
-    "correct": "✓ Richtig!",
-    "wrong": "✗ Falsch!",
-    "mapAria": "Interaktive Karte der physischen Geografie",
-    "loadingMapBase": "Karte wird vorbereitet...",
+    "home": "Start",
+    "newGame": "Nochmal",
+    "correct": "✓ Treffer!",
+    "wrong": "✗ Daneben!",
+    "mapAria": "Naturgeografie Karte",
+    "loadingMapBase": "Karte lädt...",
     "categories": {
-      "mountains": "Gebirge und Erhebungen",
-      "rivers": "Flüsse und Seen",
-      "deserts": "Wüsten der Welt",
-      "waters": "Meere, Ozeane und Meerengen"
+      "mountains": "Berge & Gebirge",
+      "rivers": "Flüsse & Seen",
+      "deserts": "Wüsten",
+      "waters": "Gewässer"
     }
   },
   "flagMatch": {
-    "regionSelectorTitle": "Wähle eine Region",
-    "regionSelectorSubtitle": "Bestimme, für welchen Kontinent du üben möchtest.",
+    "regionSelectorTitle": "Region wählen",
+    "regionSelectorSubtitle": "Bestimme den Kontinent zum Üben.",
     "regionWorld": "Weltweit",
     "regionEurope": "Europa",
     "regionAsia": "Asien",
@@ -408,24 +408,24 @@
     "practiceMode": "Übungsmodus",
     "legendary": "FLAGGEN-MEISTER!",
     "perfect": "Ohne Fehler!",
-    "legendaryMessage": "Ausgezeichnet! Du hast alle {{count}} Flaggen im ersten Versuch erkannt.",
-    "allFlagsMatched": "Du hast alle {{count}} Flaggen richtig zugeordnet!",
-    "bestStreak": "Längste Serie: {{count}}",
-    "legendaryQuote": "Du kennst die Flaggen besser als so mancher Diplomat.",
-    "home": "Startseite",
-    "newGame": "Nochmal spielen",
-    "mapAriaLabel": "Spielkarte für das Flaggen-Quiz"
+    "legendaryMessage": "Genial! Alle {{count}} Flaggen im 1. Versuch.",
+    "allFlagsMatched": "{{count}} Flaggen richtig zugeordnet!",
+    "bestStreak": "Top Serie: {{count}}",
+    "legendaryQuote": "Besser als ein Diplomat!",
+    "home": "Start",
+    "newGame": "Nochmal",
+    "mapAriaLabel": "Flaggen-Quiz Karte"
   },
   "countryIndex": {
-    "loading": "Datenbank wird geladen...",
+    "loading": "Lädt Daten...",
     "title": "Länderlexikon",
-    "subtitle": "Durchsuche alle {{count}} Länder und Territorien der Welt.",
+    "subtitle": "Durchsuche alle {{count}} Länder der Welt.",
     "stats": {
       "countries": "Länder",
       "showing": "Angezeigt"
     },
-    "searchPlaceholder": "Nach Land oder Hauptstadt suchen...",
-    "allRegions": "Alle Kontinente",
+    "searchPlaceholder": "Land oder Hauptstadt suchen...",
+    "allRegions": "Alle",
     "regions": {
       "africa": "Afrika",
       "americas": "Amerika",
@@ -435,103 +435,103 @@
       "oceania": "Ozeanien",
       "unknown": "Andere"
     },
-    "noCountriesFound": "Keine Länder gefunden",
-    "tryAdjustingFilters": "Versuche, den Suchbegriff oder Kontinent zu ändern.",
+    "noCountriesFound": "Nichts gefunden",
+    "tryAdjustingFilters": "Passe Suche oder Kontinent an.",
     "seoTitleWithCountry": "{{country}} – Infos & Flagge | World Quiz",
-    "seoDescriptionWithCountry": "Fakten über {{country}}: Hauptstadt, Einwohnerzahl, Fläche, Sprachen und Nachbarländer auf einen Blick.",
+    "seoDescriptionWithCountry": "Fakten über {{country}}: Hauptstadt, Einwohner, Fläche, Sprachen und Nachbarn auf einen Blick.",
     "flagAlt": "{{name}} Flagge"
   },
   "worldMap": {
-    "loading": "Daten werden geladen...",
+    "loading": "Lädt Daten...",
     "capitalLabel": "Hauptstadt: ",
     "capitalsLabel": "Hauptstädte: ",
-    "capitalUnknown": "Nicht angegeben",
-    "exploreWorld": "Weltkarte erkunden",
-    "clickCountryHint": "Klicke auf ein Land, um Details zu sehen.",
-    "loadingMap": "Karte wird gezeichnet...",
+    "capitalUnknown": "Unbekannt",
+    "exploreWorld": "Weltkarte",
+    "clickCountryHint": "Klick auf ein Land für Details.",
+    "loadingMap": "Karte lädt...",
     "interactiveGlobeAria": "Interaktiver Globus"
   },
   "seo": {
     "routes": {
       "home": {
         "title": "Flaggen-Quiz & Interaktive Weltkarte | World Quiz",
-        "description": "Spiele das beste Geografie-Quiz! Teste dein Wissen auf unserer interaktiven Weltkarte, lerne alle Flaggen und erklimme die weltweiten Bestenlisten."
+        "description": "Spiele das beste Geografie-Quiz! Teste dein Wissen auf der interaktiven Weltkarte, lerne Flaggen und erklimme die Bestenlisten."
       },
       "leaderboards": {
-        "title": "Bestenlisten: Flaggen-Quiz & Geografie | World Quiz",
-        "description": "Sieh dir die Top-Spieler im Flaggen-Quiz, Karten-Match und beim Länder-Raten an. Vergleiche deine Ergebnisse im Geografie-Spiel."
+        "title": "Bestenlisten: Flaggen & Geografie | World Quiz",
+        "description": "Top-Spieler im Flaggen-Quiz, Geo-Match und Länder-Raten. Vergleiche deine Ergebnisse weltweit."
       },
       "map": {
         "title": "Interaktive Weltkarte & Geografie-Lernspiel",
-        "description": "Erkunde Länder, Hauptstädte und Flaggen auf unserer klickbaren Weltkarte. Perfekt, um schnell Erdkunde zu lernen."
+        "description": "Erkunde Länder, Hauptstädte und Flaggen auf unserer Karte. Perfekt, um schnell Erdkunde zu lernen."
       },
       "countries": {
         "title": "Länderlexikon & Flaggen der Welt | World Quiz",
-        "description": "Die große Geografie-Datenbank. Finde Fakten über alle Länder: Hauptstädte, Einwohner, Flächen, Sprachen und Nachbarstaaten."
+        "description": "Die große Geografie-Datenbank. Finde Fakten über alle Länder: Hauptstädte, Einwohner, Flächen, Sprachen und Nachbarn."
       },
       "flagMatch": {
         "title": "Flaggen-Quiz: Länder und Flaggen lernen | World Quiz",
-        "description": "Meistere das ultimative Flaggen-Quiz. Trainiere dein Gedächtnis und lerne alle Flaggen der Welt oder auf einem bestimmten Kontinent."
+        "description": "Meistere das Flaggen-Quiz. Trainiere dein Gedächtnis und lerne alle Flaggen der Welt oder nach Kontinent."
       },
       "shapeMatch": {
-        "title": "Geografie-Match: Flaggen und Umrisse | World Quiz",
-        "description": "Ordne Flaggen, Länder, Hauptstädte und Umrisse gegen die Zeit zu. Ein rasantes Geografie-Quiz für alle Altersgruppen."
+        "title": "Geo-Match: Flaggen und Umrisse | World Quiz",
+        "description": "Ordne Flaggen, Länder, Hauptstädte und Umrisse gegen die Zeit zu. Ein rasantes Quiz für alle."
       },
       "physicalGeo": {
-        "title": "Physische Geografie & Weltkarte Quiz | World Quiz",
-        "description": "Finde Berge, Flüsse, Seen und Wüsten in unserem interaktiven Geografie-Quiz auf der stummen Karte."
+        "title": "Naturgeografie & Weltkarte Quiz | World Quiz",
+        "description": "Finde Berge, Flüsse, Seen und Wüsten in unserem interaktiven Quiz auf der stummen Karte."
       },
       "guessCountry": {
         "title": "Land erraten: Das Geografie-Rätsel | World Quiz",
-        "description": "Finde das gesuchte Land in 5 Versuchen durch Hinweise zu Entfernung und Himmelsrichtung auf unserer Weltkarte."
+        "description": "Finde das gesuchte Land in 5 Versuchen durch Hinweise zu Distanz und Richtung."
       },
       "terms": {
-        "title": "Nutzungsbedingungen | World Quiz",
-        "description": "Lies die Nutzungsbedingungen, Kontoregeln und Fair-Play-Richtlinien für World Quiz."
+        "title": "AGB | World Quiz",
+        "description": "Lies die Nutzungsbedingungen und Fair-Play-Richtlinien für World Quiz."
       },
       "privacy": {
         "title": "Datenschutz | World Quiz",
-        "description": "Erfahre, wie World Quiz mit persönlichen Daten, Cookies und Kontoinformationen umgeht."
+        "description": "Erfahre, wie World Quiz mit deinen Daten, Cookies und Kontoinfos umgeht."
       },
       "auth": {
-        "title": "Bei World Quiz anmelden",
-        "description": "Melde dich an oder erstelle ein World Quiz Konto, um deinen Fortschritt zu speichern und in den Bestenlisten aufzusteigen."
+        "title": "Login | World Quiz",
+        "description": "Logge dich ein oder erstelle ein World Quiz Konto, um in den Rankings aufzusteigen."
       },
       "setNickname": {
-        "title": "Benutzernamen wählen | World Quiz",
-        "description": "Wähle einen öffentlichen Benutzernamen für dein World Quiz Profil und die globalen Bestenlisten."
+        "title": "Spielername wählen | World Quiz",
+        "description": "Wähle einen Spielernamen für dein Profil und die globalen Rankings."
       },
       "settings": {
-        "title": "Kontoeinstellungen | World Quiz",
-        "description": "Verwalte Sprache, Benutzernamen und dein Profilbild in deinem World Quiz Konto."
+        "title": "Konto-Einstellungen | World Quiz",
+        "description": "Verwalte Sprache, Name und Profilbild in deinem World Quiz Konto."
       },
       "notFound": {
-        "title": "Seite nicht gefunden | World Quiz",
-        "description": "Diese Seite existiert leider nicht. Kehre zurück, um unsere Geografie-Spiele und die Weltkarte zu erkunden."
+        "title": "Nicht gefunden | World Quiz",
+        "description": "Diese Seite existiert nicht. Kehre zurück zu unseren Geografie-Spielen."
       }
     },
     "h1": {
       "mainMenu": "Geografie-Quiz & Flaggen-Raten",
       "worldMap": "Interaktive Weltkarte",
-      "flagMatch": "Flaggen-Quiz Spiel",
-      "physicalGeo": "Physische Geografie Quiz",
-      "shapeMatch": "Geografie-Zuordnungsspiel",
+      "flagMatch": "Flaggen-Quiz",
+      "physicalGeo": "Naturgeografie Quiz",
+      "shapeMatch": "Geo-Zuordnungsspiel",
       "guessCountry": "Land erraten Quiz"
     }
   },
   "game": {
-    "startHint": "Tippe auf ein beliebiges Land auf der Karte, um zu beginnen",
-    "loading": "Wird geladen...",
-    "loadError": "Fehler beim Laden des Spiels:",
+    "startHint": "Tippe auf ein Land, um zu starten",
+    "loading": "Lädt...",
+    "loadError": "Fehler beim Laden:",
     "attempts": "Versuche",
     "attemptsValue": "{{used}} / {{max}}",
-    "remaining": "Verbleibende Versuche: {{remaining}}",
+    "remaining": "Übrig: {{remaining}}",
     "targetFound": "Richtig!",
     "targetMissed": "Keine Versuche mehr!",
-    "targetReveal": "Wir haben folgendes Land gesucht: {{country}}.",
-    "historyEmpty": "Deine Tipps werden hier angezeigt.",
-    "playAgain": "Erneut spielen",
-    "guessLabel": "Versuch #{{index}}",
+    "targetReveal": "Gesucht war: {{country}}.",
+    "historyEmpty": "Hier erscheinen deine Tipps.",
+    "playAgain": "Nochmal",
+    "guessLabel": "Tipp #{{index}}",
     "locked": "Gesperrt",
     "km": "{{value}} km",
     "hints": {
@@ -540,15 +540,15 @@
       "population": "Einwohner",
       "area": "Fläche",
       "direction": "Richtung",
-      "exactDistance": "Entfernung"
+      "exactDistance": "Distanz"
     },
     "tooltip": {
-      "population": "Wird nach dem 2. Versuch freigeschaltet",
-      "area": "Wird nach dem 2. Versuch freigeschaltet",
-      "direction": "Wird nach dem 3. Versuch freigeschaltet"
+      "population": "Ab Versuch 2 frei",
+      "area": "Ab Versuch 2 frei",
+      "direction": "Ab Versuch 3 frei"
     },
     "mapPanel": {
-      "body": "Hinweise werden nacheinander freigeschaltet: zuerst Kontinent/Region, nach dem zweiten Versuch Einwohnerzahl und Fläche, danach die genaue Entfernung und Himmelsrichtung."
+      "body": "Hinweise öffnen sich schrittweise: zuerst Kontinent/Region, nach Tipp 2 Einwohner & Fläche, dann Distanz & Richtung."
     }
   }
 }
