@@ -37,6 +37,11 @@
         "title": "Land erraten",
         "description": "Finde das versteckte Land durch Distanz- und Richtungshilfen.",
         "tag": "Neu"
+      },
+      "bangOnline": {
+        "title": "Bang! Online",
+        "description": "Spiele das legendäre Wild-West-Kartenspiel direkt in deinem Browser.",
+        "tag": "Partner"
       }
     }
   },

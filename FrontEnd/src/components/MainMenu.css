@@ -5,6 +5,8 @@
 .menu-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:14px;min-height:140px;box-shadow:0 8px 24px rgba(0,0,0,.25);transition:transform .15s ease,box-shadow .15s ease,background .15s ease}
 .menu-card:hover{transform:translateY(-2px);box-shadow:0 12px 28px rgba(0,0,0,.35)}
 .menu-card.disabled{opacity:.7;cursor:not-allowed}
+.menu-card.partner{border-color:rgba(139,92,246,.3)}
+.menu-card.partner:hover{border-color:rgba(139,92,246,.5);background:rgba(139,92,246,.05)}
 .menu-card{width:100%;text-align:left}
 .menu-card-body{padding:18px}
 .menu-card-body h3{margin:0 0 6px 0;font-size:18px;color:#fff}
