@@ -85,7 +85,7 @@ export function usePhysicalGeoGame(categoryKey: string = "all"): PhysicalGeoGame
       featureTypes = [];
     } else if (key === "rivers") {
       baseFeatures = await getFeaturesByCategoryAsync(key);
-      featureTypes = ["rivers"];
+      featureTypes = ["rivers", "lakes"];
     } else if (key === "waters") {
       baseFeatures = await getFeaturesByCategoryAsync(key);
       featureTypes = ["waters", "lakes"];
