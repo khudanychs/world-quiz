@@ -23,6 +23,11 @@ interface Country {
   capital: string[];
   region: string;
   subregion: string;
+  subregion_cs: string;
+  subregion_de: string;
+  languages: Record<string, string>;
+  languages_cs: Record<string, string>;
+  languages_de: Record<string, string>;
 }
 
 const countriesCacheByLanguage = new Map<string, Country[]>();
@@ -186,6 +191,11 @@ export default function CountryIndex() {
               capital: getLocalizedCapitals(c, currentLanguage),
               region: c.region || 'Unknown',
               subregion: c.subregion || '',
+              subregion_cs: c.subregion_cs || '',
+              subregion_de: c.subregion_de || '',
+              languages: c.languages || {},
+              languages_cs: c.languages_cs || {},
+              languages_de: c.languages_de || {},
             };
           });
         
@@ -240,6 +250,7 @@ export default function CountryIndex() {
   const regionTranslationKeys: Record<string, string> = {
     Africa: 'countryIndex.regions.africa',
     Americas: 'countryIndex.regions.americas',
+    Antarctic: 'countryIndex.regions.antarctic',
     Asia: 'countryIndex.regions.asia',
     Europe: 'countryIndex.regions.europe',
     Oceania: 'countryIndex.regions.oceania',

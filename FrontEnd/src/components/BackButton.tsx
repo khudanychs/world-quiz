@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { BACK_BUTTON_STYLE, BACK_BUTTON_HOVER } from '../utils/sharedStyles';
 
 interface BackButtonProps {
@@ -16,12 +17,15 @@ interface BackButtonProps {
  */
 export const BackButton: React.FC<BackButtonProps> = ({ 
   onClick, 
-  label = "Back", 
+  label, 
   icon,
   style, 
   className,
   enableEscapeKey = true
 }) => {
+  const { t } = useTranslation();
+  const displayLabel = label || t('nav.back');
+
   //ESC handler
   useEffect(() => {
     if(!enableEscapeKey) return;
@@ -63,7 +67,7 @@ export const BackButton: React.FC<BackButtonProps> = ({
       {...BACK_BUTTON_HOVER}
     >
       {icon || defaultIcon}
-      <span>{label}</span>
+      <span>{displayLabel}</span>
     </button>
   );
 };

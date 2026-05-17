@@ -17,6 +17,11 @@ interface Country {
   capital: string[];
   region: string;
   subregion: string;
+  subregion_cs?: string;
+  subregion_de?: string;
+  languages?: Record<string, string>;
+  languages_cs?: Record<string, string>;
+  languages_de?: Record<string, string>;
 }
 
 interface CountryDetailsProps {
@@ -38,6 +43,18 @@ export default function CountryDetails({ country, onClose, onCountryClick }: Cou
     currentLanguage,
     'officialName'
   );
+
+  const localizedSubregion = currentLanguage === 'cs' ? (country.subregion_cs || stats.subregion) : 
+                             currentLanguage === 'de' ? (country.subregion_de || stats.subregion) : 
+                             stats.subregion;
+
+  const getLocalizedLanguage = (langName: string) => {
+    if (currentLanguage === 'en') return langName;
+    const langObj = currentLanguage === 'cs' ? country.languages_cs : country.languages_de;
+    if (!langObj || !country.languages) return langName;
+    const code = Object.keys(country.languages).find(k => country.languages![k] === langName);
+    return code && langObj[code] ? langObj[code] : langName;
+  };
   
   const handleBorderClick = (borderCode: string, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -153,8 +170,8 @@ export default function CountryDetails({ country, onClose, onCountryClick }: Cou
               <p className="capital">
                 {t('countryDetails.capital')}: {country.capital[0] || t('countryDetails.notAvailable')}
               </p>
-              {stats.subregion && (
-                <span className="region">{stats.subregion}</span>
+              {localizedSubregion && (
+                <span className="region">{localizedSubregion}</span>
               )}
             </div>
           </header>
@@ -209,7 +226,7 @@ export default function CountryDetails({ country, onClose, onCountryClick }: Cou
                   </span>
                 </div>
                 <p className="currency-rate-note">
-                  {currency.name} ({currency.symbol || currencyCode})
+                  {t(`currencies.${currency.name}`, { defaultValue: currency.name })} ({currency.symbol || currencyCode})
                   {!exchangeRate.loading && !exchangeRate.error && 
                     ` ${t('countryDetails.exchangeRatesUpdated')}`}
                 </p>
@@ -223,7 +240,7 @@ export default function CountryDetails({ country, onClose, onCountryClick }: Cou
               <h2>{t('countryDetails.languages')}</h2>
               <div className="detail-list">
                 {stats.officialLanguages.map((lang) => (
-                  <span key={lang} className="detail-chip">{lang}</span>
+                  <span key={lang} className="detail-chip">{getLocalizedLanguage(lang)}</span>
                 ))}
               </div>
             </section>

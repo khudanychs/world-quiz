@@ -348,6 +348,13 @@ function injectIntoCountries(records, dictionaryIndex) {
       if (cs) rec.languages_cs = cs;
       if (de) rec.languages_de = de;
     }
+
+    if (rec.subregion) {
+      const subCs = translate(dictionaryIndex, rec.subregion, "cs");
+      const subDe = translate(dictionaryIndex, rec.subregion, "de");
+      if (subCs) rec.subregion_cs = subCs;
+      if (subDe) rec.subregion_de = subDe;
+    }
   }
   return touched;
 }
