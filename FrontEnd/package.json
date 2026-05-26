@@ -1,5 +1,5 @@
 {
-  "name": "world-quiz",
+  "name": "frontend",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -10,9 +10,9 @@
     "prerender:strict": "node ./scripts/prerender-from-sitemap.mjs --strict-seo",
     "verify:prerender": "node ./scripts/verify-prerender-count.mjs",
     "build": "vite build",
-    "build:with-sitemap": "npm run generate:sitemap && vite build",
-    "build:seo": "npm run build:with-sitemap && npm run prerender && npm run verify:prerender",
-    "build:seo:strict": "npm run build:with-sitemap && npm run prerender:strict && npm run verify:prerender",
+    "build:with-sitemap": "pnpm generate:sitemap && vite build",
+    "build:seo": "pnpm build:with-sitemap && pnpm prerender && pnpm verify:prerender",
+    "build:seo:strict": "pnpm build:with-sitemap && pnpm prerender:strict && pnpm verify:prerender",
     "preview": "vite preview"
   },
   "dependencies": {

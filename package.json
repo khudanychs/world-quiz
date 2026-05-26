@@ -4,13 +4,12 @@
   "private": true,
   "description": "World Quiz - Interactive geography game",
   "scripts": {
-    "dev": "npm run dev --prefix FrontEnd",
-    "build": "npm run build --prefix FrontEnd",
-    "build:seo": "npm run build:frontend:seo",
-    "build:frontend:seo": "npm run build:seo:strict --prefix FrontEnd",
-    "preview": "npm run preview --prefix FrontEnd",
-    "install:frontend": "cd FrontEnd && npm install",
-    "deploy": "npm run build:frontend:seo && firebase deploy"
+    "dev": "pnpm --filter frontend dev",
+    "build": "pnpm --filter frontend build",
+    "build:seo": "pnpm --filter frontend build:seo",
+    "build:frontend:seo": "pnpm --filter frontend build:seo:strict",
+    "preview": "pnpm --filter frontend preview",
+    "deploy": "pnpm build:frontend:seo && firebase deploy"
   },
   "keywords": [
     "world-quiz",
