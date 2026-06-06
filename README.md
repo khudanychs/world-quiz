@@ -28,18 +28,16 @@ Aplikace je navržena se striktním oddělením prezentační vrstvy, stavové l
 graph TB
     subgraph Client [Klientská vrstva - React 18 SPA]
         direction TB
-        Init[AppInitializer.tsx<br/>Blokování renderu do ověření]
         Router[React Router DOM v7<br/>i18n Locale Routing]
-        Auth[AuthContext.tsx<br/>Správa uživatelské relace]
+        Auth[AuthContext.tsx<br/>Dvoufázová inicializace relace]
         
-        Init --> Auth
         Auth --> Router
         
         subgraph Logic [Stavový management a Hooky]
-            H_PG[usePhysicalGeoGame.ts<br/>Správa polygonů a zoomu]
+            H_PG[usePhysicalGeoGame.ts<br/>Správa herního stavu]
             H_FM[useFlagMatchGame.ts<br/>Logika sérií a skóre]
             H_CM[useCardMatchGame.ts<br/>Fisher-Yates míchání karet]
-            H_CS[useCountryStats.ts<br/>Agregace dat a měn]
+            H_MAP[InteractiveMap.tsx<br/>Memoizace a zoom mapy]
         end
         
         Router --> Logic
@@ -48,13 +46,13 @@ graph TB
             MapSvc[MapDataService.ts<br/>Promise.all Lazy Loading]
             Worker[mapWorker.ts<br/>Zpracování TopoJSON na pozadí]
             Math[guessCountryMath.ts<br/>Výpočty Haversine formule]
-            Prefetch[dataPrefetch.ts<br/>Intent-based načítání]
+            Prefetch[dataPrefetch.ts<br/>Intent-based načítání žebříčků]
             Helmet[SEOHelmet.tsx<br/>Správa Canonical a Hreflang]
         end
         
         H_PG --> MapSvc
-        MapSvc --> Worker
-        H_FM -.-> Prefetch
+        MapSvc -.-> Worker
+        Router -.-> Prefetch
         Router --> Helmet
     end
 
@@ -99,10 +97,11 @@ Jádro aplikace tvoří čtyři vysoce optimalizované herní módy. Každý z n
 
 ## Zpracování geodat a Správa výkonu
 
-Vzhledem k tomu, že běžné webové mapy neposkytují potřebnou granularitu pro fyzickou geografii, obsahuje projekt vlastní pipeline pro kompresi a načítání prostorových dat:
+Vzhledem k množství překreslovaných SVG prvků (stovky polygonů při hraní Physical Geography) a objemu dat klade projekt extrémní důraz na optimalizaci:
 
-1. **Izolace pracovních vláken:** TopoJSON soubory mohou mít i po kompresi několik megabytů. Kdyby je aplikace parsovala v hlavním vlákně, došlo by k takzvanému zamrznutí UI. Aplikace proto využívá technologii **Web Workers** (`mapWorker.ts`), která složité dekompresní výpočty překládá na vedlejší procesorové jádro.
-2. **Lazy Loading a Prefetching:** Služba `MapDataService.ts` zajišťuje, že se obří datové sady (jako jsou světové oceány nebo detailní říční sítě) nestahují při startu aplikace, ale asynchronně až v momentě, kdy je hráč skutečně potřebuje. Modul `dataPrefetch.ts` navíc obsahuje logiku pro intent-based přednačítání (stahování dat ve chvíli, kdy uživatel myší najede na spouštěcí tlačítko).
+1. **Vícevrstvá Memoizace (`React.memo`):** Aby nedocházelo k propadu na 10 FPS při každém odpočtu herní časomíry, je komponenta `InteractiveMap.tsx` a její vrstvy (`MemoizedOverlay`) chráněna přes `React.memo` s využitím custom komparátorů. K překreslení dochází pouze při změně `visualStateKey`, nikoliv při ticku časovače.
+2. **Intent-based Prefetching Žebříčků:** Pro okamžité zobrazení dat z Firestore se využívá modul `dataPrefetch.ts`, který na pozadí spustí paralelní dotazy do databáze v momentě, kdy uživatel pouze najede myší na položku "Žebříčky" v navigaci.
+3. **Příprava na Web Workers:** Soubory typu `mapWorker.ts` a `MapDataService.ts` tvoří připravenou infrastrukturu pro delegování náročných konverzí TopoJSON na vedlejší procesorové vlákno, zatímco aktuálně aplikace spoléhá na efektivní in-memory cachování dat přímo v hlavním vlákně skrze `useGeoData.ts`.
 
 ## SEO a Prerendering pro SPA
 
@@ -116,7 +115,9 @@ Vyhledávače mají historicky problém se správnou indexací Single Page Aplik
 
 I když většina aplikační logiky leží na klientské straně, databázový model je striktně chráněn na úrovni serveru prostřednictvím souboru `firestore.rules`. 
 
-Pravidla neslouží jen k ověření totožnosti (`request.auth.token.email_verified == true`), ale fungují jako robustní validátor dat. Při zápisu do kolekce `/scores` se na straně Googlu kontroluje, zda odeslaná hodnota `score` odpovídá datovému typu číslo, zda není záporná a zda matematicky nepřevyšuje limit daného módu. Podobně je řešena ochrana před duplikací uživatelských jmen skrze dedikovanou kolekci `/usernames`.
+Pravidla neslouží jen k ověření totožnosti (`request.auth.token.email_verified == true`), ale fungují jako robustní validátor dat:
+* **Anti-cheat limity:** Při zápisu do skóre kolekcí se kontroluje, zda hodnota matematicky nepřevyšuje hard-cap daného módu (např. max 25 pro flag-match). 
+* **Server-side Rate Limiting:** Ochrana kolekce `/usernames` přímo v pravidlech databáze zamezuje spamu tím, že povoluje maximálně 2 změny jména za měsíc a vynucuje striktní 7denní cooldown mezi změnami.
 
 ## Struktura repozitáře
 
