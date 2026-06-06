@@ -10,6 +10,7 @@ import {
   type GeoFeatureCollection,
 } from "./geo";
 import type { PhysicalGeoMode } from "./modes/types";
+import { MapDataService } from "../../services/MapDataService";
 
 export function useGeoData(
   categoryKey: string | null,
@@ -25,8 +26,6 @@ export function useGeoData(
   const needsDetailedLandMask = hasActiveMode && activeMode.dataNeeds.landMask;
   const usesTopoLandBase = hasActiveMode && !needsDetailedLandMask;
 
-  const marineTopoCache = useRef<GeoFeatureCollection | null>(null);
-  const landGeoCache = useRef<GeoPermissibleObjects | null>(null);
   const riverGeoCache = useRef<GeoFeatureCollection | null>(null);
   const lakeGeoCache = useRef<GeoFeatureCollection | null>(null);
 
@@ -45,56 +44,19 @@ export function useGeoData(
   }, [categoryKey, usesTopoLandBase]);
 
   useEffect(() => {
-    if (!needsMarine) {
+    if (!needsMarine && !needsDetailedLandMask) {
       setMarineData(null);
-      return;
-    }
-    if (marineTopoCache.current) {
-      setMarineData(marineTopoCache.current);
-      return;
-    }
-    fetch(MARINE_URL)
-      .then((r) => r.json())
-      .then((raw: unknown) => {
-        const extracted = extractGeoFeatureCollection(raw, ["marine", "water", "ocean"]);
-        if (!extracted) {
-          setMarineData(null);
-          return;
-        }
-        marineTopoCache.current = extracted;
-        setMarineData(extracted);
-      })
-      .catch(() => {});
-  }, [needsMarine]);
-
-  useEffect(() => {
-    if (!needsDetailedLandMask) {
       setLandGeoRaw(null);
       return;
     }
-    if (landGeoCache.current) {
-      setLandGeoRaw(landGeoCache.current);
-      return;
-    }
-    fetch(GEO_LAND_URL)
-      .then((r) => r.json())
-      .then((raw: unknown) => {
-        let geom: GeoPermissibleObjects | null = extractLandGeometry(raw, ["land", "geoland", "countries", "landmask"]);
 
-        if (!geom) return;
-        type MultiPoly = { type: "MultiPolygon"; coordinates: number[][][][] };
-        if (geoArea(geom as unknown as Parameters<typeof geoArea>[0]) > 2 * Math.PI) {
-          geom = {
-            type: "MultiPolygon",
-            coordinates: (geom as unknown as MultiPoly).coordinates
-              .map((poly) => poly.map((ring) => [...ring].reverse())),
-          } as unknown as GeoPermissibleObjects;
-        }
-        landGeoCache.current = geom;
-        setLandGeoRaw(geom);
+    MapDataService.loadBaseMapData(needsDetailedLandMask, needsMarine)
+      .then(({ landGeoRaw, marineData }) => {
+        setLandGeoRaw(needsDetailedLandMask && landGeoRaw ? landGeoRaw : null);
+        setMarineData(needsMarine && marineData ? marineData : null);
       })
-      .catch(() => {});
-  }, [needsDetailedLandMask]);
+      .catch((err) => console.error("Worker data load failed:", err));
+  }, [needsMarine, needsDetailedLandMask]);
 
   useEffect(() => {
     if (!needsRivers) {
