@@ -27,10 +27,10 @@ export function getLanguageFromLocalePrefix(prefix: string): 'en' | 'cs' | 'de' 
   return null;
 }
 
-export function stripLocalePrefix(pathname: string): string {
+export function stripLocalePrefix(pathname: string): string { 
   if (!pathname || pathname === '/') return '/';
 
-  const parts = pathname.split('/').filter(Boolean);
+  const parts = pathname.split('/').filter(Boolean); //Boolean converts empty strings to false, so this removes empty segments
   if (parts.length === 0) return '/';
 
   const first = parts[0].toLowerCase();
