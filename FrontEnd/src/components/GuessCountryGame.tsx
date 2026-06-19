@@ -57,14 +57,6 @@ type CountryData = {
   borders?: string[];
 };
 
-type CountryStatsData = {
-  cca2: string;
-  population?: number;
-  area?: number;
-  region?: string;
-  subregion?: string;
-};
-
 type RestLookupInfo = {
   name: string;
   cca2: string;
@@ -227,29 +219,9 @@ export default function GuessCountryGame() {
         const countries = (await countriesRes.json()) as CountryData[];
         const topology = (await topologyRes.json()) as Topology;
 
-        let statsByCode: Record<string, CountryStatsData> = {};
-        try {
-          const statsRes = await fetch("https://restcountries.com/v3.1/all?fields=cca2,population,area,region,subregion");
-          if (statsRes.ok) {
-            const stats = (await statsRes.json()) as CountryStatsData[];
-            statsByCode = Object.fromEntries(stats.map((s) => [s.cca2, s]));
-          }
-        } catch {
-          // Fallback to local data if external stats are unavailable.
-        }
-
-        const mergedCountries: CountryData[] = countries.map((c) => {
-          const ext = statsByCode[c.cca2];
-          if (!ext) return c;
-
-          return {
-            ...c,
-            region: ext.region || c.region,
-            subregion: ext.subregion || c.subregion,
-            population: typeof ext.population === "number" ? ext.population : c.population,
-            area: typeof ext.area === "number" ? ext.area : c.area,
-          };
-        });
+        // population/area/region/subregion now live in the local
+        // countries-full.json — no external REST Countries call needed.
+        const mergedCountries: CountryData[] = countries;
 
         const builtLookup = buildRestLookup(mergedCountries, i18n.language) as Record<string, RestLookupInfo>;
         const hintLookup = buildCountryHintLookup(mergedCountries);

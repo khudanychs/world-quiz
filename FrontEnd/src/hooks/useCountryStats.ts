@@ -213,16 +213,17 @@ export function useCountryStats(cca2: string | null): CountryStats {
       setData(prev => ({ ...prev, loading: true, error: null }));
       
       try {
-        const response = await fetch(
-          `https://restcountries.com/v3.1/alpha/${cca2}`,
-          { signal: controller.signal }
+        // Read from the local enriched countries-full.json instead of the
+        // (now deprecated/paid) REST Countries API. fetchCountriesData() caches
+        // the dataset, so this resolves instantly after the first load.
+        const allCountries = (await fetchCountriesData()) as any[];
+        const country = allCountries.find(
+          (c: any) => (c.cca2 || '').toUpperCase() === normalizedCca2
         );
-        
-        if (!response.ok) {
-          throw new Error(`Failed to fetch country data: ${response.statusText}`);
+
+        if (!country) {
+          throw new Error(`Country ${cca2} not found in local dataset`);
         }
-        
-        const [country] = await response.json();
         //EXCLUDE WRONG LANGUAGES FOR CERTAIN COUNTRIES
         const languageExclusions: Record<string, Set<string>> = {
           'CZ': new Set(['slk']), 

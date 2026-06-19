@@ -409,9 +409,20 @@ export function buildCountryLookupWithCapitals(
     }
   }
   
-  // Add special territories from SPECIAL_PLAYABLE
+  // Add special territories from SPECIAL_PLAYABLE.
+  // If the territory exists in the dataset, use its LOCALIZED name/capitals
+  // (so e.g. "Western Sahara" shows as "Westsahara" in DE / "Západní Sahara" in CS);
+  // fall back to the English SPECIAL_PLAYABLE data only when it's missing entirely.
+  const countriesByCca2 = new Map(countries.map((c) => [c.cca2, c]));
   for (const [cca2, data] of Object.entries(SPECIAL_PLAYABLE)) {
-    addEntry(data.name, { name: data.name, cca2, flag: `/flags-v2/${cca2.toLowerCase()}.svg`, capitals: data.capitals });
+    const c = countriesByCca2.get(cca2);
+    const localizedName = c ? getLocalizedCountryName(c, language) : data.name;
+    const capitals = c ? getLocalizedCapitals(c, language) : data.capitals;
+    const info = { name: localizedName, cca2, flag: `/flags-v2/${cca2.toLowerCase()}.svg`, capitals };
+    // Key under both the English name (raw map clicks) and the localized name,
+    // all pointing at the localized display info.
+    addEntry(data.name, info);
+    addEntry(localizedName, info);
   }
   
   return lookup;
