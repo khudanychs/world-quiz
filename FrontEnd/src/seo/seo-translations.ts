@@ -138,7 +138,7 @@ export function toCanonicalUrlWithLanguage(path: string, currentLanguage?: strin
   const localePrefix = toLocalePrefix(currentLanguage);
 
   if (normalized === "/") {
-    return new URL(`/${localePrefix}/`, SEO_BASE_URL).toString();
+    return new URL(`/${localePrefix}`, SEO_BASE_URL).toString();
   }
 
   const canonicalPath = isLocalizedPath(normalized) ? normalized : `/${localePrefix}${normalized}`;

@@ -247,7 +247,7 @@ export default function App() {
   if (shouldRedirect) {
     return (
       <AppInitializer>
-        <LoadingFallback />
+        <Navigate to={shouldRedirect.to} replace />
       </AppInitializer>
     );
   }

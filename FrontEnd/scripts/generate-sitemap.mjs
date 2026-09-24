@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 const BASE_URL = "https://world-quiz.com";
 
 const LOCALE_CONFIG = [
-  { code: "en", prefix: "" },
+  { code: "en", prefix: "/en" },
   { code: "cs", prefix: "/cs" },
   { code: "de", prefix: "/de" },
 ];
@@ -75,7 +75,7 @@ function localizeRoutePath(routePath, localePrefix) {
   }
 
   if (routePath === "/") {
-    return `${localePrefix}/`;
+    return localePrefix;
   }
 
   return `${localePrefix}${routePath}`;
@@ -267,7 +267,7 @@ async function main() {
         href: joinUrl(localizeRoutePath(entry.path, locale.prefix)),
       }));
 
-      const xDefaultHref = joinUrl(entry.path);
+      const xDefaultHref = joinUrl(localizeRoutePath(entry.path, "/en"));
 
       return LOCALE_CONFIG.map((locale) => ({
         ...entry,

@@ -104,6 +104,41 @@
         "regex": "^/cz/(.+)$",
         "destination": "/cs/:1",
         "type": 301
+      },
+      {
+        "regex": "^/countries/?$",
+        "destination": "/en/countries",
+        "type": 301
+      },
+      {
+        "regex": "^/countries/(.+)$",
+        "destination": "/en/countries/:1",
+        "type": 301
+      },
+      {
+        "regex": "^/terms/?$",
+        "destination": "/en/terms",
+        "type": 301
+      },
+      {
+        "regex": "^/privacy/?$",
+        "destination": "/en/privacy",
+        "type": 301
+      },
+      {
+        "regex": "^/leaderboards/?$",
+        "destination": "/en/leaderboards",
+        "type": 301
+      },
+      {
+        "regex": "^/map/?$",
+        "destination": "/en/map",
+        "type": 301
+      },
+      {
+        "regex": "^/game/(.+)$",
+        "destination": "/en/game/:1",
+        "type": 301
       }
     ],
     "rewrites": [
