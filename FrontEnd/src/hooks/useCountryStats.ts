@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { fetchCountriesData } from '../utils/countriesData';
+import { fetchCountriesData, getLoadedCountriesSync } from '../utils/countriesData';
 
 interface CountryStats {
   population: number;
@@ -114,36 +114,56 @@ function setCachedValue<T>(
   writeStorageObject(storageKey, cache);
 }
 
-let borderCountryIndexPromise: Promise<Map<string, { cca2: string; name: string }>> | null = null;
-
-async function getBorderCountryIndex(): Promise<Map<string, { cca2: string; name: string }>> {
-  if (!borderCountryIndexPromise) {
-    borderCountryIndexPromise = fetchCountriesData()
-      .then((allCountries: any[]) => new Map(
-        allCountries.map((c: any) => [c.cca3, { cca2: c.cca2, name: c.name.common }])
-      ))
-      .catch((error) => {
-        borderCountryIndexPromise = null;
-        throw error;
+function buildCountryStatsData(country: any, allCountries: any[]): CountryStatsData {
+  const languageExclusions: Record<string, Set<string>> = {
+    'CZ': new Set(['slk']), 
+  };
+  
+  const officialLanguageCodes = country.name?.nativeName 
+    ? Object.keys(country.name.nativeName)
+    : [];
+  
+  const excludedCodes = languageExclusions[country.cca2] || new Set();
+  const filteredCodes = officialLanguageCodes.filter((code: string) => !excludedCodes.has(code));
+  
+  const officialLangs = country.languages && filteredCodes.length > 0
+    ? filteredCodes
+        .map((code: string) => country.languages[code])
+        .filter((lang: any) => lang)
+    : Object.values(country.languages || {});
+  
+  const cca3ToCca2Map = new Map(
+    allCountries.map((c: any) => [c.cca3, { cca2: c.cca2, name: c.name?.common || c.name }])
+  );
+  
+  let borderCountries: Array<{ cca2: string; cca3: string; name: string }> = [];
+  if (country.borders && country.borders.length > 0) {
+    borderCountries = country.borders
+      .map((cca3: string) => {
+        const mapped = cca3ToCca2Map.get(cca3);
+        return mapped ? { cca2: mapped.cca2, cca3, name: mapped.name } : { cca2: cca3, cca3, name: cca3 };
       });
   }
 
-  return borderCountryIndexPromise;
+  return {
+    population: country.population || 0,
+    area: country.area || 0,
+    currencies: country.currencies || {},
+    region: country.region || '',
+    subregion: country.subregion || '',
+    officialLanguages: (officialLangs.length > 0 ? officialLangs : Object.values(country.languages || {})) as string[],
+    timezones: country.timezones || [],
+    borders: country.borders || [],
+    borderCountries,
+  };
 }
 
-// Using fawazahmed0 exchange API - free, updated daily
-// https://github.com/fawazahmed0/exchange-api
-
 /**
- * Fetches country statistics from REST Countries API (only for detailed stats)
- * Uses local countries-full.json for border country mapping (ISO3 to ISO2)
- * Only fetches when cca2 is provided (when detail view is opened)
- * 
- * OPTIMIZATION: Check cache first before setting loading state to prevent flicker
+ * Fetches country statistics from local dataset
+ * OPTIMIZATION: Check cache and loaded data first to eliminate flicker
  */
 export function useCountryStats(cca2: string | null): CountryStats {
   const [data, setData] = useState<CountryStats>(() => {
-    // Initialize with cached data if available (prevents initial loading flash)
     if (cca2) {
       const normalizedCca2 = cca2.toUpperCase();
       const cached = getValidCachedValue(countryStatsCache, normalizedCca2, COUNTRY_STATS_TTL_MS);
@@ -153,6 +173,22 @@ export function useCountryStats(cca2: string | null): CountryStats {
           loading: false,
           error: null,
         };
+      }
+
+      const allCountries = getLoadedCountriesSync();
+      if (allCountries) {
+        const country = allCountries.find(
+          (c: any) => (c.cca2 || '').toUpperCase() === normalizedCca2
+        );
+        if (country) {
+          const statsData = buildCountryStatsData(country, allCountries);
+          setCachedValue(countryStatsCache, normalizedCca2, statsData, COUNTRY_STATS_STORAGE_KEY);
+          return {
+            ...statsData,
+            loading: false,
+            error: null,
+          };
+        }
       }
     }
     return {
@@ -165,7 +201,7 @@ export function useCountryStats(cca2: string | null): CountryStats {
       timezones: [],
       borders: [],
       borderCountries: [],
-      loading: false,
+      loading: cca2 ? true : false,
       error: null,
     };
   });
@@ -191,7 +227,6 @@ export function useCountryStats(cca2: string | null): CountryStats {
     const normalizedCca2 = cca2.toUpperCase();
     const cached = getValidCachedValue(countryStatsCache, normalizedCca2, COUNTRY_STATS_TTL_MS);
     if (cached) {
-      // Only update if data changed to prevent re-renders
       setData(prev => {
         const isSameData = prev.population === cached.population && 
                           prev.area === cached.area &&
@@ -207,15 +242,8 @@ export function useCountryStats(cca2: string | null): CountryStats {
       return;
     }
 
-    const controller = new AbortController();
-    
     const fetchStats = async () => {
-      setData(prev => ({ ...prev, loading: true, error: null }));
-      
       try {
-        // Read from the local enriched countries-full.json instead of the
-        // (now deprecated/paid) REST Countries API. fetchCountriesData() caches
-        // the dataset, so this resolves instantly after the first load.
         const allCountries = (await fetchCountriesData()) as any[];
         const country = allCountries.find(
           (c: any) => (c.cca2 || '').toUpperCase() === normalizedCca2
@@ -224,56 +252,8 @@ export function useCountryStats(cca2: string | null): CountryStats {
         if (!country) {
           throw new Error(`Country ${cca2} not found in local dataset`);
         }
-        //EXCLUDE WRONG LANGUAGES FOR CERTAIN COUNTRIES
-        const languageExclusions: Record<string, Set<string>> = {
-          'CZ': new Set(['slk']), 
-        };
-        
-        // Extract official languages from nativeName object (more accurate)
-        // These are the languages used for official country names
-        const officialLanguageCodes = country.name?.nativeName 
-          ? Object.keys(country.name.nativeName)
-          : [];
-        
-        // Apply exclusions if country has specific non-official languages
-        const excludedCodes = languageExclusions[country.cca2] || new Set();
-        const filteredCodes = officialLanguageCodes.filter((code: string) => !excludedCodes.has(code));
-        
-        // Get the actual language names for official language codes
-        const officialLangs = country.languages && filteredCodes.length > 0
-          ? filteredCodes
-              .map((code: string) => country.languages[code])
-              .filter((lang: any) => lang) // Remove undefined entries
-          : Object.values(country.languages || {});
-        
-        // Fetch all countries to map cca3 to cca2 for borders
-        let borderCountries: Array<{ cca2: string; cca3: string; name: string }> = [];
-        if (country.borders && country.borders.length > 0) {
-          try {
-            const cca3ToCca2Map = await getBorderCountryIndex();
-            
-            borderCountries = country.borders
-              .map((cca3: string) => {
-                const mapped = cca3ToCca2Map.get(cca3) as { cca2: string; name: string } | undefined;
-                return mapped ? { cca2: mapped.cca2, cca3, name: mapped.name } : { cca2: cca3, cca3, name: cca3 };
-              });
-          } catch (err) {
-            // Border mapping failed, continue without border data
-          }
-        }
 
-        const nextData: CountryStatsData = {
-          population: country.population || 0,
-          area: country.area || 0,
-          currencies: country.currencies || {},
-          region: country.region || '',
-          subregion: country.subregion || '',
-          officialLanguages: (officialLangs.length > 0 ? officialLangs : Object.values(country.languages || {})) as string[],
-          timezones: country.timezones || [],
-          borders: country.borders || [],
-          borderCountries,
-        };
-
+        const nextData = buildCountryStatsData(country, allCountries);
         setCachedValue(countryStatsCache, normalizedCca2, nextData, COUNTRY_STATS_STORAGE_KEY);
         setData({
           ...nextData,
@@ -281,19 +261,15 @@ export function useCountryStats(cca2: string | null): CountryStats {
           error: null,
         });
       } catch (err: any) {
-        if (err.name !== 'AbortError') {
-          setData(prev => ({
-            ...prev,
-            loading: false,
-            error: err.message || 'Failed to load country data',
-          }));
-        }
+        setData(prev => ({
+          ...prev,
+          loading: false,
+          error: err.message || 'Failed to load country data',
+        }));
       }
     };
 
     fetchStats();
-
-    return () => controller.abort();
   }, [cca2]);
 
   return data;
@@ -304,10 +280,16 @@ export function useCountryStats(cca2: string | null): CountryStats {
  * Uses fawazahmed0 exchange API (free, updated daily)
  */
 export function useExchangeRate(currencyCode: string | null): ExchangeRate {
-  const [data, setData] = useState<ExchangeRate>({
-    rate: 0,
-    loading: false,
-    error: null,
+  const [data, setData] = useState<ExchangeRate>(() => {
+    if (!currencyCode || currencyCode === 'USD') {
+      return { rate: 1, loading: false, error: null };
+    }
+    const normalized = currencyCode.toLowerCase();
+    const cachedRate = getValidCachedValue(exchangeRateCache, normalized, EXCHANGE_RATE_TTL_MS);
+    if (cachedRate !== null) {
+      return { rate: cachedRate, loading: false, error: null };
+    }
+    return { rate: 0, loading: false, error: null };
   });
 
   useEffect(() => {

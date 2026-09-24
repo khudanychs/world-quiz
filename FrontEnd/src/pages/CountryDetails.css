@@ -4,22 +4,15 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.85);
-  backdrop-filter: blur(2px);
+  background: rgba(11, 16, 32, 0.94);
   z-index: 2000;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 20px;
-  animation: fadeIn 0.2s ease;
+  animation: fadeIn 0.15s ease;
   overflow: hidden;
   contain: layout paint;
-}
-
-@supports not (backdrop-filter: blur(1px)) {
-  .country-detail-modal {
-    backdrop-filter: none;
-  }
 }
 
 @keyframes fadeIn {
@@ -291,7 +284,6 @@
 @media (max-width: 480px) {
   .country-detail-modal {
     padding: 0;
-    backdrop-filter: none;
   }
 
   .country-detail-content {

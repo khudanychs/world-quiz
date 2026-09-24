@@ -22,12 +22,17 @@ interface CountryData {
 }
 
 let countriesPromise: Promise<CountryData[]> | null = null;
+let loadedCountries: any[] | null = null;
 
 /**
  * Fetches countries-full.json with caching
  * Multiple calls will share the same promise, preventing duplicate network requests
  */
-export async function fetchCountriesData(): Promise<CountryData[]> {
+export async function fetchCountriesData(): Promise<any[]> {
+  if (loadedCountries) {
+    return loadedCountries;
+  }
+
   if (!countriesPromise) {
     countriesPromise = fetch(withStaticDataVersion('/countries-full.json'), { cache: 'no-store' })
       .then((response) => {
@@ -35,6 +40,10 @@ export async function fetchCountriesData(): Promise<CountryData[]> {
           throw new Error('Failed to load countries-full.json');
         }
         return response.json();
+      })
+      .then((data) => {
+        loadedCountries = data;
+        return data;
       })
       .catch((error) => {
         // Reset promise on error so next call will retry
@@ -46,9 +55,14 @@ export async function fetchCountriesData(): Promise<CountryData[]> {
   return countriesPromise;
 }
 
+export function getLoadedCountriesSync(): any[] | null {
+  return loadedCountries;
+}
+
 /**
  * Clears the cached promise (useful for testing or force-refresh scenarios)
  */
 export function clearCountriesCache(): void {
   countriesPromise = null;
+  loadedCountries = null;
 }

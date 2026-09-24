@@ -289,7 +289,7 @@ async function main() {
 
       try {
         await page.waitForFunction(
-          () => document.title.trim().length > 0,
+          () => !document.querySelector('[data-app-loading="true"]') && !!document.querySelector('link[rel="canonical"]'),
           undefined,
           { timeout: prerenderSeoWaitTimeoutMs },
         );

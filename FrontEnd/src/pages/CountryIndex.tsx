@@ -31,81 +31,18 @@ interface Country {
 }
 
 const countriesCacheByLanguage = new Map<string, Country[]>();
-const warmedFlagsByLanguage = new Set<string>();
-const warmedFlagSrcs = new Set<string>();
-const warmingFlags = new Set<string>();
 
-function getFlagSrc(code: string): string {
-  return `/flags-v2/${code.toLowerCase()}.svg`;
-}
-
-function warmFlagImage(src: string): void {
-  if (warmedFlagSrcs.has(src) || warmingFlags.has(src)) return;
-
-  warmingFlags.add(src);
-  const img = new Image();
-  img.decoding = 'async';
-  img.loading = 'eager';
-  img.onload = () => {
-    warmedFlagSrcs.add(src);
-    warmingFlags.delete(src);
-  };
-  img.onerror = () => {
-    warmingFlags.delete(src);
-  };
-  img.src = src;
-}
-
-function LazyFlag({ code, name, eager = false }: { code: string; name: string; eager?: boolean }) {
+function FlagImage({ code, name, eager = false }: { code: string; name: string; eager?: boolean }) {
   const { t } = useTranslation();
-  const flagSrc = getFlagSrc(code);
-  const [shouldLoad, setShouldLoad] = useState(eager || warmedFlagSrcs.has(flagSrc));
-  const [loaded, setLoaded] = useState(warmedFlagSrcs.has(flagSrc));
-  const imageRef = useRef<HTMLImageElement | null>(null);
-
-  useEffect(() => {
-    if (eager) {
-      setShouldLoad(true);
-      return;
-    }
-    if (warmedFlagSrcs.has(flagSrc)) {
-      setShouldLoad(true);
-      setLoaded(true);
-      return;
-    }
-
-    const element = imageRef.current;
-    if (!element || !('IntersectionObserver' in window)) {
-      setShouldLoad(true);
-      return;
-    }
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry?.isIntersecting) {
-          setShouldLoad(true);
-          observer.disconnect();
-        }
-      },
-      { rootMargin: '900px 0px' }
-    );
-
-    observer.observe(element);
-    return () => observer.disconnect();
-  }, [eager, flagSrc]);
-
   return (
     <img
-      ref={imageRef}
-      src={shouldLoad ? flagSrc : undefined}
+      src={`/flags-v2/${code.toLowerCase()}.svg`}
       alt={t('countryIndex.flagAlt', { name })}
-      className={`country-card-flag ${loaded ? 'is-loaded' : ''}`}
+      className="country-card-flag"
       loading={eager ? 'eager' : 'lazy'}
       decoding="async"
-      onLoad={() => {
-        warmedFlagSrcs.add(flagSrc);
-        setLoaded(true);
-      }}
+      width="48"
+      height="36"
     />
   );
 }
@@ -117,11 +54,20 @@ export default function CountryIndex() {
   const navigate = useNavigate();
   const { countryCode } = useParams<{ countryCode?: string }>();
   
-  const [countries, setCountries] = useState<Country[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [countries, setCountries] = useState<Country[]>(() => {
+    return countriesCacheByLanguage.get(currentLanguage) || [];
+  });
+  const [loading, setLoading] = useState(() => {
+    return !countriesCacheByLanguage.has(currentLanguage);
+  });
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedRegion, setSelectedRegion] = useState('all');
-  const [selectedCountry, setSelectedCountry] = useState<Country | null>(null);
+  const [selectedCountry, setSelectedCountry] = useState<Country | null>(() => {
+    if (!countryCode) return null;
+    const cached = countriesCacheByLanguage.get(currentLanguage);
+    if (!cached) return null;
+    return cached.find(c => c.cca2 === countryCode.toUpperCase()) || null;
+  });
 
   const getLocalizedOfficialName = (country: Country) => getLocalizedName(
     {
@@ -136,12 +82,12 @@ export default function CountryIndex() {
   useEffect(() => {
     const cachedCountries = countriesCacheByLanguage.get(currentLanguage);
     if (cachedCountries) {
-      setCountries(cachedCountries);
-      setLoading(false);
+      if (countries.length === 0) setCountries(cachedCountries);
+      if (loading) setLoading(false);
       if (countryCode) {
         const normalizedCode = countryCode.toUpperCase();
         const country = cachedCountries.find(c => c.cca2 === normalizedCode);
-        if (country) setSelectedCountry(country);
+        if (country && selectedCountry?.cca2 !== country.cca2) setSelectedCountry(country);
       }
       return;
     }
@@ -219,25 +165,6 @@ export default function CountryIndex() {
     loadCountries();
   }, [currentLanguage, countryCode]);
 
-  useEffect(() => {
-    if (countries.length === 0 || warmedFlagsByLanguage.has(currentLanguage)) return;
-
-    warmedFlagsByLanguage.add(currentLanguage);
-    const hotList = countries.slice(0, 140);
-
-    const warmChunk = (startIndex: number) => {
-      const endIndex = Math.min(startIndex + 24, hotList.length);
-      for (let i = startIndex; i < endIndex; i += 1) {
-        warmFlagImage(getFlagSrc(hotList[i].cca2));
-      }
-      if (endIndex < hotList.length) {
-        window.setTimeout(() => warmChunk(endIndex), 35);
-      }
-    };
-
-    const handle = window.setTimeout(() => warmChunk(0), 80);
-    return () => window.clearTimeout(handle);
-  }, [countries, currentLanguage]);
 
   const regions = useMemo(() => {
     const regionSet = new Set<string>();
@@ -313,7 +240,15 @@ export default function CountryIndex() {
   if (loading) {
     return (
       <div className="country-index-wrap">
-        <div className="country-loading">{t('countryIndex.loading')}</div>
+        {countryCode ? (
+          <div className="country-detail-modal">
+            <article className="country-detail-content">
+              <div className="country-detail-loading">{t('countryIndex.loading')}</div>
+            </article>
+          </div>
+        ) : (
+          <div className="country-loading">{t('countryIndex.loading')}</div>
+        )}
       </div>
     );
   }
@@ -328,8 +263,11 @@ export default function CountryIndex() {
         preserveExplicitMeta={!!selectedCountry}
       />
       
-      {/* OPRAVA: Wrapper a Container se renderují vždycky, Modal je pouze nad nima! */}
-      <div className="country-index-wrap">
+      <div 
+        className="country-index-wrap"
+        aria-hidden={!!selectedCountry}
+        style={selectedCountry ? { visibility: 'hidden' } : undefined}
+      >
         <div className="country-index-container">
           <>
             <header className="country-index-header">
@@ -383,7 +321,7 @@ export default function CountryIndex() {
                     className="country-card"
                     onClick={() => handleCountryClick(country)}
                   >
-                    <LazyFlag code={country.cca2} name={country.name} eager={index < 36} />
+                    <FlagImage code={country.cca2} name={country.name} eager={index < 36} />
                     <div className="country-card-info">
                       <h2 className="country-card-name">
                         {getLocalizedName(
