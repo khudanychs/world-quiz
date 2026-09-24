@@ -96,13 +96,13 @@
     ],
     "redirects": [
       {
-        "regex": "^/cz$",
+        "regex": "^/cz/?$",
         "destination": "/cs",
         "type": 301
       },
       {
-        "regex": "^/cz/(.*)$",
-        "destination": "/cs/$1",
+        "regex": "^/cz/(.+)$",
+        "destination": "/cs/:1",
         "type": 301
       }
     ],

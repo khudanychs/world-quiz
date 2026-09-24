@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useCountryStats, useExchangeRate } from '../hooks/useCountryStats';
 import { BackButton } from '../components/BackButton';
@@ -34,6 +34,18 @@ export default function CountryDetails({ country, onClose, onCountryClick }: Cou
   const { t, i18n } = useTranslation();
   const currentLanguage = getBaseLanguage(i18n.language);
   const stats = useCountryStats(country.cca2);
+  const contentRef = useRef<HTMLElement | null>(null);
+
+  const scrollToTop = () => {
+    if (contentRef.current) {
+      contentRef.current.scrollTop = 0;
+    }
+  };
+
+  useLayoutEffect(() => {
+    scrollToTop();
+  }, [country.cca2]);
+
   const displayCountryName = getLocalizedName(
     {
       officialName: country.officialName,
@@ -58,6 +70,7 @@ export default function CountryDetails({ country, onClose, onCountryClick }: Cou
   
   const handleBorderClick = (borderCode: string, e: React.MouseEvent) => {
     e.stopPropagation();
+    scrollToTop();
     if (onCountryClick) {
       onCountryClick(borderCode);
     }
@@ -111,7 +124,7 @@ export default function CountryDetails({ country, onClose, onCountryClick }: Cou
   if (stats.loading) {
     return (
       <div className="country-detail-modal" onClick={handleBackdropClick}>
-        <div className="country-detail-content">
+        <div ref={contentRef as any} className="country-detail-content">
           <div className="country-detail-loading">
             {t('countryDetails.loading')}
           </div>
@@ -123,7 +136,7 @@ export default function CountryDetails({ country, onClose, onCountryClick }: Cou
   if (stats.error) {
     return (
       <div className="country-detail-modal" onClick={handleBackdropClick}>
-        <div className="country-detail-content">
+        <div ref={contentRef as any} className="country-detail-content">
           <div className="country-detail-close">
             <button className="country-detail-close-btn" onClick={onClose}>
               ×
@@ -143,7 +156,7 @@ export default function CountryDetails({ country, onClose, onCountryClick }: Cou
 
   return (
     <div className="country-detail-modal" onClick={handleBackdropClick}>
-      <article className="country-detail-content">
+      <article ref={contentRef} className="country-detail-content">
         {/* Close Button */}
         <div className="country-detail-close">
           <BackButton 

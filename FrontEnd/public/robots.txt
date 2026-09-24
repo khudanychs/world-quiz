@@ -4,7 +4,6 @@ Allow: /
 
 # Disallow API and internal paths
 Disallow: /api/
-Disallow: /*?*
 
 # Sitemap location
 Sitemap: https://world-quiz.com/sitemap.xml
