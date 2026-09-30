@@ -1,5 +1,5 @@
 import React, { useState, lazy, Suspense, useEffect, useRef, useMemo } from 'react';
-import { Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation, useNavigate, useNavigationType } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Navbar } from './components/Navbar';
 import { useAuth } from './contexts/AuthContext';
@@ -145,13 +145,20 @@ export default function App() {
   const { i18n } = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();
+  const navigationType = useNavigationType();
+  const isInitialMountRef = useRef(true);
   const contentRef = useRef<HTMLDivElement | null>(null);
   const previousPlainPathRef = useRef<string>(stripLocalePrefix(location.pathname));
+
+  useEffect(() => {
+    isInitialMountRef.current = false;
+  }, []);
 
   const prefixSegment = location.pathname.split('/').filter(Boolean)[0] || '';
   const lowerPrefixSegment = prefixSegment.toLowerCase();
   const languageFromPath = getLanguageFromLocalePrefix(prefixSegment);
   const plainPathname = stripLocalePrefix(location.pathname);
+  const currentLanguage = getBaseLanguage(i18n.language);
 
   const { user } = useAuth();
   const isMapRoute = plainPathname.startsWith('/map');
@@ -168,12 +175,21 @@ export default function App() {
 
     if (!languageFromPath) {
       return { 
-        to: `${buildLocalizedPath(location.pathname, getBaseLanguage(i18n.language))}${location.search}${location.hash}`
+        to: `${buildLocalizedPath(location.pathname, currentLanguage)}${location.search}${location.hash}`
+      };
+    }
+
+    // When navigating via browser Back/Forward (POP) after initial mount,
+    // preserve the user's actively selected language rather than reverting
+    // to the language recorded in previous history entries.
+    if (!isInitialMountRef.current && navigationType === 'POP' && languageFromPath !== currentLanguage) {
+      return {
+        to: `${buildLocalizedPath(location.pathname, currentLanguage)}${location.search}${location.hash}`
       };
     }
 
     return null;
-  }, [languageFromPath, location, i18n.language, lowerPrefixSegment]);
+  }, [languageFromPath, location, currentLanguage, lowerPrefixSegment, navigationType]);
 
   useEffect(() => {
     if (shouldRedirect) {
@@ -182,14 +198,16 @@ export default function App() {
   }, [shouldRedirect, navigate]);
 
   useEffect(() => {
-    if (!languageFromPath) {
+    if (!languageFromPath || shouldRedirect) {
       return;
     }
 
-    if (getBaseLanguage(i18n.language) !== languageFromPath) {
+    // Synchronize app language from URL only when navigation is not a POP
+    // (e.g. forward navigation to a specific localized path)
+    if (navigationType !== 'POP' && currentLanguage !== languageFromPath) {
       void changeAppLanguage(languageFromPath);
     }
-  }, [languageFromPath, i18n.language]);
+  }, [languageFromPath, currentLanguage, shouldRedirect, navigationType]);
 
   useEffect(() => {
     const previousPath = previousPlainPathRef.current;
