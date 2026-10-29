@@ -1,3 +1,8 @@
+export interface LeaderboardUser {
+  uid: string;
+  displayName?: string | null;
+}
+
 import { getTodayDateString } from "./dateUtils";
 
 // Lazy load Firebase modules
@@ -10,61 +15,11 @@ async function getFirebaseModules() {
 }
 
 /**
- * Saves the user's Shape Match score to Firestore (All-Time and Daily leaderboards).
- * Updates only if the new score is higher than the existing personal best.
- */
-export async function saveShapeMatchScore(user: any, score: number) {
-  if (!user || score <= 0) return;
-
-  try {
-    const { doc, getDoc, setDoc, serverTimestamp, db } = await getFirebaseModules();
-    
-    // 1. Save to ALL-TIME scores (shapeMatchScores/{userId})
-    const allTimeDocRef = doc(db, "shapeMatchScores", user.uid);
-    const allTimeDoc = await getDoc(allTimeDocRef);
-    const allTimeBest = allTimeDoc.exists() ? (allTimeDoc.data().score || 0) : 0;
-
-    if (score > allTimeBest) {
-      await setDoc(allTimeDocRef, {
-        userId: user.uid,
-        username: user.displayName || "Anonymous",
-        score: score,
-        createdAt: serverTimestamp(),
-        gameType: "ShapeMatch",
-      });
-      // New all-time best score saved
-    }
-
-    // 2. Save to DAILY scores (dailyShapeMatchScores/{date}_{userId})
-    const todayDate = getTodayDateString();
-    const dailyDocId = `${todayDate}_${user.uid}`;
-    const dailyDocRef = doc(db, "dailyShapeMatchScores", dailyDocId);
-    const dailyDoc = await getDoc(dailyDocRef);
-    const todayBest = dailyDoc.exists() ? (dailyDoc.data().score || 0) : 0;
-
-    if (score > todayBest) {
-      await setDoc(dailyDocRef, {
-        date: todayDate,
-        userId: user.uid,
-        username: user.displayName || "Anonymous",
-        score: score,
-        createdAt: serverTimestamp(),
-        gameType: "ShapeMatch",
-      });
-      // New daily best score saved
-    }
-  } catch (error) {
-    console.error("Error saving shape match score:", error);
-    throw error; // Propagate error if needed
-  }
-}
-
-/**
  * Saves the user's Cards Match score (generalized) to Firestore.
  * Collections: cardsMatchScores (all-time) and dailyCardsMatchScores (today).
  * Updates only if the new score is higher than the existing personal best.
  */
-export async function saveCardsMatchScore(user: any, score: number) {
+export async function saveCardsMatchScore(user: LeaderboardUser | null | undefined, score: number) {
   if (!user || score <= 0) return;
 
   try {
@@ -123,7 +78,7 @@ export async function saveCardsMatchScore(user: any, score: number) {
  * Increments the count of successful country guesses in Guess the Country game.
  * Stores in guessCountryStats/{userId} collection.
  */
-export async function incrementGuessCountryWins(user: any) {
+export async function incrementGuessCountryWins(user: LeaderboardUser | null | undefined) {
   if (!user) return;
 
   try {
@@ -133,10 +88,11 @@ export async function incrementGuessCountryWins(user: any) {
     const statsDoc = await getDoc(statsDocRef);
 
     if (statsDoc.exists()) {
-      // Increment existing counter
+      // Increment existing counter, and refresh username if available
       await setDoc(statsDocRef, {
         countriesGuessed: increment(1),
         lastUpdated: serverTimestamp(),
+        ...(user.displayName ? { username: user.displayName } : {}),
       }, { merge: true });
     } else {
       // Create new document with initial counter

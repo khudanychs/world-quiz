@@ -2,8 +2,9 @@ declare const __STATIC_DATA_VERSION__: string;
 
 function getStaticDataVersion(): string {
   const configured = import.meta.env.VITE_STATIC_DATA_VERSION;
-  if (typeof configured === "string" && configured.trim()) {
-    return configured.trim();
+  if (typeof configured === "string") {
+    const trimmed = configured.trim();
+    if (trimmed) return trimmed;
   }
   return __STATIC_DATA_VERSION__;
 }
@@ -17,10 +18,7 @@ export function withStaticDataVersion(path: string): string {
 }
 
 export async function fetchStaticJson<T>(path: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(withStaticDataVersion(path), {
-    cache: "no-store",
-    ...init,
-  });
+  const response = await fetch(withStaticDataVersion(path), init);
 
   if (!response.ok) {
     throw new Error(`Failed to fetch ${path} (HTTP ${response.status})`);

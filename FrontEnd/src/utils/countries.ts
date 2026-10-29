@@ -1,3 +1,5 @@
+import { getBaseLanguage } from "./localeRouting";
+
 /**
  * SPECIAL PLAYABLE TERRITORIES
  * These are included in Flag Match despite not being UN members.
@@ -108,13 +110,6 @@ export const normalizeApos = (s: string) => s.replace(/\u2019/g, "'");
 /** Remove diacritics (accents) from text */
 export const stripDiacritics = (s: string) =>
   s.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-
-function getBaseLanguage(language: string): 'en' | 'cs' | 'de' {
-  const value = (language || 'en').toLowerCase().split('-')[0];
-  if (value === 'cs' || value === 'cz') return 'cs';
-  if (value === 'de') return 'de';
-  return 'en';
-}
 
 const OFFICIAL_NAME_OVERRIDES = new Set(['CZ']);
 
@@ -293,6 +288,28 @@ export function buildCountryHintLookup(countries: CountryHintSource[]): Record<s
   return out;
 }
 
+function addLookupAliases<T>(
+  lookup: Record<string, T>,
+  englishName: string,
+  localizedName: string,
+  info: T
+): void {
+  const add = (key: string) => {
+    lookup[normalizeApos(key)] = info;
+    lookup[stripDiacritics(normalizeApos(key))] = info;
+  };
+
+  add(englishName);
+  add(localizedName);
+
+  for (const [mapName, displayName] of Object.entries(MAP_TO_DISPLAY)) {
+    if (displayName === englishName || DISPLAY_TO_REST[displayName] === englishName) {
+      add(mapName);
+      add(displayName);
+    }
+  }
+}
+
 /** Build lookup table from REST Countries data */
 export function buildRestLookup(
   countries: CountryData[],
@@ -301,31 +318,15 @@ export function buildRestLookup(
   initializeGameEligibleCountries(countries);
 
   const currentLanguage = getBaseLanguage(language);
-  
   const lookup: Record<string, CountryInfo> = {};
-  
-  const addEntry = (key: string, val: CountryInfo) => {
-    lookup[normalizeApos(key)] = val;
-    lookup[stripDiacritics(normalizeApos(key))] = val;
-  };
 
   for (const c of countries) {
     const englishName = c.name.common;
     const localizedName = getLocalizedCountryName(c, currentLanguage);
     const flag = `/flags-v2/${c.cca2.toLowerCase()}.svg`;
     const info = { name: localizedName, cca2: c.cca2, flag, region: c.region };
-    
-    // Add main entry
-    addEntry(englishName, info);
-    addEntry(localizedName, info);
-    
-    // Add map name variations that point to this country
-    for (const [mapName, displayName] of Object.entries(MAP_TO_DISPLAY)) {
-      if (displayName === englishName || DISPLAY_TO_REST[displayName] === englishName) {
-        addEntry(mapName, info);
-        addEntry(displayName, info);
-      }
-    }
+
+    addLookupAliases(lookup, englishName, localizedName, info);
   }
   
   return lookup;
@@ -382,11 +383,6 @@ export function buildCountryLookupWithCapitals(
 ): Record<string, CountryInfoWithCapitals> {
   const lookup: Record<string, CountryInfoWithCapitals> = {};
   
-  const addEntry = (key: string, val: CountryInfoWithCapitals) => {
-    lookup[normalizeApos(key)] = val;
-    lookup[stripDiacritics(normalizeApos(key))] = val;
-  };
-
   for (const c of countries) {
     const englishName = c.name.common;
     const localizedName = getLocalizedCountryName(c, language);
@@ -397,16 +393,8 @@ export function buildCountryLookupWithCapitals(
       flag,
       capitals: getLocalizedCapitals(c, language),
     };
-    
-    addEntry(englishName, info);
-    addEntry(localizedName, info);
-    
-    for (const [mapName, displayName] of Object.entries(MAP_TO_DISPLAY)) {
-      if (displayName === englishName || DISPLAY_TO_REST[displayName] === englishName) {
-        addEntry(mapName, info);
-        addEntry(displayName, info);
-      }
-    }
+
+    addLookupAliases(lookup, englishName, localizedName, info);
   }
   
   // Add special territories from SPECIAL_PLAYABLE.
@@ -419,14 +407,11 @@ export function buildCountryLookupWithCapitals(
     const localizedName = c ? getLocalizedCountryName(c, language) : data.name;
     const capitals = c ? getLocalizedCapitals(c, language) : data.capitals;
     const info = { name: localizedName, cca2, flag: `/flags-v2/${cca2.toLowerCase()}.svg`, capitals };
-    // Key under both the English name (raw map clicks) and the localized name,
-    // all pointing at the localized display info.
-    addEntry(data.name, info);
-    addEntry(localizedName, info);
+    lookup[normalizeApos(data.name)] = info;
+    lookup[stripDiacritics(normalizeApos(data.name))] = info;
+    lookup[normalizeApos(localizedName)] = info;
+    lookup[stripDiacritics(normalizeApos(localizedName))] = info;
   }
   
   return lookup;
 }
-
-// Legacy export for backward compatibility
-export const restAliases = MAP_TO_DISPLAY;

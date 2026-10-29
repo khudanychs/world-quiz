@@ -64,7 +64,7 @@ export default function WorldMap() {
     (async () => {
       try {
         setLoading(true);
-        const res = await fetch(withStaticDataVersion('/countries-full.json'), { cache: 'no-store' });
+        const res = await fetch(withStaticDataVersion('/countries-full.json'));
         const data = (await res.json()) as Array<{
           name: { common: string };
           cca2: string;

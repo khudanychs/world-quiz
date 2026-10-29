@@ -61,11 +61,6 @@ export const PAGE_CONTAINER_STYLE: CSSProperties = {
   overscrollBehavior: "none",
 };
 
-/** Get gap style for portrait/landscape modes */
-export function getContainerGap(isPortrait: boolean): string {
-  return isPortrait ? "clamp(16px, 3vh, 32px)" : "0";
-}
-
 /** Common map wrapper style */
 export function getMapWrapperStyle(
   outerW: number,

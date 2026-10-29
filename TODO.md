@@ -22,50 +22,33 @@ Zbývá:
 
 ## Bezpečnost (firestore.rules)
 
-- [ ] **Vynutit `username_lower == username.lower()`** v kolekci `usernames`
-  (`allow update` i `allow create`). Aktuálně se kontroluje jen `is string`,
-  takže klient může podvrhnout `username_lower` a obejít case-insensitive
-  kontrolu jedinečnosti přezdívky.
-  Návrh:
-  ```
-  && request.resource.data.username_lower == request.resource.data.username.lower()
-  ```
-
-- [ ] **Přidat horní strop pro `streak`** v kolekcích `streaks` a `dailyStreaks`.
-  Aktuálně jen `streak >= 0`, žádné maximum → anti-cheat limit (např. 200) je
-  vynucený pouze na klientovi, ne na serveru.
-  Návrh:
-  ```
-  && request.resource.data.streak <= 200
-  ```
+- [x] **Vynutit `username_lower == username.lower()` a délku 1–50 / 3–50 znaků** v kolekci `usernames`
+  (`allow update` i `allow create`, odpovídá existujícímu frontendu a Google OAuth).
+- [x] **Přidat horní strop pro `streak`** v kolekcích `streaks` a `dailyStreaks` (`streak <= 250`, pokrývá všech 250 entit včetně případného rozšíření závislých území). Vynucena shoda ID dokumentu (`streakId == uid`, `dailyStreakId == date + '_' + uid`) zabraňující griefingu cizích záznamů.
+- [x] **Oprava a rozumné sanity meze pro skóre a herní statistiky (`firestore.rules`)**:
+  - `cardsMatchScores` / `dailyCardsMatchScores`: odstraněn umělý strop 50 000 (hráči běžně dosahují přes 130 000–200 000 bodů díky násobičům sérií). Nastaven anti-overflow strop `score <= 10000000` (a `score >= 0`), který chrání před poškozením layoutu a přetečením čísla v DB, aniž by omezoval legitimní gameplay. Pro `dailyCardsMatchScores` navíc vynuceno `dailyScoreId == date + '_' + uid`, což znemožňuje zablokování cizího denního skóre podvržením ID.
+  - `guessCountryStats`: odstraněn nesmyslný strop 250 (šlo o mylnou záměnu počtu států světa s celoživotním čítačem vyhraných her, který roste neomezeně s každou novou hrou). Nastaven pouze anti-overflow sanity check `countriesGuessed <= 10000000` (a `countriesGuessed >= 0`). Použito bezpečné čtení `request.resource.data.get('username', 'Anonymous')` a rozdělení create/update pravidel pro prevenci chyb u částečných patchů (`merge: true`).
 
 ## Úklid mrtvého kódu
 
-- [ ] **Odstranit / přepsat pravidlo `match /scores/{scoreId}`** s `score <= 25`
-  a `gameMode == 'flag-match' | 'capital-match'`. Kolekce `scores` se už
-  nepoužívá pro zápis (Flag Match píše do `streaks`). Jediná zmínka je úklid
-  při mazání účtu v `AuthContext.tsx` (~ř. 479).
-
-- [ ] **Mrtvý kód v `utils/guessCountryMath.ts`.** Nepoužité (neimportované):
-  `bearingDegrees`, `bearingToCompassEmoji`, `getDistanceCategoryKey` a typ
-  `DistanceCategoryKey`. Reálně se používají jen `haversineDistanceKm`,
-  `directionEmoji`, `compareHintEmoji` a typ `GeoPoint` (v `GuessCountryGame.tsx`).
-
+- [x] **Odstraněno pravidlo `match /scores/{scoreId}`** i nepoužívaná pravidla pro
+  `shapeMatchScores` a `dailyShapeMatchScores` z `firestore.rules`.
+- [x] **Mrtvý kód v `utils/guessCountryMath.ts`.** Smazány `getDistanceCategoryKey` a `DistanceCategoryKey`.
+  `directionEmoji` přepnuto na přesný `bearingDegrees` + `bearingToCompassEmoji` (s prahem 1e-5 pro shodu souřadnic).
+- [x] **Odstraněn mrtvý `scores` cleanup v `deleteAccount` (`AuthContext.tsx`).**
 - [ ] **`getFirebaseErrorKey` v `utils/firebaseErrors.ts` je mrtvý kód** – nikde
   se neimportuje. Používá se jen `getFirebaseErrorMessage` (vrací EN text).
+
 ## utils/countries.ts – duplicity
 
-- [ ] **`getBaseLanguage` definovaná 4×** – `localeRouting.ts` (export) + lokální
-  kopie v `countries.ts`, `physicalFeatureLocalization.ts`, `terrainGeoFeatures.ts`.
-  → Sjednotit do jedné (import z `localeRouting`), zbylé tři smazat.
-- [ ] **`restAliases` (ř. 421) je mrtvý export** – nikde se neimportuje. Smazat.
+- [x] **`getBaseLanguage` definovaná 4×** – exportována z `localeRouting.ts`,
+  importována a využita v `countries.ts`, `physicalFeatureLocalization.ts`, `terrainGeoFeatures.ts`.
+- [x] **`restAliases` je mrtvý export** – smazáno.
 - [ ] **`buildRestLookup` vs `buildCountryLookupWithCapitals`** sdílí ~80 % kódu
   (smyčka, `addEntry`, MAP_TO_DISPLAY varianty). Obě se používají, ale dají se
   sloučit do jedné parametrizované funkce.
-- [ ] Zvážit, zda vlastní `name_cs`/`name_de` nejsou redundantní vůči
-  `translations.ces`/`translations.deu` z REST API (kromě hlavních měst, která
-  REST nepřekládá).
-
+- [x] **`name_cs` / `name_de` NEODSTRAŇOVAT** – vlastní překlady musí zůstat zachovány
+  (obsahují ruční úpravy a specifické názvy pro kvíz/mapu, REST Countries API je plně nenahradí).
 
 ## Refaktor – zjednodušší zpracování chyb
 
@@ -77,58 +60,42 @@ Zbývá:
 
 ## Možná vylepšení přesnosti
 
-- [ ] **`directionEmoji` (guessCountryMath) je nepřesný** – používá rovinnou
-  (equirektangulární) aproximaci místo sférického azimutu, na velké vzdálenosti
-  a blízko pólů ukazuje zavádějící směr. Přesnou variantu (`bearingDegrees` +
-  `bearingToCompassEmoji`) projekt už má napsanou, ale nepoužívá. Zvážit přepnutí.
-
-- [ ] **Odstranit mrtvý `scores` cleanup v `deleteAccount` (`AuthContext.tsx` ~ř. 475-483).**
-  Dotaz vždy vrátí prázdno (nic do `scores` nezapisuje). Bezpečné odstranit.
+- [x] **`directionEmoji` (guessCountryMath) přepnut na přesný azimut** – používá
+  `bearingDegrees` + `bearingToCompassEmoji`.
 
 ## DŮLEŽITÉ – neúplné mazání účtu (GDPR)
 
 - [ ] **`deleteAccount` nemaže veškerá uživatelská data.** Aktuálně maže jen
-  `usernames/{uid}`, (mrtvé) `scores` a Auth účet. Osiřelá data zůstávají v:
+  `usernames/{uid}` a Auth účet. Osiřelá data zůstávají v:
   `streaks`, `dailyStreaks`, `cardsMatchScores`, `dailyCardsMatchScores`,
-  `shapeMatchScores`, `dailyShapeMatchScores`, `guessCountryStats`, `users/{uid}`.
+  `guessCountryStats`, `users/{uid}`.
   → Potenciální GDPR problém + zbytky jmen v žebříčcích. Doplnit mazání všech
   kolekcí (ideálně přes Cloud Function s Admin SDK kvůli atomicitě).
 
 ## Nepoužité závislosti (package.json)
 
-- [ ] **`bootstrap`** (FrontEnd) – není nikde importován; `index.css` má vlastní
-  "Bootstrap replacement utilities". Lze odstranit.
-- [ ] **`circle-flags`** (FrontEnd, ^2.8.2) a **`react-circle-flags`** (root, ^0.0.25)
-  – ani jeden balíček není importován. Vlajky se servírují jako lokální statické
-  SVG z `FrontEnd/public/circle-flags/`. Obě závislosti lze pravděpodobně odstranit.
+- [x] **`bootstrap`** (FrontEnd) – smazáno z package.json a zámků.
+- [x] **`circle-flags`** (FrontEnd), **`react-circle-flags`** (root), a **`firebase-functions`** (FrontEnd)
+  – smazány z package.json i pnpm-lock.yaml.
 
 ## Drobnosti (index.html / SEO)
 
-- [ ] `<meta name="language" content="English" />` je natvrdo EN – nereflektuje
-  aktuální jazyk (cs/de). Zvážit odstranění (nahrazeno `<html lang>` přes Helmet).
+- [x] `<meta name="language" content="English" />` odstraněno z `index.html`.
 
 ## utils/localeRouting.ts
 
-- [ ] **`getLocalePrefixFromLanguage` je redundantní** – je to identita
-  `getBaseLanguage` (volá se jen 1× interně v `buildLocalizedPath`). Nahradit
-  volání za `getBaseLanguage(language)` a funkci smazat.
-- [ ] **Typovat návraty na `LocalePrefix`** místo ručního `'en' | 'cs' | 'de'`
-  (DRY). `getLanguageFromLocalePrefix` → `LocalePrefix | null`.
+- [x] **`getLocalePrefixFromLanguage` odstraněna** – nahrazena voláním `getBaseLanguage(language)`.
+- [x] **Typovat návraty na `LocalePrefix`** (`getBaseLanguage`, `getLanguageFromLocalePrefix`).
 
 ## utils/staticAssetVersion.ts
 
 - [ ] **`fetchStaticJson` je mrtvý kód** – nikde se neimportuje. Přitom je to
   čistější helper, který by nahradil ~10× opakovaný vzor
-  `fetch(withStaticDataVersion(path), {cache:'no-store'})` + ok check + json().
+  `fetch(withStaticDataVersion(path))` + ok check + json().
   → Buď zapojit všude (DRY), nebo smazat.
-- [ ] **`cache: 'no-store'` sabotuje cachování → plýtvá Hosting bandwidthem.**
-  `firebase.json` nastavuje na geo-JSON `immutable, max-age=1rok`, ale fetche je
-  stahují s `cache: 'no-store'`, což immutable cache na klientu přebije → každý
-  uživatel stahuje velká data při každém načtení znovu.
-  → OPRAVA: odstranit `cache: 'no-store'`, nechat `?v=` + immutable hlavičky.
-  Pak: během deploye cache (0 bandwidth), po deployi nové `?v=` → 1× re-download.
-  (`?v=` je v pořádku; globální razítko buildu pro řídké deploye stačí.)
-- [ ] Mikro: `getStaticDataVersion` volá `.trim()` 2×; uložit do proměnné.
+- [x] **`cache: 'no-store'` odstraněn ze statických fetchů.**
+  Ve `firebase.json` nastaveno `public, max-age=31536000, immutable` pro `**/*.json`.
+- [x] Mikro: `getStaticDataVersion` volá `.trim()` 2× – opraveno na 1 volání.
 
 ## Infrastruktura (Cloudflare)
 
@@ -139,21 +106,13 @@ Zbývá:
   → Optimalizace: agregovat top 10 do JEDNOHO dokumentu (1 read). K tomu už
   existuje scaffold: kolekce `leaderboard` v firestore.rules (`write: if false`,
   jen server). Cloud Function by ji udržovala. Zatím NEzapojeno.
-- [ ] **`getContainerGap` (sharedStyles) je mrtvý kód** – nikde se neimportuje.
-- [ ] **`getPrefetchedData` a `isPrefetched` (dataPrefetch) jsou mrtvý kód** –
-  `Leaderboard.tsx` čte `prefetchCache` přímo. Buď používat gettery a `prefetchCache`
-  udělat privátní (čistší), nebo gettery smazat.
-- [ ] **`saveShapeMatchScore` je mrtvý kód + osiřelé kolekce/indexy.** Funkce se
-  nikde nevolá; kolekce `shapeMatchScores`/`dailyShapeMatchScores` nikdo nezapisuje
-  → osiřelé i jejich indexy ve `firestore.indexes.json`. Živá cesta:
-  `saveCardsMatchScore` → `cardsMatchScores`. Pozůstatek po přejmenování hry
-  ShapeMatch → CardsMatch (route/SEO `/game/shape-match` zůstaly z SEO důvodů).
-  → Smazat funkci + osiřelé kolekce + indexy.
+- [x] **`getContainerGap` (sharedStyles)** – smazáno.
+- [x] **`getPrefetchedData` a `isPrefetched` (dataPrefetch)** – smazáno.
+- [x] **`saveShapeMatchScore` a osiřelé indexy** – `saveShapeMatchScore` smazáno,
+  indexy pro `shapeMatchScores` a `dailyShapeMatchScores` odstraněny z `firestore.indexes.json`.
 - [ ] **OTÁZKA: ukládá Physical Geography vůbec skóre?** `PhysicalGeoGame.tsx`
   nemá žádný `setDoc`/save. Ověřit, zda má mít žebříček.
-- [ ] **`saveShapeMatchScore` vs `saveCardsMatchScore` duplicita** – identická
-  logika "all-time + daily, ulož když lepší". Sjednotit do 1 parametrizované funkce.
-- [ ] **`user: any`** v leaderboardUtils – netypováno, použít Firebase `User` typ.
+- [x] **`user: any`** v leaderboardUtils – typováno pomocí `User | null | undefined`.
 - [ ] **sharedStyles: hover přes JS** (`onMouseEnter/Leave`) by byl v `.css` jeden
   řádek `:hover`. Statické styly → `.css`; jen dynamicky počítané rozměry nechat v JS.
 

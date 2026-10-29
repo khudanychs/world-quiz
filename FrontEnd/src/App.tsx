@@ -240,8 +240,8 @@ export default function App() {
     let cancelled = false;
     const warmMapData = () => {
       if (cancelled) return;
-      void fetch(withStaticDataVersion('/countries-110m.json'), { cache: 'no-store' }).catch(() => {});
-      void fetch(withStaticDataVersion('/countries-full.json'), { cache: 'no-store' }).catch(() => {});
+      void fetch(withStaticDataVersion('/countries-110m.json')).catch(() => {});
+      void fetch(withStaticDataVersion('/countries-full.json')).catch(() => {});
     };
 
     const useIdleCallback = 'requestIdleCallback' in window;
