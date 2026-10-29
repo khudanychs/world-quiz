@@ -123,7 +123,7 @@ export function useCardMatchGame(pair: { first: CardKind; second: CardKind }) {
         setState((s) => ({ ...s, loading: true, loadError: "" }));
 
         // Load REST Countries data for flags
-        const restRes = await fetch(withStaticDataVersion('/countries-full.json'), { cache: 'no-store' });
+        const restRes = await fetch(withStaticDataVersion('/countries-full.json'));
         if (!restRes.ok) {
           throw new Error(`Failed to load countries (HTTP ${restRes.status})`);
         }
@@ -138,7 +138,7 @@ export function useCardMatchGame(pair: { first: CardKind; second: CardKind }) {
         const caps = buildCountryLookupWithCapitals(restData, i18n.language);
 
         // Load TopoJSON for country shapes
-        const topoRes = await fetch(withStaticDataVersion('/countries-110m.json'), { cache: 'no-store' });
+        const topoRes = await fetch(withStaticDataVersion('/countries-110m.json'));
         if (!topoRes.ok) {
           throw new Error(`Failed to load map (HTTP ${topoRes.status})`);
         }

@@ -1,8 +1,7 @@
 import type { PhysicalFeature } from "./physicalFeatures";
 import { toPhysicalFeatureDisplayName } from "./physicalFeatureNames";
 import { withStaticDataVersion } from "./staticAssetVersion";
-
-type BaseLanguage = "en" | "cs" | "de";
+import { getBaseLanguage, type LocalePrefix as BaseLanguage } from "./localeRouting";
 
 interface FeatureLike {
   properties?: Record<string, unknown>;
@@ -25,13 +24,6 @@ const LOCALIZED_DATASETS: Record<string, string> = {
 };
 
 const translationLookupByLanguageAndDataset = new Map<string, Promise<Map<string, string>>>();
-
-function getBaseLanguage(language: string): BaseLanguage {
-  const value = (language || "en").toLowerCase().split("-")[0];
-  if (value === "cs" || value === "cz") return "cs";
-  if (value === "de") return "de";
-  return "en";
-}
 
 function normalizeLookupKey(name: string): string {
   return toPhysicalFeatureDisplayName(name).trim().toLowerCase();
@@ -84,7 +76,7 @@ async function buildTranslationLookup(
   const lookup = new Map<string, string>();
   const datasets = await Promise.all(
     datasetUrls.map(async (url) => {
-      const response = await fetch(url, { cache: 'no-store' });
+      const response = await fetch(url);
       if (!response.ok) {
         return null;
       }

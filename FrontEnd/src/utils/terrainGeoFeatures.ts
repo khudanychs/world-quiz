@@ -2,6 +2,7 @@ import type { PhysicalFeature } from "./physicalFeaturesTypes";
 import { feature as topoFeature } from "topojson-client";
 import type { GeometryCollection, Topology } from "topojson-specification";
 import { withStaticDataVersion } from "./staticAssetVersion";
+import { getBaseLanguage } from "./localeRouting";
 
 type Difficulty = PhysicalFeature["difficulty"];
 
@@ -54,13 +55,6 @@ const DESERT_POLYGON_FILTER: PolygonFilterConfig = {
 
 const mountainsPromiseByLanguage = new Map<string, Promise<PhysicalFeature[]>>();
 const desertsPromiseByLanguage = new Map<string, Promise<PhysicalFeature[]>>();
-
-function getBaseLanguage(language: string): "en" | "cs" | "de" {
-  const value = (language || "en").toLowerCase().split("-")[0];
-  if (value === "cs" || value === "cz") return "cs";
-  if (value === "de") return "de";
-  return "en";
-}
 
 function getLocalizedNameKeys(baseKeys: readonly string[], language: string): string[] {
   const currentLanguage = getBaseLanguage(language);
@@ -240,7 +234,7 @@ async function fetchGeoJson(
   url: string,
   preferredObjectKeys: readonly string[] = [],
 ): Promise<GeoJsonCollection> {
-  const response = await fetch(url, { cache: 'no-store' });
+  const response = await fetch(url);
   if (!response.ok) {
     throw new Error(`Failed to fetch ${url}`);
   }

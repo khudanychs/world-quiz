@@ -2,24 +2,6 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
-    // Scores collection - everyone can read (for leaderboard), only verified users can write
-    match /scores/{scoreId} {
-      allow read: if true;
-      allow create: if request.auth != null 
-                    && request.auth.token.email_verified == true
-                    && request.resource.data.userId == request.auth.uid
-                    && request.resource.data.username is string
-                    && request.resource.data.score is number
-                    && request.resource.data.score >= 0
-                    && request.resource.data.score <= 25
-                    && request.resource.data.gameMode is string
-                    && (request.resource.data.gameMode == 'flag-match' 
-                        || request.resource.data.gameMode == 'capital-match');
-      allow update, delete: if request.auth != null 
-                          && request.auth.token.email_verified == true
-                          && resource.data.userId == request.auth.uid;
-    }
-    
     // Usernames collection - for unique username enforcement
     match /usernames/{userId} {
       // Anyone can read to check if username is taken (even before registration)
@@ -28,12 +10,18 @@ service cloud.firestore {
       allow create: if request.auth != null 
                     && request.auth.uid == userId
                     && request.resource.data.username is string
-                    && request.resource.data.username_lower is string;
+                    && request.resource.data.username.size() >= 1
+                    && request.resource.data.username.size() <= 50
+                    && request.resource.data.username_lower is string
+                    && request.resource.data.username_lower == request.resource.data.username.lower();
       // User can update their own username record - enforce rate limiting when nick changes
       allow update: if request.auth != null 
                     && request.auth.uid == userId
                     && request.resource.data.username is string
+                    && request.resource.data.username.size() >= 3
+                    && request.resource.data.username.size() <= 50
                     && request.resource.data.username_lower is string
+                    && request.resource.data.username_lower == request.resource.data.username.lower()
                     && (
                       // Username not changing: no rate-limit checks needed
                       request.resource.data.username == resource.data.username
@@ -76,66 +64,58 @@ service cloud.firestore {
     match /streaks/{streakId} {
       // Everyone can read (for leaderboard display, including guests)
       allow read: if true;
-      // Only verified users can create their own streak records
+      // Only verified users can create their own streak records (streakId must match user's UID)
       allow create: if request.auth != null 
                     && request.auth.token.email_verified == true
+                    && streakId == request.auth.uid
                     && request.resource.data.userId == request.auth.uid
-                    && request.resource.data.username is string
+                    && request.resource.data.get('username', 'Anonymous') is string
                     && request.resource.data.streak is number
-                    && request.resource.data.streak >= 0;
+                    && request.resource.data.streak >= 0
+                    && request.resource.data.streak <= 250;
       // Users can update/delete their own streak records
-      allow update, delete: if request.auth != null 
-                          && request.auth.token.email_verified == true
-                          && resource.data.userId == request.auth.uid;
+      allow update: if request.auth != null 
+                    && request.auth.token.email_verified == true
+                    && streakId == request.auth.uid
+                    && resource.data.userId == request.auth.uid
+                    && (!('streak' in request.resource.data) || (
+                        request.resource.data.streak is number
+                        && request.resource.data.streak >= 0
+                        && request.resource.data.streak <= 250
+                       ));
+      allow delete: if request.auth != null 
+                    && request.auth.token.email_verified == true
+                    && streakId == request.auth.uid
+                    && resource.data.userId == request.auth.uid;
     }
     
     // Daily streaks collection - for "Today" leaderboard
     match /dailyStreaks/{dailyStreakId} {
       // Everyone can read (for leaderboard display, including guests)
       allow read: if true;
-      // Only verified users can create their own daily streak records
+      // Only verified users can create their own daily streak records.
+      // dailyStreakId MUST equal {date}_{uid} to prevent ID spoofing / griefing.
       allow create: if request.auth != null 
                     && request.auth.token.email_verified == true
+                    && dailyStreakId == request.resource.data.date + '_' + request.auth.uid
                     && request.resource.data.userId == request.auth.uid
-                    && request.resource.data.username is string
+                    && request.resource.data.get('username', 'Anonymous') is string
                     && request.resource.data.streak is number
                     && request.resource.data.streak >= 0
+                    && request.resource.data.streak <= 250
                     && request.resource.data.date is string;
       // Users can update/delete their own daily streak records
-      allow update, delete: if request.auth != null 
-                          && request.auth.token.email_verified == true
-                          && resource.data.userId == request.auth.uid;
-    }
-    
-    // Shape Match Scores collection - all-time high scores
-    match /shapeMatchScores/{userId} {
-      // Everyone can read (for leaderboard display, including guests)
-      allow read: if true;
-      // Authenticated users can create/update their own score records
-      allow create, update: if request.auth != null 
-                            && request.auth.uid == userId
-                            && request.resource.data.userId == request.auth.uid
-                            && request.resource.data.username is string
-                            && request.resource.data.score is number
-                            && request.resource.data.score >= 0;
-      // Users can delete their own score records
+      allow update: if request.auth != null 
+                    && request.auth.token.email_verified == true
+                    && dailyStreakId == resource.data.date + '_' + request.auth.uid
+                    && resource.data.userId == request.auth.uid
+                    && (!('streak' in request.resource.data) || (
+                        request.resource.data.streak is number
+                        && request.resource.data.streak >= 0
+                        && request.resource.data.streak <= 250
+                       ));
       allow delete: if request.auth != null 
-                    && request.auth.uid == userId;
-    }
-    
-    // Daily Shape Match Scores collection - for "Today" leaderboard
-    match /dailyShapeMatchScores/{dailyScoreId} {
-      // Everyone can read (for leaderboard display, including guests)
-      allow read: if true;
-      // Authenticated users can create/update their own daily score records
-      allow create, update: if request.auth != null 
-                            && request.resource.data.userId == request.auth.uid
-                            && request.resource.data.username is string
-                            && request.resource.data.score is number
-                            && request.resource.data.score >= 0
-                            && request.resource.data.date is string;
-      // Users can delete their own daily score records
-      allow delete: if request.auth != null 
+                    && request.auth.token.email_verified == true
                     && resource.data.userId == request.auth.uid;
     }
     
@@ -143,13 +123,17 @@ service cloud.firestore {
     match /cardsMatchScores/{userId} {
       // Everyone can read (for leaderboard display, including guests)
       allow read: if true;
-      // Authenticated users can create/update their own score records
+      // Authenticated users can create/update their own score records.
+      // Score sanity check: non-negative and anti-overflow bound (<= 10,000,000).
+      // Legitimate fast gameplay easily exceeds 130k-200k+ with streak multipliers.
+      // Uses safe .get() for username to avoid property undefined evaluation errors.
       allow create, update: if request.auth != null 
                             && request.auth.uid == userId
                             && request.resource.data.userId == request.auth.uid
-                            && request.resource.data.username is string
+                            && request.resource.data.get('username', 'Anonymous') is string
                             && request.resource.data.score is number
-                            && request.resource.data.score >= 0;
+                            && request.resource.data.score >= 0
+                            && request.resource.data.score <= 10000000;
       // Users can delete their own score records
       allow delete: if request.auth != null 
                     && request.auth.uid == userId;
@@ -159,13 +143,26 @@ service cloud.firestore {
     match /dailyCardsMatchScores/{dailyScoreId} {
       // Everyone can read (for leaderboard display, including guests)
       allow read: if true;
-      // Authenticated users can create/update their own daily score records
-      allow create, update: if request.auth != null
-                            && request.resource.data.userId == request.auth.uid
-                            && request.resource.data.username is string
-                            && request.resource.data.score is number
-                            && request.resource.data.score >= 0
-                            && request.resource.data.date is string;
+      // Authenticated users can create/update their own daily score records.
+      // Score sanity bounds: >= 0 and <= 10,000,000 (anti-overflow).
+      // dailyScoreId MUST equal {date}_{uid} to prevent ID spoofing / griefing.
+      allow create: if request.auth != null
+                    && dailyScoreId == request.resource.data.date + '_' + request.auth.uid
+                    && request.resource.data.userId == request.auth.uid
+                    && request.resource.data.get('username', 'Anonymous') is string
+                    && request.resource.data.score is number
+                    && request.resource.data.score >= 0
+                    && request.resource.data.score <= 10000000
+                    && request.resource.data.date is string;
+      allow update: if request.auth != null
+                    && dailyScoreId == resource.data.date + '_' + request.auth.uid
+                    && resource.data.userId == request.auth.uid
+                    && request.resource.data.userId == request.auth.uid
+                    && request.resource.data.get('username', 'Anonymous') is string
+                    && request.resource.data.score is number
+                    && request.resource.data.score >= 0
+                    && request.resource.data.score <= 10000000
+                    && request.resource.data.date is string;
       // Users can delete their own daily score records
       allow delete: if request.auth != null
                     && resource.data.userId == request.auth.uid;
@@ -175,13 +172,26 @@ service cloud.firestore {
     match /guessCountryStats/{userId} {
       // Everyone can read (for stats display)
       allow read: if true;
-      // Authenticated users can create/update their own stats
-      allow create, update: if request.auth != null
-                            && request.auth.uid == userId
-                            && request.resource.data.userId == request.auth.uid
-                            && request.resource.data.username is string
-                            && request.resource.data.countriesGuessed is number
-                            && request.resource.data.countriesGuessed >= 0;
+      // Authenticated users can create/update their own stats.
+      // countriesGuessed is an all-time cumulative counter of won games/rounds
+      // (theoretically unbounded as players play repeatedly); capped only at 10M
+      // as an anti-overflow sanity check.
+      // Uses safe .get() for username and separate update check on resource.data.userId
+      // to support partial patches (e.g. merge: true with increment) without undefined property errors.
+      allow create: if request.auth != null
+                    && request.auth.uid == userId
+                    && request.resource.data.userId == request.auth.uid
+                    && request.resource.data.get('username', 'Anonymous') is string
+                    && request.resource.data.countriesGuessed is number
+                    && request.resource.data.countriesGuessed >= 0
+                    && request.resource.data.countriesGuessed <= 10000000;
+      allow update: if request.auth != null
+                    && request.auth.uid == userId
+                    && resource.data.userId == request.auth.uid
+                    && request.resource.data.get('username', 'Anonymous') is string
+                    && request.resource.data.countriesGuessed is number
+                    && request.resource.data.countriesGuessed >= 0
+                    && request.resource.data.countriesGuessed <= 10000000;
       // Users can delete their own stats
       allow delete: if request.auth != null
                     && request.auth.uid == userId;

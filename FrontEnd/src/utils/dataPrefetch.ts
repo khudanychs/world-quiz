@@ -38,13 +38,7 @@ export const prefetchCache: {
   'guess-country': { today: null, allTime: null },
 };
 
-const prefetchStatus: {
-  [key: string]: 'pending' | 'success' | 'error';
-} = {};
 async function prefetchLeaderboard(gameMode: GameMode, timeFilter: TimeFilter): Promise<void> {
-  const cacheKey = `${gameMode}-${timeFilter}`;
-  prefetchStatus[cacheKey] = 'pending';
-
   try {
     const [{ collection, query, orderBy, limit, getDocs, where }, { db }] = await Promise.all([
       import('firebase/firestore'),
@@ -108,10 +102,8 @@ async function prefetchLeaderboard(gameMode: GameMode, timeFilter: TimeFilter): 
       data: entries,
       timestamp: Date.now(),
     };
-
-    prefetchStatus[cacheKey] = 'success';
   } catch (error) {
-     prefetchStatus[cacheKey] = 'error';
+    // Prefetch failed, data will be loaded on demand
   }
 }
 
@@ -125,12 +117,4 @@ export function startPrefetch(): void {
   ]).catch(err => {
     // Prefetch failed, data will be loaded on demand
   });
-}
-export function getPrefetchedData(gameMode: GameMode, timeFilter: TimeFilter): CacheEntry | null {
-  return prefetchCache[gameMode][timeFilter];
-}
-
-export function isPrefetched(gameMode: GameMode, timeFilter: TimeFilter): boolean {
-  const cacheKey = `${gameMode}-${timeFilter}`;
-  return prefetchStatus[cacheKey] === 'success';
 }

@@ -3,12 +3,6 @@ export type GeoPoint = {
   lng: number;
 };
 
-export type DistanceCategoryKey =
-  | "distance.close"
-  | "distance.moderate"
-  | "distance.far"
-  | "distance.veryFar";
-
 const EARTH_RADIUS_KM = 6371;
 
 function toRadians(deg: number): number {
@@ -66,27 +60,10 @@ export function bearingToCompassEmoji(bearing: number): string {
 }
 
 export function directionEmoji(from: GeoPoint, to: GeoPoint): string {
-  const avgLatRad = toRadians((from.lat + to.lat) / 2);
-  const dx = (to.lng - from.lng) * Math.cos(avgLatRad);
-  const dy = to.lat - from.lat;
-
-  const absX = Math.abs(dx);
-  const absY = Math.abs(dy);
-
-  if (absX < 1e-6 && absY < 1e-6) return "✅";
-
-  const cardinalDominance = 2.6;
-  if (absY > absX * cardinalDominance) {
-    return dy > 0 ? "⬆️" : "⬇️";
+  if (Math.abs(from.lat - to.lat) < 1e-5 && Math.abs(from.lng - to.lng) < 1e-5) {
+    return "✅";
   }
-  if (absX > absY * cardinalDominance) {
-    return dx > 0 ? "➡️" : "⬅️";
-  }
-
-  if (dx > 0 && dy > 0) return "↗️";
-  if (dx > 0 && dy < 0) return "↘️";
-  if (dx < 0 && dy < 0) return "↙️";
-  return "↖️";
+  return bearingToCompassEmoji(bearingDegrees(from, to));
 }
 
 /**
@@ -110,12 +87,4 @@ export function compareHintEmoji(
   if (targetValue > guessedValue) return "⬆️";
   if (targetValue < guessedValue) return "⬇️";
   return "✅";
-}
-
-export function getDistanceCategoryKey(distanceKm: number): DistanceCategoryKey {
-  if (!Number.isFinite(distanceKm) || distanceKm < 0) return "distance.veryFar";
-  if (distanceKm < 2000) return "distance.close";
-  if (distanceKm < 5000) return "distance.moderate";
-  if (distanceKm < 9000) return "distance.far";
-  return "distance.veryFar";
 }

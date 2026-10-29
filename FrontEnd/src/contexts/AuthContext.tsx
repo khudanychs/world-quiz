@@ -475,14 +475,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       await deleteDoc(doc(db, 'usernames', currentUser.uid));
       
-      const scoresQuery = query(
-        collection(db, 'scores'),
-        where('userId', '==', currentUser.uid)
-      );
-      const scoresSnapshot = await getDocs(scoresQuery);
-      const deletePromises = scoresSnapshot.docs.map(doc => deleteDoc(doc.ref));
-      await Promise.all(deletePromises);
-      
       await currentUser.delete();
     } catch (error: any) {
       throw new Error(getFirebaseErrorMessage(error));

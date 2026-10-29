@@ -3,7 +3,7 @@ const LEGACY_LOCALE_PREFIXES = ['cz'] as const;
 
 export type LocalePrefix = (typeof SUPPORTED_LOCALE_PREFIXES)[number];
 
-export function getBaseLanguage(language: string): 'en' | 'cs' | 'de' {
+export function getBaseLanguage(language: string): LocalePrefix {
   const base = (language || 'en').toLowerCase().split('-')[0];
   if (base === 'cz') return 'cs';
   if (base === 'cs') return 'cs';
@@ -11,14 +11,7 @@ export function getBaseLanguage(language: string): 'en' | 'cs' | 'de' {
   return 'en';
 }
 
-export function getLocalePrefixFromLanguage(language: string): LocalePrefix {
-  const base = getBaseLanguage(language);
-  if (base === 'cs') return 'cs';
-  if (base === 'de') return 'de';
-  return 'en';
-}
-
-export function getLanguageFromLocalePrefix(prefix: string): 'en' | 'cs' | 'de' | null {
+export function getLanguageFromLocalePrefix(prefix: string): LocalePrefix | null {
   const value = (prefix || '').toLowerCase();
   if (value === 'en') return 'en';
   if (value === 'cs') return 'cs';
@@ -46,7 +39,7 @@ export function stripLocalePrefix(pathname: string): string {
 }
 
 export function buildLocalizedPath(path: string, language: string): string {
-  const prefix = getLocalePrefixFromLanguage(language);
+  const prefix = getBaseLanguage(language);
   const normalizedPath = stripLocalePrefix(path);
   return normalizedPath === '/' ? `/${prefix}` : `/${prefix}${normalizedPath}`;
 }
