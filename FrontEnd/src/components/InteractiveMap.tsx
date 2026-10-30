@@ -242,7 +242,7 @@ export default memo(function InteractiveMap({
       projectionConfig={{ scale, center }}
       width={width}
       height={height}
-      style={{ width, height, display: "block", willChange: "transform", transform: "translateZ(0)" }}
+      style={{ width, height, display: "block", transform: "translateZ(0)" }}
     >
       <ZoomableGroup
         center={coordinates}

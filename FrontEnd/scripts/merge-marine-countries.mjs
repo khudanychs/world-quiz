@@ -16,11 +16,12 @@
  *   - objects.marine     → marine polygon features (seas, oceans, gulfs, etc.)
  */
 
-import { readFileSync, writeFileSync } from "fs";
+import { existsSync, readFileSync, writeFileSync } from "fs";
 import { feature } from "topojson-client";
 import { topology } from "topojson-server";
 
 const PUBLIC = new URL("../public/", import.meta.url).pathname;
+const BACKUP = new URL("../../data-backup/", import.meta.url).pathname;
 
 // ── Game feature names that need marine polygons ──────────────────────
 // (extracted from physicalFeatures.ts — excludes straits/canals which use ellipses)
@@ -85,7 +86,10 @@ function normalizeName(name) {
 // ── Load source files ────────────────────────────────────────────────
 console.log("Loading source files...");
 
-const countries50m = JSON.parse(readFileSync(PUBLIC + "countries-50m.json", "utf-8"));
+const countries50mPath = existsSync(PUBLIC + "countries-50m.json")
+  ? PUBLIC + "countries-50m.json"
+  : BACKUP + "countries-50m.json";
+const countries50m = JSON.parse(readFileSync(countries50mPath, "utf-8"));
 const marine10m = JSON.parse(readFileSync(PUBLIC + "FinalMarine10m.json", "utf-8"));
 const marine50m = JSON.parse(readFileSync(PUBLIC + "FinalMarine50m.json", "utf-8"));
 
@@ -168,7 +172,9 @@ const merged = topology({
 
 // ── Write output ─────────────────────────────────────────────────────
 const output = JSON.stringify(merged);
-const outputPath = PUBLIC + "world-marine.json";
+const outputPath = existsSync(PUBLIC + "world-marine.json")
+  ? PUBLIC + "world-marine.json"
+  : BACKUP + "world-marine.json";
 writeFileSync(outputPath, output);
 
 const sizeKB = (output.length / 1024).toFixed(0);
@@ -177,7 +183,7 @@ console.log(`  Size: ${sizeKB} KB`);
 console.log(`  Objects: countries (${merged.objects.countries.geometries.length} geom), land, marine (${merged.objects.marine.geometries.length} geom)`);
 
 // Compare with originals
-const origCountries = readFileSync(PUBLIC + "countries-50m.json").length;
-const origMarine = readFileSync(PUBLIC + "marine-polys.json").length;
+const origCountries = readFileSync(countries50mPath).length;
+const origMarine = existsSync(PUBLIC + "marine-polys.json") ? readFileSync(PUBLIC + "marine-polys.json").length : 0;
 console.log(`\n  Previous: countries-50m.json (${(origCountries/1024).toFixed(0)} KB) + marine-polys.json (${(origMarine/1024).toFixed(0)} KB) = ${((origCountries+origMarine)/1024).toFixed(0)} KB`);
 console.log(`  Now:      world-marine.json (${sizeKB} KB) — single request`);

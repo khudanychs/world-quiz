@@ -7,7 +7,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const projectRoot = path.resolve(__dirname, "..");
 const publicDir = path.join(projectRoot, "public");
-const dictionaryPath = "../public/dictionary.json";
+const dictionaryPath = path.join(publicDir, "dictionary.json");
 
 const PHYSICAL_FILES = [
   "GeoLand.json",
@@ -15,7 +15,6 @@ const PHYSICAL_FILES = [
   "fixed_rivers.json",
   "lakes.json",
   "marine.json",
-  "world-marine.json",
   "FinalMarines10m.json",
   "Land10mForMarines.json",
   path.join("region_polys", "deserts.json"),

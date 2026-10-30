@@ -135,7 +135,6 @@ async function getPhysicalGeoModeRoutes() {
       path.join(publicDir, "rivers.json"),
     ],
     waters: [
-      path.join(publicDir, "world-marine.json"),
       path.join(publicDir, "FinalMarines10m.json"),
       path.join(publicDir, "lakes.json"),
     ],
@@ -200,7 +199,6 @@ async function main() {
       path.join(publicDir, "region_polys", "deserts.geojson"),
       path.join(publicDir, "fixed_rivers.json"),
       path.join(publicDir, "fixed_rivers.geojson"),
-      path.join(publicDir, "world-marine.json"),
       path.join(publicDir, "FinalMarines10m.json"),
       path.join(publicDir, "lakes.json"),
     ]),

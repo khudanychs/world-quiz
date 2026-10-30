@@ -4,6 +4,12 @@ import { useTranslation } from "react-i18next";
 import { BackButton } from "./BackButton";
 import { SEOHelmet } from "./SEOHelmet";
 import PhysicalGeoHUD from "./PhysicalGeoHUD";
+import {
+  HUDCard,
+  isLayoutConstrained,
+  getGameContainerStyle,
+  CONSTRAINED_BACK_BUTTON_STYLE,
+} from "./hud";
 import { MERGED_URL, buildGeoFeatureGetter } from "./physicalGeoGame/geo";
 import { getPhysicalGeoMode } from "./physicalGeoGame/modes";
 import {
@@ -21,7 +27,6 @@ import { useMapDimensions } from "../hooks/useMapDimensions";
 import { usePreventWheelScroll } from "../hooks/usePreventWheelScroll";
 import { FRAME } from "../utils/mapConstants";
 import {
-  PAGE_CONTAINER_STYLE,
   getMapWrapperStyle,
   GREEN_BUTTON_STYLE,
   GREEN_BUTTON_HOVER,
@@ -61,6 +66,36 @@ export default function PhysicalGeoGame() {
     coordinates: [0, 0],
     zoom: 1,
   });
+
+  const [viewport, setViewport] = useState({
+    width: window.innerWidth,
+    height: window.visualViewport ? window.visualViewport.height : window.innerHeight,
+  });
+
+  useEffect(() => {
+    const handleResize = () => {
+      setViewport({
+        width: window.innerWidth,
+        height: window.visualViewport ? window.visualViewport.height : window.innerHeight,
+      });
+    };
+    window.addEventListener("resize", handleResize);
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener("resize", handleResize);
+    }
+    return () => {
+      window.removeEventListener("resize", handleResize);
+      if (window.visualViewport) {
+        window.visualViewport.removeEventListener("resize", handleResize);
+      }
+    };
+  }, []);
+
+  const isConstrained = isLayoutConstrained(viewport.width, viewport.height, isPortrait, OUTER_H);
+  const isHudPortrait = isPortrait || isConstrained;
+  const isCompact = isPortrait || viewport.width < 900;
+  const useConstrainedBackButton = isConstrained || (!isPortrait && viewport.height <= 500) || viewport.width < 768;
+  const mapTop = isConstrained ? 0 : Math.max(0, Math.round((viewport.height - OUTER_H) / 2));
 
   const {
     marineData,
@@ -321,35 +356,21 @@ export default function PhysicalGeoGame() {
       )}
 
       <div
-        style={{
-          ...PAGE_CONTAINER_STYLE,
-          gap: isPortrait ? "clamp(16px, 3vh, 32px)" : "0",
-        }}
+        style={getGameContainerStyle(isPortrait, isConstrained)}
+        lang={currentLanguage}
       >
-        <BackButton onClick={handleBack} label={t("physicalGeoGame.menu")} />
-        <div
-          style={{
-            position: isPortrait ? "relative" : "absolute",
-            top: isPortrait ? "auto" : "clamp(8px, 4vh, 40px)",
-            left: isPortrait ? "auto" : "50%",
-            transform: isPortrait ? "none" : "translateX(-50%)",
-            zIndex: 4,
-            display: "flex",
-            alignItems: "center",
-            flexWrap: isPortrait ? "wrap" : "nowrap",
-            justifyContent: "center",
-            gap: isPortrait ? "clamp(8px, 2vw, 14px)" : "clamp(6px, 1.4vw, 12px)",
-            padding: isPortrait
-              ? "clamp(10px, 2.4vw, 18px) clamp(14px, 3vw, 22px)"
-              : "clamp(6px, 1.2vw, 14px) clamp(10px, 2vw, 18px)",
-            borderRadius: "clamp(8px, 2vw, 12px)",
-            border: "1px solid rgba(255,255,255,0.25)",
-            background: "rgba(0,0,0,0.65)",
-            backdropFilter: "blur(8px)",
-            boxShadow: "0 4px 12px rgba(0,0,0,0.4)",
-            maxWidth: isPortrait ? "94vw" : "96vw",
-            overflow: "hidden",
-          }}
+        <BackButton
+          onClick={handleBack}
+          label={t("physicalGeoGame.menu")}
+          style={useConstrainedBackButton ? CONSTRAINED_BACK_BUTTON_STYLE : undefined}
+        />
+        <HUDCard
+          isPortrait={isPortrait}
+          isConstrained={isConstrained}
+          isCompact={isCompact}
+          viewportWidth={viewport.width}
+          mapTop={mapTop}
+          maxCompactWidth={440}
         >
           <PhysicalGeoHUD
             loading={game.loading}
@@ -372,9 +393,9 @@ export default function PhysicalGeoGame() {
               if (game.currentFeature) panToFeature(game.currentFeature);
               game.skipCurrent();
             }}
-            isPortrait={isPortrait}
+            isPortrait={isHudPortrait}
           />
-        </div>
+        </HUDCard>
 
         {/* ── Win Animation ─────────────────────────── */}
         {game.showWinAnimation && (
@@ -436,6 +457,8 @@ export default function PhysicalGeoGame() {
           style={{
             ...getMapWrapperStyle(OUTER_W, OUTER_H, FRAME, "#5b8cff"),
             position: "relative",
+            flexShrink: 0,
+            margin: isConstrained ? "0 auto" : "auto 0",
             ...(activeMode.key === "waters" ? { background: "#0f2a4a" } : {}),
           }}
           aria-label={t("physicalGeoGame.mapAria")}
