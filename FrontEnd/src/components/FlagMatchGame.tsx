@@ -4,6 +4,12 @@ import { useTranslation } from 'react-i18next';
 import { BackButton } from "./BackButton";
 import { SEOHelmet } from "./SEOHelmet";
 import GameHUD from "./GameHUD";
+import {
+  HUDCard,
+  isLayoutConstrained,
+  getGameContainerStyle,
+  CONSTRAINED_BACK_BUTTON_STYLE,
+} from "./hud";
 import { useAuth } from "../contexts/AuthContext";
 import { normalizeCountryName } from "../utils/countries";
 import { FRAME } from "../utils/mapConstants";
@@ -11,7 +17,6 @@ import { useFlagMatchGame } from "../hooks/useFlagMatchGame";
 import { useMapDimensions } from "../hooks/useMapDimensions";
 import { usePreventWheelScroll } from "../hooks/usePreventWheelScroll";
 import {
-  PAGE_CONTAINER_STYLE,
   getMapWrapperStyle,
   GREEN_BUTTON_STYLE,
   GREEN_BUTTON_HOVER,
@@ -128,12 +133,45 @@ export default function FlagMatchGame() {
   }, [game.bestStreak, user, saveStreak, navigate, i18n.language]);
 
   // Layout sizing using shared hook
-  const { dimensions, isPortrait } = useMapDimensions();
+  const { dimensions, isPortrait, isDesktop } = useMapDimensions();
+
+  // Track viewport dimensions to handle non-standard / constrained aspect ratios
+  const [viewport, setViewport] = useState(() => ({
+    width: typeof window !== "undefined" ? window.innerWidth : 1200,
+    height: typeof window !== "undefined" ? window.innerHeight : 800,
+  }));
+
+  useEffect(() => {
+    const handleResize = () => {
+      setViewport({
+        width: window.innerWidth,
+        height: window.visualViewport ? window.visualViewport.height : window.innerHeight,
+      });
+    };
+    window.addEventListener("resize", handleResize);
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener("resize", handleResize);
+    }
+    return () => {
+      window.removeEventListener("resize", handleResize);
+      if (window.visualViewport) {
+        window.visualViewport.removeEventListener("resize", handleResize);
+      }
+    };
+  }, []);
 
   const OUTER_W = dimensions.width;
   const OUTER_H = dimensions.height;
   const INNER_W = OUTER_W - FRAME * 2;
   const INNER_H = OUTER_H - FRAME * 2;
+
+  // Determine compact (mobile/portrait or narrow screens under 900px, or under 1024px if regional practice badge is active)
+  const isPracticeActive = Boolean(selectedRegion && showRegionalIndicator && !game.gameOver);
+  const isConstrained = isLayoutConstrained(viewport.width, viewport.height, isPortrait, OUTER_H);
+  const isHudPortrait = isPortrait || isConstrained;
+  const isCompact = isPortrait || viewport.width < (isPracticeActive ? 1024 : 900);
+  const useConstrainedBackButton = isConstrained || (!isPortrait && viewport.height <= 500) || viewport.width < 768;
+  const mapTop = isConstrained ? 0 : Math.max(0, Math.round((viewport.height - OUTER_H) / 2));
 
   // Region zoom configurations - coordinates are [longitude, latitude]
   const REGION_ZOOMS: Record<string, { coordinates: [number, number]; zoom: number }> = {
@@ -329,41 +367,23 @@ export default function FlagMatchGame() {
       )}
 
       <div
-        style={{
-          ...PAGE_CONTAINER_STYLE,
-          gap: isPortrait ? "clamp(16px, 3vh, 32px)" : "0",
-        }}
+        style={getGameContainerStyle(isPortrait, isConstrained)}
         lang={currentLanguage}
       >
-      <BackButton onClick={handleBack} label={t('flagMatch.menu')} />
+        <BackButton
+          onClick={handleBack}
+          label={t('flagMatch.menu')}
+          style={useConstrainedBackButton ? CONSTRAINED_BACK_BUTTON_STYLE : undefined}
+        />
 
       {/* Top center panel */}
-      <div
-        style={{
-          position: isPortrait ? "relative" : "absolute",
-          top: isPortrait ? "auto" : "clamp(8px, 4vh, 40px)",
-          left: isPortrait ? "auto" : "50%",
-          transform: isPortrait ? "none" : "translateX(-50%)",
-          // In portrait mode, parent gap handles automatic centering
-          marginBottom: isPortrait ? "0" : "0",
-          marginTop: isPortrait ? "0" : "0",
-          zIndex: 4,
-          display: "flex",
-          alignItems: "center",
-          flexWrap: "wrap",
-          justifyContent: "center",
-          gap: isPortrait ? "clamp(8px, 2vw, 14px)" : "clamp(6px, 1.4vw, 12px)",
-          padding: isPortrait 
-            ? "clamp(10px, 2.4vw, 18px) clamp(14px, 3vw, 22px)" 
-            : "clamp(6px, 1.2vw, 14px) clamp(10px, 2vw, 18px)",
-          borderRadius: "clamp(8px, 2vw, 12px)",
-          border: "1px solid rgba(255,255,255,0.25)",
-          background: "rgba(0,0,0,0.65)",
-          backdropFilter: "blur(8px)",
-          boxShadow: "0 4px 12px rgba(0,0,0,0.4)",
-          maxWidth: isPortrait ? "94vw" : "96vw",
-          overflow: "visible",
-        }}
+      <HUDCard
+        isPortrait={isPortrait}
+        isConstrained={isConstrained}
+        isCompact={isCompact}
+        viewportWidth={viewport.width}
+        mapTop={mapTop}
+        maxCompactWidth={460}
       >
         <GameHUD
           loading={game.loading}
@@ -383,55 +403,11 @@ export default function FlagMatchGame() {
           }}
           onToggleNamePanel={() => game.setShowNamePanel((v) => !v)}
           onSkip={game.skipCurrentFlag}
-          isPortrait={isPortrait}
+          isPortrait={isHudPortrait}
+          isPracticeMode={Boolean(selectedRegion && showRegionalIndicator && !game.gameOver)}
+          onDismissPracticeMode={() => setShowRegionalIndicator(false)}
         />
-        
-        {/* Regional Mode Indicator */}
-        {selectedRegion && showRegionalIndicator && !game.gameOver && (
-          <div 
-            style={{
-              fontSize: "clamp(10px, 2vw, 13px)",
-              padding: "clamp(4px, 1vw, 6px) clamp(8px, 2vw, 12px)",
-              background: "rgba(245, 158, 11, 0.15)",
-              border: "1px solid rgba(245, 158, 11, 0.3)",
-              borderRadius: "6px",
-              color: "#fbbf24",
-              fontWeight: 600,
-              display: "flex",
-              alignItems: "center",
-              flexWrap: "wrap",
-              gap: "clamp(4px, 1vw, 8px)",
-              flexShrink: 1,
-              minWidth: 0,
-              marginLeft: "clamp(4px, 1vw, 8px)",
-              marginRight: "clamp(4px, 1vw, 8px)",
-              overflowWrap: "break-word",
-              wordBreak: "break-word",
-              hyphens: "auto",
-            }}
-          >
-            <span>{t('flagMatch.practiceMode')}</span>
-            <button
-              onClick={() => setShowRegionalIndicator(false)}
-              style={{
-                background: "none",
-                border: "none",
-                color: "#fbbf24",
-                cursor: "pointer",
-                padding: "0 2px",
-                fontSize: "clamp(12px, 2.5vw, 16px)",
-                lineHeight: 1,
-                opacity: 0.7,
-                flexShrink: 0,
-              }}
-              onMouseEnter={(e) => e.currentTarget.style.opacity = "1"}
-              onMouseLeave={(e) => e.currentTarget.style.opacity = "0.7"}
-            >
-              ✕
-            </button>
-          </div>
-        )}
-      </div>
+      </HUDCard>
 
       {/* Win Animation */}
       {game.showWinAnimation && (
@@ -500,6 +476,8 @@ export default function FlagMatchGame() {
         style={{
           ...getMapWrapperStyle(OUTER_W, OUTER_H, FRAME, "#5b8cff"),
           position: "relative",
+          flexShrink: 0,
+          margin: isConstrained ? "0 auto" : "auto 0",
         }}
         aria-label={t('flagMatch.mapAriaLabel')}
       >
@@ -523,7 +501,7 @@ export default function FlagMatchGame() {
             center={[0, 15]}
             zoom={pos.zoom}
             coordinates={pos.coordinates}
-            isDesktop={!isPortrait && window.innerWidth >= 768}
+            isDesktop={isDesktop}
             gameMode={true}
             isCountryInteractive={selectedRegion ? game.isCountryInSelectedRegion : undefined}
             onMoveEnd={handleMoveEnd}
