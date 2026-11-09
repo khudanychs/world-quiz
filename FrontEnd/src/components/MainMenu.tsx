@@ -67,7 +67,7 @@ export default function MainMenu() {
         <a 
           href={bangUrl} 
           target="_blank" 
-          rel="noopener noreferrer nofollow"
+          rel="noopener"
           className="menu-card partner"
           style={{ textDecoration: 'none', color: 'inherit' }}
         >
@@ -75,6 +75,18 @@ export default function MainMenu() {
             <h3>{t('mainMenu.games.bangOnline.title')} ↗</h3>
             <p>{t('mainMenu.games.bangOnline.description')}</p>
             <span className="menu-tag" style={{background:'#8b5cf6'}}>{t('mainMenu.games.bangOnline.tag')}</span>
+          </div>
+        </a>
+        <a
+          href="https://jef.world-quiz.com/"
+          target="_blank"
+          rel="noopener"
+          className="menu-card flag-database"
+        >
+          <div className="menu-card-body">
+            <h3>{t('mainMenu.games.flagDatabase.title')} ↗</h3>
+            <p>{t('mainMenu.games.flagDatabase.description')}</p>
+            <span className="menu-tag">{t('mainMenu.games.flagDatabase.tag')}</span>
           </div>
         </a>
       </section>

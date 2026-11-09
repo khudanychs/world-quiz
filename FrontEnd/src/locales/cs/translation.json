@@ -43,6 +43,11 @@
         "title": "Bang! Online",
         "description": "Zahrajte si legendární karetní hru z divokého západu přímo ve svém prohlížeči.",
         "tag": "Partner"
+      },
+      "flagDatabase": {
+        "title": "Just Enough Flags",
+        "description": "Prozkoumejte největší databázi vlajek na světě.",
+        "tag": "Naše databáze"
       }
     }
   },
