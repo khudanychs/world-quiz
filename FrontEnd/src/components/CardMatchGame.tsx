@@ -1,6 +1,5 @@
 import { geoNaturalEarth1, geoPath, geoCentroid } from "d3-geo";
 import { useEffect, useRef, useState, useLayoutEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../contexts/AuthContext";
 import { BackButton } from "./BackButton";
@@ -258,7 +257,6 @@ export default function CardMatchGame() {
   const { t, i18n } = useTranslation();
   const seoH1 = t("seo.h1.shapeMatch");
   const currentLanguage = getBaseLanguage(i18n.language);
-  const navigate = useNavigate();
   const { user } = useAuth();
   const [firstType, setFirstType] = useState<CardKind>("flag");
   const [secondType, setSecondType] = useState<CardKind>("shape");
@@ -302,10 +300,8 @@ export default function CardMatchGame() {
     game.startNewGame();
   };
 
-  const handleBack = () => {
-    // Navigate immediately; save score in background so menu click never feels blocked.
-    navigate(buildLocalizedPath("/", i18n.language));
-
+  const saveScoreOnExit = () => {
+    // Save in the background when leaving; opening another tab keeps this round active.
     if (game.gameStarted && !game.gameOver && game.score > 0 && !savedToLeaderboard) {
       void saveCardsMatchScore(user, game.score).catch((e) => {
         console.error("Failed to save score on exit:", e);
@@ -324,6 +320,8 @@ export default function CardMatchGame() {
           description={seo.description}
           canonicalUrl={toCanonicalUrlWithLanguage(seo.path, currentLanguage)}
           ogImage={getSeoOgImage(seo)}
+          contentReady={!game.loading}
+          contentError={game.loadError}
         />
         <h1 className="sr-only">{seoH1}</h1>
         <div style={{ ...PAGE_CONTAINER_STYLE, alignItems: "center", justifyContent: "center" }}>
@@ -341,12 +339,15 @@ export default function CardMatchGame() {
           description={seo.description}
           canonicalUrl={toCanonicalUrlWithLanguage(seo.path, currentLanguage)}
           ogImage={getSeoOgImage(seo)}
+          contentReady={!game.loading}
+          contentError={game.loadError}
         />
         <h1 className="sr-only">{seoH1}</h1>
         <div style={{ ...PAGE_CONTAINER_STYLE, alignItems: "center", justifyContent: "center" }}>
           <div style={{ color: "#ef4444", fontSize: "18px" }}>{t("cardMatch.errorPrefix")} {game.loadError}</div>
           <BackButton
-            onClick={handleBack}
+            to={buildLocalizedPath("/", currentLanguage)}
+            onNavigate={saveScoreOnExit}
             style={{ 
               position: "relative",
               top: "auto",
@@ -371,6 +372,8 @@ export default function CardMatchGame() {
           description={seo.description}
           canonicalUrl={toCanonicalUrlWithLanguage(seo.path, currentLanguage)}
           ogImage={getSeoOgImage(seo)}
+          contentReady={!game.loading}
+          contentError={game.loadError}
         />
         <h1 className="sr-only">{seoH1}</h1>
         <div className="card-match-results-container" style={{...PAGE_CONTAINER_STYLE, overflow: "auto"}} lang={currentLanguage}>
@@ -404,7 +407,8 @@ export default function CardMatchGame() {
 
           <div className="card-match-results-actions">
             <BackButton
-              onClick={handleBack}
+              to={buildLocalizedPath("/", currentLanguage)}
+              onNavigate={saveScoreOnExit}
               style={{
                 position: "relative",
                 top: "auto",
@@ -442,6 +446,8 @@ export default function CardMatchGame() {
           description={seo.description}
           canonicalUrl={toCanonicalUrlWithLanguage(seo.path, currentLanguage)}
           ogImage={getSeoOgImage(seo)}
+          contentReady={!game.loading}
+          contentError={game.loadError}
         />
         <h1 className="sr-only">{seoH1}</h1>
         <div className="card-match-pregame-container" style={{...PAGE_CONTAINER_STYLE, overflow: "auto"}} lang={currentLanguage}>
@@ -520,7 +526,8 @@ export default function CardMatchGame() {
 
           <div className="card-match-pregame-actions">
             <BackButton
-              onClick={handleBack}
+              to={buildLocalizedPath("/", currentLanguage)}
+              onNavigate={saveScoreOnExit}
               style={{
                 position: "relative",
                 top: "auto",
@@ -562,13 +569,16 @@ export default function CardMatchGame() {
           description={seo.description}
           canonicalUrl={toCanonicalUrlWithLanguage(seo.path, currentLanguage)}
           ogImage={getSeoOgImage(seo)}
+          contentReady={!game.loading}
+          contentError={game.loadError}
         />
         <h1 className="sr-only">{seoH1}</h1>
         <div className="card-match-landscape-container" lang={currentLanguage}>
           {/* Sidebar for Stats */}
           <div className="card-match-sidebar">
           <BackButton 
-            onClick={handleBack} 
+            to={buildLocalizedPath("/", currentLanguage)}
+            onNavigate={saveScoreOnExit}
             style={{
               position: "static", 
               width: "100%", 
@@ -668,6 +678,8 @@ export default function CardMatchGame() {
         description={seo.description}
         canonicalUrl={toCanonicalUrlWithLanguage(seo.path, currentLanguage)}
         ogImage={getSeoOgImage(seo)}
+        contentReady={!game.loading}
+        contentError={game.loadError}
       />
       <h1 className="sr-only">{seoH1}</h1>
       <div className="card-match-game-container" lang={currentLanguage}>
@@ -688,7 +700,8 @@ export default function CardMatchGame() {
       {/* Header with stats */}
       <div className="card-match-header">
         <BackButton 
-          onClick={handleBack} 
+          to={buildLocalizedPath("/", currentLanguage)}
+          onNavigate={saveScoreOnExit}
           style={{
             position: "relative",
             top: "auto",

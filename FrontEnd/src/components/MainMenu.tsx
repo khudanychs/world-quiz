@@ -1,15 +1,14 @@
-import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { SEOHelmet } from './SEOHelmet';
 import { SEO_TRANSLATIONS, toCanonicalUrlWithLanguage, getSeoOgImage } from '../seo/seo-translations';
-import { getBaseLanguage } from '../utils/localeRouting';
+import { buildLocalizedPath, getBaseLanguage } from '../utils/localeRouting';
 import './MainMenu.css';
 
 export default function MainMenu() {
   const { t, i18n } = useTranslation();
   const seoH1 = t('seo.h1.mainMenu');
   const seo = SEO_TRANSLATIONS.routes.home;
-  const navigate = useNavigate();
   const currentLanguage = getBaseLanguage(i18n.language);
   const bangUrl = currentLanguage === 'cs' ? 'https://bang.honzaa.cz/cs' : 'https://bang.honzaa.cz/en';
   const canonicalHome = toCanonicalUrlWithLanguage(seo.path, currentLanguage);
@@ -39,32 +38,32 @@ export default function MainMenu() {
         </header>
 
       <section className="menu-grid">
-        <button className="menu-card" onClick={() => navigate('/game/physical-geo')}>
+        <Link className="menu-card" to={buildLocalizedPath('/game/physical-geo', currentLanguage)}>
           <div className="menu-card-body">
             <h3>{t('mainMenu.games.physicalGeo.title')}</h3>
             <p>{t('mainMenu.games.physicalGeo.description')}</p>
             <span className="menu-tag" style={{background:'#f59e0b'}}>{t('mainMenu.games.physicalGeo.tag')}</span>
           </div>
-        </button>
-        <button className="menu-card" onClick={() => navigate('/game/flags')}>
+        </Link>
+        <Link className="menu-card" to={buildLocalizedPath('/game/flags', currentLanguage)}>
           <div className="menu-card-body">
             <h3>{t('mainMenu.games.flags.title')}</h3>
             <p>{t('mainMenu.games.flags.description')}</p>
           </div>
-        </button>
-        <button className="menu-card" onClick={() => navigate('/game/shape-match')}>
+        </Link>
+        <Link className="menu-card" to={buildLocalizedPath('/game/shape-match', currentLanguage)}>
           <div className="menu-card-body">
             <h3>{t('mainMenu.games.shapeMatch.title')}</h3>
             <p>{t('mainMenu.games.shapeMatch.description')}</p>
           </div>
-        </button>
-        <button className="menu-card" onClick={() => navigate('/game/guess-country')}>
+        </Link>
+        <Link className="menu-card" to={buildLocalizedPath('/game/guess-country', currentLanguage)}>
           <div className="menu-card-body">
             <h3>{t('mainMenu.games.guessCountry.title')}</h3>
             <p>{t('mainMenu.games.guessCountry.description')}</p>
             <span className="menu-tag" style={{background:'#0ea5e9'}}>{t('mainMenu.games.guessCountry.tag')}</span>
           </div>
-        </button>
+        </Link>
         <a 
           href={bangUrl} 
           target="_blank" 
@@ -81,9 +80,9 @@ export default function MainMenu() {
       </section>
 
         <footer className="menu-footer">
-          <button className="menu-primary" onClick={() => navigate('/map')}>
+          <Link className="menu-primary" to={buildLocalizedPath('/map', currentLanguage)}>
             {t('mainMenu.exploreMap')}
-          </button>
+          </Link>
         </footer>
       </div>
     </>

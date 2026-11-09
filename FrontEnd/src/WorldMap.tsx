@@ -1,6 +1,5 @@
 // src/WorldMap.tsx - Explore Map mode with country info panel
 import { useEffect, useRef, useState, lazy, Suspense, useCallback } from "react";
-import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { BackButton } from './components/BackButton';
 import { SEOHelmet } from './components/SEOHelmet';
@@ -19,7 +18,7 @@ import {
 } from './utils/countries';
 import { FRAME, FRAME_COLOR } from './utils/mapConstants';
 import { SEO_TRANSLATIONS, toCanonicalUrlWithLanguage, getSeoOgImage } from './seo/seo-translations';
-import { getBaseLanguage } from './utils/localeRouting';
+import { buildLocalizedPath, getBaseLanguage } from './utils/localeRouting';
 import { withStaticDataVersion } from './utils/staticAssetVersion';
 
 // Lazy load the heavy InteractiveMap component
@@ -30,7 +29,6 @@ export default function WorldMap() {
   const seoH1 = t("seo.h1.worldMap");
   const currentLanguage = getBaseLanguage(i18n.language);
   const seo = SEO_TRANSLATIONS.routes.map;
-  const navigate = useNavigate();
   
   /** --- Dynamic dimensions based on window --- */
   const { dimensions, isPortrait, isDesktop } = useMapDimensions();
@@ -53,6 +51,8 @@ export default function WorldMap() {
   /** Country data: lookup by name */
   const [countryLookup, setCountryLookup] = useState<Record<string, CountryInfoWithCapitals>>({});
   const [loading, setLoading] = useState<boolean>(true);
+  const [mapReady, setMapReady] = useState(false);
+  const handleMapLoaded = useCallback(() => setMapReady(true), []);
 
   /** Prevent page scroll when wheeling over map */
   const wrapperRef = useRef<HTMLDivElement>(null);
@@ -139,6 +139,7 @@ export default function WorldMap() {
         description={seo.description}
         canonicalUrl={toCanonicalUrlWithLanguage(seo.path, currentLanguage)}
         ogImage={getSeoOgImage(seo)}
+        contentReady={!loading && Object.keys(countryLookup).length > 0 && mapReady}
       />
       <h1 className="sr-only">{seoH1}</h1>
       <div
@@ -148,7 +149,7 @@ export default function WorldMap() {
         }}
       >
       {/* Back button to main menu */}
-      <BackButton onClick={() => navigate('/')} />
+      <BackButton to={buildLocalizedPath('/', currentLanguage)} />
 
       {/* Country Info Panel - Top Center */}
       <div
@@ -371,6 +372,7 @@ export default function WorldMap() {
             onMoveEnd={handleMapMoveEnd}
             onCountryClick={handleCountryClick}
             onCountryHover={handleCountryHover}
+            onGeographiesLoaded={handleMapLoaded}
             selectedCountry={selected}
             isDesktop={isDesktop}
           />

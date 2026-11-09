@@ -1,9 +1,8 @@
-import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { buildLocalizedPath } from '../../utils/localeRouting';
 
 export function TermsDe() {
-  const navigate = useNavigate();
   const { i18n } = useTranslation();
 
   return (
@@ -168,7 +167,7 @@ export function TermsDe() {
       <section className="related-section">
         <h2>Zugehörige Dokumente</h2>
         <p>
-          Bitte lesen Sie auch unsere <a href={buildLocalizedPath('/privacy', i18n.language)} onClick={(e) => { e.preventDefault(); navigate(buildLocalizedPath('/privacy', i18n.language)); }}>Datenschutzerklärung</a>, um zu verstehen, wie wir Ihre personenbezogenen Daten erheben, verwenden und schützen.
+          Bitte lesen Sie auch unsere <Link to={buildLocalizedPath('/privacy', i18n.language)}>Datenschutzerklärung</Link>, um zu verstehen, wie wir Ihre personenbezogenen Daten erheben, verwenden und schützen.
         </p>
       </section>
     </>

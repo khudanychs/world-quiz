@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { SEOHelmet } from '../components/SEOHelmet';
 import { SEO_TRANSLATIONS, toCanonicalUrlWithLanguage, getSeoOgImage } from '../seo/seo-translations';
@@ -8,7 +8,6 @@ import './NotFound.css';
 export default function NotFound() {
   const { t, i18n } = useTranslation();
   const currentLanguage = getBaseLanguage(i18n.language);
-  const navigate = useNavigate();
   const seo = SEO_TRANSLATIONS.routes.notFound;
 
   return (
@@ -28,12 +27,12 @@ export default function NotFound() {
             {t('notFound.message')}
           </p>
           <div className="not-found-actions">
-            <button className="not-found-button primary" onClick={() => navigate(buildLocalizedPath('/', i18n.language))}>
+            <Link className="not-found-button primary" to={buildLocalizedPath('/', currentLanguage)}>
               {t('notFound.goHome')}
-            </button>
-            <button className="not-found-button" onClick={() => navigate(buildLocalizedPath('/countries', i18n.language))}>
+            </Link>
+            <Link className="not-found-button" to={buildLocalizedPath('/countries', currentLanguage)}>
               {t('notFound.browseCountries')}
-            </button>
+            </Link>
           </div>
         </section>
       </main>

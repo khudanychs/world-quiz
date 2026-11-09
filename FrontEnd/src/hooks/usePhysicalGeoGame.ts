@@ -17,6 +17,7 @@ export interface PhysicalGeoGameState {
   currentIdx: number;
   currentFeature: PhysicalFeature | undefined;
   loading: boolean;
+  loadError: string;
 
   // Scoring
   score: number;
@@ -48,6 +49,7 @@ export function usePhysicalGeoGame(categoryKey: string = "all"): PhysicalGeoGame
   const { i18n } = useTranslation();
   const [features, setFeatures] = useState<PhysicalFeature[]>([]);
   const [loading, setLoading] = useState(false);
+  const [loadError, setLoadError] = useState("");
   const [currentIdx, setCurrentIdx] = useState(0);
   const [score, setScore] = useState(0);
   const [currentStreak, setCurrentStreak] = useState(0);
@@ -101,9 +103,11 @@ export function usePhysicalGeoGame(categoryKey: string = "all"): PhysicalGeoGame
   const initializeCategory = useCallback(async (key: string) => {
     const requestId = ++requestIdRef.current;
     setLoading(true);
+    setLoadError("");
 
     try {
       const loaded = await loadCategoryFeatures(key);
+      if (loaded.length === 0) throw new Error(`No geographic features found for ${key}`);
       if (requestId !== requestIdRef.current) {
         return;
       }
@@ -130,6 +134,7 @@ export function usePhysicalGeoGame(categoryKey: string = "all"): PhysicalGeoGame
       }
 
       // Fallback to empty state on error
+      setLoadError(error instanceof Error ? error.message : "Failed to load geographic features");
       setFeatures([]);
       setCurrentIdx(0);
       setScore(0);
@@ -233,6 +238,7 @@ export function usePhysicalGeoGame(categoryKey: string = "all"): PhysicalGeoGame
     currentIdx,
     currentFeature,
     loading,
+    loadError,
     score,
     currentStreak,
     bestStreak,

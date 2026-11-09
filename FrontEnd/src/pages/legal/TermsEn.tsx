@@ -1,9 +1,8 @@
-import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { buildLocalizedPath } from '../../utils/localeRouting';
 
 export function TermsEn() {
-  const navigate = useNavigate();
   const { i18n } = useTranslation();
 
   return (
@@ -180,7 +179,7 @@ export function TermsEn() {
       <section className="related-section">
         <h2>Related Documents</h2>
         <p>
-          Please also review our <a href={buildLocalizedPath('/privacy', i18n.language)} onClick={(e) => { e.preventDefault(); navigate(buildLocalizedPath('/privacy', i18n.language)); }}>Privacy Policy</a> to understand how we collect, use, and protect your personal data.
+          Please also review our <Link to={buildLocalizedPath('/privacy', i18n.language)}>Privacy Policy</Link> to understand how we collect, use, and protect your personal data.
         </p>
       </section>
     </>

@@ -216,6 +216,7 @@
 }
 
 .detail-chip.clickable {
+  font-weight: inherit;
   cursor: pointer;
 }
 

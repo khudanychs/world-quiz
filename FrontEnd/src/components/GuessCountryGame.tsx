@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState, lazy, Suspense } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useTranslation } from 'react-i18next';
 import { geoCentroid } from "d3-geo";
 import { feature as topoFeature } from "topojson-client";
@@ -133,7 +133,6 @@ export default function GuessCountryGame() {
   const { t, i18n } = useTranslation();
   const seoH1 = t("seo.h1.guessCountry");
   const currentLanguage = getBaseLanguage(i18n.language);
-  const navigate = useNavigate();
   const { user } = useAuth();
   const { dimensions, isDesktop } = useMapDimensions();
 
@@ -159,6 +158,8 @@ export default function GuessCountryGame() {
 
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
+  const [mapReady, setMapReady] = useState(false);
+  const handleMapLoaded = useCallback(() => setMapReady(true), []);
   const [restLookup, setRestLookup] = useState<Record<string, RestLookupInfo>>({});
   const [countryByCode, setCountryByCode] = useState<Map<string, PlayableCountry>>(new Map());
   const [playableCodes, setPlayableCodes] = useState<string[]>([]);
@@ -387,6 +388,8 @@ export default function GuessCountryGame() {
         description="Find the target country in five attempts using distance and direction hints on the world map."
         canonicalUrl={toCanonicalUrlWithLanguage("/game/guess-country", currentLanguage)}
         ogImage={getSeoOgImage(SEO_TRANSLATIONS.routes.home)}
+        contentReady={!loading && playableCodes.length > 0 && mapReady}
+        contentError={loadError}
       />
       <h1 className="sr-only">{seoH1}</h1>
       <div
@@ -399,7 +402,7 @@ export default function GuessCountryGame() {
           overflowX: "hidden",
         }}
       >
-      <BackButton onClick={() => navigate(buildLocalizedPath('/', i18n.language))} label={t("nav.menu")} />
+      <BackButton to={buildLocalizedPath('/', currentLanguage)} label={t("nav.menu")} />
 
       <div className="guess-country-layout">
         <div className="guess-country-map-col">
@@ -426,6 +429,7 @@ export default function GuessCountryGame() {
                 getCountryFill={getCountryFill}
                 onCountryClick={handleCountryClick}
                 isDesktop={isDesktop}
+                onGeographiesLoaded={handleMapLoaded}
               />
             </Suspense>
           </div>
@@ -482,9 +486,9 @@ export default function GuessCountryGame() {
               <button className="win-new-game-btn" onClick={startNewRound}>
                 {t("game.playAgain")}
               </button>
-              <button className="win-home-btn" onClick={() => navigate(buildLocalizedPath('/', i18n.language))}>
+              <Link className="win-home-btn" to={buildLocalizedPath('/', currentLanguage)}>
                 {t("nav.menu")}
-              </button>
+              </Link>
             </div>
           </div>
         </div>

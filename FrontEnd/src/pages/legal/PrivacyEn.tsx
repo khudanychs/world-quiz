@@ -1,9 +1,8 @@
-import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { buildLocalizedPath } from '../../utils/localeRouting';
 
 export function PrivacyEn() {
-  const navigate = useNavigate();
   const { i18n } = useTranslation();
 
   return (
@@ -203,7 +202,7 @@ export function PrivacyEn() {
         <h2>7. Consent and Acceptance</h2>
         <p>
           By creating an account and using World Quiz, you acknowledge that you have read and
-          understood this Privacy Policy and our <a href={buildLocalizedPath('/terms', i18n.language)} onClick={(e) => { e.preventDefault(); navigate(buildLocalizedPath('/terms', i18n.language)); }}>Terms & Conditions</a>, and you consent to:
+          understood this Privacy Policy and our <Link to={buildLocalizedPath('/terms', i18n.language)}>Terms & Conditions</Link>, and you consent to:
         </p>
         <ul>
           <li>The collection and processing of your personal data as described above</li>
@@ -218,7 +217,7 @@ export function PrivacyEn() {
       <section className="related-section">
         <h2>Related Documents</h2>
         <p>
-          Please also review our <a href={buildLocalizedPath('/terms', i18n.language)} onClick={(e) => { e.preventDefault(); navigate(buildLocalizedPath('/terms', i18n.language)); }}>Terms & Conditions</a> to understand the rules and guidelines for using World Quiz.
+          Please also review our <Link to={buildLocalizedPath('/terms', i18n.language)}>Terms & Conditions</Link> to understand the rules and guidelines for using World Quiz.
         </p>
       </section>
     </>

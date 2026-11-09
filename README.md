@@ -108,8 +108,22 @@ Vzhledem k množství překreslovaných SVG prvků (stovky polygonů při hraní
 Vyhledávače mají historicky problém se správnou indexací Single Page Aplikací, které obsah dynamicky renderují přes JavaScript. Projekt tento problém řeší nekompromisní buildovací pipeline:
 
 1. Modul `generate-sitemap.mjs` před sestavením analyzuje dostupné routy a generuje obsáhlou XML mapu stránek (včetně jazykových mutací pro státy z `countriesData.ts`).
-2. Sestavovací proces využívá nástroj **Playwright** (`prerender-from-sitemap.mjs`). Tento bezhlavý prohlížeč po kompilaci virtuálně navštíví každou URL ze sitemapy, počká na vyřešení asynchronních volání (jako je např. zjištění stavu AuthContextu) a uloží hotový DOM strom v podobě sémantického HTML souboru.
+2. Sestavovací proces využívá nástroj **Playwright** (`prerender-from-sitemap.mjs`) s explicitním `headless: true`. Prohlížeč po kompilaci navštíví každou URL ze sitemapy přes lokální HTTP server, ověří SEO metadata a počká na připravený obsah, včetně herních dat, mapy a detailů států. Teprve pak uloží DOM strom do HTML souboru.
 3. Pro řešení duplicitního obsahu u vícejazyčné aplikace (CS/EN/DE) zajišťuje komponenta `SEOHelmet.tsx` dynamické vkládání značek `canonical` a `hreflang` do hlavičky dokumentu.
+
+Lokální server neznamená, že je prohlížeč offline: absolutní URL skriptů a API
+stále míří na externí služby. Prerender záměrně blokuje analytiku Umami a vybrané
+služby Firebase; jejich požadavky vypíše pouze v souhrnu `Intentionally blocked requests`.
+Nečekané síťové chyby, HTTP odpovědi od 400 a JavaScriptové chyby hlásí s URL nebo
+zdrojovým umístěním, opakované výskyty seskupuje. Počítadlo `fail` udává selhání
+generování či validace HTML; síťové a JavaScriptové diagnostiky mají samostatný souhrn.
+
+Připravenost obsahu hlásí komponenty přes `data-prerender-state`. Prerender čeká
+na připojení aktuální React aplikace, takže jej neobejde starý příznak `ready`
+z dříve vygenerovaného HTML. Stav `error` nebo nedokončené načítání po timeoutu
+ukončí build s chybou. Před další URL se předchozí dokument ukončí přes
+`about:blank`; pouze očekávaná rušení jeho požadavků se nevypisují jako chyby.
+Předehřívání map na pozadí se při prerenderu vynechává.
 
 ## Bezpečnost backendu (Firebase)
 

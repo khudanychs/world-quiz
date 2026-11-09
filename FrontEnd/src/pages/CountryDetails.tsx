@@ -1,8 +1,9 @@
 import { useEffect, useLayoutEffect, useMemo, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useCountryStats, useExchangeRate } from '../hooks/useCountryStats';
 import { BackButton } from '../components/BackButton';
-import { getBaseLanguage } from '../utils/localeRouting';
+import { buildLocalizedPath, getBaseLanguage } from '../utils/localeRouting';
 import { getLocalizedName } from '../utils/i18nUtils';
 import './CountryDetails.css';
 
@@ -27,10 +28,9 @@ interface Country {
 interface CountryDetailsProps {
   country: Country;
   onClose: () => void;
-  onCountryClick?: (cca2: string) => void;
 }
 
-export default function CountryDetails({ country, onClose, onCountryClick }: CountryDetailsProps) {
+export default function CountryDetails({ country, onClose }: CountryDetailsProps) {
   const { t, i18n } = useTranslation();
   const currentLanguage = getBaseLanguage(i18n.language);
   const stats = useCountryStats(country.cca2);
@@ -66,14 +66,6 @@ export default function CountryDetails({ country, onClose, onCountryClick }: Cou
     if (!langObj || !country.languages) return langName;
     const code = Object.keys(country.languages).find(k => country.languages![k] === langName);
     return code && langObj[code] ? langObj[code] : langName;
-  };
-  
-  const handleBorderClick = (borderCode: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    scrollToTop();
-    if (onCountryClick) {
-      onCountryClick(borderCode);
-    }
   };
   
   // Get first currency code for exchange rate
@@ -123,7 +115,7 @@ export default function CountryDetails({ country, onClose, onCountryClick }: Cou
 
   if (stats.loading) {
     return (
-      <div className="country-detail-modal" onClick={handleBackdropClick}>
+      <div className="country-detail-modal" onClick={handleBackdropClick} data-prerender-state="loading">
         <div ref={contentRef as any} className="country-detail-content">
           <div className="country-detail-loading">
             {t('countryDetails.loading')}
@@ -135,7 +127,7 @@ export default function CountryDetails({ country, onClose, onCountryClick }: Cou
 
   if (stats.error) {
     return (
-      <div className="country-detail-modal" onClick={handleBackdropClick}>
+      <div className="country-detail-modal" onClick={handleBackdropClick} data-prerender-state="error" data-prerender-error={stats.error}>
         <div ref={contentRef as any} className="country-detail-content">
           <div className="country-detail-close">
             <button className="country-detail-close-btn" onClick={onClose}>
@@ -155,7 +147,7 @@ export default function CountryDetails({ country, onClose, onCountryClick }: Cou
   const currency = stats.currencies[currencyCode || ''];
 
   return (
-    <div className="country-detail-modal" onClick={handleBackdropClick}>
+    <div className="country-detail-modal" onClick={handleBackdropClick} data-prerender-state="ready">
       <article ref={contentRef} className="country-detail-content">
         {/* Close Button */}
         <div className="country-detail-close">
@@ -277,17 +269,14 @@ export default function CountryDetails({ country, onClose, onCountryClick }: Cou
               <h2>{t('countryDetails.borderingCountries')}</h2>
               <div className="detail-list">
                 {stats.borderCountries.map((border) => (
-                  <span 
+                  <Link
                     key={border.cca3} 
                     className="detail-chip clickable"
-                    onClick={(e) => handleBorderClick(border.cca2, e)}
-                    role="button"
-                    tabIndex={0}
-                    onKeyDown={(e) => e.key === 'Enter' && handleBorderClick(border.cca2, e as any)}
+                    to={buildLocalizedPath(`/countries/${border.cca2.toLowerCase()}`, currentLanguage)}
                     title={border.name}
                   >
                     {border.cca3}
-                  </span>
+                  </Link>
                 ))}
               </div>
             </section>

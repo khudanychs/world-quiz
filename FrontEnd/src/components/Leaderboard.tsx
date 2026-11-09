@@ -1,7 +1,8 @@
+import { db } from '../firebase';
 import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from "../contexts/AuthContext";
-import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import './Leaderboard.css';
 import { getTodayDateString } from "../utils/dateUtils";
 import { buildLocalizedPath } from '../utils/localeRouting';
@@ -95,11 +96,7 @@ function useLeaderboard(gameMode: GameMode, timeFilter: 'today' | 'allTime') {
     setLoading(true);
 
     try {
-      // Dynamically import Firebase to avoid blocking initial load
-      const [{ collection, query, orderBy, limit, getDocs, where }, { db }] = await Promise.all([
-        import('firebase/firestore'),
-        import('../firebase')
-      ]);
+      const { collection, query, orderBy, limit, getDocs, where } = await import('firebase/firestore');
 
       let q;
 
@@ -211,7 +208,6 @@ export function Leaderboard({ gameMode }: LeaderboardProps) {
   const [timeFilter, setTimeFilter] = useState<'today' | 'allTime'>('today');
   const { entries, loading, refetch } = useLeaderboard(gameMode, timeFilter);
   const { user } = useAuth();
-  const navigate = useNavigate();
   
   // Refresh button cooldown state
   const [lastRefresh, setLastRefresh] = useState(0);
@@ -336,12 +332,12 @@ export function Leaderboard({ gameMode }: LeaderboardProps) {
       {isGuest && (
         <div className="guest-cta">
           <p>{t('leaderboard.guestCta')}</p>
-          <button 
+          <Link
             className="cta-button"
-            onClick={() => navigate(`${buildLocalizedPath('/auth', i18n.language)}?mode=register`)}
+            to={`${buildLocalizedPath('/auth', i18n.language)}?mode=register`}
           >
             {t('leaderboard.joinNow')}
-          </button>
+          </Link>
         </div>
       )}
     </div>

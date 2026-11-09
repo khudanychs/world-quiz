@@ -1,5 +1,5 @@
-import { useState, useEffect, useMemo, useRef } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useState, useEffect, useMemo } from 'react';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { SEOHelmet } from '../components/SEOHelmet';
 import { SEO_TRANSLATIONS, toCanonicalUrlWithLanguage, getSeoOgImage } from '../seo/seo-translations';
@@ -60,14 +60,13 @@ export default function CountryIndex() {
   const [loading, setLoading] = useState(() => {
     return !countriesCacheByLanguage.has(currentLanguage);
   });
+  const [loadError, setLoadError] = useState("");
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedRegion, setSelectedRegion] = useState('all');
-  const [selectedCountry, setSelectedCountry] = useState<Country | null>(() => {
-    if (!countryCode) return null;
-    const cached = countriesCacheByLanguage.get(currentLanguage);
-    if (!cached) return null;
-    return cached.find(c => c.cca2 === countryCode.toUpperCase()) || null;
-  });
+  // Derive selection during render so a detail URL never briefly loads the full flag grid.
+  const selectedCountry = useMemo(() => countryCode
+    ? countries.find(country => country.cca2 === countryCode.toUpperCase()) ?? null
+    : null, [countries, countryCode]);
 
   const getLocalizedOfficialName = (country: Country) => getLocalizedName(
     {
@@ -80,20 +79,18 @@ export default function CountryIndex() {
   );
 
   useEffect(() => {
+    let active = true;
+    setLoadError("");
     const cachedCountries = countriesCacheByLanguage.get(currentLanguage);
     if (cachedCountries) {
-      if (countries.length === 0) setCountries(cachedCountries);
-      if (loading) setLoading(false);
-      if (countryCode) {
-        const normalizedCode = countryCode.toUpperCase();
-        const country = cachedCountries.find(c => c.cca2 === normalizedCode);
-        if (country && selectedCountry?.cca2 !== country.cca2) setSelectedCountry(country);
-      }
+      setCountries(cachedCountries);
+      setLoading(false);
       return;
     }
 
     const loadCountries = async () => {
       try {
+        setLoading(true);
         const data = await fetchCountriesData();
         const useOfficialName: Record<string, boolean> = {
           'CZ': true, 'CD': true, 'RU': true,
@@ -148,22 +145,21 @@ export default function CountryIndex() {
         formattedCountries.sort((a, b) => a.officialName.localeCompare(b.officialName));
 
         countriesCacheByLanguage.set(currentLanguage, formattedCountries);
+        if (!active) return;
         setCountries(formattedCountries);
         setLoading(false);
         
-        if (countryCode) {
-          const normalizedCode = countryCode.toUpperCase();
-          const country = formattedCountries.find(c => c.cca2 === normalizedCode);
-          if (country) setSelectedCountry(country);
-        }
       } catch (error) {
+        if (!active) return;
         console.error('Failed to load countries:', error);
+        setLoadError(error instanceof Error ? error.message : "Failed to load countries");
         setLoading(false);
       }
     };
 
     loadCountries();
-  }, [currentLanguage, countryCode]);
+    return () => { active = false; };
+  }, [currentLanguage]);
 
 
   const regions = useMemo(() => {
@@ -209,33 +205,15 @@ export default function CountryIndex() {
     return filtered;
   }, [countries, searchTerm, selectedRegion]);
 
-  const handleCountryClick = (country: Country) => {
-    setSelectedCountry(country);
-    navigate(buildLocalizedPath(`/countries/${country.cca2.toLowerCase()}`, i18n.language));
-  };
-
   const handleCloseDetails = () => {
     navigate(buildLocalizedPath('/countries', i18n.language));
   };
 
   useEffect(() => {
-    if (countries.length === 0) return;
-    if (!countryCode) {
-      setSelectedCountry(null);
-      return;
-    }
-    const normalizedCode = countryCode.toUpperCase();
-    const country = countries.find(c => c.cca2 === normalizedCode);
-    
-    if (country && (!selectedCountry || selectedCountry !== country)) {
-      setSelectedCountry(country);
-      return;
-    }
-    if (!country && selectedCountry) {
-      setSelectedCountry(null);
+    if (!loading && countries.length > 0 && countryCode && !selectedCountry) {
       navigate(buildLocalizedPath('/countries', i18n.language), { replace: true });
     }
-  }, [countryCode, countries, selectedCountry, i18n.language, navigate]);
+  }, [loading, countryCode, countries, selectedCountry, i18n.language, navigate]);
 
   if (loading) {
     return (
@@ -261,6 +239,8 @@ export default function CountryIndex() {
         canonicalUrl={selectedCountry ? toCanonicalUrlWithLanguage(`/countries/${selectedCountry.cca2.toLowerCase()}`, currentLanguage) : toCanonicalUrlWithLanguage(seo.path, currentLanguage)}
         ogImage={getSeoOgImage(seo)}
         preserveExplicitMeta={!!selectedCountry}
+        contentReady={!countryCode || !!selectedCountry}
+        contentError={loadError}
       />
       
       <div 
@@ -274,6 +254,7 @@ export default function CountryIndex() {
               <h1>{t('countryIndex.title')}</h1>
               <p>{t('countryIndex.subtitle', { count: countries.length })}</p>
             </header>
+            {loadError && <p role="alert">{t('countryDetails.errorPrefix')} {loadError}</p>}
 
             <div className="country-stats-summary">
               <div className="stat-card">
@@ -316,12 +297,12 @@ export default function CountryIndex() {
             ) : (
               <div className="country-grid">
                 {filteredCountries.map((country, index) => (
-                  <article
+                  <Link
                     key={country.cca2}
                     className="country-card"
-                    onClick={() => handleCountryClick(country)}
+                    to={buildLocalizedPath(`/countries/${country.cca2.toLowerCase()}`, currentLanguage)}
                   >
-                    <FlagImage code={country.cca2} name={country.name} eager={index < 36} />
+                    <FlagImage code={country.cca2} name={country.name} eager={!selectedCountry && index < 36} />
                     <div className="country-card-info">
                       <h2 className="country-card-name">
                         {getLocalizedName(
@@ -338,7 +319,7 @@ export default function CountryIndex() {
                         {country.capital.length ? country.capital.join(', ') : 'N/A'}
                       </p>
                     </div>
-                  </article>
+                  </Link>
                 ))}
               </div>
             )}
@@ -351,13 +332,6 @@ export default function CountryIndex() {
         <CountryDetails
           country={selectedCountry}
           onClose={handleCloseDetails}
-          onCountryClick={(cca2) => {
-            const borderCountry = countries.find(c => c.cca2 === cca2);
-            if (borderCountry) {
-              setSelectedCountry(borderCountry);
-              navigate(buildLocalizedPath(`/countries/${borderCountry.cca2.toLowerCase()}`, i18n.language));
-            }
-          }}
         />
       )}
     </>

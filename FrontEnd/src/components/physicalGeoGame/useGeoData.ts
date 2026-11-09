@@ -34,6 +34,9 @@ export function useGeoData(
   const [riverData, setRiverData] = useState<GeoFeatureCollection | null>(null);
   const [lakeData, setLakeData] = useState<GeoFeatureCollection | null>(null);
   const [geographiesReady, setGeographiesReady] = useState(false);
+  const [dataError, setDataError] = useState("");
+
+  useEffect(() => setDataError(""), [categoryKey]);
 
   useEffect(() => {
     if (!usesTopoLandBase) {
@@ -50,12 +53,19 @@ export function useGeoData(
       return;
     }
 
+    let active = true;
     MapDataService.loadBaseMapData(needsDetailedLandMask, needsMarine)
       .then(({ landGeoRaw, marineData }) => {
+        if (!active) return;
+        if (needsDetailedLandMask && !landGeoRaw) throw new Error("Missing land geometry");
+        if (needsMarine && !marineData) throw new Error("Missing marine geometry");
         setLandGeoRaw(needsDetailedLandMask && landGeoRaw ? landGeoRaw : null);
         setMarineData(needsMarine && marineData ? marineData : null);
       })
-      .catch((err) => console.error("Worker data load failed:", err));
+      .catch((err) => {
+        if (active) setDataError(err instanceof Error ? err.message : "Failed to load base map");
+      });
+    return () => { active = false; };
   }, [needsMarine, needsDetailedLandMask]);
 
   useEffect(() => {
@@ -67,18 +77,23 @@ export function useGeoData(
       setRiverData(riverGeoCache.current);
       return;
     }
+    let active = true;
     fetch(RIVERS_URL)
-      .then(r => r.json())
+      .then(r => {
+        if (!r.ok) throw new Error(`River geometry HTTP ${r.status}`);
+        return r.json();
+      })
       .then((raw: unknown) => {
+        if (!active) return;
         const extracted = extractGeoFeatureCollection(raw, ["rivers", "river", "waterways"]);
-        if (!extracted) {
-          setRiverData(null);
-          return;
-        }
+        if (!extracted?.features.length) throw new Error("Missing river geometry");
         riverGeoCache.current = extracted;
         setRiverData(extracted);
       })
-      .catch(() => {});
+      .catch((err) => {
+        if (active) setDataError(err instanceof Error ? err.message : "Failed to load rivers");
+      });
+    return () => { active = false; };
   }, [needsRivers]);
 
   useEffect(() => {
@@ -90,18 +105,23 @@ export function useGeoData(
       setLakeData(lakeGeoCache.current);
       return;
     }
+    let active = true;
     fetch(LAKES_URL)
-      .then(r => r.json())
+      .then(r => {
+        if (!r.ok) throw new Error(`Lake geometry HTTP ${r.status}`);
+        return r.json();
+      })
       .then((raw: unknown) => {
+        if (!active) return;
         const extracted = extractGeoFeatureCollection(raw, ["lakes", "lake", "water"]);
-        if (!extracted) {
-          setLakeData(null);
-          return;
-        }
+        if (!extracted?.features.length) throw new Error("Missing lake geometry");
         lakeGeoCache.current = extracted;
         setLakeData(extracted);
       })
-      .catch(() => {});
+      .catch((err) => {
+        if (active) setDataError(err instanceof Error ? err.message : "Failed to load lakes");
+      });
+    return () => { active = false; };
   }, [needsLakes]);
 
   const landPathD = useMemo<string | null>(() => {
@@ -133,5 +153,6 @@ export function useGeoData(
     needsDetailedLandMask,
     usesTopoLandBase,
     hasActiveMode,
+    dataError,
   };
 }

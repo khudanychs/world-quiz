@@ -20,6 +20,7 @@ export const BACK_BUTTON_STYLE: CSSProperties = {
   color: "#fff",
   fontWeight: 600,
   fontSize: "15px",
+  lineHeight: "normal",
   cursor: "pointer",
   backdropFilter: "blur(12px)",
   boxShadow: "0 8px 32px rgba(0, 0, 0, 0.3), inset 0 0 0 1px rgba(255, 255, 255, 0.05)",
@@ -32,13 +33,13 @@ export const BACK_BUTTON_STYLE: CSSProperties = {
 
 /** Back button hover handlers */
 export const BACK_BUTTON_HOVER = {
-  onMouseEnter: (e: React.MouseEvent<HTMLButtonElement>) => {
+  onMouseEnter: (e: React.MouseEvent<HTMLElement>) => {
     e.currentTarget.style.background = "rgba(51, 65, 85, 0.85)";
     e.currentTarget.style.transform = "translateY(-2px) scale(1.02)";
     e.currentTarget.style.boxShadow = "0 12px 40px rgba(0, 0, 0, 0.4), inset 0 0 0 1px rgba(255, 255, 255, 0.1)";
     e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.3)";
   },
-  onMouseLeave: (e: React.MouseEvent<HTMLButtonElement>) => {
+  onMouseLeave: (e: React.MouseEvent<HTMLElement>) => {
     e.currentTarget.style.background = "rgba(30, 41, 59, 0.7)";
     e.currentTarget.style.transform = "translateY(0) scale(1)";
     e.currentTarget.style.boxShadow = "0 8px 32px rgba(0, 0, 0, 0.3), inset 0 0 0 1px rgba(255, 255, 255, 0.05)";
@@ -118,11 +119,11 @@ export const GREEN_BUTTON_STYLE: CSSProperties = {
 
 /** Green button hover handlers */
 export const GREEN_BUTTON_HOVER = {
-  onMouseEnter: (e: React.MouseEvent<HTMLButtonElement>) => {
+  onMouseEnter: (e: React.MouseEvent<HTMLElement>) => {
     e.currentTarget.style.background = "rgba(16, 185, 129, 0.3)";
     e.currentTarget.style.transform = "scale(1.05)";
   },
-  onMouseLeave: (e: React.MouseEvent<HTMLButtonElement>) => {
+  onMouseLeave: (e: React.MouseEvent<HTMLElement>) => {
     e.currentTarget.style.background = "rgba(16, 185, 129, 0.2)";
     e.currentTarget.style.transform = "scale(1)";
   },

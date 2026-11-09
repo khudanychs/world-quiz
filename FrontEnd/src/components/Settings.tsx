@@ -1,3 +1,4 @@
+import { db } from '../firebase';
 import { useState, useEffect, lazy, Suspense, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -74,10 +75,7 @@ export const Settings = () => {
     if (!user) return;
     const fetchNickChangeStatus = async () => {
       try {
-        const [{ doc, getDoc }, { db }] = await Promise.all([
-          import('firebase/firestore'),
-          import('../firebase'),
-        ]);
+        const { doc, getDoc } = await import('firebase/firestore');
         const usernameDoc = await getDoc(doc(db, 'usernames', user.uid));
         const now = new Date();
         const currentMonthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
@@ -122,11 +120,7 @@ export const Settings = () => {
         
         setStreakLoading(true);
         try {
-          // Dynamically import Firebase to avoid blocking initial load
-          const [{ doc, getDoc }, { db }] = await Promise.all([
-            import('firebase/firestore'),
-            import('../firebase')
-          ]);
+          const { doc, getDoc } = await import('firebase/firestore');
           
           // Document ID is user.uid (one record per user)
           const streakDocRef = doc(db, 'streaks', user.uid);
@@ -162,10 +156,7 @@ export const Settings = () => {
       const fetchCardsMatchScore = async () => {
         setCardsMatchLoading(true);
         try {
-          const [{ doc, getDoc }, { db }] = await Promise.all([
-            import('firebase/firestore'),
-            import('../firebase')
-          ]);
+          const { doc, getDoc } = await import('firebase/firestore');
 
           const scoreDocRef = doc(db, 'cardsMatchScores', user.uid);
           const scoreDoc = await getDoc(scoreDocRef);
@@ -192,10 +183,7 @@ export const Settings = () => {
       const fetchGuessCountryStats = async () => {
         setGuessCountryLoading(true);
         try {
-          const [{ doc, getDoc }, { db }] = await Promise.all([
-            import('firebase/firestore'),
-            import('../firebase')
-          ]);
+          const { doc, getDoc } = await import('firebase/firestore');
 
           const statsDocRef = doc(db, 'guessCountryStats', user.uid);
           const statsDoc = await getDoc(statsDocRef);
@@ -339,10 +327,7 @@ export const Settings = () => {
       // Persist preferred language for authenticated users.
       if (user?.uid) {
         try {
-          const [{ doc, setDoc, serverTimestamp }, { db }] = await Promise.all([
-            import('firebase/firestore'),
-            import('../firebase'),
-          ]);
+          const { doc, setDoc, serverTimestamp } = await import('firebase/firestore');
           await setDoc(doc(db, 'users', user.uid), {
             preferredLanguage: nextLanguage,
             preferredLanguageUpdatedAt: serverTimestamp(),

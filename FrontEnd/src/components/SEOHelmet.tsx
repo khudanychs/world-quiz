@@ -17,6 +17,8 @@ interface SEOHelmetProps {
   noindex?: boolean;
   structuredData?: Record<string, unknown> | Array<Record<string, unknown>>;
   preserveExplicitMeta?: boolean;
+  contentReady?: boolean;
+  contentError?: string | null;
 }
 
 type SeoRouteKey =
@@ -72,6 +74,8 @@ export function SEOHelmet({
   noindex = false,
   structuredData,
   preserveExplicitMeta = false,
+  contentReady = true,
+  contentError,
 }: SEOHelmetProps) {
   const { i18n, t } = useTranslation();
   const location = useLocation();
@@ -154,6 +158,7 @@ export function SEOHelmet({
     if (typeof document === "undefined") {
       return;
     }
+    if (window.__WORLD_QUIZ_PRERENDER__) window.__WORLD_QUIZ_APP_MOUNTED__ = true;
 
     const marker = "data-wq-jsonld";
     const previous = document.head.querySelectorAll(`script[${marker}="true"]`);
@@ -174,41 +179,49 @@ export function SEOHelmet({
   }, [structuredDataNodes]);
 
   return (
-    <Helmet prioritizeSeoTags>
-      <html lang={htmlLang} />
-      <title>{finalTitle}</title>
-      <meta name="description" content={finalDescription} />
-      <meta
-        name="keywords"
-        content="country flag matching game, flag matching game, flag match, geography quiz"
+    <>
+      <span
+        hidden
+        data-prerender-state={contentError ? "error" : contentReady ? "ready" : "loading"}
+        data-prerender-scope={plainPathname}
+        data-prerender-error={contentError || undefined}
       />
-      <meta name="robots" content={robotsContent} />
-      <link rel="canonical" href={finalCanonicalUrl} />
-      {alternateUrls.map(({ lang, url }) => (
-        <link key={`hreflang-${lang}`} rel="alternate" hrefLang={lang} href={url} />
-      ))}
-
-      <meta property="og:type" content="website" />
-      <meta property="og:site_name" content="World Quiz" />
-      <meta property="og:locale" content={ogLocale} />
-      <meta property="og:url" content={finalCanonicalUrl} />
-      <meta property="og:title" content={finalTitle} />
-      <meta property="og:description" content={finalDescription} />
-      <meta property="og:image" content={finalOgImage} />
-
-      <meta name="twitter:card" content="summary_large_image" />
-      <meta name="twitter:url" content={finalCanonicalUrl} />
-      <meta name="twitter:title" content={finalTitle} />
-      <meta name="twitter:description" content={finalDescription} />
-      <meta name="twitter:image" content={finalOgImage} />
-
-      {structuredDataNodes.map((node, index) => (
-        <script
-          key={`jsonld-${index}`}
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(node) }}
+      <Helmet prioritizeSeoTags>
+        <html lang={htmlLang} />
+        <title>{finalTitle}</title>
+        <meta name="description" content={finalDescription} />
+        <meta
+          name="keywords"
+          content="country flag matching game, flag matching game, flag match, geography quiz"
         />
-      ))}
-    </Helmet>
+        <meta name="robots" content={robotsContent} />
+        <link rel="canonical" href={finalCanonicalUrl} />
+        {alternateUrls.map(({ lang, url }) => (
+          <link key={`hreflang-${lang}`} rel="alternate" hrefLang={lang} href={url} />
+        ))}
+
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="World Quiz" />
+        <meta property="og:locale" content={ogLocale} />
+        <meta property="og:url" content={finalCanonicalUrl} />
+        <meta property="og:title" content={finalTitle} />
+        <meta property="og:description" content={finalDescription} />
+        <meta property="og:image" content={finalOgImage} />
+
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:url" content={finalCanonicalUrl} />
+        <meta name="twitter:title" content={finalTitle} />
+        <meta name="twitter:description" content={finalDescription} />
+        <meta name="twitter:image" content={finalOgImage} />
+
+        {structuredDataNodes.map((node, index) => (
+          <script
+            key={`jsonld-${index}`}
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{ __html: JSON.stringify(node) }}
+          />
+        ))}
+      </Helmet>
+    </>
   );
 }

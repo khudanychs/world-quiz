@@ -13,6 +13,7 @@ import {
 } from './utils/localeRouting';
 import { withStaticDataVersion } from './utils/staticAssetVersion';
 import { changeAppLanguage } from './i18n';
+import { auth } from './firebase';
 import './App.css';
 
 const Auth = lazy(() => import('./components/Auth').then(m => ({ default: m.Auth })));
@@ -72,7 +73,6 @@ function VerifiedOrGuestRoute({ children }: { children: React.ReactNode }) {
       setChecking(true);
       setError('');
       try {
-        const { auth } = await import('./firebase');
         if (auth.currentUser) {
           await auth.currentUser.reload();
           if (auth.currentUser.emailVerified) {
@@ -227,7 +227,7 @@ export default function App() {
   }, [i18n.language]);
 
   useEffect(() => {
-    if (typeof window === 'undefined') {
+    if (typeof window === 'undefined' || window.__WORLD_QUIZ_PRERENDER__) {
       return;
     }
 

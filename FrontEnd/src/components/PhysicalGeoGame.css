@@ -67,6 +67,11 @@
 
 /* Category Buttons - Base Style */
 .phys-cat-btn {
+  line-height: normal;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
   padding: clamp(12px, 2.8vw, 16px) clamp(16px, 3.5vw, 20px);
   border-radius: clamp(8px, 2vw, 12px);
   border: 2px solid;
@@ -79,6 +84,7 @@
 }
 
 .phys-cat-btn:hover {
+  color: #fff;
   transform: scale(1.03);
 }
 
@@ -133,6 +139,8 @@
 }
 
 .phys-category-back-btn {
+  line-height: normal;
+  display: inline-block;
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 10px;
@@ -278,6 +286,10 @@
   flex-wrap: wrap;
 }
 
+.phys-win-buttons > a {
+  line-height: normal;
+}
+
 .phys-win-home-btn {
   padding: 12px 24px;
   border-radius: 12px;
@@ -291,6 +303,7 @@
 }
 
 .phys-win-home-btn:hover {
+  color: #fff;
   background: rgba(255, 255, 255, 0.15);
   transform: translateY(-2px);
 }
