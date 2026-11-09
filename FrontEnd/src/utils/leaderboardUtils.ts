@@ -4,14 +4,12 @@ export interface LeaderboardUser {
 }
 
 import { getTodayDateString } from "./dateUtils";
+import { db } from "../firebase";
 
-// Lazy load Firebase modules
+// Reuse the database instance initialized by AuthProvider.
 async function getFirebaseModules() {
-  const [firestore, firebase] = await Promise.all([
-    import('firebase/firestore'),
-    import('../firebase')
-  ]);
-  return { ...firestore, db: firebase.db };
+  const firestore = await import('firebase/firestore');
+  return { ...firestore, db };
 }
 
 /**

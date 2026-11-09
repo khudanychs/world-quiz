@@ -1,3 +1,4 @@
+import { db } from '../firebase';
 /**
  * Intent-Based Data Prefetching
  *
@@ -40,10 +41,7 @@ export const prefetchCache: {
 
 async function prefetchLeaderboard(gameMode: GameMode, timeFilter: TimeFilter): Promise<void> {
   try {
-    const [{ collection, query, orderBy, limit, getDocs, where }, { db }] = await Promise.all([
-      import('firebase/firestore'),
-      import('../firebase'),
-    ]);
+    const { collection, query, orderBy, limit, getDocs, where } = await import('firebase/firestore');
 
     let q;
 

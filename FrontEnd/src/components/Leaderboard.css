@@ -213,6 +213,8 @@
 }
 
 .cta-button {
+  line-height: normal;
+  display: inline-block;
   padding: 10px 24px;
   border-radius: 8px;
   border: none;
@@ -226,6 +228,7 @@
 }
 
 .cta-button:hover {
+  color: #fff;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(249, 115, 22, 0.3);
 }

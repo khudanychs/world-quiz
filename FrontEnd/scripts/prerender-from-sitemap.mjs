@@ -37,9 +37,45 @@ const prerenderStrictSeoWaitTimeoutMs = Number.isFinite(defaultStrictSeoWaitTime
   ? defaultStrictSeoWaitTimeoutMs
   : 45000;
 const LOCALE_PREFIX_PATTERN = /^\/(en|cs|de)(\/|$)/;
+const BLOCKED_REQUEST_HOSTS = new Set([
+  "firestore.googleapis.com",
+  "identitytoolkit.googleapis.com",
+  "securetoken.googleapis.com",
+  "firebaseinstallations.googleapis.com",
+  "google-analytics.com",
+  "umami.world-quiz.com",
+]);
+const SINGLETON_SEO_SELECTORS = [
+  'title',
+  'link[rel="canonical"]',
+  'meta[name="description"]',
+  'meta[name="keywords"]',
+  'meta[name="robots"]',
+  ...["type", "site_name", "locale", "url", "title", "description", "image"]
+    .map((property) => `meta[property="og:${property}"]`),
+  ...["card", "url", "title", "description", "image"]
+    .map((name) => `meta[name="twitter:${name}"]`),
+];
 
 function normalizePathname(pathname) {
   return pathname.replace(/\/+$/, "") || "/";
+}
+
+function isBlockedRequestHost(hostname) {
+  for (const host of BLOCKED_REQUEST_HOSTS) {
+    if (hostname === host || hostname.endsWith(`.${host}`)) return true;
+  }
+  return false;
+}
+
+function formatDiagnosticUrl(rawUrl) {
+  try {
+    const url = new URL(rawUrl);
+    // Resource paths are useful for debugging; query strings can contain credentials.
+    return `${url.origin}${url.pathname}`;
+  } catch {
+    return rawUrl.split(/[?#]/, 1)[0];
+  }
 }
 
 function getExpectedFinalPathCandidates(routePath) {
@@ -222,6 +258,21 @@ async function main() {
   let progressTimer;
   let seoWarningCount = 0;
   const failedRoutes = [];
+  const intentionallyBlockedRequests = new WeakSet();
+  const blockedRequestsByHost = new Map();
+  const runtimeIssues = new Map();
+  let runtimeIssueCount = 0;
+  const runtimeIssueLogLimit = 20;
+
+  const reportRuntimeIssue = (kind, detail, routePath) => {
+    const key = `${kind}: ${detail}`;
+    const previousCount = runtimeIssues.get(key) || 0;
+    runtimeIssues.set(key, previousCount + 1);
+    runtimeIssueCount += 1;
+    if (previousCount === 0 && runtimeIssues.size <= runtimeIssueLogLimit) {
+      console.error(`[prerender][${kind}] ${routePath}: ${detail}`);
+    }
+  };
 
   const logProgress = (label) => {
     const doneCount = renderedCount + failedRoutes.length;
@@ -238,22 +289,22 @@ async function main() {
 
   try {
     const context = await browser.newContext();
-    await context.route("**/*", (route) => {
-      const requestUrl = route.request().url();
-      const blockedHosts = [
-        "firestore.googleapis.com",
-        "identitytoolkit.googleapis.com",
-        "securetoken.googleapis.com",
-        "firebaseinstallations.googleapis.com",
-        "google-analytics.com",
-      ];
+    await context.addInitScript(() => {
+      window.__WORLD_QUIZ_PRERENDER__ = true;
+      window.__WORLD_QUIZ_APP_MOUNTED__ = false;
+    });
+    await context.route("**/*", async (route) => {
+      const request = route.request();
+      const hostname = new URL(request.url()).hostname;
 
-      if (blockedHosts.some((host) => requestUrl.includes(host))) {
-        route.abort();
+      if (isBlockedRequestHost(hostname)) {
+        intentionallyBlockedRequests.add(request);
+        blockedRequestsByHost.set(hostname, (blockedRequestsByHost.get(hostname) || 0) + 1);
+        await route.abort("blockedbyclient");
         return;
       }
 
-      route.continue();
+      await route.continue();
     });
 
     let routeCursor = 0;
@@ -378,7 +429,27 @@ async function main() {
         );
       }
 
-      const seoSnapshot = await page.evaluate(() => {
+      // Metadata can precede the game's data and map. Never serialize an intermediate loader.
+      try {
+        await page.waitForFunction(() => {
+          if (!window.__WORLD_QUIZ_APP_MOUNTED__) return false;
+          const markers = Array.from(document.querySelectorAll('[data-prerender-state]'));
+          return markers.length > 0 && (
+            markers.some((node) => node.getAttribute("data-prerender-state") === "error") ||
+            markers.every((node) => node.getAttribute("data-prerender-state") === "ready")
+          );
+        }, undefined, { timeout: prerenderStrictSeoWaitTimeoutMs });
+      } catch {
+        const pending = await page.evaluate(() => ({
+          mounted: !!window.__WORLD_QUIZ_APP_MOUNTED__,
+          pending: Array.from(document.querySelectorAll('[data-prerender-state]'))
+            .filter((node) => node.getAttribute("data-prerender-state") !== "ready")
+            .map((node) => node.getAttribute("data-prerender-scope") || node.className || node.tagName),
+        }));
+        throw new Error(`Content readiness timed out: ${JSON.stringify(pending)}`);
+      }
+
+      const seoSnapshot = await page.evaluate((singletonSelectors) => {
         const canonical =
           document.querySelector('link[rel="canonical"]')?.getAttribute("href")?.trim() || "";
         const hreflangs = document.querySelectorAll('link[rel="alternate"][hreflang]').length;
@@ -390,6 +461,11 @@ async function main() {
         const title = document.title.trim();
         const description =
           document.querySelector('meta[name="description"]')?.getAttribute("content")?.trim() || "";
+        // Validate the same DOM that is saved, including tags outside Helmet's ownership.
+        const metadataCounts = singletonSelectors.map((selector) => ({
+          selector,
+          count: document.head.querySelectorAll(selector).length,
+        }));
         return {
           finalPathname: window.location.pathname || "/",
           canonical,
@@ -398,11 +474,30 @@ async function main() {
           jsonLd,
           title,
           description,
+          metadataCounts,
+          contentStates: Array.from(document.querySelectorAll('[data-prerender-state]')).map((node) => ({
+            state: node.getAttribute("data-prerender-state"),
+            error: node.getAttribute("data-prerender-error"),
+          })),
           html: `<!doctype html>\n${document.documentElement.outerHTML}`,
         };
-      });
+      }, SINGLETON_SEO_SELECTORS);
+
+      if (seoSnapshot.contentStates.some(({ state }) => state !== "ready")) {
+        throw new Error(`Content is not ready: ${JSON.stringify(seoSnapshot.contentStates)}`);
+      }
+
+      const duplicateMetadata = seoSnapshot.metadataCounts.filter(({ count }) => count > 1);
+      if (duplicateMetadata.length > 0) {
+        throw new Error(`Duplicate SEO metadata: ${duplicateMetadata
+          .map(({ selector, count }) => `${selector} (${count})`)
+          .join(", ")}`);
+      }
 
       const missingBits = [];
+      for (const { selector, count } of seoSnapshot.metadataCounts) {
+        if (count === 0) missingBits.push(selector);
+      }
       if (!seoSnapshot.title) missingBits.push("title");
       if (!seoSnapshot.description) missingBits.push("description");
       if (!seoSnapshot.canonical) missingBits.push("canonical");
@@ -466,18 +561,47 @@ async function main() {
       await fs.writeFile(outputPath, `${seoSnapshot.html}\n`, "utf8");
     };
 
-    const workers = Array.from({ length: workerCount }, async (_value, workerIndex) => {
+    const workers = Array.from({ length: workerCount }, async () => {
       const page = await context.newPage();
-      if (workerIndex === 0) {
-        page.on("pageerror", (error) => {
-          console.error(`[prerender][pageerror] ${error?.message || String(error)}`);
-        });
-        page.on("console", (message) => {
-          if (message.type() === "error") {
-            console.error(`[prerender][console.error] ${message.text()}`);
-          }
-        });
-      }
+      let currentRoute = "<initializing>";
+      const pendingRequests = new Set();
+      const navigationCancellations = new WeakSet();
+      const requestRoutes = new WeakMap();
+      let navigatingAway = false;
+      const expectNavigationCancellations = () => {
+        for (const request of pendingRequests) navigationCancellations.add(request);
+      };
+
+      page.on("request", (request) => {
+        pendingRequests.add(request);
+        requestRoutes.set(request, currentRoute);
+        if (navigatingAway) navigationCancellations.add(request);
+      });
+      page.on("requestfinished", (request) => pendingRequests.delete(request));
+      page.on("requestfailed", (request) => {
+        pendingRequests.delete(request);
+        if (intentionallyBlockedRequests.has(request)) return;
+        const errorText = request.failure()?.errorText || "Unknown network error";
+        if (errorText === "net::ERR_ABORTED" && navigationCancellations.has(request)) return;
+        reportRuntimeIssue("requestfailed", `${errorText} ${formatDiagnosticUrl(request.url())}`, requestRoutes.get(request) || currentRoute);
+      });
+      page.on("response", (response) => {
+        if (response.status() >= 400) {
+          reportRuntimeIssue("http-error", `${response.status()} ${formatDiagnosticUrl(response.url())}`, requestRoutes.get(response.request()) || currentRoute);
+        }
+      });
+      page.on("pageerror", (error) => {
+        reportRuntimeIssue("pageerror", error?.message || String(error), currentRoute);
+      });
+      page.on("console", (message) => {
+        if (message.type() !== "error") return;
+        const text = message.text();
+        const location = message.location();
+        // Network/HTTP handlers above report resource failures once, with their URLs.
+        if (text.startsWith("Failed to load resource:") && location.url && message.args().length === 0) return;
+        const source = location.url ? ` (${formatDiagnosticUrl(location.url)}:${location.lineNumber + 1})` : "";
+        reportRuntimeIssue("console.error", `${text}${source}`, currentRoute);
+      });
       try {
         while (routeCursor < routes.length) {
           const nextRoute = routes[routeCursor];
@@ -489,6 +613,13 @@ async function main() {
 
           try {
             inFlightCount += 1;
+            // Detach the old document before assigning the next route. Lazy images can
+            // start even after a navigation begins; their cancellations belong to it.
+            navigatingAway = true;
+            expectNavigationCancellations();
+            await page.goto("about:blank", { waitUntil: "load" });
+            navigatingAway = false;
+            currentRoute = nextRoute;
             await renderRouteWithPage(page, nextRoute);
             renderedCount += 1;
           } catch (error) {
@@ -510,6 +641,8 @@ async function main() {
           }
         }
       } finally {
+        navigatingAway = true;
+        expectNavigationCancellations();
         await page.close();
       }
     });
@@ -528,6 +661,16 @@ async function main() {
         else resolve();
       });
     });
+  }
+
+  if (blockedRequestsByHost.size > 0) {
+    console.log(`[prerender] Intentionally blocked requests: ${Array.from(blockedRequestsByHost)
+      .sort(([first], [second]) => first.localeCompare(second))
+      .map(([host, count]) => `${host}=${count}`)
+      .join(", ")}`);
+  }
+  if (runtimeIssueCount > 0) {
+    console.warn(`[prerender] Runtime diagnostics: ${runtimeIssueCount} occurrence(s), ${runtimeIssues.size} unique issue(s); first ${Math.min(runtimeIssues.size, runtimeIssueLogLimit)} shown.`);
   }
 
   if (failedRoutes.length > 0) {

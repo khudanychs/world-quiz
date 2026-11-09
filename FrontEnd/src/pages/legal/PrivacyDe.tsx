@@ -1,9 +1,8 @@
-import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { buildLocalizedPath } from '../../utils/localeRouting';
 
 export function PrivacyDe() {
-  const navigate = useNavigate();
   const { i18n } = useTranslation();
 
   return (
@@ -191,7 +190,7 @@ export function PrivacyDe() {
       <section className="consent-section">
         <h2>7. Einwilligung und Annahme</h2>
         <p>
-          Indem Sie ein Konto erstellen und World Quiz nutzen, bestätigen Sie, dass Sie diese Datenschutzerklärung und unsere <a href={buildLocalizedPath('/terms', i18n.language)} onClick={(e) => { e.preventDefault(); navigate(buildLocalizedPath('/terms', i18n.language)); }}>Nutzungsbedingungen</a> gelesen und verstanden haben, und Sie willigen ein in:
+          Indem Sie ein Konto erstellen und World Quiz nutzen, bestätigen Sie, dass Sie diese Datenschutzerklärung und unsere <Link to={buildLocalizedPath('/terms', i18n.language)}>Nutzungsbedingungen</Link> gelesen und verstanden haben, und Sie willigen ein in:
         </p>
         <ul>
           <li>Die Erhebung und Verarbeitung Ihrer personenbezogenen Daten wie oben beschrieben</li>
@@ -206,7 +205,7 @@ export function PrivacyDe() {
       <section className="related-section">
         <h2>Zugehörige Dokumente</h2>
         <p>
-          Bitte lesen Sie auch unsere <a href={buildLocalizedPath('/terms', i18n.language)} onClick={(e) => { e.preventDefault(); navigate(buildLocalizedPath('/terms', i18n.language)); }}>Nutzungsbedingungen</a>, um die Regeln und Richtlinien für die Nutzung von World Quiz zu verstehen.
+          Bitte lesen Sie auch unsere <Link to={buildLocalizedPath('/terms', i18n.language)}>Nutzungsbedingungen</Link>, um die Regeln und Richtlinien für die Nutzung von World Quiz zu verstehen.
         </p>
       </section>
     </>

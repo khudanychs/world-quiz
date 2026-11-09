@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { getFlagUrlSync } from '../utils/flagUtils';
 import { buildLocalizedPath, getBaseLanguage, stripLocalePrefix } from '../utils/localeRouting';
 import { startPrefetch } from '../utils/dataPrefetch';
@@ -52,18 +52,13 @@ export function Navbar() {
   // Close mobile menu when route changes
   useEffect(() => {
     setIsMobileMenuOpen(false);
-  }, [location.pathname]);
+  }, [location.key]);
 
   useEffect(() => {
     latestPathRef.current = location.pathname;
   }, [location.pathname]);
 
   const isActive = (path: string) => stripLocalePrefix(location.pathname) === path;
-
-  const handleNavClick = (path: string) => {
-    navigate(buildLocalizedPath(path, i18n.language));
-    setIsMobileMenuOpen(false);
-  };
 
   const handleLanguageChange = async (nextLanguage: 'en' | 'cs' | 'de') => {
     const requestId = ++languageChangeRequestRef.current;
@@ -116,7 +111,7 @@ export function Navbar() {
       <nav className="navbar navbar-custom">
         <div className="container-fluid">
           {/* Logo / Brand - clickable to home */}
-          <div className="navbar-brand" onClick={() => handleNavClick('/')}>
+          <Link className="navbar-brand" to={buildLocalizedPath('/', currentLanguage)}>
             <img
               src="/newlogo.webp"
               alt={t('nav.appName')}
@@ -126,44 +121,44 @@ export function Navbar() {
               decoding="async"
             />
             <h1 className="m-0">{t('nav.appName')}</h1>
-          </div>
+          </Link>
 
           {/* Desktop Navigation Links */}
           {!isMobile && (
             <div className="navbar-nav-links">
-              <button
+              <Link
                 className={`nav-link ${isActive('/') ? 'active' : ''}`}
-                onClick={() => handleNavClick('/')}
+                to={buildLocalizedPath('/', currentLanguage)}
               >
                 {t('nav.home')}
-              </button>
-              <button
+              </Link>
+              <Link
                 className={`nav-link ${isActive('/countries') ? 'active' : ''}`}
-                onClick={() => handleNavClick('/countries')}
+                to={buildLocalizedPath('/countries', currentLanguage)}
               >
                 {t('nav.countries')}
-              </button>
-              <button
+              </Link>
+              <Link
                 className={`nav-link ${isActive('/leaderboards') ? 'active' : ''}`}
-                onClick={() => handleNavClick('/leaderboards')}
+                to={buildLocalizedPath('/leaderboards', currentLanguage)}
                 onMouseEnter={handleLeaderboardHover}
               >
                 {t('nav.leaderboards')}
-              </button>
-              <button
+              </Link>
+              <Link
                 className={`nav-link ${isActive('/privacy') ? 'active' : ''}`}
-                onClick={() => handleNavClick('/privacy')}
+                to={buildLocalizedPath('/privacy', currentLanguage)}
                 style={{ fontSize: '0.85em', opacity: 0.8 }}
               >
                 {t('nav.privacy')}
-              </button>
-              <button
+              </Link>
+              <Link
                 className={`nav-link ${isActive('/terms') ? 'active' : ''}`}
-                onClick={() => handleNavClick('/terms')}
+                to={buildLocalizedPath('/terms', currentLanguage)}
                 style={{ fontSize: '0.85em', opacity: 0.8 }}
               >
                 {t('nav.terms')}
-              </button>
+              </Link>
             </div>
           )}
 
@@ -175,9 +170,9 @@ export function Navbar() {
                 <div style={{ width: '150px', height: '40px' }} aria-hidden="true" />
               ) : isAuthenticated ? (
                 <>
-                  <button
+                  <Link
                     className={`navbar-user-button ${isActive('/settings') ? 'active' : ''}`}
-                    onClick={() => handleNavClick('/settings')}
+                    to={buildLocalizedPath('/settings', currentLanguage)}
                     title={t('nav.settings')}
                   >
                     <span className="navbar-user">
@@ -201,7 +196,7 @@ export function Navbar() {
                       )}
                       <span className="navbar-username">{user?.displayName}</span>
                     </span>
-                  </button>
+                  </Link>
                   <button onClick={logout} className="navbar-button">
                     {t('nav.logout')}
                   </button>
@@ -209,12 +204,12 @@ export function Navbar() {
               ) : (
                 <>
                   {renderGuestLanguageSwitcher()}
-                  <a href="/auth?mode=login" className="navbar-button-secondary">
+                  <Link to={`${buildLocalizedPath('/auth', currentLanguage)}?mode=login`} className="navbar-button-secondary">
                     {t('nav.login')}
-                  </a>
-                  <a href="/auth?mode=register" className="navbar-button">
+                  </Link>
+                  <Link to={`${buildLocalizedPath('/auth', currentLanguage)}?mode=register`} className="navbar-button">
                     {t('nav.join')}
-                  </a>
+                  </Link>
                 </>
               )}
             </div>
@@ -246,25 +241,25 @@ export function Navbar() {
           <div className="mobile-menu-content">
             {/* Navigation Links */}
             <div className="mobile-nav-section">
-              <button
+              <Link
                 className={`mobile-nav-link ${isActive('/') ? 'active' : ''}`}
-                onClick={() => handleNavClick('/')}
+                to={buildLocalizedPath('/', currentLanguage)}
               >
                 🏠 {t('nav.home')}
-              </button>
-              <button
+              </Link>
+              <Link
                 className={`mobile-nav-link ${isActive('/countries') ? 'active' : ''}`}
-                onClick={() => handleNavClick('/countries')}
+                to={buildLocalizedPath('/countries', currentLanguage)}
               >
                 🌍 {t('nav.countries')}
-              </button>
-              <button
+              </Link>
+              <Link
                 className={`mobile-nav-link ${isActive('/leaderboards') ? 'active' : ''}`}
-                onClick={() => handleNavClick('/leaderboards')}
+                to={buildLocalizedPath('/leaderboards', currentLanguage)}
                 onTouchStart={handleLeaderboardHover}
               >
                 🏆 {t('nav.leaderboards')}
-              </button>
+              </Link>
             </div>
 
             {/* Auth Section */}
@@ -274,11 +269,9 @@ export function Navbar() {
                 <div style={{ height: '60px' }} aria-hidden="true" />
               ) : isAuthenticated ? (
                 <>
-                  <button 
+                  <Link
                     className={`mobile-user-button ${isActive('/settings') ? 'active' : ''}`}
-                    onClick={() => {
-                      handleNavClick('/settings');
-                    }}
+                    to={buildLocalizedPath('/settings', currentLanguage)}
                   >
                     {profileFlag && flagUrl ? (
                       <img 
@@ -299,7 +292,7 @@ export function Navbar() {
                       </div>
                     )}
                     <span>{user?.displayName}</span>
-                  </button>
+                  </Link>
                   <button onClick={() => { logout(); setIsMobileMenuOpen(false); }} className="mobile-logout-button">
                     {t('nav.logout')}
                   </button>
@@ -307,20 +300,20 @@ export function Navbar() {
               ) : (
                 <>
                   {renderGuestLanguageSwitcher(true)}
-                  <a href="/auth?mode=login" className="mobile-auth-button secondary">
+                  <Link to={`${buildLocalizedPath('/auth', currentLanguage)}?mode=login`} className="mobile-auth-button secondary">
                     {t('nav.login')}
-                  </a>
-                  <a href="/auth?mode=register" className="mobile-auth-button primary">
+                  </Link>
+                  <Link to={`${buildLocalizedPath('/auth', currentLanguage)}?mode=register`} className="mobile-auth-button primary">
                     {t('nav.join')}
-                  </a>
+                  </Link>
                 </>
               )}
 
               {/* Footer Links */}
               <div className="mobile-footer">
-                <button className="footer-link" onClick={() => handleNavClick('/privacy')}>{t('nav.privacyPolicy')}</button>
+                <Link className="footer-link" to={buildLocalizedPath('/privacy', currentLanguage)}>{t('nav.privacyPolicy')}</Link>
                 <span className="footer-separator">•</span>
-                <button className="footer-link" onClick={() => handleNavClick('/terms')}>{t('nav.termsConditions')}</button>
+                <Link className="footer-link" to={buildLocalizedPath('/terms', currentLanguage)}>{t('nav.termsConditions')}</Link>
               </div>
             </div>
           </div>

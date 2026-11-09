@@ -1,5 +1,5 @@
 import { useState, useRef, useMemo, useEffect, useCallback, lazy, Suspense } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { BackButton } from "./BackButton";
 import { SEOHelmet } from "./SEOHelmet";
@@ -107,6 +107,7 @@ export default function PhysicalGeoGame() {
     requiredDataLoaded,
     needsDetailedLandMask,
     hasActiveMode,
+    dataError,
   } = useGeoData(categoryKey, activeMode, FIT_SCALE, INNER_W, INNER_H);
 
   const handleMapMoveEnd = useCallback(({ zoom, coordinates }: { zoom: number; coordinates: [number, number] }) => {
@@ -195,11 +196,6 @@ export default function PhysicalGeoGame() {
     },
     []
   );
-
-  const handleBack = useCallback(() => navigate(buildLocalizedPath("/", i18n.language)), [navigate, i18n.language]);
-  const selectCategory = useCallback((key: string) => {
-    navigate(`/game/physical-geo/${key}`);
-  }, [navigate]);
 
   useEffect(() => {
     if (!categoryKey) {
@@ -328,6 +324,8 @@ export default function PhysicalGeoGame() {
         description="Locate mountains, rivers, lakes, deserts, and marine features in the Physical Geography mode."
         canonicalUrl={toCanonicalUrlWithLanguage(canonicalPhysicalGeoPath, currentLanguage)}
         ogImage={getSeoOgImage(SEO_TRANSLATIONS.routes.home)}
+        contentReady={showSelector || (!game.loading && !!game.currentFeature && canRenderFeatureOverlay)}
+        contentError={showSelector ? undefined : game.loadError || dataError}
       />
       <h1 className="sr-only">{seoH1}</h1>
       {showSelector && (
@@ -338,19 +336,19 @@ export default function PhysicalGeoGame() {
 
             <div className={`phys-category-grid ${isPortrait ? "portrait" : "landscape"}`}>
               {CATEGORY_GROUPS.map((group) => (
-                <button
+                <Link
                   key={group.key}
-                  onClick={() => selectCategory(group.key)}
+                  to={buildLocalizedPath(`/game/physical-geo/${group.key}`, currentLanguage)}
                   className={`phys-cat-btn phys-cat-btn-${group.key}`}
                 >
                   {group.emoji} {t(`physicalGeoGame.categories.${group.key}`)}
-                </button>
+                </Link>
               ))}
             </div>
 
-            <button onClick={() => navigate(buildLocalizedPath("/", i18n.language))} className="phys-category-back-btn">
+            <Link to={buildLocalizedPath("/", currentLanguage)} className="phys-category-back-btn">
               ← {t("physicalGeoGame.backToMenu")}
-            </button>
+            </Link>
           </div>
         </div>
       )}
@@ -360,7 +358,7 @@ export default function PhysicalGeoGame() {
         lang={currentLanguage}
       >
         <BackButton
-          onClick={handleBack}
+          to={buildLocalizedPath('/', currentLanguage)}
           label={t("physicalGeoGame.menu")}
           style={useConstrainedBackButton ? CONSTRAINED_BACK_BUTTON_STYLE : undefined}
         />
@@ -372,7 +370,9 @@ export default function PhysicalGeoGame() {
           mapTop={mapTop}
           maxCompactWidth={440}
         >
-          <PhysicalGeoHUD
+          {(game.loadError || dataError) ? (
+            <div role="alert">{t("game.loadError")} {game.loadError || dataError}</div>
+          ) : <PhysicalGeoHUD
             loading={game.loading}
             gameOver={game.gameOver}
             hasWon={game.hasWon}
@@ -394,7 +394,7 @@ export default function PhysicalGeoGame() {
               game.skipCurrent();
             }}
             isPortrait={isHudPortrait}
-          />
+          />}
         </HUDCard>
 
         {/* ── Win Animation ─────────────────────────── */}
@@ -428,16 +428,16 @@ export default function PhysicalGeoGame() {
                 <p className="phys-win-streak">{t("physicalGeoGame.bestStreak", { count: game.bestStreak })} 🔥</p>
               )}
               <div className="phys-win-buttons">
-                <button onClick={() => navigate(buildLocalizedPath("/", i18n.language))} className="phys-win-home-btn">
+                <Link to={buildLocalizedPath('/', currentLanguage)} className="phys-win-home-btn">
                   🏠 {t("physicalGeoGame.home")}
-                </button>
-                <button
-                  onClick={() => navigate(buildLocalizedPath("/game/physical-geo", i18n.language))}
+                </Link>
+                <Link
+                  to={buildLocalizedPath('/game/physical-geo', currentLanguage)}
                   style={GREEN_BUTTON_STYLE}
                   {...GREEN_BUTTON_HOVER}
                 >
                   🎮 {t("physicalGeoGame.newGame")}
-                </button>
+                </Link>
               </div>
             </div>
           </div>
@@ -480,6 +480,7 @@ export default function PhysicalGeoGame() {
             }
           >
             <InteractiveMap
+              key={categoryKey ?? "selector"}
               width={INNER_W}
               height={INNER_H}
               scale={FIT_SCALE}

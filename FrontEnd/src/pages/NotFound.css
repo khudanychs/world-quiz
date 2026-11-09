@@ -49,6 +49,8 @@
 }
 
 .not-found-button {
+  line-height: normal;
+  text-align: center;
   border: 1px solid rgba(255, 255, 255, 0.28);
   background: rgba(255, 255, 255, 0.08);
   color: #f3f7ff;

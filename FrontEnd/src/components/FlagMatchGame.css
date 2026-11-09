@@ -67,6 +67,10 @@
 
 /* World Button */
 .region-btn-world {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
   padding: clamp(14px, 3vw, 18px) clamp(18px, 4vw, 24px);
   min-height: clamp(48px, 8vw, 64px);
   font-size: clamp(15px, 3.2vw, 18px);
@@ -83,6 +87,10 @@
 
 /* Region Buttons - Base Style */
 .region-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
   padding: clamp(12px, 2.8vw, 16px) clamp(16px, 3.5vw, 20px);
   min-height: clamp(44px, 7vw, 58px);
   border-radius: clamp(8px, 2vw, 12px);
@@ -100,6 +108,7 @@
 }
 
 .region-btn:hover {
+  color: #fff;
   transform: scale(1.03);
 }
 
@@ -160,6 +169,7 @@
 
 /* Back button */
 .region-selector-back-btn {
+  display: inline-block;
   padding: clamp(10px, 2.2vw, 12px) clamp(18px, 3.8vw, 22px);
   min-height: clamp(42px, 6.5vw, 54px);
   border-radius: clamp(6px, 1.5vw, 10px);
@@ -178,6 +188,7 @@
 }
 
 .region-selector-back-btn:hover {
+  color: #fff;
   background: rgba(255, 255, 255, 0.15);
   border-color: rgba(255, 255, 255, 0.4);
 }
@@ -290,6 +301,7 @@
 }
 
 .win-home-btn:hover {
+  color: #fff;
   background: rgba(255, 255, 255, 0.2);
   transform: scale(1.03);
   border-color: rgba(255, 255, 255, 0.6);

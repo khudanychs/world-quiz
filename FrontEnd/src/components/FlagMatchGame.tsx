@@ -1,5 +1,6 @@
+import { db } from '../firebase';
 import { useEffect, useRef, useState, useCallback, useMemo, lazy, Suspense } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { useTranslation } from 'react-i18next';
 import { BackButton } from "./BackButton";
 import { SEOHelmet } from "./SEOHelmet";
@@ -44,7 +45,6 @@ export default function FlagMatchGame() {
   const seoH1 = t("seo.h1.flagMatch");
   const currentLanguage = getBaseLanguage(i18n.language);
   const { user } = useAuth();
-  const navigate = useNavigate();
   const { regionKey } = useParams<{ regionKey?: string }>();
 
   const routeRegionKey = regionKey?.toLowerCase();
@@ -62,6 +62,7 @@ export default function FlagMatchGame() {
     : "/game/flags/world";
 
   const [showRegionalIndicator, setShowRegionalIndicator] = useState(true);
+  const [mapReadyRoute, setMapReadyRoute] = useState<string | null>(null);
 
   // Use custom hook for game logic (only initialize if a region has been selected)
   const game = useFlagMatchGame(showRegionSelector ? null : selectedRegion, hasUserSelected, getBaseLanguage(i18n.language));
@@ -79,11 +80,7 @@ export default function FlagMatchGame() {
     try {
       streakSavedRef.current = true;
       
-      // Dynamically import Firebase to avoid blocking initial load
-      const [{ doc, getDoc, setDoc, serverTimestamp }, { db }] = await Promise.all([
-        import('firebase/firestore'),
-        import('../firebase')
-      ]);
+      const { doc, getDoc, setDoc, serverTimestamp } = await import('firebase/firestore');
       
       // 1. Save to ALL-TIME streaks (streaks/{userId})
       const allTimeDocRef = doc(db, "streaks", user.uid);
@@ -125,12 +122,11 @@ export default function FlagMatchGame() {
   }, [user, selectedRegion]);
 
   // Handle back navigation with streak save
-  const handleBack = useCallback(() => {
+  const saveStreakOnExit = useCallback(() => {
     if (game.bestStreak > 0 && user && !streakSavedRef.current) {
       saveStreak(game.bestStreak);
     }
-    navigate(buildLocalizedPath('/', i18n.language));
-  }, [game.bestStreak, user, saveStreak, navigate, i18n.language]);
+  }, [game.bestStreak, user, saveStreak]);
 
   // Layout sizing using shared hook
   const { dimensions, isPortrait, isDesktop } = useMapDimensions();
@@ -250,8 +246,9 @@ export default function FlagMatchGame() {
   }, [game.onCountryClick]);
 
   const handleGeographiesLoaded = useCallback((geographies: any[]) => {
+    if (geographies.length > 0) setMapReadyRoute(routeRegionKey ?? null);
     game.handleGeographiesLoaded(geographies);
-  }, [game.handleGeographiesLoaded]);
+  }, [game.handleGeographiesLoaded, routeRegionKey]);
 
   const handleGetCountryFill = useCallback((nameRaw: string) => {
     const norm = normalizeCountryName(nameRaw);
@@ -277,6 +274,8 @@ export default function FlagMatchGame() {
         description="Match country flags in world or regional mode and build your streak in World Quiz."
         canonicalUrl={toCanonicalUrlWithLanguage(canonicalFlagPath, currentLanguage)}
         ogImage={getSeoOgImage(SEO_TRANSLATIONS.routes.home)}
+        contentReady={showRegionSelector || (!game.loading && !!game.currentTarget && mapReadyRoute === routeRegionKey)}
+        contentError={showRegionSelector ? undefined : game.loadError}
       />
       <h1 className="sr-only">{seoH1}</h1>
       {/* Region Selector Modal */}
@@ -292,10 +291,8 @@ export default function FlagMatchGame() {
 
             <div className={`region-button-grid ${isPortrait ? 'portrait' : 'landscape'}`}>
               {/* World (no filter) */}
-              <button
-                onClick={() => {
-                  navigate(buildLocalizedPath('/game/flags/world', i18n.language));
-                }}
+              <Link
+                to={buildLocalizedPath('/game/flags/world', currentLanguage)}
                 className="region-btn-world"
                 style={{
                   ...GREEN_BUTTON_STYLE,
@@ -303,65 +300,55 @@ export default function FlagMatchGame() {
                 {...GREEN_BUTTON_HOVER}
               >
                 🌎 {t('flagMatch.regionWorld')}
-              </button>
+              </Link>
 
               {/* Europe */}
-              <button
-                onClick={() => {
-                  navigate(buildLocalizedPath('/game/flags/europe', i18n.language));
-                }}
+              <Link
+                to={buildLocalizedPath('/game/flags/europe', currentLanguage)}
                 className="region-btn region-btn-europe"
               >
                 🇪🇺 {t('flagMatch.regionEurope')}
-              </button>
+              </Link>
 
               {/* Asia */}
-              <button
-                onClick={() => {
-                  navigate(buildLocalizedPath('/game/flags/asia', i18n.language));
-                }}
+              <Link
+                to={buildLocalizedPath('/game/flags/asia', currentLanguage)}
                 className="region-btn region-btn-asia"
               >
                 🌏 {t('flagMatch.regionAsia')}
-              </button>
+              </Link>
 
               {/* Africa */}
-              <button
-                onClick={() => {
-                  navigate(buildLocalizedPath('/game/flags/africa', i18n.language));
-                }}
+              <Link
+                to={buildLocalizedPath('/game/flags/africa', currentLanguage)}
                 className="region-btn region-btn-africa"
               >
                 🌍 {t('flagMatch.regionAfrica')}
-              </button>
+              </Link>
 
               {/* Americas */}
-              <button
-                onClick={() => {
-                  navigate(buildLocalizedPath('/game/flags/americas', i18n.language));
-                }}
+              <Link
+                to={buildLocalizedPath('/game/flags/americas', currentLanguage)}
                 className="region-btn region-btn-americas"
               >
                 🌎 {t('flagMatch.regionAmericas')}
-              </button>
+              </Link>
 
               {/* Oceania */}
-              <button
-                onClick={() => {
-                  navigate(buildLocalizedPath('/game/flags/oceania', i18n.language));
-                }}
+              <Link
+                to={buildLocalizedPath('/game/flags/oceania', currentLanguage)}
                 className="region-btn region-btn-oceania"
               >
                 🌏 {t('flagMatch.regionOceania')}
-              </button>
+              </Link>
             </div>
 
-            <button
-              onClick={() => navigate(buildLocalizedPath('/', i18n.language))}
+            <Link
+              to={buildLocalizedPath('/', currentLanguage)}
               className="region-selector-back-btn"
             >
               ← {t('flagMatch.backToMenu')}
-            </button>
+            </Link>
           </div>
         </div>
       )}
@@ -371,7 +358,8 @@ export default function FlagMatchGame() {
         lang={currentLanguage}
       >
         <BackButton
-          onClick={handleBack}
+          to={buildLocalizedPath('/', currentLanguage)}
+          onNavigate={saveStreakOnExit}
           label={t('flagMatch.menu')}
           style={useConstrainedBackButton ? CONSTRAINED_BACK_BUTTON_STYLE : undefined}
         />
@@ -435,16 +423,14 @@ export default function FlagMatchGame() {
               </p>
             )}
             <div className="win-buttons">
-              <button
-                onClick={() => navigate(buildLocalizedPath('/', i18n.language))}
+              <Link
+                to={buildLocalizedPath('/', currentLanguage)}
                 className="win-home-btn"
               >
                 🏠 {t('flagMatch.home')}
-              </button>
-              <button
-                onClick={() => {
-                  navigate(buildLocalizedPath('/game/flags', i18n.language));
-                }}
+              </Link>
+              <Link
+                to={buildLocalizedPath('/game/flags', currentLanguage)}
                 className="win-new-game-btn"
                 style={{
                   ...GREEN_BUTTON_STYLE,
@@ -452,7 +438,7 @@ export default function FlagMatchGame() {
                 {...GREEN_BUTTON_HOVER}
               >
                 🎮 {t('flagMatch.newGame')}
-              </button>
+              </Link>
             </div>
           </div>
         </div>
@@ -494,7 +480,7 @@ export default function FlagMatchGame() {
           </div>
         }>
           <InteractiveMap
-            key={selectedRegion ? `region-${selectedRegion}-${mapKey}` : 'world'}
+            key={`${routeRegionKey ?? 'selector'}-${mapKey}`}
             width={INNER_W}
             height={INNER_H}
             scale={Math.max(1, Math.round(INNER_W * 0.32))}

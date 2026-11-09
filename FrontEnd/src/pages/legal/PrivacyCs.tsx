@@ -1,9 +1,8 @@
-import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { buildLocalizedPath } from '../../utils/localeRouting';
 
 export function PrivacyCs() {
-  const navigate = useNavigate();
   const { i18n } = useTranslation();
 
   return (
@@ -191,7 +190,7 @@ export function PrivacyCs() {
       <section className="consent-section">
         <h2>7. Souhlas a přijetí</h2>
         <p>
-          Vytvořením účtu a používáním World Quiz potvrzujete, že jste si přečetli a porozuměli těmto Zásadám ochrany osobních údajů a našim <a href={buildLocalizedPath('/terms', i18n.language)} onClick={(e) => { e.preventDefault(); navigate(buildLocalizedPath('/terms', i18n.language)); }}>Podmínkám použití</a>, a souhlasíte s:
+          Vytvořením účtu a používáním World Quiz potvrzujete, že jste si přečetli a porozuměli těmto Zásadám ochrany osobních údajů a našim <Link to={buildLocalizedPath('/terms', i18n.language)}>Podmínkám použití</Link>, a souhlasíte s:
         </p>
         <ul>
           <li>Shromažďováním a zpracováním vašich osobních údajů, jak je popsáno výše</li>
@@ -206,7 +205,7 @@ export function PrivacyCs() {
       <section className="related-section">
         <h2>Související dokumenty</h2>
         <p>
-          Přečtěte si prosím také naše <a href={buildLocalizedPath('/terms', i18n.language)} onClick={(e) => { e.preventDefault(); navigate(buildLocalizedPath('/terms', i18n.language)); }}>Podmínky použití</a>, abyste porozuměli pravidlům a pokynům pro používání služby World Quiz.
+          Přečtěte si prosím také naše <Link to={buildLocalizedPath('/terms', i18n.language)}>Podmínky použití</Link>, abyste porozuměli pravidlům a pokynům pro používání služby World Quiz.
         </p>
       </section>
     </>
