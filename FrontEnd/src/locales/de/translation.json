@@ -43,6 +43,11 @@
         "title": "Bang! Online",
         "description": "Spiele das legendäre Wild-West-Kartenspiel direkt in deinem Browser.",
         "tag": "Partner"
+      },
+      "flagDatabase": {
+        "title": "Just Enough Flags",
+        "description": "Entdecke die größte Flaggendatenbank der Welt.",
+        "tag": "Unsere Datenbank"
       }
     }
   },
