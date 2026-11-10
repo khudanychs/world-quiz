@@ -1,3 +1,17 @@
+/* Local feedback for rate-limited clicks; opacity-only fade also suits reduced motion. */
+.flag-click-cooldown {
+  position: fixed;
+  z-index: 1100;
+  pointer-events: none;
+  opacity: 0;
+  transform: translate(-50%, -120%);
+  display: flex;
+  padding: 4px;
+  border-radius: 50%;
+  color: #e2e8f0;
+  background: rgba(11, 16, 32, 0.8);
+}
+
 /* Map loading spinner */
 .map-loading-spinner {
   width: 48px;

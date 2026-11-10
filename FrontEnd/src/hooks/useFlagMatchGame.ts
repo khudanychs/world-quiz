@@ -11,6 +11,8 @@ import {
 import { withStaticDataVersion } from "../utils/staticAssetVersion";
 
 type CountryInfo = { name: string; cca2: string; flag: string; region?: string };
+const GUESS_COOLDOWN_MS = 250;
+const ADVANCE_DELAY_MS = 350;
 
 export function useFlagMatchGame(
   selectedRegion: string | null = null,
@@ -63,9 +65,9 @@ export function useFlagMatchGame(
     set.add(url);
   };
 
-  // Timers for feedback to avoid queuing multiple timeouts during rapid clicks
-  const correctTimerRef = useRef<number | null>(null);
-  const wrongTimerRef = useRef<number | null>(null);
+  // Refs lock input synchronously, including clicks dispatched before React re-renders.
+  const advanceTimerRef = useRef<number | null>(null);
+  const nextGuessAtRef = useRef(0);
 
   const geosRef = useRef<any[] | null>(null);
 
@@ -143,12 +145,14 @@ export function useFlagMatchGame(
   // Clear timers on unmount
   useEffect(() => {
     return () => {
-      if (correctTimerRef.current) window.clearTimeout(correctTimerRef.current);
-      if (wrongTimerRef.current) window.clearTimeout(wrongTimerRef.current);
+      if (advanceTimerRef.current !== null) window.clearTimeout(advanceTimerRef.current);
     };
   }, []);
 
   function startNewGame() {
+    if (advanceTimerRef.current !== null) window.clearTimeout(advanceTimerRef.current);
+    advanceTimerRef.current = null;
+    nextGuessAtRef.current = 0;
     const playable: CountryInfo[] = [];
     
     // Filter countries from the full dataset, matching CountryIndex logic
@@ -201,8 +205,8 @@ export function useFlagMatchGame(
     });
   }
 
-  function onCountryClick(nameRaw: string) {
-    if (!currentTarget) return;
+  function onCountryClick(nameRaw: string): "cooldown" | void {
+    if (!currentTarget || hasWon || loading || !hasUserSelected) return;
     
     const norm = normalizeCountryName(nameRaw);
     
@@ -212,24 +216,16 @@ export function useFlagMatchGame(
       return;
     }
     
-    // Ignore clicks on already correctly guessed countries (don't break streak)
-    if (correctSet.has(norm)) {
-      return;
-    }
-    
     // In regional practice mode, only countries in selected region are interactive.
     if (!isCountryInSelectedRegion(nameRaw)) {
       return;
     }
     
-    if (correctTimerRef.current) {
-      window.clearTimeout(correctTimerRef.current);
-      correctTimerRef.current = null;
-    }
-    if (wrongTimerRef.current) {
-      window.clearTimeout(wrongTimerRef.current);
-      wrongTimerRef.current = null;
-    }
+    // A later guess must never cancel an accepted answer's scheduled advance.
+    const now = performance.now();
+    if (advanceTimerRef.current !== null || now < nextGuessAtRef.current) return "cooldown";
+    if (correctSet.has(norm)) return;
+    nextGuessAtRef.current = now + GUESS_COOLDOWN_MS;
 
     const k1 = normalizeApos(norm);
     const k2 = stripDiacritics(k1);
@@ -255,7 +251,7 @@ export function useFlagMatchGame(
         preloadImage(targets[nextIdx].flag);
       }
       
-      correctTimerRef.current = window.setTimeout(() => {
+      advanceTimerRef.current = window.setTimeout(() => {
         // Check if all flags have been matched (works for any region size)
         if (newScore === targets.length) {
           setHasWon(true);
@@ -264,8 +260,8 @@ export function useFlagMatchGame(
           setCurrentIdx((i) => i + 1);
         }
         setFeedback("");
-        correctTimerRef.current = null;
-      }, 350);
+        advanceTimerRef.current = null;
+      }, ADVANCE_DELAY_MS);
     } else {
       setLastClicked({ name: norm, status: "wrong" });
       setFeedback("wrong");
@@ -274,16 +270,7 @@ export function useFlagMatchGame(
   }
 
   function skipCurrentFlag() {
-    if (!currentTarget) return;
-    
-    if (correctTimerRef.current) {
-      window.clearTimeout(correctTimerRef.current);
-      correctTimerRef.current = null;
-    }
-    if (wrongTimerRef.current) {
-      window.clearTimeout(wrongTimerRef.current);
-      wrongTimerRef.current = null;
-    }
+    if (!currentTarget || hasWon || loading || !hasUserSelected || advanceTimerRef.current !== null) return;
 
     const norm = normalizeCountryName(currentTarget.name);
     setSkippedSet((s) => new Set([...s, norm]));
@@ -296,11 +283,11 @@ export function useFlagMatchGame(
       preloadImage(targets[nextIdx].flag);
     }
     
-    correctTimerRef.current = window.setTimeout(() => {
+    advanceTimerRef.current = window.setTimeout(() => {
       setCurrentIdx((i) => i + 1);
       setFeedback("");
-      correctTimerRef.current = null;
-    }, 350);
+      advanceTimerRef.current = null;
+    }, ADVANCE_DELAY_MS);
   }
 
   function handleGeographiesLoaded(geos: any[]) {

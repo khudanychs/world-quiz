@@ -216,6 +216,7 @@ export default function FlagMatchGame() {
 
   // prevent page scroll on wheel over map
   const wrapperRef = useRef<HTMLDivElement>(null);
+  const cooldownIndicatorRef = useRef<HTMLSpanElement>(null);
   usePreventWheelScroll(wrapperRef);
 
   const [streakMilestone, setStreakMilestone] = useState<number | null>(null);
@@ -241,8 +242,15 @@ export default function FlagMatchGame() {
     }
   }, [selectedRegion]);
 
-  const handleCountryClick = useCallback((nameRaw: string) => {
-    game.onCountryClick(nameRaw);
+  const handleCountryClick = useCallback((nameRaw: string, point: { x: number; y: number }) => {
+    if (game.onCountryClick(nameRaw) !== "cooldown") return;
+    const indicator = cooldownIndicatorRef.current;
+    if (!indicator) return;
+    indicator.style.left = `${point.x}px`;
+    indicator.style.top = `${point.y}px`;
+    // Keep just one local hint; repeated blocked clicks neither queue animations nor re-render the map.
+    indicator.getAnimations().forEach(animation => animation.cancel());
+    indicator.animate([{ opacity: 0.9 }, { opacity: 0 }], { duration: 300 });
   }, [game.onCountryClick]);
 
   const handleGeographiesLoaded = useCallback((geographies: any[]) => {
@@ -278,6 +286,12 @@ export default function FlagMatchGame() {
         contentError={showRegionSelector ? undefined : game.loadError}
       />
       <h1 className="sr-only">{seoH1}</h1>
+      <span ref={cooldownIndicatorRef} className="flag-click-cooldown" aria-hidden="true">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <circle cx="12" cy="12" r="9" />
+          <path d="M12 6v6l4 2" />
+        </svg>
+      </span>
       {/* Region Selector Modal */}
       {showRegionSelector && (
         <div className="region-selector-overlay">

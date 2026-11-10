@@ -102,7 +102,7 @@ interface InteractiveMapProps {
   zoom: number;
   coordinates: [number, number];
   onMoveEnd?: (position: { zoom: number; coordinates: [number, number] }) => void;
-  onCountryClick?: (countryName: string) => void;
+  onCountryClick?: (countryName: string, point: { x: number; y: number }) => void;
   onCountryHover?: (countryName: string | null) => void;
   getCountryFill?: (countryName: string) => string;
   selectedCountry?: string | null;
@@ -196,7 +196,7 @@ export default memo(function InteractiveMap({
     [onCountryHover]
   );
 
-  const handleCountryClick = useCallback((nameRaw: string) => {
+  const handleCountryClick = useCallback((nameRaw: string, event: React.MouseEvent<SVGElement>) => {
     // Clear pending hover first to avoid stale hover labels on click.
     pendingHoverRef.current = null;
     if (hoverTimerRef.current !== null) {
@@ -206,7 +206,7 @@ export default memo(function InteractiveMap({
     emitHover(null);
 
     if (onCountryClick) {
-      onCountryClick(nameRaw);
+      onCountryClick(nameRaw, { x: event.clientX, y: event.clientY });
     }
   }, [emitHover, onCountryClick]);
 
@@ -363,6 +363,7 @@ export default memo(function InteractiveMap({
                 return (
                   <Geography
                     key={geo.rsmKey}
+                    data-country={canonicalName}
                     geography={geo}
                     vectorEffect="non-scaling-stroke"
                     fillRule="evenodd"
@@ -416,7 +417,7 @@ export default memo(function InteractiveMap({
                     }}
                     onMouseEnter={!hideForMarker ? () => handleCountryHover(displayName) : undefined}
                     onMouseLeave={!hideForMarker ? () => handleCountryHover(null) : undefined}
-                    onClick={!notInteractive ? () => handleCountryClick(canonicalName) : undefined}
+                    onClick={!notInteractive ? (event: React.MouseEvent<SVGElement>) => handleCountryClick(canonicalName, event) : undefined}
                   />
                 );
               });
@@ -448,6 +449,7 @@ export default memo(function InteractiveMap({
           return (
             <circle
               key={`marker-${countryName}`}
+              data-country={norm}
               cx={x}
               cy={y}
               r={getMarkerRadius(zoom, isDesktop, markerSizeMultiplier)}
@@ -460,7 +462,7 @@ export default memo(function InteractiveMap({
               }}
               onMouseEnter={() => handleCountryHover(norm)}
               onMouseLeave={() => handleCountryHover(null)}
-              onClick={markerInteractive ? () => handleCountryClick(countryName) : undefined}
+              onClick={markerInteractive ? event => handleCountryClick(countryName, event) : undefined}
             />
           );
         })}
