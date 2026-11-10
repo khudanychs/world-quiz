@@ -207,7 +207,7 @@ export function Leaderboard({ gameMode }: LeaderboardProps) {
   const { t, i18n } = useTranslation();
   const [timeFilter, setTimeFilter] = useState<'today' | 'allTime'>('today');
   const { entries, loading, refetch } = useLeaderboard(gameMode, timeFilter);
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   
   // Refresh button cooldown state
   const [lastRefresh, setLastRefresh] = useState(0);
@@ -234,8 +234,8 @@ export function Leaderboard({ gameMode }: LeaderboardProps) {
     refetch();
   };
 
-  // Check if user is a guest (not logged in)
-  const isGuest = !user;
+  // Static HTML cannot know the visitor's session; keep its auth UI neutral.
+  const isGuest = !authLoading && !window.__WORLD_QUIZ_PRERENDER__ && !user;
   const isOnCooldown = cooldownRemaining > 0;
 
   const title = gameMode === 'flag-match'

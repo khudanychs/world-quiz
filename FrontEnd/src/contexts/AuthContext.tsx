@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode, useCallback, useRef } from 'react';
 import { 
   onAuthStateChanged,
   signInWithEmailAndPassword,
@@ -27,7 +27,7 @@ import {
 } from 'firebase/firestore';
 import { auth, db } from '../firebase';
 import { getFirebaseErrorMessage } from '../utils/firebaseErrors';
-import i18n, { changeAppLanguage } from '../i18n';
+import i18n, { ensureLanguageResources } from '../i18n';
 import { getBaseLanguage } from '../utils/localeRouting';
 
 export interface User {
@@ -57,9 +57,46 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+function readCachedProfileFlag(uid: string): string | null {
+  try {
+    return localStorage.getItem(`profileFlag_${uid}`);
+  } catch {
+    // Storage restrictions must not prevent Firebase from resolving the session.
+    return null;
+  }
+}
+
+function cacheProfileFlag(uid: string, flag: string | null): void {
+  try {
+    if (flag) {
+      localStorage.setItem(`profileFlag_${uid}`, flag);
+    } else {
+      localStorage.removeItem(`profileFlag_${uid}`);
+    }
+  } catch {
+    // The cache is optional; the in-memory profile remains usable without it.
+  }
+}
+
+async function syncPreferredLanguage(
+  language: 'en' | 'cs' | 'de' | null,
+  isCurrentSession: () => boolean,
+): Promise<void> {
+  if (!language || getBaseLanguage(i18n.language) === language) return;
+
+  await ensureLanguageResources(language);
+  // A translation import may finish after logout or an account switch.
+  if (isCurrentSession()) await i18n.changeLanguage(language);
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  // UID alone cannot distinguish a previous session after signing into the same account again.
+  const sessionVersionRef = useRef(0);
+  const isCurrentSession = useCallback((firebaseUser: FirebaseUser, version: number) => (
+    sessionVersionRef.current === version && auth.currentUser?.uid === firebaseUser.uid
+  ), []);
 
   /**
    * Route Protection Architecture
@@ -73,11 +110,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let disposed = false;
     
-    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
       if (disposed) return;
+      const sessionVersion = ++sessionVersionRef.current;
       
       if (firebaseUser) {
-        const cachedFlag = localStorage.getItem(`profileFlag_${firebaseUser.uid}`);
+        const cachedFlag = readCachedProfileFlag(firebaseUser.uid);
+        const isSessionActive = () => !disposed && isCurrentSession(firebaseUser, sessionVersion);
         
         const basicUser: User = {
           uid: firebaseUser.uid,
@@ -93,11 +132,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setLoading(false);
         
         (async () => {
-          if (disposed) return;
+          if (!isSessionActive()) return;
           
           if (firebaseUser.displayName) {
             try {
               const usernameDoc = await getDoc(doc(db, 'usernames', firebaseUser.uid));
+              if (!isSessionActive()) return;
               if (!usernameDoc.exists()) {
                 let username = firebaseUser.displayName;
                 let usernameToUse = username;
@@ -109,6 +149,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                     where('username_lower', '==', usernameToUse.toLowerCase())
                   );
                   const existingUsername = await getDocs(usernameQuery);
+                  if (!isSessionActive()) return;
                   
                   if (existingUsername.empty) break;
                   suffix++;
@@ -117,6 +158,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 
                 if (usernameToUse !== username) {
                   await updateProfile(firebaseUser, { displayName: usernameToUse });
+                  if (!isSessionActive()) return;
                 }
                 
                 await setDoc(doc(db, 'usernames', firebaseUser.uid), {
@@ -130,10 +172,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               console.error('Failed to sync username to Firestore:', error);
             }
           }
+          if (!isSessionActive()) return;
           
           try {
             const userDocRef = doc(db, 'users', firebaseUser.uid);
             const userDocSnap = await getDoc(userDocRef);
+            if (!isSessionActive()) return;
             
             let profileFlag: string | null = cachedFlag;
             let preferredLanguage: 'en' | 'cs' | 'de' | null = null;
@@ -143,9 +187,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               
               if (userData.profileFlag) {
                 profileFlag = userData.profileFlag;
-                localStorage.setItem(`profileFlag_${firebaseUser.uid}`, userData.profileFlag);
+                cacheProfileFlag(firebaseUser.uid, userData.profileFlag);
               } else if (cachedFlag) {
-                localStorage.removeItem(`profileFlag_${firebaseUser.uid}`);
+                cacheProfileFlag(firebaseUser.uid, null);
                 profileFlag = null;
               }
               
@@ -154,12 +198,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               }
             }
             
-            if (preferredLanguage && getBaseLanguage(i18n.language) !== preferredLanguage) {
-              await changeAppLanguage(preferredLanguage);
-            }
+            await syncPreferredLanguage(preferredLanguage, isSessionActive);
             
-            if (!disposed) {
-              setUser(prev => prev ? { ...prev, profileFlag } : null);
+            if (isSessionActive()) {
+              setUser(prev => prev?.uid === firebaseUser.uid ? { ...prev, profileFlag } : prev);
             }
           } catch (error) {
             console.error('Error loading profile data:', error);
@@ -173,9 +215,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     return () => {
       disposed = true;
+      sessionVersionRef.current++;
       unsubscribe();
     };
-  }, []);
+  }, [isCurrentSession]);
 
   const login = useCallback(async (email: string, password: string) => {
     try {
@@ -273,22 +316,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const refreshUser = useCallback(async () => {
-    await auth.currentUser?.reload();
     const firebaseUser = auth.currentUser;
+    const sessionVersion = sessionVersionRef.current;
     if (firebaseUser) {
+      const isSessionActive = () => isCurrentSession(firebaseUser, sessionVersion);
+      await firebaseUser.reload();
+      if (!isSessionActive()) return;
+
       let profileFlag: string | null = null;
       let preferredLanguage: 'en' | 'cs' | 'de' | null = null;
       
       try {
         const userDocRef = doc(db, 'users', firebaseUser.uid);
         const userDocSnap = await getDoc(userDocRef);
+        if (!isSessionActive()) return;
         if (userDocSnap.exists()) {
           const userData = userDocSnap.data();
           if (userData.profileFlag) {
             profileFlag = userData.profileFlag;
-            localStorage.setItem(`profileFlag_${firebaseUser.uid}`, userData.profileFlag);
+            cacheProfileFlag(firebaseUser.uid, userData.profileFlag);
           } else {
-            localStorage.removeItem(`profileFlag_${firebaseUser.uid}`);
+            cacheProfileFlag(firebaseUser.uid, null);
             profileFlag = null;
           }
 
@@ -298,13 +346,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
       } catch (error) {
         console.error('Error loading profile flag:', error);
-        const cachedFlag = localStorage.getItem(`profileFlag_${firebaseUser.uid}`);
-        profileFlag = cachedFlag;
+        profileFlag = readCachedProfileFlag(firebaseUser.uid);
       }
 
-      if (preferredLanguage && getBaseLanguage(i18n.language) !== preferredLanguage) {
-        await changeAppLanguage(preferredLanguage);
-      }
+      await syncPreferredLanguage(preferredLanguage, isSessionActive);
+      if (!isSessionActive()) return;
       
       const formattedUser: User = {
         uid: firebaseUser.uid,
@@ -319,7 +365,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } else {
       setUser(null);
     }
-  }, []);
+  }, [isCurrentSession]);
 
   const sendVerificationEmail = useCallback(async () => {
     const currentUser = auth.currentUser;
@@ -426,6 +472,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const setProfileFlag = useCallback(async (flag: string | null) => {
     const currentUser = auth.currentUser;
+    const sessionVersion = sessionVersionRef.current;
     if (!currentUser) {
       throw new Error('No user is currently signed in.');
     }
@@ -433,20 +480,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const userDocRef = doc(db, 'users', currentUser.uid);
       await setDoc(userDocRef, { profileFlag: flag }, { merge: true });
+      if (!isCurrentSession(currentUser, sessionVersion)) return;
       
-      if (flag) {
-        localStorage.setItem(`profileFlag_${currentUser.uid}`, flag);
-      } else {
-        localStorage.removeItem(`profileFlag_${currentUser.uid}`);
-      }
-      
-      if (user) {
-        setUser({ ...user, profileFlag: flag });
-      }
+      cacheProfileFlag(currentUser.uid, flag);
+      setUser(prev => prev?.uid === currentUser.uid ? { ...prev, profileFlag: flag } : prev);
     } catch (error: any) {
       throw new Error(getFirebaseErrorMessage(error));
     }
-  }, [user]);
+  }, [isCurrentSession]);
 
   const deleteAccount = useCallback(async (password?: string) => {
     const currentUser = auth.currentUser;

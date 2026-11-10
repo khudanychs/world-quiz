@@ -9,6 +9,7 @@
     "prerender": "node ./scripts/prerender-from-sitemap.mjs",
     "prerender:strict": "node ./scripts/prerender-from-sitemap.mjs --strict-seo",
     "verify:prerender": "node ./scripts/verify-prerender-count.mjs",
+    "test:auth-ui": "node ./scripts/test-auth-ui.mjs",
     "build": "vite build",
     "build:with-sitemap": "pnpm generate:sitemap && vite build",
     "build:seo": "pnpm build:with-sitemap && pnpm prerender && pnpm verify:prerender",

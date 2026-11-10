@@ -8,21 +8,24 @@ import { startPrefetch } from '../utils/dataPrefetch';
 import { changeAppLanguage } from '../i18n';
 import './Navbar.css';
 
-const MOBILE_BREAKPOINT_PX = 1120;
-
-const isMobileViewport = () => window.innerWidth < MOBILE_BREAKPOINT_PX;
-
 export function Navbar() {
   const { t, i18n } = useTranslation();
   const { user, isAuthenticated, logout, loading } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isMobile, setIsMobile] = useState(isMobileViewport());
   const navigate = useNavigate();
   const location = useLocation();
   const currentLanguage = getBaseLanguage(i18n.language);
   const prefetchTriggered = useRef(false);
   const languageChangeRequestRef = useRef(0);
   const latestPathRef = useRef(location.pathname);
+  const menuButtonRef = useRef<HTMLButtonElement>(null);
+  // Static HTML is shared by every visitor; only the live Firebase session may
+  // decide whether to show account controls or sign-in links.
+  const authPending = loading || window.__WORLD_QUIZ_PRERENDER__ === true;
+  const authState = authPending ? 'pending' : isAuthenticated ? 'authenticated' : 'guest';
+  // React 18 forwards the native boolean attribute as an empty string.
+  // Inert blocks focus immediately, including while drawer styles are updating.
+  const drawerInert = isMobileMenuOpen ? {} : { inert: '' };
 
   // Profile flag comes directly from user context now (cached in localStorage)
   const profileFlag = user?.profileFlag || null;
@@ -37,17 +40,27 @@ export function Navbar() {
   };
 
   useEffect(() => {
-    const handleResize = () => {
-      const mobile = isMobileViewport();
-      setIsMobile(mobile);
-      if (!mobile) {
+    // CSS owns the layout, including the first paint of prerendered HTML.
+    // This listener only resets an open drawer when entering desktop layout.
+    const desktop = window.matchMedia('(min-width: 1120px)');
+    const closeOnDesktop = () => {
+      if (desktop.matches) setIsMobileMenuOpen(false);
+    };
+    desktop.addEventListener('change', closeOnDesktop);
+    return () => desktop.removeEventListener('change', closeOnDesktop);
+  }, []);
+
+  useEffect(() => {
+    if (!isMobileMenuOpen) return;
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
         setIsMobileMenuOpen(false);
+        menuButtonRef.current?.focus();
       }
     };
-
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
+    window.addEventListener('keydown', closeOnEscape);
+    return () => window.removeEventListener('keydown', closeOnEscape);
+  }, [isMobileMenuOpen]);
 
   // Close mobile menu when route changes
   useEffect(() => {
@@ -124,179 +137,180 @@ export function Navbar() {
           </Link>
 
           {/* Desktop Navigation Links */}
-          {!isMobile && (
-            <div className="navbar-nav-links">
-              <Link
-                className={`nav-link ${isActive('/') ? 'active' : ''}`}
-                to={buildLocalizedPath('/', currentLanguage)}
-              >
-                {t('nav.home')}
-              </Link>
-              <Link
-                className={`nav-link ${isActive('/countries') ? 'active' : ''}`}
-                to={buildLocalizedPath('/countries', currentLanguage)}
-              >
-                {t('nav.countries')}
-              </Link>
-              <Link
-                className={`nav-link ${isActive('/leaderboards') ? 'active' : ''}`}
-                to={buildLocalizedPath('/leaderboards', currentLanguage)}
-                onMouseEnter={handleLeaderboardHover}
-              >
-                {t('nav.leaderboards')}
-              </Link>
-              <Link
-                className={`nav-link ${isActive('/privacy') ? 'active' : ''}`}
-                to={buildLocalizedPath('/privacy', currentLanguage)}
-                style={{ fontSize: '0.85em', opacity: 0.8 }}
-              >
-                {t('nav.privacy')}
-              </Link>
-              <Link
-                className={`nav-link ${isActive('/terms') ? 'active' : ''}`}
-                to={buildLocalizedPath('/terms', currentLanguage)}
-                style={{ fontSize: '0.85em', opacity: 0.8 }}
-              >
-                {t('nav.terms')}
-              </Link>
-            </div>
-          )}
+          <div className="navbar-nav-links">
+            <Link
+              className={`nav-link ${isActive('/') ? 'active' : ''}`}
+              to={buildLocalizedPath('/', currentLanguage)}
+            >
+              {t('nav.home')}
+            </Link>
+            <Link
+              className={`nav-link ${isActive('/countries') ? 'active' : ''}`}
+              to={buildLocalizedPath('/countries', currentLanguage)}
+            >
+              {t('nav.countries')}
+            </Link>
+            <Link
+              className={`nav-link ${isActive('/leaderboards') ? 'active' : ''}`}
+              to={buildLocalizedPath('/leaderboards', currentLanguage)}
+              onMouseEnter={handleLeaderboardHover}
+            >
+              {t('nav.leaderboards')}
+            </Link>
+            <Link
+              className={`nav-link ${isActive('/privacy') ? 'active' : ''}`}
+              to={buildLocalizedPath('/privacy', currentLanguage)}
+              style={{ fontSize: '0.85em', opacity: 0.8 }}
+            >
+              {t('nav.privacy')}
+            </Link>
+            <Link
+              className={`nav-link ${isActive('/terms') ? 'active' : ''}`}
+              to={buildLocalizedPath('/terms', currentLanguage)}
+              style={{ fontSize: '0.85em', opacity: 0.8 }}
+            >
+              {t('nav.terms')}
+            </Link>
+          </div>
 
           {/* Desktop Auth Menu */}
-          {!isMobile && (
-            <div className="navbar-menu">
-              {loading ? (
-                // App Shell: Hide auth UI completely during initial Firebase resolution
-                <div style={{ width: '150px', height: '40px' }} aria-hidden="true" />
-              ) : isAuthenticated ? (
-                <>
-                  <Link
-                    className={`navbar-user-button ${isActive('/settings') ? 'active' : ''}`}
-                    to={buildLocalizedPath('/settings', currentLanguage)}
-                    title={t('nav.settings')}
-                  >
-                    <span className="navbar-user">
-                      {profileFlag && flagUrl ? (
-                        <img 
-                          src={flagUrl} 
-                          alt={t('navbar.profileAlt')} 
-                          className="navbar-avatar"
-                          style={{ borderRadius: '50%' }}
-                        />
-                      ) : user?.photoURL ? (
-                        <img 
-                          src={user.photoURL} 
-                          alt={t('navbar.avatarAlt')} 
-                          className="navbar-avatar"
-                        />
-                      ) : (
-                        <div className="navbar-avatar-placeholder">
-                          {user?.displayName?.[0]?.toUpperCase() || '?'}
-                        </div>
-                      )}
-                      <span className="navbar-username">{user?.displayName}</span>
-                    </span>
-                  </Link>
-                  <button onClick={logout} className="navbar-button">
-                    {t('nav.logout')}
-                  </button>
-                </>
-              ) : (
-                <>
-                  {renderGuestLanguageSwitcher()}
-                  <Link to={`${buildLocalizedPath('/auth', currentLanguage)}?mode=login`} className="navbar-button-secondary">
-                    {t('nav.login')}
-                  </Link>
-                  <Link to={`${buildLocalizedPath('/auth', currentLanguage)}?mode=register`} className="navbar-button">
-                    {t('nav.join')}
-                  </Link>
-                </>
-              )}
-            </div>
-          )}
+          <div className="navbar-menu" data-auth-state={authState} aria-busy={authPending}>
+            {authPending ? (
+              <div className="navbar-auth-placeholder" aria-hidden="true">
+                <span className="navbar-auth-placeholder-avatar" />
+                <span className="navbar-auth-placeholder-label" />
+              </div>
+            ) : isAuthenticated ? (
+              <>
+                <Link
+                  className={`navbar-user-button ${isActive('/settings') ? 'active' : ''}`}
+                  to={buildLocalizedPath('/settings', currentLanguage)}
+                  title={t('nav.settings')}
+                >
+                  <span className="navbar-user">
+                    {profileFlag && flagUrl ? (
+                      <img
+                        src={flagUrl}
+                        alt={t('navbar.profileAlt')}
+                        className="navbar-avatar"
+                        style={{ borderRadius: '50%' }}
+                      />
+                    ) : user?.photoURL ? (
+                      <img
+                        src={user.photoURL}
+                        alt={t('navbar.avatarAlt')}
+                        className="navbar-avatar"
+                      />
+                    ) : (
+                      <div className="navbar-avatar-placeholder">
+                        {user?.displayName?.[0]?.toUpperCase() || '?'}
+                      </div>
+                    )}
+                    <span className="navbar-username">{user?.displayName}</span>
+                  </span>
+                </Link>
+                <button onClick={logout} className="navbar-button">
+                  {t('nav.logout')}
+                </button>
+              </>
+            ) : (
+              <>
+                {renderGuestLanguageSwitcher()}
+                <Link to={`${buildLocalizedPath('/auth', currentLanguage)}?mode=login`} className="navbar-button-secondary">
+                  {t('nav.login')}
+                </Link>
+                <Link to={`${buildLocalizedPath('/auth', currentLanguage)}?mode=register`} className="navbar-button">
+                  {t('nav.join')}
+                </Link>
+              </>
+            )}
+          </div>
 
           {/* Mobile Hamburger Button */}
-          {isMobile && (
-            <button 
-              className={`hamburger-button ${isMobileMenuOpen ? 'open' : ''}`}
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              aria-label={t('nav.toggleMenu')}
-            >
-              <span className="hamburger-line"></span>
-              <span className="hamburger-line"></span>
-              <span className="hamburger-line"></span>
-            </button>
-          )}
+          <button
+            ref={menuButtonRef}
+            type="button"
+            className={`hamburger-button ${isMobileMenuOpen ? 'open' : ''}`}
+            onClick={() => setIsMobileMenuOpen(open => !open)}
+            aria-label={t('nav.toggleMenu')}
+            aria-expanded={isMobileMenuOpen}
+            aria-controls="mobile-navigation"
+          >
+            <span className="hamburger-line"></span>
+            <span className="hamburger-line"></span>
+            <span className="hamburger-line"></span>
+          </button>
         </div>
       </nav>
 
       {/* Mobile Menu Overlay */}
-      {isMobile && isMobileMenuOpen && (
+      {isMobileMenuOpen && (
         <div className="mobile-menu-overlay" onClick={() => setIsMobileMenuOpen(false)} />
       )}
 
       {/* Mobile Menu */}
-      {isMobile && (
-        <div className={`mobile-menu ${isMobileMenuOpen ? 'open' : ''}`}>
-          <div className="mobile-menu-content">
-            {/* Navigation Links */}
-            <div className="mobile-nav-section">
-              <Link
-                className={`mobile-nav-link ${isActive('/') ? 'active' : ''}`}
-                to={buildLocalizedPath('/', currentLanguage)}
-              >
-                🏠 {t('nav.home')}
-              </Link>
-              <Link
-                className={`mobile-nav-link ${isActive('/countries') ? 'active' : ''}`}
-                to={buildLocalizedPath('/countries', currentLanguage)}
-              >
-                🌍 {t('nav.countries')}
-              </Link>
-              <Link
-                className={`mobile-nav-link ${isActive('/leaderboards') ? 'active' : ''}`}
-                to={buildLocalizedPath('/leaderboards', currentLanguage)}
-                onTouchStart={handleLeaderboardHover}
-              >
-                🏆 {t('nav.leaderboards')}
-              </Link>
-            </div>
+      <div id="mobile-navigation" className={`mobile-menu ${isMobileMenuOpen ? 'open' : ''}`} {...drawerInert}>
+        <div className="mobile-menu-content">
+          {/* Navigation Links */}
+          <div className="mobile-nav-section">
+            <Link
+              className={`mobile-nav-link ${isActive('/') ? 'active' : ''}`}
+              to={buildLocalizedPath('/', currentLanguage)}
+            >
+              🏠 {t('nav.home')}
+            </Link>
+            <Link
+              className={`mobile-nav-link ${isActive('/countries') ? 'active' : ''}`}
+              to={buildLocalizedPath('/countries', currentLanguage)}
+            >
+              🌍 {t('nav.countries')}
+            </Link>
+            <Link
+              className={`mobile-nav-link ${isActive('/leaderboards') ? 'active' : ''}`}
+              to={buildLocalizedPath('/leaderboards', currentLanguage)}
+              onTouchStart={handleLeaderboardHover}
+            >
+              🏆 {t('nav.leaderboards')}
+            </Link>
+          </div>
 
-            {/* Auth Section */}
-            <div className="mobile-auth-section">
-              {loading ? (
-                // App Shell: Hide auth UI completely during initial Firebase resolution
-                <div style={{ height: '60px' }} aria-hidden="true" />
-              ) : isAuthenticated ? (
-                <>
-                  <Link
-                    className={`mobile-user-button ${isActive('/settings') ? 'active' : ''}`}
-                    to={buildLocalizedPath('/settings', currentLanguage)}
-                  >
-                    {profileFlag && flagUrl ? (
-                      <img 
-                        src={flagUrl} 
-                        alt={t('navbar.profileAlt')} 
-                        className="mobile-avatar"
-                        style={{ borderRadius: '50%' }}
-                      />
-                    ) : user?.photoURL ? (
-                      <img 
-                        src={user.photoURL} 
-                        alt={t('navbar.avatarAlt')} 
-                        className="mobile-avatar"
-                      />
-                    ) : (
-                      <div className="mobile-avatar-placeholder">
-                        {user?.displayName?.[0]?.toUpperCase() || '?'}
-                      </div>
-                    )}
-                    <span>{user?.displayName}</span>
-                  </Link>
-                  <button onClick={() => { logout(); setIsMobileMenuOpen(false); }} className="mobile-logout-button">
-                    {t('nav.logout')}
-                  </button>
-                </>
+          {/* Auth Section */}
+          <div className="mobile-auth-section" data-auth-state={authState} aria-busy={authPending}>
+            {authPending ? (
+              <div className="navbar-auth-placeholder" aria-hidden="true">
+                <span className="navbar-auth-placeholder-avatar" />
+                <span className="navbar-auth-placeholder-label" />
+              </div>
+            ) : isAuthenticated ? (
+              <>
+                <Link
+                  className={`mobile-user-button ${isActive('/settings') ? 'active' : ''}`}
+                  to={buildLocalizedPath('/settings', currentLanguage)}
+                >
+                  {profileFlag && flagUrl ? (
+                    <img
+                      src={flagUrl}
+                      alt={t('navbar.profileAlt')}
+                      className="mobile-avatar"
+                      style={{ borderRadius: '50%' }}
+                    />
+                  ) : user?.photoURL ? (
+                    <img
+                      src={user.photoURL}
+                      alt={t('navbar.avatarAlt')}
+                      className="mobile-avatar"
+                    />
+                  ) : (
+                    <div className="mobile-avatar-placeholder">
+                      {user?.displayName?.[0]?.toUpperCase() || '?'}
+                    </div>
+                  )}
+                  <span className="mobile-username">{user?.displayName}</span>
+                </Link>
+                <button onClick={() => { logout(); setIsMobileMenuOpen(false); }} className="mobile-logout-button">
+                  {t('nav.logout')}
+                </button>
+              </>
               ) : (
                 <>
                   {renderGuestLanguageSwitcher(true)}
@@ -318,7 +332,6 @@ export function Navbar() {
             </div>
           </div>
         </div>
-      )}
     </>
   );
 }
