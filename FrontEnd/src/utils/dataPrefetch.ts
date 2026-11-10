@@ -40,6 +40,7 @@ export const prefetchCache: {
 };
 
 async function prefetchLeaderboard(gameMode: GameMode, timeFilter: TimeFilter): Promise<void> {
+  const cacheAtStart = prefetchCache[gameMode][timeFilter];
   try {
     const { collection, query, orderBy, limit, getDocs, where } = await import('firebase/firestore');
 
@@ -96,10 +97,10 @@ async function prefetchLeaderboard(gameMode: GameMode, timeFilter: TimeFilter): 
       ...doc.data(),
     })) as LeaderboardEntry[];
 
-    prefetchCache[gameMode][timeFilter] = {
-      data: entries,
-      timestamp: Date.now(),
-    };
+    // A manual refresh may have published newer data while prefetch was in flight.
+    if (prefetchCache[gameMode][timeFilter] === cacheAtStart) {
+      prefetchCache[gameMode][timeFilter] = { data: entries, timestamp: Date.now() };
+    }
   } catch (error) {
     // Prefetch failed, data will be loaded on demand
   }

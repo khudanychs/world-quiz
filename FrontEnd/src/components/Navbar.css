@@ -44,12 +44,6 @@
   width: auto;
 }
 
-@media (min-width: 768px) {
-  .navbar-logo {
-    height: 56px;
-  }
-}
-
 .navbar-brand h1 {
   font-size: 18px;
   color: #fff;
@@ -390,34 +384,6 @@
   }
 }
 
-.navbar-link {
-  color: #fff;
-  text-decoration: none;
-  padding: 8px 10px;
-  border-radius: 6px;
-  transition: background 0.2s;
-  font-size: 13px;
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-
-@media (min-width: 576px) {
-  .navbar-link {
-    padding: 8px 12px;
-    font-size: 14px;
-  }
-}
-
-@media (min-width: 768px) {
-  .navbar-link {
-    padding: 8px 16px;
-  }
-}
-
-.navbar-link:hover {
-  background: rgba(255, 255, 255, 0.1);
-}
-
 .navbar-button {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: #fff;
@@ -499,24 +465,6 @@
   background: rgba(255, 255, 255, 0.1);
   border-color: rgba(255, 255, 255, 0.5);
   color: #fff;
-}
-
-/* Mobile fix - smaller name on small screens */
-@media (max-width: 600px) {
-  .navbar-username {
-    max-width: 80px;
-    font-size: 12px;
-  }
-  
-  .navbar-button,
-  .navbar-button-secondary {
-    padding: 6px 10px;
-    font-size: 12px;
-  }
-  
-  .navbar-user {
-    padding: 4px 6px;
-  }
 }
 
 /* Hamburger Button */

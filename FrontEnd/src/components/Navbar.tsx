@@ -17,7 +17,7 @@ export function Navbar() {
   const currentLanguage = getBaseLanguage(i18n.language);
   const prefetchTriggered = useRef(false);
   const languageChangeRequestRef = useRef(0);
-  const latestPathRef = useRef(location.pathname);
+  const latestLocationRef = useRef(location);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   // Static HTML is shared by every visitor; only the live Firebase session may
   // decide whether to show account controls or sign-in links.
@@ -68,25 +68,29 @@ export function Navbar() {
   }, [location.key]);
 
   useEffect(() => {
-    latestPathRef.current = location.pathname;
-  }, [location.pathname]);
+    latestLocationRef.current = location;
+  }, [location]);
 
   const isActive = (path: string) => stripLocalePrefix(location.pathname) === path;
 
   const handleLanguageChange = async (nextLanguage: 'en' | 'cs' | 'de') => {
     const requestId = ++languageChangeRequestRef.current;
-    const sourcePath = latestPathRef.current;
+    const sourceLocation = latestLocationRef.current;
 
     if (nextLanguage !== currentLanguage) {
       await changeAppLanguage(nextLanguage);
     }
 
     // Avoid late async completion sending user back to a stale route.
-    if (requestId !== languageChangeRequestRef.current || latestPathRef.current !== sourcePath) {
+    if (requestId !== languageChangeRequestRef.current || latestLocationRef.current !== sourceLocation) {
       return;
     }
 
-    navigate(buildLocalizedPath(sourcePath, nextLanguage), { replace: true });
+    navigate({
+      pathname: buildLocalizedPath(sourceLocation.pathname, nextLanguage),
+      search: sourceLocation.search,
+      hash: sourceLocation.hash,
+    }, { replace: true });
   };
 
   const renderGuestLanguageSwitcher = (mobile = false) => (
