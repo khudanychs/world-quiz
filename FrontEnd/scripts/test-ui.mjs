@@ -406,6 +406,101 @@ async function checkLeaderboard(language, width) {
   }
 }
 
+async function checkFlagMatchSpam(width) {
+  const context = await browser.newContext({ viewport: { width, height: 900 }, locale: 'en' });
+  const page = await context.newPage();
+  try {
+    await interceptNetwork(context);
+    const countries = JSON.parse(await fs.readFile(path.join(distDir, 'countries-full.json'), 'utf8'));
+    let fixtureCodes = ['FR', 'DE', 'ES'];
+    await context.route('**/countries-full.json*', route => route.fulfill({
+      json: countries.filter(country => fixtureCodes.includes(country.cca2)),
+    }));
+    await page.goto(`${origin}/en/game/flags/world`);
+    await page.locator('[data-country="France"]').waitFor();
+    await page.getByRole('button', { name: translations.en.gameHUD.showName, exact: true }).click();
+    const flag = page.getByAltText(translations.en.gameHUD.flagToMatchAlt);
+    const target = (await page.locator('.name-panel').textContent()).trim();
+    const before = await flag.getAttribute('src');
+    const wrong = target === 'France' ? 'Germany' : 'France';
+    // Dispatch in one task, before React can commit: real rapid clicks must be safe too.
+    const hint = await page.evaluate(({ target, wrong }) => {
+      const click = name => document.querySelector(`[data-country="${name}"]`).dispatchEvent(new MouseEvent('click', { bubbles: true, clientX: 180, clientY: 260 }));
+      click(target);
+      for (let i = 0; i < 30; i++) click(wrong);
+      const indicator = document.querySelector('.flag-click-cooldown');
+      return { animations: indicator.getAnimations().length, left: indicator.style.left, top: indicator.style.top };
+    }, { target, wrong });
+    await page.waitForFunction(({ alt, before }) => document.querySelector(`img[alt="${alt}"]`)?.getAttribute('src') !== before,
+      { alt: translations.en.gameHUD.flagToMatchAlt, before }, { timeout: 1500 });
+    assert.equal(await page.locator(`[data-country="${target}"]`).evaluate(el => el.style.fill), 'rgb(16, 185, 129)');
+    assert.deepEqual(hint, { animations: 1, left: '180px', top: '260px' }, 'Blocked clicks should show one clock at the click position');
+
+    // A wrong guess followed immediately by the right one must be rate-limited,
+    // then accepted after a short pause. Clicking ignored inputs must not extend the pause.
+    const nextTarget = (await page.locator('.name-panel').textContent()).trim();
+    const wrongNext = ['France', 'Germany', 'Spain'].find(name => name !== target && name !== nextTarget);
+    const nextFlag = await flag.getAttribute('src');
+    await page.evaluate(({ nextTarget, wrongNext }) => {
+      for (const name of [wrongNext, nextTarget]) document.querySelector(`[data-country="${name}"]`).dispatchEvent(new MouseEvent('click', { bubbles: true, clientX: 200, clientY: 280 }));
+    }, { nextTarget, wrongNext });
+    assert.equal(await flag.getAttribute('src'), nextFlag);
+    assert.notEqual(await page.locator(`[data-country="${nextTarget}"]`).evaluate(el => el.style.fill), 'rgb(16, 185, 129)');
+    await page.waitForTimeout(275);
+    await page.locator(`[data-country="${nextTarget}"]`).dispatchEvent('click');
+    // Skip cannot cancel or advance an already accepted answer.
+    await page.getByRole('button', { name: translations.en.gameHUD.skip, exact: true }).dispatchEvent('click');
+    await page.waitForFunction(({ alt, before }) => document.querySelector(`img[alt="${alt}"]`)?.getAttribute('src') !== before,
+      { alt: translations.en.gameHUD.flagToMatchAlt, before: nextFlag }, { timeout: 1500 });
+    assert.equal(await page.locator(`[data-country="${nextTarget}"]`).evaluate(el => el.style.fill), 'rgb(16, 185, 129)');
+    // Repeated skips still advance exactly one target and finish this three-country round.
+    await page.getByRole('button', { name: translations.en.gameHUD.skip, exact: true }).evaluate(button => {
+      for (let i = 0; i < 20; i++) button.click();
+    });
+    const newGame = page.getByRole('button', { name: `🎮 ${translations.en.gameHUD.newGame}`, exact: true });
+    await newGame.waitFor();
+    assert.equal(await page.locator('[data-country]').evaluateAll(elements => elements.filter(el => el.style.fill === 'rgb(16, 185, 129)').length), 2);
+    await newGame.click();
+    // Switching regions during an accepted answer must cancel the old round's timer.
+    await page.evaluate(() => {
+      const name = document.querySelector('.name-panel').textContent.trim();
+      document.querySelector(`[data-country="${name}"]`).dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      history.pushState({}, '', '/en/game/flags/europe');
+      dispatchEvent(new PopStateEvent('popstate'));
+    });
+    await page.waitForTimeout(450);
+    assert.equal(await page.locator('[data-country]').evaluateAll(elements => elements.filter(el => el.style.fill === 'rgb(16, 185, 129)').length), 0);
+    // Finish a clean round despite spamming after every correct answer, including the last one.
+    for (let i = 0; i < 3; i++) {
+      const previous = await flag.getAttribute('src');
+      await page.evaluate(() => {
+        const name = document.querySelector('.name-panel').textContent.trim();
+        const correct = document.querySelector(`[data-country="${name}"]`);
+        correct.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+        for (let i = 0; i < 20; i++) correct.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      });
+      if (i < 2) await page.waitForFunction(({ alt, before }) => document.querySelector(`img[alt="${alt}"]`)?.getAttribute('src') !== before,
+        { alt: translations.en.gameHUD.flagToMatchAlt, before: previous }, { timeout: 1500 });
+      else await page.locator('.win-animation-overlay').waitFor();
+    }
+    // Tiny island markers must take the same guarded click path as country polygons.
+    fixtureCodes = ['MT'];
+    await page.goto(`${origin}/en/game/flags/world`);
+    await page.getByAltText(translations.en.gameHUD.flagToMatchAlt).waitFor();
+    await page.locator('circle[data-country="Malta"]').evaluate(marker => {
+      for (let i = 0; i < 20; i++) marker.dispatchEvent(new MouseEvent('click', { bubbles: true, clientX: 200, clientY: 280 }));
+    });
+    await page.locator('.win-animation-overlay').waitFor();
+    console.log(`[flag-match] PASS ${width}px spam, cooldown, clock, skip, region reset, victory and island marker`);
+  } catch (error) {
+    await fs.mkdir(artifactDir, { recursive: true });
+    await page.screenshot({ path: path.join(artifactDir, `flag-match-${width}.png`) }).catch(() => {});
+    throw new Error(`flag-match/${width}: ${error.message}`, { cause: error });
+  } finally {
+    await context.close();
+  }
+}
+
 try {
   // Serialize the production app exactly as the SEO renderer does, in memory.
   // This keeps the regression fast and leaves the real build/sitemap untouched.
@@ -444,12 +539,13 @@ try {
   const tasks = [
     ...cases.flatMap(({ language, width }) => [false, true].map((authenticated) => () => checkRestoration(language, width, authenticated))),
     ...languages.flatMap((language) => leaderboardWidths.map((width) => () => checkLeaderboard(language, width))),
+    ...leaderboardWidths.map(width => () => checkFlagMatchSpam(width)),
   ];
   let cursor = 0;
   await Promise.all(Array.from({ length: 3 }, async () => {
     while (cursor < tasks.length) await tasks[cursor++]();
   }));
-  console.log(`[ui] Passed ${cases.length} auth static paints, ${cases.length * 4} auth loads, ${languages.length} neutral leaderboard snapshots and ${languages.length * leaderboardWidths.length} leaderboard workflows. All external traffic intercepted.`);
+  console.log(`[ui] Passed ${cases.length} auth static paints, ${cases.length * 4} auth loads, ${languages.length} neutral leaderboard snapshots, ${languages.length * leaderboardWidths.length} leaderboard workflows and ${leaderboardWidths.length} Flag Match spam workflows. All external traffic intercepted.`);
 } catch (error) {
   console.error(`[ui] FAILED ${error.stack}\nScreenshots: ${artifactDir}`);
   process.exitCode = 1;
