@@ -1,102 +1,39 @@
 import { db } from '../firebase';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from "../contexts/AuthContext";
 import { Link } from "react-router-dom";
 import './Leaderboard.css';
 import { getTodayDateString } from "../utils/dateUtils";
 import { buildLocalizedPath } from '../utils/localeRouting';
-import { prefetchCache } from '../utils/dataPrefetch';
+import { prefetchCache, type LeaderboardEntry } from '../utils/dataPrefetch';
 
-// Define the structure of a streak document
-interface StreakEntry {
-  id: string;
-  userId: string;
-  username: string;
-  streak: number;
-}
-
-// Define the structure of a score document
-interface ScoreEntry {
-  id: string;
-  userId: string;
-  username: string;
-  score: number;
-}
-
-// Define the structure of a guess country stats document
-interface GuessCountryEntry {
-  id: string;
-  userId: string;
-  username: string;
-  countriesGuessed: number;
-}
-
-type GameMode = 'flag-match' | 'cards-match' | 'guess-country';
-
-// Cache for leaderboard data (prevents excessive reads on filter switching)
-// This cache is now also populated by the prefetch module for instant load
-const leaderboardCache: {
-  'flag-match': {
-    today: { data: StreakEntry[]; timestamp: number } | null;
-    allTime: { data: StreakEntry[]; timestamp: number } | null;
-  };
-  'cards-match': {
-    today: { data: ScoreEntry[]; timestamp: number } | null;
-    allTime: { data: ScoreEntry[]; timestamp: number } | null;
-  };
-  'guess-country': {
-    today: { data: GuessCountryEntry[]; timestamp: number } | null;
-    allTime: { data: GuessCountryEntry[]; timestamp: number } | null;
-  };
-} = {
-  'flag-match': {
-    today: null,
-    allTime: null
-  },
-  'cards-match': {
-    today: null,
-    allTime: null
-  },
-  'guess-country': {
-    today: null,
-    allTime: null
-  }
-};
+export type GameMode = 'flag-match' | 'cards-match' | 'guess-country';
+export type TimeFilter = 'today' | 'allTime';
 
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minute cache to reduce Firebase reads
 
 // Hook for leaderboard data - fetches top 10 with caching and prefetch support
-function useLeaderboard(gameMode: GameMode, timeFilter: 'today' | 'allTime') {
-  const [entries, setEntries] = useState<StreakEntry[] | ScoreEntry[] | GuessCountryEntry[]>([]);
-  const [loading, setLoading] = useState(true);
+function useLeaderboard(gameMode: GameMode, timeFilter: TimeFilter) {
+  const [result, setResult] = useState({ gameMode, timeFilter, entries: [] as LeaderboardEntry[], loading: true });
+  const requestVersion = useRef(0);
 
   const fetchLeaderboard = useCallback(async (forceRefresh = false) => {
-    // First, check if we have prefetched data (this runs in parallel with Auth)
-    const prefetched = prefetchCache[gameMode][timeFilter];
-    if (prefetched && !forceRefresh) {
-      // Use prefetched data immediately - no loading state!
-      setEntries(prefetched.data as any);
-      setLoading(false);
-      // Also update local cache with prefetched data
-      (leaderboardCache[gameMode][timeFilter] as any) = prefetched;
+    const version = ++requestVersion.current;
+    const selection = { gameMode, timeFilter };
+    // Prefetch and manual refresh share one cache, including its expiration.
+    const cached = prefetchCache[gameMode][timeFilter];
+
+    if (!forceRefresh && cached && (Date.now() - cached.timestamp) < CACHE_DURATION) {
+      setResult({ ...selection, entries: cached.data, loading: false });
       return;
     }
 
-    // Check local cache (unless force refresh)
-    const cached = leaderboardCache[gameMode][timeFilter];
-    const now = Date.now();
-
-    if (!forceRefresh && cached && (now - cached.timestamp) < CACHE_DURATION) {
-      setEntries(cached.data as any);
-      setLoading(false);
-      return;
-    }
-
-    setLoading(true);
+    setResult({ ...selection, entries: [], loading: true });
 
     try {
       const { collection, query, orderBy, limit, getDocs, where } = await import('firebase/firestore');
+      if (version !== requestVersion.current) return;
 
       let q;
 
@@ -149,39 +86,19 @@ function useLeaderboard(gameMode: GameMode, timeFilter: 'today' | 'allTime') {
       }
 
       const snapshot = await getDocs(q);
+      if (version !== requestVersion.current) return;
       const topEntries = snapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
-      }));
+      })) as LeaderboardEntry[];
 
-      // Update cache with proper type
-      if (gameMode === 'flag-match') {
-        (leaderboardCache[gameMode][timeFilter] as any) = {
-          data: topEntries as StreakEntry[],
-          timestamp: now
-        };
-      } else if (gameMode === 'cards-match') {
-        (leaderboardCache[gameMode][timeFilter] as any) = {
-          data: topEntries as ScoreEntry[],
-          timestamp: now
-        };
-      } else {
-        (leaderboardCache[gameMode][timeFilter] as any) = {
-          data: topEntries as GuessCountryEntry[],
-          timestamp: now
-        };
-      }
-
-      setEntries(topEntries as any);
-    } catch (error: any) {
+      prefetchCache[gameMode][timeFilter] = { data: topEntries, timestamp: Date.now() };
+      setResult({ ...selection, entries: topEntries, loading: false });
+    } catch (error) {
+      if (version !== requestVersion.current) return;
       console.error("Error fetching leaderboard: ", error);
       // On quota exceeded or network error, use cached data if available (even if expired)
-      const fallbackCache = leaderboardCache[gameMode][timeFilter];
-      if (fallbackCache) {
-        setEntries(fallbackCache.data as any);
-      }
-    } finally {
-      setLoading(false);
+      setResult({ ...selection, entries: prefetchCache[gameMode][timeFilter]?.data ?? [], loading: false });
     }
   }, [gameMode, timeFilter]);
 
@@ -190,10 +107,19 @@ function useLeaderboard(gameMode: GameMode, timeFilter: 'today' | 'allTime') {
 
     // Auto-refresh every 10 minutes (force refresh to bypass cache) - optimized for Firebase free tier
     const interval = setInterval(() => fetchLeaderboard(true), 10 * 60 * 1000);
-    return () => clearInterval(interval);
+    return () => {
+      requestVersion.current++;
+      clearInterval(interval);
+    };
   }, [fetchLeaderboard]);
 
-  return { entries, loading, refetch: () => fetchLeaderboard(true) };
+  // Effects run after paint; never render the previous selection's rows in that gap.
+  const isCurrentSelection = result.gameMode === gameMode && result.timeFilter === timeFilter;
+  return {
+    entries: isCurrentSelection ? result.entries : [],
+    loading: !isCurrentSelection || result.loading,
+    refetch: () => fetchLeaderboard(true),
+  };
 }
 
 // Refresh cooldown in milliseconds (60 seconds) - optimized for Firebase free tier
@@ -201,11 +127,12 @@ const REFRESH_COOLDOWN = 60 * 1000;
 
 interface LeaderboardProps {
   gameMode: GameMode;
+  timeFilter: TimeFilter;
+  onTimeFilterChange: (filter: TimeFilter) => void;
 }
 
-export function Leaderboard({ gameMode }: LeaderboardProps) {
+export function Leaderboard({ gameMode, timeFilter, onTimeFilterChange }: LeaderboardProps) {
   const { t, i18n } = useTranslation();
-  const [timeFilter, setTimeFilter] = useState<'today' | 'allTime'>('today');
   const { entries, loading, refetch } = useLeaderboard(gameMode, timeFilter);
   const { user, loading: authLoading } = useAuth();
   
@@ -278,14 +205,18 @@ export function Leaderboard({ gameMode }: LeaderboardProps) {
       {showTimeFilter && (
         <div className="leaderboard-toggle">
           <button
+            type="button"
             className={`toggle-btn ${timeFilter === 'today' ? 'active' : ''}`}
-            onClick={() => setTimeFilter('today')}
+            aria-pressed={timeFilter === 'today'}
+            onClick={() => onTimeFilterChange('today')}
           >
             {t('leaderboard.today')}
           </button>
           <button
+            type="button"
             className={`toggle-btn ${timeFilter === 'allTime' ? 'active' : ''}`}
-            onClick={() => setTimeFilter('allTime')}
+            aria-pressed={timeFilter === 'allTime'}
+            onClick={() => onTimeFilterChange('allTime')}
           >
             {t('leaderboard.allTime')}
           </button>
@@ -310,17 +241,17 @@ export function Leaderboard({ gameMode }: LeaderboardProps) {
               {gameMode === 'flag-match' ? (
                 <span className="leaderboard-streak">
                   <span className="streak-fire">🔥</span>
-                  {((entry as StreakEntry).streak || 0)}
+                  {entry.streak || 0}
                 </span>
               ) : gameMode === 'cards-match' ? (
                 <span className="leaderboard-score">
                   <span className="score-icon">💎</span>
-                  {((entry as ScoreEntry).score || 0).toLocaleString()}
+                  {(entry.score || 0).toLocaleString()}
                 </span>
               ) : (
                 <span className="leaderboard-score">
                   <span className="score-icon">🌍</span>
-                  {((entry as GuessCountryEntry).countriesGuessed || 0)}
+                  {entry.countriesGuessed || 0}
                 </span>
               )}
             </li>

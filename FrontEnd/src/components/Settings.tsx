@@ -25,7 +25,7 @@ export const Settings = () => {
   const location = useLocation();
   const currentLanguage = getBaseLanguage(i18n.language);
   const languageChangeRequestRef = useRef(0);
-  const latestPathRef = useRef(location.pathname);
+  const latestLocationRef = useRef(location);
   const [username, setUsername] = useState('');
   const [avatarUrl, setAvatarUrl] = useState('');
   const [selectedFlag, setSelectedFlag] = useState<string | null>(null);
@@ -52,8 +52,8 @@ export const Settings = () => {
   } | null>(null);
 
   useEffect(() => {
-    latestPathRef.current = location.pathname;
-  }, [location.pathname]);
+    latestLocationRef.current = location;
+  }, [location]);
 
   useEffect(() => {
     if (user) {
@@ -319,7 +319,7 @@ export const Settings = () => {
 
   const handleLanguageChange = async (nextLanguage: 'en' | 'cs' | 'de') => {
     const requestId = ++languageChangeRequestRef.current;
-    const sourcePath = latestPathRef.current;
+    const sourceLocation = latestLocationRef.current;
 
     if (nextLanguage !== currentLanguage) {
       await changeAppLanguage(nextLanguage);
@@ -339,12 +339,16 @@ export const Settings = () => {
     }
 
     // If user navigated away while language change was in-flight, do not force stale navigation.
-    if (requestId !== languageChangeRequestRef.current || latestPathRef.current !== sourcePath) {
+    if (requestId !== languageChangeRequestRef.current || latestLocationRef.current !== sourceLocation) {
       return;
     }
 
     // Replace history entry so Back button ignores language-only switches.
-    navigate(buildLocalizedPath(sourcePath, nextLanguage), { replace: true });
+    navigate({
+      pathname: buildLocalizedPath(sourceLocation.pathname, nextLanguage),
+      search: sourceLocation.search,
+      hash: sourceLocation.hash,
+    }, { replace: true });
   };
 
   return (

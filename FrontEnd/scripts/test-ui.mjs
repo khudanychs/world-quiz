@@ -8,9 +8,9 @@ import { chromium } from 'playwright-core';
 
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const distDir = path.join(rootDir, 'dist');
-const artifactDir = process.env.AUTH_UI_ARTIFACT_DIR || path.join(os.tmpdir(), `world-quiz-auth-ui-${process.pid}`);
-const widths = (process.env.AUTH_UI_TEST_WIDTHS || '320,390,1119,1120,1280,1440').split(',').map(Number);
-const languages = (process.env.AUTH_UI_TEST_LANGUAGES || 'en,cs,de').split(',');
+const artifactDir = process.env.UI_ARTIFACT_DIR || path.join(os.tmpdir(), `world-quiz-ui-${process.pid}`);
+const widths = (process.env.UI_TEST_WIDTHS || '320,390,1119,1120,1280,1440').split(',').map(Number);
+const languages = (process.env.UI_TEST_LANGUAGES || 'en,cs,de').split(',');
 const executablePath = process.env.PRERENDER_CHROME_PATH || '/usr/bin/google-chrome';
 const snapshots = new Map();
 const fixtureUid = 'local-auth-ui-fixture';
@@ -19,6 +19,9 @@ const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 assert(widths.every((width) => Number.isInteger(width) && width >= 320), 'Invalid test viewport width');
 assert(languages.every((language) => ['en', 'cs', 'de'].includes(language)), 'Invalid test language');
+const translations = Object.fromEntries(await Promise.all(['en', 'cs', 'de'].map(async (language) => [
+  language, JSON.parse(await fs.readFile(path.join(rootDir, `src/locales/${language}/translation.json`), 'utf8')),
+])));
 await fs.access(path.join(distDir, 'index.html')).catch(() => {
   throw new Error('Production build missing. Run pnpm --filter frontend build first.');
 });
@@ -252,6 +255,96 @@ async function checkRestoration(language, width, authenticated) {
   }
 }
 
+async function checkLeaderboard(language, width) {
+  const context = await browser.newContext({ viewport: { width, height: 844 }, locale: language });
+  const page = await context.newPage();
+  const pageErrors = [];
+  page.on('pageerror', (error) => pageErrors.push(error.message));
+  try {
+    await interceptNetwork(context, true);
+    const url = `${origin}/${language}/leaderboards?game=cards-match&period=all-time&source=ui-test#ranking`;
+    const modes = page.locator('.mode-btn');
+    const periods = page.locator('.toggle-btn');
+    const selection = async (gameIndex, periodIndex, displayLanguage = language) => {
+      await page.locator('.game-mode-selector').waitFor({ state: 'visible' });
+      await page.waitForFunction(({ gameIndex, periodIndex }) => {
+        const modes = [...document.querySelectorAll('.mode-btn')];
+        const periods = [...document.querySelectorAll('.toggle-btn')];
+        return modes[gameIndex]?.getAttribute('aria-pressed') === 'true' &&
+          (periodIndex === null ? periods.length === 0 : periods[periodIndex]?.getAttribute('aria-pressed') === 'true');
+      }, { gameIndex, periodIndex });
+      assert.equal(await page.locator('.mode-btn.active').count(), 1);
+      assert.equal(await modes.nth(gameIndex).getAttribute('aria-pressed'), 'true');
+      assert.equal(await page.locator('.toggle-btn.active').count(), periodIndex === null ? 0 : 1);
+      const titleKey = ['flagMatch', 'cardsMatch', 'guessCountry'][gameIndex];
+      assert.equal((await page.locator('.leaderboard-title').textContent()).trim(), translations[displayLanguage].leaderboard.titles[titleKey]);
+    };
+    const preserved = () => {
+      const current = new URL(page.url());
+      assert.equal(current.searchParams.get('source'), 'ui-test', 'Filter selection discarded another query parameter');
+      assert.equal(current.hash, '#ranking', 'Filter selection discarded the URL hash');
+      return current;
+    };
+    await page.goto(url, { waitUntil: 'domcontentloaded' });
+    await selection(1, 1);
+    assert.equal(await page.locator('link[rel="canonical"]').getAttribute('href'), `https://world-quiz.com/${language}/leaderboards`);
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await selection(1, 1);
+    assert.equal(preserved().searchParams.get('period'), 'all-time');
+    await periods.nth(0).click();
+    await selection(1, 0);
+    assert.equal(preserved().searchParams.has('period'), false);
+    await modes.nth(0).click();
+    await selection(0, 0);
+    assert.equal(preserved().searchParams.has('game'), false);
+    await page.goBack();
+    await selection(1, 0);
+    await page.goBack();
+    await selection(1, 1);
+    await page.goForward();
+    await selection(1, 0);
+    await modes.nth(2).click();
+    await selection(2, null);
+    assert.equal(preserved().searchParams.has('period'), false);
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await selection(2, null);
+    await modes.nth(1).click();
+    await selection(1, 0);
+    await periods.nth(1).click();
+    await modes.nth(2).click();
+    await selection(2, null);
+    assert.equal(preserved().searchParams.get('period'), 'all-time');
+    await modes.nth(1).click();
+    await selection(1, 1);
+    await page.goto(`${origin}/${language}/leaderboards?period=all-time&source=ui-test#ranking`);
+    await selection(0, 1);
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await selection(0, 1);
+    await page.goto(`${origin}/${language}/leaderboards?game=invalid&period=invalid&source=ui-test#ranking`);
+    await selection(0, 0);
+    preserved();
+    await page.goto(url, { waitUntil: 'domcontentloaded' });
+    await selection(1, 1);
+    await page.waitForFunction(() => document.querySelector('.navbar-menu')?.getAttribute('data-auth-state') === 'guest');
+    if (width < 1120) await page.locator('.hamburger-button').click();
+    const nextLanguage = language === 'cs' ? 'de' : 'cs';
+    const switcher = page.locator(width < 1120 ? '.mobile-menu .navbar-language-switcher' : '.navbar-menu .navbar-language-switcher');
+    await switcher.getByRole('button', { name: nextLanguage === 'cs' ? 'CZ' : 'DE', exact: true }).click();
+    await page.waitForURL((url) => url.pathname === `/${nextLanguage}/leaderboards`);
+    await selection(1, 1, nextLanguage);
+    assert.equal(preserved().searchParams.get('game'), 'cards-match');
+    assert.equal(preserved().searchParams.get('period'), 'all-time');
+    assert.deepEqual(pageErrors, [], 'Leaderboard navigation caused JavaScript errors');
+    console.log(`[leaderboards] PASS ${language}/${width} (reload, history, filters, invalid URL, language)`);
+  } catch (error) {
+    await fs.mkdir(artifactDir, { recursive: true });
+    await page.screenshot({ path: path.join(artifactDir, `leaderboards-${language}-${width}.png`) }).catch(() => {});
+    throw new Error(`leaderboards/${language}/${width}: ${error.message}`, { cause: error });
+  } finally {
+    await context.close();
+  }
+}
+
 try {
   // Serialize the production app exactly as the SEO renderer does, in memory.
   // This keeps the regression fast and leaves the real build/sitemap untouched.
@@ -260,12 +353,12 @@ try {
     await interceptNetwork(context);
     await context.addInitScript(() => { window.__WORLD_QUIZ_PRERENDER__ = true; });
     const page = await context.newPage();
-    for (const language of languages) {
-      await page.goto(`${origin}/${language}`, { waitUntil: 'domcontentloaded' });
+    for (const pathname of languages.flatMap((language) => [`/${language}`, `/${language}/leaderboards`])) {
+      await page.goto(`${origin}${pathname}`, { waitUntil: 'domcontentloaded' });
       await page.waitForFunction(() => window.__WORLD_QUIZ_APP_MOUNTED__ &&
         [...document.querySelectorAll('[data-prerender-state]')].length > 0 &&
         [...document.querySelectorAll('[data-prerender-state]')].every((node) => node.getAttribute('data-prerender-state') === 'ready'));
-      snapshots.set(`/${language}`, await page.content());
+      snapshots.set(pathname, await page.content());
     }
   } finally {
     await context.close();
@@ -273,14 +366,31 @@ try {
   const cases = languages.flatMap((language) => widths.map((width) => ({ language, width })));
   for (const { language, width } of cases) await checkStaticPaint(language, width);
   console.log(`[auth-ui] PASS ${cases.length} prerender first paints with JavaScript disabled`);
-  const tasks = cases.flatMap(({ language, width }) => [false, true].map((authenticated) => () => checkRestoration(language, width, authenticated)));
+  const leaderboardWidths = [...new Set([Math.min(...widths), Math.max(...widths)])];
+  for (const language of languages) {
+    const context = await browser.newContext({ javaScriptEnabled: false });
+    try {
+      await interceptNetwork(context);
+      const page = await context.newPage();
+      await page.goto(`${origin}/${language}/leaderboards?game=cards-match&period=all-time`);
+      assert(await page.locator('.leaderboards-title').isVisible(), 'Prerender hid the whole leaderboard page');
+      assert(!await page.locator('.game-mode-selector').isVisible(), 'Prerender flashed its default game before reading the URL');
+      assert(!await page.locator('.leaderboards-grid').isVisible(), 'Prerender flashed its default period before reading the URL');
+    } finally {
+      await context.close();
+    }
+  }
+  const tasks = [
+    ...cases.flatMap(({ language, width }) => [false, true].map((authenticated) => () => checkRestoration(language, width, authenticated))),
+    ...languages.flatMap((language) => leaderboardWidths.map((width) => () => checkLeaderboard(language, width))),
+  ];
   let cursor = 0;
   await Promise.all(Array.from({ length: 3 }, async () => {
     while (cursor < tasks.length) await tasks[cursor++]();
   }));
-  console.log(`[auth-ui] Passed ${cases.length} static paints and ${tasks.length * 2} delayed/uncached auth loads. All external traffic intercepted.`);
+  console.log(`[ui] Passed ${cases.length} auth static paints, ${cases.length * 4} auth loads, ${languages.length} neutral leaderboard snapshots and ${languages.length * leaderboardWidths.length} leaderboard workflows. All external traffic intercepted.`);
 } catch (error) {
-  console.error(`[auth-ui] FAILED ${error.stack}\nScreenshots: ${artifactDir}`);
+  console.error(`[ui] FAILED ${error.stack}\nScreenshots: ${artifactDir}`);
   process.exitCode = 1;
 } finally {
   await browser.close();
