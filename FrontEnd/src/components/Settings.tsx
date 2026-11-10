@@ -323,19 +323,6 @@ export const Settings = () => {
 
     if (nextLanguage !== currentLanguage) {
       await changeAppLanguage(nextLanguage);
-
-      // Persist preferred language for authenticated users.
-      if (user?.uid) {
-        try {
-          const { doc, setDoc, serverTimestamp } = await import('firebase/firestore');
-          await setDoc(doc(db, 'users', user.uid), {
-            preferredLanguage: nextLanguage,
-            preferredLanguageUpdatedAt: serverTimestamp(),
-          }, { merge: true });
-        } catch (err) {
-          console.error('Failed to persist preferred language:', err);
-        }
-      }
     }
 
     // If user navigated away while language change was in-flight, do not force stale navigation.
@@ -349,6 +336,17 @@ export const Settings = () => {
       search: sourceLocation.search,
       hash: sourceLocation.hash,
     }, { replace: true });
+
+    // Firestore resolves writes only after server acknowledgement; it must not delay the local switch.
+    if (nextLanguage !== currentLanguage && user?.uid) {
+      const userId = user.uid;
+      void import('firebase/firestore').then(({ doc, setDoc, serverTimestamp }) =>
+        setDoc(doc(db, 'users', userId), {
+          preferredLanguage: nextLanguage,
+          preferredLanguageUpdatedAt: serverTimestamp(),
+        }, { merge: true })
+      ).catch(err => console.error('Failed to persist preferred language:', err));
+    }
   };
 
   return (
