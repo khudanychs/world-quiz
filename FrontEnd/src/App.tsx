@@ -280,6 +280,8 @@ export default function App() {
           marginTop: hideNav ? 0 : 64,
           height: hideNav ? '100dvh' : 'calc(100dvh - 64px)',
           width: '100%',
+          // An opaque scroll surface lets desktop Chromium reuse rasterized content while scrolling.
+          backgroundColor: '#0b1020',
           overflowX: 'hidden',
           overflowY: isMapRoute ? 'hidden' : 'auto',
         }}
