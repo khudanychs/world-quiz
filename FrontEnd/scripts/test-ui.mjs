@@ -156,6 +156,51 @@ async function checkStaticPaint(language, width) {
   }
 }
 
+async function checkSettingsScroll(page, cdp) {
+  await page.locator('.navbar-user-button').click();
+  await page.locator('.settings-page-card').waitFor();
+  // Let the card's entry animation finish before measuring scroll repaints.
+  await page.waitForTimeout(500);
+  let layers = [];
+  const onLayers = (event) => { layers = event.layers || []; };
+  cdp.on('LayerTree.layerTreeDidChange', onLayers);
+  await cdp.send('LayerTree.enable');
+  try {
+    const { root } = await cdp.send('DOM.getDocument');
+    const { nodeId } = await cdp.send('DOM.querySelector', { nodeId: root.nodeId, selector: '.container-fluid.p-0' });
+    const { node } = await cdp.send('DOM.describeNode', { nodeId });
+    // Mobile emulation uses different compositing heuristics; test switching it off too.
+    for (const mobile of [true, false]) {
+      await cdp.send('Emulation.setDeviceMetricsOverride', {
+        width: mobile ? 390 : 1440, height: 900, deviceScaleFactor: mobile ? 2 : 1, mobile,
+      });
+      await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+      const rootPaintsBefore = layers.find(layer => layer.backendNodeId === root.backendNodeId && layer.drawsContent)?.paintCount ?? 0;
+      const scrolled = await page.evaluate(() => new Promise(resolve => {
+        const scroller = document.querySelector('.container-fluid.p-0');
+        const distance = scroller.scrollHeight - scroller.clientHeight;
+        let frame = 0;
+        function step() {
+          scroller.scrollTop = distance * (++frame / 30);
+          if (frame < 30) requestAnimationFrame(step);
+          else requestAnimationFrame(() => requestAnimationFrame(() => resolve(scroller.scrollTop)));
+        }
+        requestAnimationFrame(step);
+      }));
+      assert(scrolled > 100, 'Settings scroll regression did not exercise overflowing content');
+      assert(layers.some(layer => layer.backendNodeId === node.backendNodeId && layer.drawsContent),
+        `Settings lost its composited scroll surface in ${mobile ? 'mobile' : 'desktop'} mode`);
+      const rootPaintsAfter = layers.find(layer => layer.backendNodeId === root.backendNodeId && layer.drawsContent)?.paintCount ?? 0;
+      assert(rootPaintsAfter - rootPaintsBefore < 10, 'Scrolling settings repainted the root on most frames');
+    }
+    console.log('[settings] PASS composited scrolling before and after disabling mobile emulation');
+  } finally {
+    cdp.off('LayerTree.layerTreeDidChange', onLayers);
+    await cdp.send('LayerTree.disable');
+    await cdp.send('Emulation.setDeviceMetricsOverride', { ...page.viewportSize(), deviceScaleFactor: 1, mobile: false });
+  }
+}
+
 async function checkRestoration(language, width, authenticated) {
   const label = `${language}/${width}/${authenticated ? 'signed-in' : 'guest'}`;
   const context = await browser.newContext({ viewport: { width, height: 844 }, locale: language });
@@ -231,6 +276,11 @@ async function checkRestoration(language, width, authenticated) {
       }
     }
     if (authenticated) {
+      if (language === languages[0] && width === Math.max(...widths) && width >= 1120) {
+        await checkSettingsScroll(page, cdp);
+        await page.goto(`${origin}/${language}`, { waitUntil: 'domcontentloaded' });
+        await page.waitForFunction(() => document.querySelector('.navbar-menu')?.getAttribute('data-auth-state') === 'authenticated');
+      }
       const beforeLogout = await page.evaluate(inspectNavbar);
       if (width < 1120) {
         await page.locator('.hamburger-button').click();
