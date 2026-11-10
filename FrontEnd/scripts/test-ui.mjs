@@ -156,7 +156,7 @@ async function checkStaticPaint(language, width) {
   }
 }
 
-async function checkSettingsScroll(page, cdp) {
+async function checkSettings(page, cdp) {
   await page.locator('.navbar-user-button').click();
   await page.locator('.settings-page-card').waitFor();
   // Let the card's entry animation finish before measuring scroll repaints.
@@ -199,6 +199,17 @@ async function checkSettingsScroll(page, cdp) {
     await cdp.send('LayerTree.disable');
     await cdp.send('Emulation.setDeviceMetricsOverride', { ...page.viewportSize(), deviceScaleFactor: 1, mobile: false });
   }
+
+  // Firestore is blocked by interceptNetwork: switching must not wait for a write acknowledgement.
+  const previousUrl = new URL(page.url());
+  const nextLanguage = previousUrl.pathname.startsWith('/cs/') ? 'de' : 'cs';
+  await page.locator('.settings-language-switcher').getByRole('button', { name: nextLanguage === 'cs' ? 'CZ' : 'DE', exact: true }).click();
+  await page.waitForURL(url => url.pathname === `/${nextLanguage}/settings`, { timeout: 5000 });
+  await page.waitForFunction(language => document.documentElement.lang === language, nextLanguage);
+  assert.equal(await page.locator('.settings-header h2').textContent(), translations[nextLanguage].settings.title);
+  assert.equal(new URL(page.url()).search, previousUrl.search);
+  assert.equal(new URL(page.url()).hash, previousUrl.hash);
+  console.log('[settings] PASS language and URL switch without waiting for Firestore');
 }
 
 async function checkRestoration(language, width, authenticated) {
@@ -277,7 +288,7 @@ async function checkRestoration(language, width, authenticated) {
     }
     if (authenticated) {
       if (language === languages[0] && width === Math.max(...widths) && width >= 1120) {
-        await checkSettingsScroll(page, cdp);
+        await checkSettings(page, cdp);
         await page.goto(`${origin}/${language}`, { waitUntil: 'domcontentloaded' });
         await page.waitForFunction(() => document.querySelector('.navbar-menu')?.getAttribute('data-auth-state') === 'authenticated');
       }
