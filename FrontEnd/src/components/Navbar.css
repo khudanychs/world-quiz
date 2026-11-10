@@ -32,6 +32,7 @@
   display: flex;
   align-items: center;
   gap: 12px;
+  flex-shrink: 0;
 }
 
 .navbar-brand:hover {
@@ -67,8 +68,8 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-left: auto;
-  margin-right: auto;
+  justify-content: center;
+  flex: 1 1 auto;
   min-width: 0;
 }
 
@@ -85,6 +86,8 @@
   cursor: pointer;
   transition: all 0.2s ease;
   position: relative;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .nav-link:hover {
@@ -113,9 +116,36 @@
   display: flex;
   align-items: center;
   gap: 4px;
-  flex-shrink: 0;
+  /* Reserve the same account area for pending, guest and signed-in sessions. */
+  flex: 0 0 25rem;
+  width: 25rem;
+  justify-content: flex-end;
   flex-wrap: nowrap;
   min-width: 0;
+}
+
+.navbar-auth-placeholder {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 48px;
+}
+
+.navbar-auth-placeholder-avatar,
+.navbar-auth-placeholder-label {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.navbar-auth-placeholder-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+}
+
+.navbar-auth-placeholder-label {
+  width: 88px;
+  height: 12px;
+  border-radius: 6px;
 }
 
 @media (min-width: 576px) {
@@ -210,6 +240,8 @@
 
   .navbar-menu {
     gap: 6px;
+    flex-basis: 21rem;
+    width: 21rem;
   }
 
   .navbar-language-switcher {
@@ -222,12 +254,6 @@
     min-width: 36px;
     padding: 6px 8px;
     font-size: 11px;
-  }
-
-  .navbar-button,
-  .navbar-button-secondary {
-    padding: 8px 12px;
-    font-size: 13px;
   }
 }
 
@@ -249,6 +275,7 @@
   cursor: pointer;
   transition: transform 0.2s, opacity 0.2s;
   border-radius: 8px;
+  min-width: 0;
 }
 
 .navbar-user-button:hover {
@@ -265,6 +292,7 @@
   padding: 6px 8px;
   border-radius: 8px;
   transition: background 0.2s;
+  min-width: 0;
 }
 
 @media (min-width: 576px) {
@@ -493,7 +521,7 @@
 
 /* Hamburger Button */
 .hamburger-button {
-  display: flex;
+  display: none;
   flex-direction: column;
   justify-content: center;
   align-items: center;
@@ -551,11 +579,12 @@
   right: 0;
   width: 280px;
   max-width: 85vw;
-  height: calc(100vh - 64px);
+  height: calc(100dvh - 64px);
   background: rgba(11, 16, 32, 0.98);
   backdrop-filter: blur(10px);
   z-index: 999;
   transform: translateX(100%);
+  visibility: hidden;
   transition: transform 0.3s ease;
   box-shadow: -5px 0 20px rgba(0, 0, 0, 0.3);
   overflow-y: auto;
@@ -575,6 +604,7 @@
 
 .mobile-menu.open {
   transform: translateX(0);
+  visibility: visible;
 }
 
 .mobile-menu-content {
@@ -636,6 +666,14 @@
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
+  min-width: 0;
+}
+
+.mobile-username {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .mobile-user-button:hover {
@@ -722,6 +760,44 @@
 .footer-link:hover {
   color: rgba(255, 255, 255, 0.9);
   text-decoration: underline;
+}
+
+/* Keep the compact controls after the base button rules so they take effect. */
+@media (min-width: 1120px) and (max-width: 1320px) {
+  .navbar-button,
+  .navbar-button-secondary {
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+}
+
+/* Both layouts exist in static HTML; CSS chooses before any JavaScript runs. */
+@media (width < 1120px) {
+  .navbar-nav-links,
+  .navbar-menu {
+    display: none;
+  }
+
+  .hamburger-button {
+    display: flex;
+    flex-shrink: 0;
+  }
+}
+
+@media (min-width: 1120px) {
+  .mobile-menu,
+  .mobile-menu-overlay {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mobile-menu,
+  .hamburger-line,
+  .mobile-menu-overlay {
+    transition: none;
+    animation: none;
+  }
 }
 
 .footer-separator {
