@@ -369,6 +369,7 @@ export default function PhysicalGeoGame() {
           viewportWidth={viewport.width}
           mapTop={mapTop}
           maxCompactWidth={440}
+          className={!isHudPortrait ? "phys-hud-card" : undefined}
         >
           {(game.loadError || dataError) ? (
             <div role="alert">{t("game.loadError")} {game.loadError || dataError}</div>

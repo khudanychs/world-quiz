@@ -29,6 +29,26 @@ const firebaseSource = await fs.readFile(path.join(rootDir, 'src/firebase.ts'), 
 const apiKey = firebaseSource.match(/apiKey:\s*["']([^"']+)["']/)?.[1];
 assert(apiKey, 'Could not identify the public Firebase API key for the local persistence fixture');
 
+// Local mountains fixture with Transantarctic Mountains (long DE name) and Alps
+const rawMountains = JSON.parse(await fs.readFile(path.join(distDir, 'region_polys/Mountain ranges.json'), 'utf8'));
+const transantarcticGeom = rawMountains.objects.Mountainsrangesgeojson.geometries.find((g) =>
+  g.properties && (g.properties.name_de === 'Transantarktisches Gebirge' || g.properties.NAME_EN === 'Transantarctic Mountains')
+);
+const alpsGeom = rawMountains.objects.Mountainsrangesgeojson.geometries.find((g) =>
+  g.properties && g.properties.NAME_EN === 'Alps'
+);
+assert(transantarcticGeom && alpsGeom, 'Missing mountain geometries for local test fixture');
+const fixtureMountains = {
+  ...rawMountains,
+  objects: {
+    Mountainsrangesgeojson: {
+      type: 'GeometryCollection',
+      geometries: [transantarcticGeom, alpsGeom],
+    },
+  },
+};
+const emptyElevationFixture = { type: 'FeatureCollection', features: [] };
+
 // The fixture has no valid credential. All external traffic is intercepted below;
 // the real Firebase SDK still exercises restoration and its persistence migration.
 const now = Math.floor(Date.now() / 1000);
@@ -501,6 +521,274 @@ async function checkFlagMatchSpam(width) {
   }
 }
 
+async function checkFlagMatchHud() {
+  const context = await browser.newContext({ viewport: { width: 1920, height: 1080 }, locale: 'en' });
+  const page = await context.newPage();
+  try {
+    await interceptNetwork(context);
+    await page.goto(`${origin}/en/game/flags/world`, { waitUntil: 'domcontentloaded' });
+    await page.locator('[data-hud-card]').waitFor({ state: 'visible' });
+    const skipButton = page.locator('[data-hud-card]').getByRole('button', { name: translations.en.gameHUD.skip, exact: true });
+    await skipButton.waitFor({ state: 'visible' });
+
+    const measurements = await page.evaluate(({ skipText }) => {
+      const card = document.querySelector('[data-hud-card]');
+      const skipBtn = Array.from(card.querySelectorAll('button')).find((b) => b.textContent?.trim() === skipText);
+      const skipRect = skipBtn.getBoundingClientRect();
+      const skipFontSize = parseFloat(getComputedStyle(skipBtn).fontSize);
+      const scoreBadge = card.querySelector('[style*="rgba(59, 130, 246"]');
+      const scoreFontSize = scoreBadge ? parseFloat(getComputedStyle(scoreBadge).fontSize) : null;
+      const counterBadge = card.querySelector('[style*="rgba(255, 255, 255, 0.08)"]');
+      const counterFontSize = counterBadge ? parseFloat(getComputedStyle(counterBadge).fontSize) : null;
+      return {
+        skipHeight: skipRect.height,
+        skipFontSize,
+        scoreFontSize,
+        counterFontSize,
+      };
+    }, { skipText: translations.en.gameHUD.skip });
+
+    assert(Math.abs(measurements.skipHeight - 41) <= 2, `Flag Match Skip button height should be ~41px, got ${measurements.skipHeight}px`);
+    assert(Math.abs(measurements.skipFontSize - 15) <= 0.6, `Flag Match Skip button font size should be 15px, got ${measurements.skipFontSize}px`);
+    if (measurements.scoreFontSize !== null) {
+      assert(Math.abs(measurements.scoreFontSize - 15) <= 0.6, `Flag Match Score badge font size should be 15px, got ${measurements.scoreFontSize}px`);
+    }
+    console.log('[flag-match-hud] PASS 1920x1080 original controls font size 15px and skip height ~41px');
+  } catch (error) {
+    await fs.mkdir(artifactDir, { recursive: true });
+    await page.screenshot({ path: path.join(artifactDir, 'flag-match-hud-1920x1080.png') }).catch(() => {});
+    throw new Error(`flag-match-hud/1920x1080: ${error.message}`, { cause: error });
+  } finally {
+    await context.close();
+  }
+}
+
+async function checkPhysicalGeoHud(width, height, language) {
+  const label = `${language}/${width}x${height}`;
+  const context = await browser.newContext({ viewport: { width, height }, locale: language });
+  const page = await context.newPage();
+  const pageErrors = [];
+  page.on('pageerror', (error) => pageErrors.push(error.message));
+
+  try {
+    await interceptNetwork(context);
+    await context.route('**/region_polys/elev_points.json*', (route) => route.fulfill({
+      json: emptyElevationFixture,
+    }));
+    await context.route('**/region_polys/Mountain*ranges.json*', (route) => route.fulfill({
+      json: fixtureMountains,
+    }));
+    await context.addInitScript(() => {
+      Math.random = () => 0.9999;
+    });
+
+    await page.goto(`${origin}/${language}/game/physical-geo/mountains`, { waitUntil: 'domcontentloaded' });
+    await page.locator('[data-hud-card]').waitFor({ state: 'visible' });
+    await page.locator('svg.rsm-svg').waitFor({ state: 'visible' });
+    await page.waitForTimeout(300);
+
+    const isScaledDesktop = width >= 1280 && height >= 650;
+    const isConstrained = width < 640 || height < 440;
+
+    // 1. Verify Active Question
+    const activeDetails = await page.evaluate(({ isScaledDesktop, isConstrained }) => {
+      const card = document.querySelector('[data-hud-card]');
+      const cardRect = card.getBoundingClientRect();
+      const menu = document.querySelector('a.back-button, a[href*="/"]');
+      const menuRect = menu ? menu.getBoundingClientRect() : null;
+      const svg = document.querySelector('svg.rsm-svg') || document.querySelector('.rsm-svg');
+      const svgRect = svg ? svg.getBoundingClientRect() : null;
+
+      const titleEl = card.querySelector('.phys-hud-title') || card.querySelector('strong');
+      const titleText = titleEl?.textContent?.trim();
+      const titleFontSize = titleEl ? parseFloat(getComputedStyle(titleEl).fontSize) : null;
+
+      const iconEl = card.querySelector('.phys-hud-icon') || card.querySelector('span[role="img"]') || card.querySelector('span');
+      const iconFontSize = iconEl ? parseFloat(getComputedStyle(iconEl).fontSize) : null;
+
+      const instructionEl = card.querySelector('.phys-hud-instruction') ||
+        Array.from(card.querySelectorAll('span')).find((s) => s !== iconEl && s.textContent?.trim().length > 0);
+      const instructionFontSize = instructionEl ? parseFloat(getComputedStyle(instructionEl).fontSize) : null;
+
+      const buttons = Array.from(card.querySelectorAll('button'));
+      const badges = Array.from(card.querySelectorAll('div, span')).filter((el) => {
+        const bg = getComputedStyle(el).background;
+        const br = getComputedStyle(el).borderRadius;
+        return (bg.includes('rgba') && parseFloat(br) >= 6);
+      });
+
+      const controlFontSizes = [
+        ...buttons.map((b) => parseFloat(getComputedStyle(b).fontSize)),
+        ...badges.map((b) => parseFloat(getComputedStyle(b).fontSize)).filter((fs) => !Number.isNaN(fs) && fs > 0),
+      ];
+
+      const mapOverlap = (!isConstrained && svgRect) ? Math.max(0, cardRect.bottom - svgRect.top) : 0;
+
+      const allControls = [...buttons];
+      const controlsStayInside = allControls.every((ctrl) => {
+        const r = ctrl.getBoundingClientRect();
+        return r.left >= cardRect.left - 1.5 && r.right <= cardRect.right + 1.5 &&
+               r.top >= cardRect.top - 1.5 && r.bottom <= cardRect.bottom + 1.5;
+      });
+
+      const textElements = Array.from(card.querySelectorAll('strong, span, button, p'));
+      const textNotClipped = textElements.every((el) => {
+        return el.scrollWidth <= el.clientWidth + 1.5;
+      });
+
+      return {
+        titleText,
+        titleFontSize,
+        instructionFontSize,
+        iconFontSize,
+        controlFontSizes,
+        mapOverlap,
+        menuRect,
+        cardRect,
+        controlsStayInside,
+        textNotClipped,
+      };
+    }, { isScaledDesktop, isConstrained });
+
+    const expectedTitle = language === 'de'
+      ? 'Transantarktisches Gebirge'
+      : language === 'cs'
+        ? 'Transantarktické pohoří'
+        : 'Transantarctic Mountains';
+    assert.equal(activeDetails.titleText, expectedTitle, `Expected active title ${expectedTitle}, got ${activeDetails.titleText}`);
+
+    if (isScaledDesktop) {
+      assert(activeDetails.titleFontSize >= 22.9 && activeDetails.titleFontSize <= 26.5,
+        `Desktop title font size must be 23-26px, got ${activeDetails.titleFontSize}px at ${label}`);
+      assert(activeDetails.instructionFontSize >= 13.9 && activeDetails.instructionFontSize <= 16.5,
+        `Desktop instruction font size must be 14-16px, got ${activeDetails.instructionFontSize}px at ${label}`);
+      assert(activeDetails.iconFontSize >= 45.9 && activeDetails.iconFontSize <= 54.5,
+        `Desktop icon font size must be 46-54px, got ${activeDetails.iconFontSize}px at ${label}`);
+      for (const cfs of activeDetails.controlFontSizes) {
+        assert(cfs >= 15.9 && cfs <= 18.5,
+          `Desktop controls font size must be 16-18px, got ${cfs}px at ${label}`);
+      }
+      assert(activeDetails.mapOverlap <= 72.5,
+        `Map overlap must be <= 72 CSS px, got ${activeDetails.mapOverlap}px at ${label}`);
+      if (activeDetails.menuRect) {
+        assert(activeDetails.cardRect.left >= activeDetails.menuRect.right,
+          `HUDCard must maintain offset from Menu button at ${label}`);
+      }
+
+      // 2. Resizing without reload (including 1279 × 720 and 1280 × 649 boundary cases)
+      await page.setViewportSize({ width: 1279, height: 720 });
+      await page.waitForTimeout(100);
+      const unscaled1 = await page.evaluate(() => {
+        const title = document.querySelector('.phys-hud-title') || document.querySelector('[data-hud-card] strong');
+        return title ? parseFloat(getComputedStyle(title).fontSize) : null;
+      });
+      assert(unscaled1 < 23, `At 1279x720 title should switch to unscaled (< 23px), got ${unscaled1}px`);
+
+      await page.setViewportSize({ width: 1280, height: 649 });
+      await page.waitForTimeout(100);
+      const unscaled2 = await page.evaluate(() => {
+        const title = document.querySelector('.phys-hud-title') || document.querySelector('[data-hud-card] strong');
+        return title ? parseFloat(getComputedStyle(title).fontSize) : null;
+      });
+      assert(unscaled2 < 23, `At 1280x649 title should switch to unscaled (< 23px), got ${unscaled2}px`);
+
+      await page.setViewportSize({ width, height });
+      await page.waitForTimeout(100);
+      const restored = await page.evaluate(() => {
+        const title = document.querySelector('.phys-hud-title') || document.querySelector('[data-hud-card] strong');
+        return title ? parseFloat(getComputedStyle(title).fontSize) : null;
+      });
+      assert(restored >= 22.9 && restored <= 26.5, `After restore to ${width}x${height}, title should be scaled 23-26px, got ${restored}px`);
+    } else {
+      assert(activeDetails.controlsStayInside, `Controls overflow HUD card at ${label}`);
+      assert(activeDetails.textNotClipped, `Text clipped inside HUD card at ${label}`);
+
+      if (isConstrained) {
+        const canScrollToMap = await page.evaluate(() => {
+          const scroller = Array.from(document.querySelectorAll('*')).find((el) => {
+            const s = getComputedStyle(el);
+            return (s.overflowY === 'auto' || s.overflowY === 'scroll') && el.scrollHeight > el.clientHeight;
+          }) || document.documentElement;
+          scroller.scrollTop = scroller.scrollHeight - scroller.clientHeight;
+          const svg = document.querySelector('svg.rsm-svg') || document.querySelector('.rsm-svg');
+          if (!svg) return false;
+          const r = svg.getBoundingClientRect();
+          const visible = r.top < window.innerHeight && r.bottom > 0;
+          scroller.scrollTop = 0;
+          return visible;
+        });
+        assert(canScrollToMap, `Map is not reachable by vertical scrolling at ${label}`);
+      }
+    }
+
+    // 3. Verify Wrong Attempt
+    const wrongTarget = language === 'de' ? 'Alpen' : language === 'cs' ? 'Alpy' : 'Alps';
+    const clickedWrong = await page.evaluate(({ wrongTarget }) => {
+      const paths = Array.from(document.querySelectorAll('svg.rsm-svg path'));
+      const clickable = paths.filter((p) => p.style.cursor === 'pointer');
+      const targetPath = clickable.find((p) => {
+        const fiberKey = Object.keys(p).find((k) => k.startsWith('__reactFiber$'));
+        const fiber = p[fiberKey];
+        const name = fiber?.return?.memoizedProps?.featureName || fiber?.memoizedProps?.featureName;
+        return name === wrongTarget || name === 'Alps';
+      });
+      if (!targetPath) return false;
+      targetPath.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      return true;
+    }, { wrongTarget });
+    assert(clickedWrong, `Failed to dispatch click on wrong mountain (${wrongTarget}) at ${label}`);
+
+    const wrongLabel = translations[language].physicalGeoHUD.wrong;
+    await page.waitForFunction(({ wrongLabel }) => {
+      return document.querySelector('[data-hud-card]')?.textContent?.includes(wrongLabel);
+    }, { wrongLabel }, { timeout: 3000 });
+
+    if (isScaledDesktop) {
+      const wrongTypo = await page.evaluate(() => {
+        const titleEl = document.querySelector('.phys-hud-result-title') || document.querySelector('[data-hud-card] strong');
+        const detailEl = document.querySelector('.phys-hud-result-detail') ||
+          Array.from(document.querySelectorAll('[data-hud-card] span')).find((s) => s.textContent?.includes(':'));
+        return {
+          titleSize: titleEl ? parseFloat(getComputedStyle(titleEl).fontSize) : null,
+          detailSize: detailEl ? parseFloat(getComputedStyle(detailEl).fontSize) : null,
+        };
+      });
+      assert(wrongTypo.titleSize >= 22.9 && wrongTypo.titleSize <= 26.5,
+        `Wrong attempt title font size should be 23-26px, got ${wrongTypo.titleSize}px at ${label}`);
+      if (wrongTypo.detailSize) {
+        assert(wrongTypo.detailSize >= 13.9 && wrongTypo.detailSize <= 16.5,
+          `Wrong attempt detail font size should be 14-16px, got ${wrongTypo.detailSize}px at ${label}`);
+      }
+    }
+
+    // Wait for auto-advance after wrong feedback
+    await page.waitForFunction(({ wrongLabel }) => {
+      return !document.querySelector('[data-hud-card]')?.textContent?.includes(wrongLabel);
+    }, { wrongLabel }, { timeout: 4500 });
+
+    // 4. Verify Skip on Question 2
+    const skipLabel = translations[language].physicalGeoHUD.skip;
+    const skipButton = page.locator('[data-hud-card]').getByRole('button', { name: skipLabel, exact: true });
+    await skipButton.waitFor({ state: 'visible', timeout: 3000 });
+    await skipButton.click();
+
+    // 5. Verify Completion of Short Round
+    const newGameLabel = translations[language].physicalGeoHUD.newGame;
+    await page.waitForFunction(({ newGameLabel }) => {
+      return document.querySelector('[data-hud-card]')?.textContent?.includes(newGameLabel);
+    }, { newGameLabel }, { timeout: 4500 });
+
+    assert.deepEqual(pageErrors, [], `${label}: JavaScript errors during Physical Geo test`);
+    console.log(`[physical-geo-hud] PASS ${label} (active question, sizing, wrong attempt, skip, completion)`);
+  } catch (error) {
+    await fs.mkdir(artifactDir, { recursive: true });
+    await page.screenshot({ path: path.join(artifactDir, `physical-geo-${language}-${width}x${height}.png`) }).catch(() => {});
+    throw new Error(`physical-geo-hud/${label}: ${error.message}`, { cause: error });
+  } finally {
+    await context.close();
+  }
+}
+
 try {
   // Serialize the production app exactly as the SEO renderer does, in memory.
   // This keeps the regression fast and leaves the real build/sitemap untouched.
@@ -536,16 +824,32 @@ try {
       await context.close();
     }
   }
+  const physicalGeoCases = [
+    { width: 1280, height: 650, language: 'de' },
+    { width: 1366, height: 768, language: 'de' },
+    { width: 1920, height: 1080, language: 'en' },
+    { width: 1920, height: 1080, language: 'cs' },
+    { width: 1920, height: 1080, language: 'de' },
+    { width: 2560, height: 1080, language: 'de' },
+    { width: 192, height: 224, language: 'de' },
+    { width: 320, height: 568, language: 'de' },
+    { width: 390, height: 844, language: 'de' },
+    { width: 640, height: 439, language: 'de' },
+    { width: 640, height: 440, language: 'de' },
+    { width: 800, height: 360, language: 'de' },
+  ];
   const tasks = [
     ...cases.flatMap(({ language, width }) => [false, true].map((authenticated) => () => checkRestoration(language, width, authenticated))),
     ...languages.flatMap((language) => leaderboardWidths.map((width) => () => checkLeaderboard(language, width))),
     ...leaderboardWidths.map(width => () => checkFlagMatchSpam(width)),
+    () => checkFlagMatchHud(),
+    ...physicalGeoCases.map(({ width, height, language }) => () => checkPhysicalGeoHud(width, height, language)),
   ];
   let cursor = 0;
   await Promise.all(Array.from({ length: 3 }, async () => {
     while (cursor < tasks.length) await tasks[cursor++]();
   }));
-  console.log(`[ui] Passed ${cases.length} auth static paints, ${cases.length * 4} auth loads, ${languages.length} neutral leaderboard snapshots, ${languages.length * leaderboardWidths.length} leaderboard workflows and ${leaderboardWidths.length} Flag Match spam workflows. All external traffic intercepted.`);
+  console.log(`[ui] Passed ${cases.length} auth static paints, ${cases.length * 4} auth loads, ${languages.length} neutral leaderboard snapshots, ${languages.length * leaderboardWidths.length} leaderboard workflows, ${leaderboardWidths.length} Flag Match spam workflows, Flag Match HUD checks, and ${physicalGeoCases.length} Physical Geography HUD workflows. All external traffic intercepted.`);
 } catch (error) {
   console.error(`[ui] FAILED ${error.stack}\nScreenshots: ${artifactDir}`);
   process.exitCode = 1;

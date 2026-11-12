@@ -97,8 +97,9 @@ export function getHUDCardStyle({
     maxWidth = `min(94vw, ${maxCompactWidth}px)`;
     width = `min(94vw, ${maxCompactWidth}px)`;
   } else {
-    // Landscape with >= 640px width: clear BackButton (80px + margin) on left & balance on right
-    maxWidth = "min(96vw, calc(100vw - 260px))";
+    // Landscape with >= 640px width: clear BackButton on left & balance on right while keeping offset from Menu
+    const menuClearance = viewportWidth < 768 ? 200 : 260;
+    maxWidth = `min(96vw, calc(100vw - ${menuClearance}px))`;
     width = "fit-content";
   }
 
@@ -121,7 +122,7 @@ export function getHUDCardStyle({
     gap: isStackedLayout ? "clamp(8px, 2vw, 14px)" : "clamp(6px, 1vw, 14px)",
     padding: isStackedLayout
       ? "clamp(10px, 2.5vw, 16px) clamp(12px, 3vw, 18px)"
-      : "clamp(6px, 1vh, 12px) clamp(12px, 1.5vw, 22px)",
+      : "var(--hud-card-padding, var(--hud-padding, clamp(6px, 1vh, 12px) clamp(12px, 1.5vw, 22px)))",
     borderRadius: isStackedLayout ? "16px" : "14px",
     border: "1px solid rgba(255, 255, 255, 0.25)",
     background: "rgba(0, 0, 0, 0.72)",
@@ -142,8 +143,8 @@ export function getHUDCardStyle({
  */
 export function getHUDCounterBadgeStyle(isPortrait: boolean): React.CSSProperties {
   return {
-    height: isPortrait ? "clamp(28px, 6vw, 34px)" : "clamp(30px, 3.4vh, 38px)",
-    minHeight: isPortrait ? "clamp(28px, 6vw, 34px)" : "clamp(30px, 3.4vh, 38px)",
+    height: isPortrait ? "clamp(28px, 6vw, 34px)" : "var(--hud-control-height, var(--hud-height, clamp(30px, 3.4vh, 38px)))",
+    minHeight: isPortrait ? "clamp(28px, 6vw, 34px)" : "var(--hud-control-min-height, var(--hud-min-height, clamp(30px, 3.4vh, 38px)))",
     boxSizing: "border-box",
     display: "inline-flex",
     alignItems: "center",
@@ -153,7 +154,7 @@ export function getHUDCounterBadgeStyle(isPortrait: boolean): React.CSSPropertie
     background: isPortrait ? "rgba(255, 255, 255, 0.1)" : "rgba(255, 255, 255, 0.08)",
     border: "1px solid rgba(255, 255, 255, 0.18)",
     color: "rgba(255, 255, 255, 0.95)",
-    fontSize: isPortrait ? "clamp(11px, 2.5vw, 13px)" : "clamp(11.5px, 1.1vw, 14.5px)",
+    fontSize: isPortrait ? "clamp(11px, 2.5vw, 13px)" : "var(--hud-control-font-size, var(--hud-font-size, clamp(11.5px, 1.1vw, 14.5px)))",
     fontWeight: 600,
     lineHeight: 1,
     whiteSpace: "nowrap",
@@ -166,8 +167,8 @@ export function getHUDCounterBadgeStyle(isPortrait: boolean): React.CSSPropertie
  */
 export function getHUDStreakBadgeStyle(isPortrait: boolean): React.CSSProperties {
   return {
-    height: isPortrait ? "clamp(28px, 6vw, 34px)" : "clamp(30px, 3.4vh, 38px)",
-    minHeight: isPortrait ? "clamp(28px, 6vw, 34px)" : "clamp(30px, 3.4vh, 38px)",
+    height: isPortrait ? "clamp(28px, 6vw, 34px)" : "var(--hud-control-height, var(--hud-height, clamp(30px, 3.4vh, 38px)))",
+    minHeight: isPortrait ? "clamp(28px, 6vw, 34px)" : "var(--hud-control-min-height, var(--hud-min-height, clamp(30px, 3.4vh, 38px)))",
     boxSizing: "border-box",
     display: "inline-flex",
     alignItems: "center",
@@ -177,7 +178,7 @@ export function getHUDStreakBadgeStyle(isPortrait: boolean): React.CSSProperties
     background: "rgba(251, 146, 60, 0.2)",
     border: "1px solid rgba(251, 146, 60, 0.4)",
     color: "#fb923c",
-    fontSize: isPortrait ? "clamp(11px, 2.5vw, 13px)" : "clamp(11.5px, 1.1vw, 14.5px)",
+    fontSize: isPortrait ? "clamp(11px, 2.5vw, 13px)" : "var(--hud-control-font-size, var(--hud-font-size, clamp(11.5px, 1.1vw, 14.5px)))",
     fontWeight: 600,
     lineHeight: 1,
     whiteSpace: "nowrap",
@@ -190,24 +191,26 @@ export function getHUDStreakBadgeStyle(isPortrait: boolean): React.CSSProperties
  */
 export function getHUDScoreBadgeStyle(isPortrait: boolean): React.CSSProperties {
   return {
-    height: isPortrait ? "clamp(36px, 8vw, 42px)" : "clamp(34px, 3.8vh, 42px)",
-    minHeight: isPortrait ? "clamp(36px, 8vw, 42px)" : "clamp(34px, 3.8vh, 42px)",
+    height: isPortrait ? "auto" : "var(--hud-control-height, var(--hud-height, clamp(34px, 3.8vh, 42px)))",
+    minHeight: isPortrait ? "clamp(36px, 8vw, 42px)" : "var(--hud-control-min-height, var(--hud-min-height, clamp(34px, 3.8vh, 42px)))",
     boxSizing: "border-box",
     display: "inline-flex",
     alignItems: "center",
     justifyContent: "center",
-    padding: isPortrait ? "0 clamp(4px, 1.2vw, 12px)" : "0 clamp(10px, 1.1vw, 16px)",
+    padding: isPortrait ? "clamp(4px, 1vw, 8px) clamp(4px, 1.2vw, 12px)" : "0 clamp(10px, 1.1vw, 16px)",
     minWidth: isPortrait ? 0 : "max-content",
     borderRadius: "8px",
     background: "rgba(59, 130, 246, 0.18)",
     border: "1px solid rgba(59, 130, 246, 0.35)",
-    fontSize: isPortrait ? "clamp(10px, 2.4vw, 13.5px)" : "clamp(12px, 1.1vw, 15px)",
+    fontSize: isPortrait ? "clamp(10px, 2.4vw, 13.5px)" : "var(--hud-control-font-size, var(--hud-font-size, clamp(12px, 1.1vw, 15px)))",
     letterSpacing: isPortrait ? "-0.15px" : "normal",
     fontWeight: 600,
     color: "#60a5fa",
     lineHeight: 1.15,
     textAlign: "center",
-    whiteSpace: "nowrap",
+    whiteSpace: isPortrait ? "normal" : "nowrap",
+    wordBreak: isPortrait ? "break-word" : "normal",
+    overflowWrap: isPortrait ? "anywhere" : "normal",
     overflow: "hidden",
     flex: isPortrait ? 1 : "initial",
     flexShrink: 0,
@@ -219,19 +222,19 @@ export function getHUDScoreBadgeStyle(isPortrait: boolean): React.CSSProperties 
  */
 export function getHUDSkipButtonStyle(isPortrait: boolean): React.CSSProperties {
   return {
-    height: isPortrait ? "clamp(36px, 8vw, 42px)" : "clamp(34px, 3.8vh, 42px)",
-    minHeight: isPortrait ? "clamp(36px, 8vw, 42px)" : "clamp(34px, 3.8vh, 42px)",
+    height: isPortrait ? "auto" : "var(--hud-control-height, var(--hud-height, clamp(34px, 3.8vh, 42px)))",
+    minHeight: isPortrait ? "clamp(36px, 8vw, 42px)" : "var(--hud-control-min-height, var(--hud-min-height, clamp(34px, 3.8vh, 42px)))",
     boxSizing: "border-box",
     display: "inline-flex",
     alignItems: "center",
     justifyContent: "center",
-    padding: isPortrait ? "0 clamp(4px, 1.2vw, 12px)" : "0 clamp(12px, 1.2vw, 18px)",
+    padding: isPortrait ? "clamp(4px, 1vw, 8px) clamp(4px, 1.2vw, 12px)" : "0 clamp(12px, 1.2vw, 18px)",
     minWidth: isPortrait ? 0 : "max-content",
     borderRadius: "8px",
     border: "1px solid rgba(234, 179, 8, 0.45)",
     background: "rgba(234, 179, 8, 0.16)",
     color: "#eab308",
-    fontSize: isPortrait ? "clamp(10px, 2.4vw, 13.5px)" : "clamp(12px, 1.1vw, 15px)",
+    fontSize: isPortrait ? "clamp(10px, 2.4vw, 13.5px)" : "var(--hud-control-font-size, var(--hud-font-size, clamp(12px, 1.1vw, 15px)))",
     letterSpacing: isPortrait ? "-0.15px" : "normal",
     cursor: "pointer",
     fontWeight: 600,
@@ -240,7 +243,8 @@ export function getHUDSkipButtonStyle(isPortrait: boolean): React.CSSProperties 
     whiteSpace: isPortrait ? "normal" : "nowrap",
     textWrap: "balance",
     hyphens: "auto",
-    wordBreak: "normal",
+    wordBreak: isPortrait ? "break-word" : "normal",
+    overflowWrap: isPortrait ? "anywhere" : "normal",
     overflow: "hidden",
     flex: isPortrait ? 1 : "initial",
     flexShrink: 0,
@@ -253,19 +257,19 @@ export function getHUDSkipButtonStyle(isPortrait: boolean): React.CSSProperties 
  */
 export function getHUDSecondaryButtonStyle(isPortrait: boolean): React.CSSProperties {
   return {
-    height: isPortrait ? "clamp(36px, 8vw, 42px)" : "clamp(34px, 3.8vh, 42px)",
-    minHeight: isPortrait ? "clamp(36px, 8vw, 42px)" : "clamp(34px, 3.8vh, 42px)",
+    height: isPortrait ? "auto" : "var(--hud-control-height, var(--hud-height, clamp(34px, 3.8vh, 42px)))",
+    minHeight: isPortrait ? "clamp(36px, 8vw, 42px)" : "var(--hud-control-min-height, var(--hud-min-height, clamp(34px, 3.8vh, 42px)))",
     boxSizing: "border-box",
     display: "inline-flex",
     alignItems: "center",
     justifyContent: "center",
-    padding: isPortrait ? "0 clamp(4px, 1.2vw, 12px)" : "0 clamp(12px, 1.2vw, 18px)",
+    padding: isPortrait ? "clamp(4px, 1vw, 8px) clamp(4px, 1.2vw, 12px)" : "0 clamp(12px, 1.2vw, 18px)",
     minWidth: isPortrait ? 0 : "max-content",
     borderRadius: "8px",
     border: "1px solid rgba(255, 255, 255, 0.3)",
     background: "rgba(255, 255, 255, 0.08)",
     color: "#fff",
-    fontSize: isPortrait ? "clamp(10px, 2.4vw, 13.5px)" : "clamp(12px, 1.1vw, 15px)",
+    fontSize: isPortrait ? "clamp(10px, 2.4vw, 13.5px)" : "var(--hud-control-font-size, var(--hud-font-size, clamp(12px, 1.1vw, 15px)))",
     letterSpacing: isPortrait ? "-0.15px" : "normal",
     fontWeight: 600,
     cursor: "pointer",
@@ -274,7 +278,8 @@ export function getHUDSecondaryButtonStyle(isPortrait: boolean): React.CSSProper
     whiteSpace: isPortrait ? "normal" : "nowrap",
     textWrap: "balance",
     hyphens: "auto",
-    wordBreak: "normal",
+    wordBreak: isPortrait ? "break-word" : "normal",
+    overflowWrap: isPortrait ? "anywhere" : "normal",
     overflow: "hidden",
     flex: isPortrait ? 1 : "initial",
     flexShrink: 0,

@@ -50,7 +50,7 @@ export default function PhysicalGeoHUD({
 
   if (loading) {
     return (
-      <span style={{ fontSize: isPortrait ? "clamp(14px, 3.5vw, 16px)" : "clamp(12px, 2.8vw, 16px)" }}>
+      <span style={{ fontSize: isPortrait ? "clamp(14px, 3.5vw, 16px)" : "var(--hud-control-font-size, clamp(12px, 2.8vw, 16px))" }}>
         {t('physicalGeoHUD.loading')}
       </span>
     );
@@ -80,7 +80,7 @@ export default function PhysicalGeoHUD({
 
   if (!currentFeature) {
     return (
-      <span style={{ fontSize: isPortrait ? "clamp(14px, 3.5vw, 16px)" : "clamp(12px, 2.8vw, 16px)" }}>
+      <span style={{ fontSize: isPortrait ? "clamp(14px, 3.5vw, 16px)" : "var(--hud-control-font-size, clamp(12px, 2.8vw, 16px))" }}>
         {t('physicalGeoHUD.loading')}
       </span>
     );
@@ -112,23 +112,28 @@ export default function PhysicalGeoHUD({
           >
             <div style={{ display: "flex", flexDirection: "column", minWidth: 0, flex: 1 }}>
               <strong
+                className="phys-hud-result-title"
                 style={{
                   fontSize: "clamp(16px, 4.2vw, 22px)",
                   fontWeight: 700,
                   color: lastResult.correct ? "#10b981" : "#ef4444",
                   lineHeight: 1.25,
+                  overflowWrap: "anywhere",
+                  wordBreak: "break-word",
                 }}
               >
                 {lastResult.correct ? t('physicalGeoHUD.correct') : t('physicalGeoHUD.wrong')}
               </strong>
               {!lastResult.correct && (
                 <span
+                  className="phys-hud-result-detail"
                   style={{
                     fontSize: "clamp(11px, 2.8vw, 13px)",
                     opacity: 0.8,
                     marginTop: 2,
-                    overflowWrap: "break-word",
-                    wordBreak: "normal",
+                    overflowWrap: "anywhere",
+                    wordBreak: "break-word",
+                    lineHeight: 1.25,
                   }}
                 >
                   {t('physicalGeoHUD.youClicked', { name: getLocalizedFeatureName(lastResult.clickedName) })}
@@ -155,23 +160,59 @@ export default function PhysicalGeoHUD({
     }
 
     return (
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "clamp(8px, 1.4vw, 16px)", flexWrap: "nowrap", width: "100%" }}>
-        <strong
+      <div
+        className="phys-hud-content"
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: "clamp(8px, 1.4vw, 16px)",
+          flexWrap: "nowrap",
+          width: "100%",
+          minWidth: 0,
+        }}
+      >
+        <div
           style={{
-            fontSize: "clamp(14px, 1.6vw, 20px)",
-            color: lastResult.correct ? "#10b981" : "#ef4444",
-            whiteSpace: "nowrap",
-            flexShrink: 0,
-            textAlign: "center",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "flex-start",
+            minWidth: 0,
+            flexShrink: 1,
           }}
         >
-          {lastResult.correct ? t('physicalGeoHUD.correct') : t('physicalGeoHUD.wrong')}
-        </strong>
-        {!lastResult.correct && (
-          <span style={{ fontSize: "clamp(11px, 1vw, 14px)", opacity: 0.8, whiteSpace: "nowrap", flexShrink: 0 }}>
-            {t('physicalGeoHUD.youClicked', { name: getLocalizedFeatureName(lastResult.clickedName) })}
-          </span>
-        )}
+          <strong
+            className="phys-hud-result-title"
+            style={{
+              fontSize: "var(--phys-hud-title-font-size, clamp(14px, 1.6vw, 20px))",
+              fontWeight: 700,
+              color: lastResult.correct ? "#10b981" : "#ef4444",
+              overflowWrap: "break-word",
+              wordBreak: "normal",
+              lineHeight: 1.25,
+              flexShrink: 0,
+            }}
+          >
+            {lastResult.correct ? t('physicalGeoHUD.correct') : t('physicalGeoHUD.wrong')}
+          </strong>
+          {!lastResult.correct && (
+            <span
+              className="phys-hud-result-detail"
+              style={{
+                fontSize: "var(--phys-hud-instruction-font-size, clamp(11px, 1vw, 14px))",
+                opacity: 0.8,
+                marginTop: 2,
+                overflowWrap: "break-word",
+                wordBreak: "normal",
+                lineHeight: 1.25,
+                minWidth: 0,
+                flexShrink: 1,
+              }}
+            >
+              {t('physicalGeoHUD.youClicked', { name: getLocalizedFeatureName(lastResult.clickedName) })}
+            </span>
+          )}
+        </div>
         <HUDCounterBadge
           current={currentIdx + 1}
           total={featuresLength}
@@ -201,6 +242,7 @@ export default function PhysicalGeoHUD({
         >
           <div style={{ display: "flex", alignItems: "center", gap: "clamp(10px, 2.8vw, 14px)", minWidth: 0, flex: 1 }}>
             <span
+              className="phys-hud-icon"
               style={{
                 fontSize: "clamp(34px, 8.5vw, 42px)",
                 lineHeight: 1,
@@ -216,25 +258,27 @@ export default function PhysicalGeoHUD({
             </span>
             <div style={{ display: "flex", flexDirection: "column", minWidth: 0, flex: 1 }}>
               <strong
+                className="phys-hud-title"
                 style={{
                   fontSize: "clamp(15px, 4vw, 20px)",
                   fontWeight: 700,
                   lineHeight: 1.25,
                   color: "#ffffff",
-                  overflowWrap: "break-word",
-                  wordBreak: "normal",
+                  overflowWrap: "anywhere",
+                  wordBreak: "break-word",
                 }}
               >
                 {currentFeatureDisplayName}
               </strong>
               <span
+                className="phys-hud-instruction"
                 style={{
                   opacity: 0.75,
                   fontSize: "clamp(10px, 2.6vw, 13px)",
                   lineHeight: 1.25,
                   marginTop: 2,
-                  overflowWrap: "break-word",
-                  wordBreak: "normal",
+                  overflowWrap: "anywhere",
+                  wordBreak: "break-word",
                 }}
               >
                 {t('physicalGeoHUD.clickOnMap', { label: localizedFeatureTypeLabel })}
@@ -259,7 +303,7 @@ export default function PhysicalGeoHUD({
         <div
           style={{
             display: "flex",
-            alignItems: "center",
+            alignItems: "stretch",
             justifyContent: "center",
             gap: "clamp(8px, 2.5vw, 12px)",
             width: "100%",
@@ -282,14 +326,74 @@ export default function PhysicalGeoHUD({
 
   // Desktop / Landscape
   return (
-    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "clamp(6px, 1vw, 14px)", flexWrap: "nowrap", width: "100%" }}>
-      <div style={{ display: "flex", alignItems: "center", gap: "clamp(6px, 1vw, 10px)", flexShrink: 0 }}>
-        <span style={{ fontSize: "clamp(26px, 3.2vw, 40px)", lineHeight: 1, flexShrink: 0 }}>{catInfo.emoji}</span>
-        <div style={{ display: "flex", flexDirection: "column", minWidth: "max-content", flexShrink: 0 }}>
-          <strong style={{ fontSize: "clamp(14px, 1.4vw, 19px)", lineHeight: 1.25, whiteSpace: "nowrap" }}>
+    <div
+      className="phys-hud-content"
+      style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: "clamp(6px, 1vw, 14px)",
+        flexWrap: "nowrap",
+        width: "100%",
+        minWidth: 0,
+      }}
+    >
+      <div
+        className="phys-hud-feature-group"
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: "clamp(6px, 1vw, 10px)",
+          minWidth: 0,
+          flexShrink: 1,
+        }}
+      >
+        <span
+          className="phys-hud-icon"
+          style={{
+            fontSize: "var(--phys-hud-icon-size, clamp(26px, 3.2vw, 40px))",
+            lineHeight: 1,
+            flexShrink: 0,
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+          role="img"
+          aria-label={catInfo.label}
+        >
+          {catInfo.emoji}
+        </span>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            minWidth: 0,
+            flexShrink: 1,
+          }}
+        >
+          <strong
+            className="phys-hud-title"
+            style={{
+              fontSize: "var(--phys-hud-title-font-size, clamp(14px, 1.4vw, 19px))",
+              lineHeight: 1.25,
+              overflowWrap: "break-word",
+              wordBreak: "normal",
+              color: "#ffffff",
+            }}
+          >
             {currentFeatureDisplayName}
           </strong>
-          <span style={{ opacity: 0.7, fontSize: "clamp(10px, 0.9vw, 12.5px)", whiteSpace: "nowrap", marginTop: 2 }}>
+          <span
+            className="phys-hud-instruction"
+            style={{
+              opacity: 0.7,
+              fontSize: "var(--phys-hud-instruction-font-size, clamp(10px, 0.9vw, 12.5px))",
+              lineHeight: 1.25,
+              marginTop: 2,
+              overflowWrap: "break-word",
+              wordBreak: "normal",
+            }}
+          >
             {t('physicalGeoHUD.clickOnMap', { label: localizedFeatureTypeLabel })}
           </span>
         </div>

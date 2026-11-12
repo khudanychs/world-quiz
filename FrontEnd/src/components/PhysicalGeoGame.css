@@ -399,3 +399,38 @@
   transform-box: fill-box;
   animation: physPulseRing 0.9s ease-out infinite;
 }
+
+/* ────────────────────────────────────────────────────
+   Physical Geography Scaled HUD (>= 1280 × 650)
+   ──────────────────────────────────────────────────── */
+
+@media (min-width: 1280px) and (min-height: 650px) {
+  .phys-hud-card {
+    --hud-card-padding: clamp(6px, 1vh, 10px) clamp(14px, 1.4vw, 24px);
+    --hud-padding: clamp(6px, 1vh, 10px) clamp(14px, 1.4vw, 24px);
+    --hud-control-font-size: clamp(1rem, 0.95rem + 0.12vw, 1.125rem);
+    --hud-font-size: clamp(1rem, 0.95rem + 0.12vw, 1.125rem);
+    --hud-control-min-height: 44px;
+    --hud-min-height: 44px;
+    --hud-control-height: auto;
+    --hud-height: auto;
+    --phys-hud-title-font-size: clamp(1.4375rem, 1.3rem + 0.25vw, 1.625rem);
+    --phys-hud-instruction-font-size: clamp(0.875rem, 0.75rem + 0.2vw, 1rem);
+    --phys-hud-icon-size: clamp(2.875rem, 2.5rem + 0.6vw, 3.375rem);
+  }
+
+  .phys-hud-card .phys-hud-title,
+  .phys-hud-card .phys-hud-result-title {
+    font-size: clamp(1.4375rem, 1.3rem + 0.25vw, 1.625rem);
+  }
+
+  .phys-hud-card .phys-hud-instruction,
+  .phys-hud-card .phys-hud-result-detail {
+    font-size: clamp(0.875rem, 0.75rem + 0.2vw, 1rem);
+  }
+
+  .phys-hud-card .phys-hud-icon {
+    font-size: clamp(2.875rem, 2.5rem + 0.6vw, 3.375rem);
+  }
+}
+
