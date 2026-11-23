@@ -9,6 +9,7 @@
 export type FeatureCategory =
   | "mountain"
   | "mountain_range"
+  | "depression"
   | "river"
   | "desert"
   | "sea"
@@ -35,6 +36,8 @@ export interface PhysicalFeature {
   type: FeatureCategory;
   shape: FeatureShape;
   difficulty: "easy" | "medium" | "hard";
+  /** Optional i18n key explaining elevation extremes or borderline features in the HUD. */
+  hintKey?: string;
 }
 
 // ============================================================================
@@ -44,6 +47,7 @@ export interface PhysicalFeature {
 export const CATEGORY_INFO: Record<FeatureCategory, { emoji: string; label: string }> = {
   mountain:       { emoji: "⛰️",  label: "Mountain" },
   mountain_range: { emoji: "🏔️", label: "Mountain Range" },
+  depression:     { emoji: "⬇️",  label: "Depression" },
   river:          { emoji: "🏞️", label: "River" },
   desert:         { emoji: "🏜️", label: "Desert" },
   sea:            { emoji: "🌊",  label: "Sea" },
@@ -62,6 +66,7 @@ export const CATEGORY_INFO: Record<FeatureCategory, { emoji: string; label: stri
 export const FEATURE_COLORS: Record<FeatureCategory, string> = {
   mountain:       "#ff7043",
   mountain_range: "#ff8a65",
+  depression:     "#06b6d4",
   river:          "#4dd0e1",
   desert:         "#ffc107",
   sea:            "#64b5f6",
@@ -70,7 +75,7 @@ export const FEATURE_COLORS: Record<FeatureCategory, string> = {
   strait:         "#26a69a",
   gulf:           "#81d4fa",
   canal:          "#26a69a",
-  volcano:        "#e53935",
+  volcano:        "#ff7043",
   bay:            "#81d4fa",
   channel:        "#26a69a",
   passage:        "#26a69a",
@@ -80,6 +85,7 @@ export const FEATURE_COLORS: Record<FeatureCategory, string> = {
 export const FEATURE_FILL_OPACITY: Record<FeatureCategory, number> = {
   mountain: 1,
   mountain_range: 0,
+  depression: 1,
   river: 0,
   desert: 0.30,
   sea: 0.35,
@@ -105,7 +111,7 @@ export function isWaterFeature(f: PhysicalFeature): boolean {
 }
 
 export const CATEGORY_GROUPS: { key: string; label: string; emoji: string; types: FeatureCategory[] }[] = [
-  { key: "mountains", label: "Elevation Extremes & Ranges",  emoji: "🏔️",  types: ["mountain", "mountain_range", "volcano"] },
+  { key: "mountains", label: "Elevation Extremes & Ranges",  emoji: "🏔️",  types: ["mountain", "mountain_range", "volcano", "depression"] },
   { key: "rivers",    label: "Rivers & Lakes",         emoji: "🏞️", types: ["river", "lake"] },
   { key: "deserts",   label: "Deserts",                emoji: "🏜️", types: ["desert"] },
   { key: "waters",    label: "Seas, Straits & Oceans", emoji: "🌊",  types: ["sea", "ocean", "gulf", "bay", "strait", "canal", "channel", "passage"] },

@@ -260,7 +260,11 @@
       "volcano": "Vulkan",
       "bay": "Bucht",
       "channel": "Kanal",
-      "passage": "Passage"
+      "passage": "Passage",
+      "depression": "Senke"
+    },
+    "hints": {
+      "semiArid": "Halbwüste"
     }
   },
   "cardMatch": {
@@ -409,7 +413,7 @@
     "mapAria": "Naturgeografie Karte",
     "loadingMapBase": "Karte lädt...",
     "categories": {
-      "mountains": "Berge & Gebirge",
+      "mountains": "Gebirge & Höhenextreme",
       "rivers": "Flüsse & Seen",
       "deserts": "Wüsten",
       "waters": "Gewässer"

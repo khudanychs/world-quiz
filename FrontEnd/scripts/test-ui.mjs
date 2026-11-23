@@ -437,6 +437,8 @@ async function checkFlagMatchSpam(width) {
       json: countries.filter(country => fixtureCodes.includes(country.cca2)),
     }));
     await page.goto(`${origin}/en/game/flags/world`);
+    // Wait for React hydration with the 3-country fixture rather than static prerendered HTML.
+    await page.getByText('1/3', { exact: true }).waitFor();
     await page.locator('[data-country="France"]').waitFor();
     await page.getByRole('button', { name: translations.en.gameHUD.showName, exact: true }).click();
     const flag = page.getByAltText(translations.en.gameHUD.flagToMatchAlt);
@@ -506,12 +508,29 @@ async function checkFlagMatchSpam(width) {
     // Tiny island markers must take the same guarded click path as country polygons.
     fixtureCodes = ['MT'];
     await page.goto(`${origin}/en/game/flags/world`);
+    // Wait for React hydration with the 1-country Malta fixture rather than static prerendered HTML.
+    await page.getByText('1/1', { exact: true }).waitFor();
     await page.getByAltText(translations.en.gameHUD.flagToMatchAlt).waitFor();
     await page.locator('circle[data-country="Malta"]').evaluate(marker => {
       for (let i = 0; i < 20; i++) marker.dispatchEvent(new MouseEvent('click', { bubbles: true, clientX: 200, clientY: 280 }));
     });
     await page.locator('.win-animation-overlay').waitFor();
-    console.log(`[flag-match] PASS ${width}px spam, cooldown, clock, skip, region reset, victory and island marker`);
+
+    // Skipping localized countries (whose Czech names differ from English map names) must still color them orange.
+    fixtureCodes = ['FR', 'DE', 'ES'];
+    await page.goto(`${origin}/cs/game/flags/world`);
+    await page.getByText('1/3', { exact: true }).waitFor();
+    const csSkip = page.getByRole('button', { name: translations.cs.gameHUD.skip, exact: true });
+    for (let i = 0; i < 3; i++) {
+      await csSkip.click();
+      if (i < 2) await page.getByText(`${i + 2}/3`, { exact: true }).waitFor();
+      else await page.getByRole('button', { name: `🎮 ${translations.cs.gameHUD.newGame}`, exact: true }).waitFor();
+    }
+    const csSkippedFills = await page.locator('[data-country="France"], [data-country="Germany"], [data-country="Spain"]').evaluateAll(
+      elements => elements.map(el => el.style.fill)
+    );
+    assert.deepEqual(csSkippedFills, ['rgb(255, 140, 0)', 'rgb(255, 140, 0)', 'rgb(255, 140, 0)'], 'All skipped countries must turn orange in Czech mode');
+    console.log(`[flag-match] PASS ${width}px spam, cooldown, clock, skip, localized skip fill, region reset, victory and island marker`);
   } catch (error) {
     await fs.mkdir(artifactDir, { recursive: true });
     await page.screenshot({ path: path.join(artifactDir, `flag-match-${width}.png`) }).catch(() => {});

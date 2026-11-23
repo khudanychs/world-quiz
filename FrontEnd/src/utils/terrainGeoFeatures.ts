@@ -42,6 +42,28 @@ const RANGE_NAME_KEYS = ["NAME_EN", "NAME", "LABEL", "NAMEALT"] as const;
 const DESERT_NAME_KEYS = ["NAME_EN", "NAME", "LABEL", "NAMEALT"] as const;
 const ELEVATION_NAME_KEYS = ["name_en", "name", "name_alt", "label"] as const;
 
+// Natural Earth dataset cleanup:
+// - Richat Structure (~400 m elevation) is neither a mountain nor a continental lowest point.
+// - Punjab is a fertile river plain misclassified under deserts in Natural Earth.
+const EXCLUDED_ELEVATION_POINTS = new Set(["richat structure"]);
+const EXCLUDED_DESERTS = new Set(["punjab"]);
+
+// Truncated upstream Natural Earth English labels fixed at load time.
+const RANGE_NAME_OVERRIDES: Record<string, string> = {
+  ahag: "Ahaggar Mountains",
+};
+
+// Points in elev_points.json that are volcanoes despite featurecla === "mountain".
+const ELEVATION_VOLCANO_NAMES = new Set([
+  "chimborazo volcano",
+  "klyuchevskaya sopka",
+]);
+
+// Non-spoiling classification hints (never reveal continent/country location).
+const DESERT_HINT_KEYS: Record<string, string> = {
+  caatinga: "physicalGeoHUD.hints.semiArid",
+};
+
 // Tunable polygon cleanup: drop tiny detached fragments from MultiPolygon features.
 const MOUNTAIN_RANGE_POLYGON_FILTER: PolygonFilterConfig = {
   minArea: 0.05,
@@ -332,10 +354,11 @@ function buildRangePolygonFeatures(features: GeoJsonFeature[], language: string 
   const grouped = new Map<string, { difficulty: Difficulty; rings: [number, number][][] }>();
 
   for (const feature of features) {
-    const baseName = stringProp(feature.properties, getLocalizedNameKeys(RANGE_NAME_KEYS, language));
-    if (!baseName) {
+    const rawName = stringProp(feature.properties, getLocalizedNameKeys(RANGE_NAME_KEYS, language));
+    if (!rawName) {
       continue;
     }
+    const baseName = RANGE_NAME_OVERRIDES[rawName.toLowerCase()] ?? rawName;
 
     const rings = filterTinyPolygonFragments(
       polygonRingsFromGeometry(feature.geometry),
@@ -399,15 +422,30 @@ function buildElevationPointFeatures(features: GeoJsonFeature[], language: strin
   const usedNames = new Map<string, number>();
 
   for (const feature of features) {
+    const canonicalName = stringProp(feature.properties, ELEVATION_NAME_KEYS);
+    const canonicalLower = canonicalName?.toLowerCase() ?? "";
+    if (canonicalLower && EXCLUDED_ELEVATION_POINTS.has(canonicalLower)) {
+      continue;
+    }
+
     const baseName = stringProp(feature.properties, getLocalizedNameKeys(ELEVATION_NAME_KEYS, language));
     const coords = normalizePoint(feature.geometry?.coordinates);
     if (!baseName || !coords) {
       continue;
     }
 
+    const rawFeatureClass = typeof feature.properties?.featurecla === "string"
+      ? feature.properties.featurecla.trim().toLowerCase()
+      : "";
+    const featureType: PhysicalFeature["type"] = rawFeatureClass === "depression"
+      ? "depression"
+      : ELEVATION_VOLCANO_NAMES.has(canonicalLower)
+        ? "volcano"
+        : "mountain";
+
     out.push({
       name: uniqueName(baseName, usedNames),
-      type: "mountain",
+      type: featureType,
       difficulty: toDifficulty(feature.properties?.scalerank),
       shape: { kind: "marker", center: coords },
     });
@@ -418,9 +456,15 @@ function buildElevationPointFeatures(features: GeoJsonFeature[], language: strin
 
 function buildDesertPolygonFeatures(features: GeoJsonFeature[], language: string = "en"): PhysicalFeature[] {
   const out: PhysicalFeature[] = [];
-  const grouped = new Map<string, { difficulty: Difficulty; rings: [number, number][][] }>();
+  const grouped = new Map<string, { difficulty: Difficulty; rings: [number, number][][]; hintKey?: string }>();
 
   for (const feature of features) {
+    const canonicalName = stringProp(feature.properties, DESERT_NAME_KEYS);
+    const canonicalLower = canonicalName?.toLowerCase() ?? "";
+    if (canonicalLower && EXCLUDED_DESERTS.has(canonicalLower)) {
+      continue;
+    }
+
     const baseName = stringProp(feature.properties, getLocalizedNameKeys(DESERT_NAME_KEYS, language));
     if (!baseName) {
       continue;
@@ -436,12 +480,14 @@ function buildDesertPolygonFeatures(features: GeoJsonFeature[], language: string
 
     const normalizedName = baseName.trim();
     const difficulty = toDifficulty(feature.properties?.SCALERANK);
+    const hintKey = DESERT_HINT_KEYS[canonicalLower];
     const existing = grouped.get(normalizedName);
 
     if (!existing) {
       grouped.set(normalizedName, {
         difficulty,
         rings: [...rings],
+        hintKey,
       });
       continue;
     }
@@ -456,6 +502,7 @@ function buildDesertPolygonFeatures(features: GeoJsonFeature[], language: string
     grouped.set(normalizedName, {
       difficulty: mergedDifficulty,
       rings: [...existing.rings, ...rings],
+      hintKey: existing.hintKey ?? hintKey,
     });
   }
 
@@ -468,6 +515,7 @@ function buildDesertPolygonFeatures(features: GeoJsonFeature[], language: string
         type: "desert",
         difficulty: value.difficulty,
         shape: { kind: "polygon", points: orderedRings[0] },
+        hintKey: value.hintKey,
       });
       continue;
     }
@@ -477,6 +525,7 @@ function buildDesertPolygonFeatures(features: GeoJsonFeature[], language: string
       type: "desert",
       difficulty: value.difficulty,
       shape: { kind: "polygon_collection", polygons: orderedRings },
+      hintKey: value.hintKey,
     });
   }
 

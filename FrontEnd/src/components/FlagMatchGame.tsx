@@ -273,9 +273,10 @@ export default function FlagMatchGame() {
 
   const handleGetCountryFill = useCallback((nameRaw: string) => {
     const norm = normalizeCountryName(nameRaw);
+    const code = game.getCountryCode(norm);
     
-    const isCorrect = game.correctSet.has(norm);
-    const isSkipped = game.skippedSet.has(norm);
+    const isCorrect = !!code && game.correctSet.has(code);
+    const isSkipped = !!code && game.skippedSet.has(code);
     const defaultFill = "#e0d8c2";
     const isLastWrong = game.lastClicked?.name === norm && game.lastClicked?.status === "wrong";
     
@@ -286,7 +287,7 @@ export default function FlagMatchGame() {
       : isLastWrong
       ? "#ef4444"
       : defaultFill;
-  }, [game.correctSet, game.skippedSet, game.lastClicked]);
+  }, [game.getCountryCode, game.correctSet, game.skippedSet, game.lastClicked]);
 
   return (
     <>

@@ -1,5 +1,6 @@
 import { CATEGORY_INFO, type PhysicalFeature } from "../utils/physicalFeatures";
 import { toPhysicalFeatureDisplayName } from "../utils/physicalFeatureNames";
+import { FeatureTypeIcon } from "./physicalGeoGame/FeatureTypeIcon";
 import { useTranslation } from 'react-i18next';
 import {
   HUDCounterBadge,
@@ -90,6 +91,10 @@ export default function PhysicalGeoHUD({
   const localizedFeatureTypeLabel = t(`physicalGeoHUD.featureTypes.${currentFeature.type}`, {
     defaultValue: catInfo.label,
   });
+  const featureHint = currentFeature.hintKey ? t(currentFeature.hintKey, { defaultValue: "" }) : "";
+  const instructionText = featureHint
+    ? `${t('physicalGeoHUD.clickOnMap', { label: localizedFeatureTypeLabel })} · ${featureHint}`
+    : t('physicalGeoHUD.clickOnMap', { label: localizedFeatureTypeLabel });
   const currentFeatureDisplayName = toPhysicalFeatureDisplayName(currentFeature.displayName || currentFeature.name);
   const getLocalizedFeatureName = (rawName: string): string => {
     const localized = featureDisplayNameByName[rawName];
@@ -252,9 +257,9 @@ export default function PhysicalGeoHUD({
                 justifyContent: "center",
               }}
               role="img"
-              aria-label={catInfo.label}
+              aria-label={localizedFeatureTypeLabel}
             >
-              {catInfo.emoji}
+              <FeatureTypeIcon type={currentFeature.type} />
             </span>
             <div style={{ display: "flex", flexDirection: "column", minWidth: 0, flex: 1 }}>
               <strong
@@ -281,7 +286,7 @@ export default function PhysicalGeoHUD({
                   wordBreak: "break-word",
                 }}
               >
-                {t('physicalGeoHUD.clickOnMap', { label: localizedFeatureTypeLabel })}
+                {instructionText}
               </span>
             </div>
           </div>
@@ -359,9 +364,9 @@ export default function PhysicalGeoHUD({
             justifyContent: "center",
           }}
           role="img"
-          aria-label={catInfo.label}
+          aria-label={localizedFeatureTypeLabel}
         >
-          {catInfo.emoji}
+          <FeatureTypeIcon type={currentFeature.type} />
         </span>
         <div
           style={{
@@ -394,7 +399,7 @@ export default function PhysicalGeoHUD({
               wordBreak: "normal",
             }}
           >
-            {t('physicalGeoHUD.clickOnMap', { label: localizedFeatureTypeLabel })}
+            {instructionText}
           </span>
         </div>
       </div>

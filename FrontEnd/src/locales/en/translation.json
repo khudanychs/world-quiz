@@ -260,7 +260,11 @@
       "volcano": "Volcano",
       "bay": "Bay",
       "channel": "Channel",
-      "passage": "Passage"
+      "passage": "Passage",
+      "depression": "Depression"
+    },
+    "hints": {
+      "semiArid": "Semi-arid"
     }
   },
   "cardMatch": {

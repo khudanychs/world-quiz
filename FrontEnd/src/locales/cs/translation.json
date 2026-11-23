@@ -260,7 +260,11 @@
       "volcano": "Sopka",
       "bay": "Zátoka",
       "channel": "Průliv",
-      "passage": "Průjezd"
+      "passage": "Průjezd",
+      "depression": "Proláklina"
+    },
+    "hints": {
+      "semiArid": "Polopoušť"
     }
   },
   "cardMatch": {
@@ -409,7 +413,7 @@
     "mapAria": "Slepá mapa fyzické geografie",
     "loadingMapBase": "Připravuji mapu...",
     "categories": {
-      "mountains": "Pohoří a nejvyšší vrcholy",
+      "mountains": "Pohoří a výškové extrémy",
       "rivers": "Řeky a jezera",
       "deserts": "Světové pouště",
       "waters": "Moře, oceány a průlivy"

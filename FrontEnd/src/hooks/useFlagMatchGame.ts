@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   buildRestLookup,
   getCanonicalCountryName,
@@ -81,18 +81,20 @@ export function useFlagMatchGame(
     return { byCode };
   }, [allCountriesData]);
 
-  function isCountryInSelectedRegion(nameRaw: string) {
-    if (!selectedRegion) return true;
-
+  // Map any canonical/localized map name to its locale-independent ISO alpha-2 code.
+  // Keeping correctSet and skippedSet keyed by cca2 ensures map fills match in all UI languages.
+  const getCountryCode = useCallback((nameRaw: string): string | undefined => {
     const norm = normalizeCountryName(nameRaw);
     const k1 = normalizeApos(norm);
     const k2 = stripDiacritics(k1);
-    const clickedCountry = restLookup[k1] || restLookup[k2];
+    return (restLookup[k1] || restLookup[k2])?.cca2;
+  }, [restLookup]);
 
-    const byCodeRegion = clickedCountry?.cca2
-      ? countryRegionLookup.byCode.get(clickedCountry.cca2)
-      : undefined;
-    const countryRegion = byCodeRegion;
+  function isCountryInSelectedRegion(nameRaw: string) {
+    if (!selectedRegion) return true;
+
+    const code = getCountryCode(nameRaw);
+    const countryRegion = code ? countryRegionLookup.byCode.get(code) : undefined;
 
     return countryRegion === selectedRegion;
   }
@@ -224,18 +226,16 @@ export function useFlagMatchGame(
     // A later guess must never cancel an accepted answer's scheduled advance.
     const now = performance.now();
     if (advanceTimerRef.current !== null || now < nextGuessAtRef.current) return "cooldown";
-    if (correctSet.has(norm)) return;
+    const clickedCode = getCountryCode(norm);
+    if (clickedCode && correctSet.has(clickedCode)) return;
     nextGuessAtRef.current = now + GUESS_COOLDOWN_MS;
 
-    const k1 = normalizeApos(norm);
-    const k2 = stripDiacritics(k1);
-    const clicked = restLookup[k1] || restLookup[k2];
-    if (clicked && clicked.cca2 === currentTarget.cca2) {
+    if (clickedCode && clickedCode === currentTarget.cca2) {
       const newScore = score + 1;
       const newStreak = currentStreak + 1;
       
       setScore(newScore);
-      setCorrectSet((s) => new Set([...s, norm]));
+      setCorrectSet((s) => new Set([...s, clickedCode]));
       setLastClicked({ name: norm, status: "correct" });
       setFeedback("correct");
       setCurrentStreak(newStreak);
@@ -272,8 +272,7 @@ export function useFlagMatchGame(
   function skipCurrentFlag() {
     if (!currentTarget || hasWon || loading || !hasUserSelected || advanceTimerRef.current !== null) return;
 
-    const norm = normalizeCountryName(currentTarget.name);
-    setSkippedSet((s) => new Set([...s, norm]));
+    setSkippedSet((s) => new Set([...s, currentTarget.cca2]));
     setLastClicked(null);
     setCurrentStreak(0);
     
@@ -322,6 +321,7 @@ export function useFlagMatchGame(
     onCountryClick,
     skipCurrentFlag,
     handleGeographiesLoaded,
+    getCountryCode,
     isCountryInSelectedRegion,
   };
 }
