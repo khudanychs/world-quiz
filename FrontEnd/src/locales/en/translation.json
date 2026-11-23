@@ -472,7 +472,8 @@
     "exploreWorld": "Explore the World",
     "clickCountryHint": "Click a country to see details",
     "loadingMap": "Loading map...",
-    "interactiveGlobeAria": "Interactive globe"
+    "interactiveGlobeAria": "Interactive globe",
+    "playQuizCta": "Play Quiz"
   },
   "seo": {
     "routes": {
@@ -595,7 +596,8 @@
       "common": {
         "rulesTitle": "How to play",
         "scopeTitle": "What you will practice",
-        "relatedTitle": "Explore more modes"
+        "relatedTitle": "Explore more modes",
+        "infoButton": "Guide"
       },
       "flagMatch": {
         "heading": "Choose your Flag Matching challenge",

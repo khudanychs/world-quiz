@@ -522,7 +522,6 @@ export default function PhysicalGeoGame() {
       </div>
       <GameSeoSection
         guideKey={seoGuideKey}
-        defaultOpen={showSelector}
         relatedLinks={[
           { path: "/game/physical-geo/mountains", label: t("physicalGeoGame.categories.mountains") },
           { path: "/game/physical-geo/rivers", label: t("physicalGeoGame.categories.rivers") },

@@ -472,7 +472,8 @@
     "exploreWorld": "Weltkarte",
     "clickCountryHint": "Klick auf ein Land für Details.",
     "loadingMap": "Karte lädt...",
-    "interactiveGlobeAria": "Interaktiver Globus"
+    "interactiveGlobeAria": "Interaktiver Globus",
+    "playQuizCta": "Quiz spielen"
   },
   "seo": {
     "routes": {
@@ -595,7 +596,8 @@
       "common": {
         "rulesTitle": "So wird gespielt",
         "scopeTitle": "Was du hier trainierst",
-        "relatedTitle": "Weitere Modi entdecken"
+        "relatedTitle": "Weitere Modi entdecken",
+        "infoButton": "Infos"
       },
       "flagMatch": {
         "heading": "Wähle deine Flaggen-Quiz-Region",

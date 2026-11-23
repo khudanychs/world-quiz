@@ -527,7 +527,6 @@ export default function FlagMatchGame() {
     </div>
     <GameSeoSection
       guideKey={seoGuideKey}
-      defaultOpen={showRegionSelector}
       relatedLinks={[
         { path: "/game/flags/world", label: t("flagMatch.regionWorld") },
         { path: "/game/flags/europe", label: t("flagMatch.regionEurope") },

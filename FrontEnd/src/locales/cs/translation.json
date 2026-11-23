@@ -472,7 +472,8 @@
     "exploreWorld": "Průzkumník mapy",
     "clickCountryHint": "Klikněte na stát pro zobrazení podrobností.",
     "loadingMap": "Kreslím mapu...",
-    "interactiveGlobeAria": "Interaktivní glóbus"
+    "interactiveGlobeAria": "Interaktivní glóbus",
+    "playQuizCta": "Zahrát kvíz"
   },
   "seo": {
     "routes": {
@@ -595,7 +596,8 @@
       "common": {
         "rulesTitle": "Jak hrát",
         "scopeTitle": "Co si procvičíte",
-        "relatedTitle": "Další kvízy a přehledy"
+        "relatedTitle": "Další kvízy a přehledy",
+        "infoButton": "Pravidla"
       },
       "flagMatch": {
         "heading": "Vyberte si režim poznávačky vlajek",

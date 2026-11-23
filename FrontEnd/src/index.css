@@ -29,6 +29,8 @@ html, body, #root {
   margin: 0;
   padding: 0;
   overflow-x: hidden;
+  /* Remove default mobile WebKit/Blink blue tap highlight box on touch devices. */
+  -webkit-tap-highlight-color: transparent;
 }
 
 /* Remove centering so the map can fill the entire window */
@@ -72,19 +74,15 @@ button {
   cursor: pointer;
   transition: border-color 0.25s;
 }
-button:hover {
-  border-color: #646cff;
-}
-button:focus {
+button:focus,
+a:focus,
+summary:focus {
   outline: none;
 }
-button:focus-visible {
-  outline: 2px solid #646cff;
-  outline-offset: 2px;
-}
-
-a:focus-visible {
-  outline: 2px solid #646cff;
+button:focus-visible,
+a:focus-visible,
+summary:focus-visible {
+  outline: 2px solid rgba(129, 140, 248, 0.85);
   outline-offset: 2px;
 }
 

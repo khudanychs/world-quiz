@@ -1,0 +1,72 @@
+.world-map-stage {
+  min-height: 100%;
+  width: 100%;
+  background: #0b1020;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  padding-bottom: 12px;
+}
+
+.world-map-quiz-cta {
+  position: relative;
+  z-index: 10;
+  margin-top: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 9px 16px;
+  min-height: 40px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 14px;
+  line-height: 1.2;
+  text-decoration: none;
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.18);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.world-map-quiz-cta:hover {
+  color: #ffffff;
+  transform: translateY(-1px);
+  filter: brightness(1.06);
+  box-shadow: 0 10px 26px rgba(118, 75, 162, 0.42), inset 0 1px 0 rgba(255, 255, 255, 0.22);
+}
+
+.world-map-quiz-cta:active {
+  transform: translateY(0);
+}
+
+/* Only dock top-right opposite BackButton when there is guaranteed horizontal clearance around the centered info panel. */
+@media (min-width: 1024px) and (min-height: 500px) {
+  .world-map-stage {
+    padding-bottom: 0;
+  }
+
+  .world-map-quiz-cta {
+    position: fixed;
+    top: max(16px, calc(env(safe-area-inset-top) + 8px));
+    right: max(16px, env(safe-area-inset-right));
+    margin-top: 0;
+    padding: 10px 18px;
+    min-height: 44px;
+    font-size: 15px;
+  }
+}
+
+@media (max-width: 480px) {
+  .world-map-quiz-cta {
+    font-size: 13.5px;
+    padding: 8px 14px;
+    min-height: 38px;
+  }
+}

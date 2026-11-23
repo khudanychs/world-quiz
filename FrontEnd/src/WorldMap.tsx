@@ -1,11 +1,12 @@
 // src/WorldMap.tsx - Explore Map mode with country info panel
 import { useEffect, useRef, useState, lazy, Suspense, useCallback } from "react";
+import { Link } from "react-router-dom";
 import { useTranslation } from 'react-i18next';
 import { BackButton } from './components/BackButton';
 import { SEOHelmet } from './components/SEOHelmet';
 import { GameSeoSection } from './components/GameSeoSection';
+import './WorldMap.css';
 import {
-  PAGE_CONTAINER_STYLE,
   getMapWrapperStyle,
 } from './utils/sharedStyles';
 import { useMapDimensions } from './hooks/useMapDimensions';
@@ -144,8 +145,8 @@ export default function WorldMap() {
       />
       <h1 className="sr-only">{seoH1}</h1>
       <div
+        className="world-map-stage"
         style={{
-          ...PAGE_CONTAINER_STYLE,
           gap: isPortrait ? "clamp(12px, 2vh, 24px)" : "0",
         }}
       >
@@ -379,6 +380,27 @@ export default function WorldMap() {
           />
         </Suspense>
       </div>
+      {/* Positioned below the map on narrow/short screens and docked top-right on wide desktop */}
+      <Link
+        className="world-map-quiz-cta"
+        to={buildLocalizedPath('/game/flags', currentLanguage)}
+      >
+        <span>{t('worldMap.playQuizCta')}</span>
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden="true"
+        >
+          <line x1="5" y1="12" x2="19" y2="12" />
+          <polyline points="12 5 19 12 12 19" />
+        </svg>
+      </Link>
       </div>
       <GameSeoSection
         guideKey="worldMap"
