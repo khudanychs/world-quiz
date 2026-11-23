@@ -19,6 +19,7 @@ import {
   type Proj,
 } from "./physicalGeoGame/renderers";
 import { MemoizedOverlay } from "./physicalGeoGame/MemoizedOverlay";
+import { FeatureIconsLegend } from "./physicalGeoGame/FeatureIconsLegend";
 import { useGeoData } from "./physicalGeoGame/useGeoData";
 import { usePathCache } from "./physicalGeoGame/usePathCache";
 import { useBackgroundMarineNames } from "./physicalGeoGame/useBackgroundMarineNames";
@@ -342,6 +343,7 @@ export default function PhysicalGeoGame() {
       {showSelector && (
         <div className="phys-category-overlay">
           <div className="phys-category-content">
+            <FeatureIconsLegend />
             <h2 className="phys-category-title">🌍 {t("physicalGeoGame.title")}</h2>
             <p className="phys-category-subtitle">{t("physicalGeoGame.chooseCategory")}</p>
 

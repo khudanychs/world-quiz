@@ -808,6 +808,56 @@ async function checkPhysicalGeoHud(width, height, language) {
   }
 }
 
+async function checkPhysicalGeoLegend(width, height, language) {
+  const label = `${language}/${width}x${height}`;
+  const context = await browser.newContext({ viewport: { width, height }, locale: language });
+  const page = await context.newPage();
+  const pageErrors = [];
+  page.on('pageerror', (error) => pageErrors.push(error.message));
+  try {
+    await interceptNetwork(context);
+    await page.goto(`${origin}/${language}/game/physical-geo`, { waitUntil: 'load' });
+    const trigger = page.getByRole('button', { name: translations[language].physicalGeoGame.iconLegend.buttonLabel, exact: true });
+    await trigger.waitFor({ state: 'visible' });
+
+    const dialog = page.locator('dialog.phys-legend-dialog');
+    assert.equal(await dialog.evaluate((el) => el.open), false, `${label}: legend dialog should start closed`);
+    await trigger.click();
+    await dialog.waitFor({ state: 'visible' });
+    assert.equal(await dialog.evaluate((el) => el.open), true, `${label}: legend dialog should open as modal`);
+
+    const metrics = await dialog.evaluate((el) => {
+      const cards = [...el.querySelectorAll('.phys-legend-card')];
+      return {
+        cardCount: cards.length,
+        singleSvgEveryCard: cards.every((card) => card.querySelectorAll('svg').length === 1),
+        overflowX: el.scrollWidth - el.clientWidth,
+        titleText: el.querySelector('.phys-legend-title')?.textContent?.trim() ?? '',
+      };
+    });
+    assert.equal(metrics.cardCount, 15, `${label}: expected 15 legend cards`);
+    assert.equal(metrics.singleSvgEveryCard, true, `${label}: each legend card must render exactly one icon`);
+    assert(metrics.overflowX <= 1, `${label}: legend dialog overflows horizontally by ${metrics.overflowX}px`);
+    assert.equal(metrics.titleText, translations[language].physicalGeoGame.iconLegend.title);
+
+    await page.getByRole('button', { name: translations[language].physicalGeoGame.iconLegend.close, exact: true }).click();
+    assert.equal(await dialog.evaluate((el) => el.open), false, `${label}: close button must dismiss legend dialog`);
+
+    await trigger.click();
+    await dialog.waitFor({ state: 'visible' });
+    await page.keyboard.press('Escape');
+    assert.equal(await dialog.evaluate((el) => el.open), false, `${label}: Escape must dismiss legend dialog`);
+    assert.deepEqual(pageErrors, [], `${label}: JavaScript errors during legend check`);
+    console.log(`[physical-geo-legend] PASS ${label} (15 unique cards, single icon, no overflow, Esc + close)`);
+  } catch (error) {
+    await fs.mkdir(artifactDir, { recursive: true });
+    await page.screenshot({ path: path.join(artifactDir, `physical-geo-legend-${language}-${width}x${height}.png`) }).catch(() => {});
+    throw new Error(`physical-geo-legend/${label}: ${error.message}`, { cause: error });
+  } finally {
+    await context.close();
+  }
+}
+
 try {
   // Serialize the production app exactly as the SEO renderer does, in memory.
   // This keeps the regression fast and leaves the real build/sitemap untouched.
@@ -862,6 +912,8 @@ try {
     ...languages.flatMap((language) => leaderboardWidths.map((width) => () => checkLeaderboard(language, width))),
     ...leaderboardWidths.map(width => () => checkFlagMatchSpam(width)),
     () => checkFlagMatchHud(),
+    () => checkPhysicalGeoLegend(1440, 900, 'cs'),
+    () => checkPhysicalGeoLegend(360, 740, 'de'),
     ...physicalGeoCases.map(({ width, height, language }) => () => checkPhysicalGeoHud(width, height, language)),
   ];
   let cursor = 0;

@@ -417,6 +417,29 @@
       "rivers": "Flüsse & Seen",
       "deserts": "Wüsten",
       "waters": "Gewässer"
+    },
+    "iconLegend": {
+      "buttonLabel": "Symbollegende",
+      "title": "Legende der Kartensymbole",
+      "subtitle": "Jedes Symbol im Spiel zeigt, welche Art von geografischem Objekt du auf der Karte suchst.",
+      "close": "Schließen",
+      "descriptions": {
+        "mountain": "Einzelner Berggipfel",
+        "mountain_range": "Zusammenhängende Bergkette oder Gebirge",
+        "volcano": "Vulkanischer Gipfel oder Kegel",
+        "depression": "Landfläche unter dem Meeresspiegel",
+        "desert": "Trockene Wüsten- oder Halbwüstenregion",
+        "lake": "Binnensee, vollständig von Land umgeben",
+        "river": "Fließgewässer über das Festland",
+        "ocean": "Weiter, offener Weltmeer-Ozean",
+        "sea": "Rand- oder Binnenmeer an der Küste",
+        "gulf": "Tief eingeschnittener, dreiseitig umschlossener Golf",
+        "bay": "Weite, offen geschwungene Küstenbucht",
+        "strait": "Schmale natürliche Meerenge zwischen zwei Küsten",
+        "canal": "Künstlich angelegte Schifffahrtsstraße",
+        "channel": "Breiterer Meereskanal zwischen Festland und Insel",
+        "passage": "Weite offene Meerespassage zwischen fernen Kaps"
+      }
     }
   },
   "flagMatch": {

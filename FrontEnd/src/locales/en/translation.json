@@ -417,6 +417,29 @@
       "rivers": "Rivers & Lakes",
       "deserts": "Deserts",
       "waters": "Seas, Straits & Oceans"
+    },
+    "iconLegend": {
+      "buttonLabel": "Icon legend",
+      "title": "Map Icon Legend",
+      "subtitle": "Each icon in the game shows what kind of geographic feature you are looking for.",
+      "close": "Close",
+      "descriptions": {
+        "mountain": "Individual mountain peak",
+        "mountain_range": "Continuous chain or range of mountains",
+        "volcano": "Volcanic cone or peak",
+        "depression": "Land lying below sea level",
+        "desert": "Arid desert or semi-arid region",
+        "lake": "Inland body of water surrounded by land",
+        "river": "Watercourse flowing across land",
+        "ocean": "Vast open world ocean",
+        "sea": "Marginal or inland coastal sea",
+        "gulf": "Deep inlet enclosed by land on three sides",
+        "bay": "Wide, open curving coastal indentation",
+        "strait": "Narrow natural waterway between two coasts",
+        "canal": "Artificial man-made shipping waterway",
+        "channel": "Broader sea channel separating coast and island",
+        "passage": "Wide open sea passage between distant capes"
+      }
     }
   },
   "flagMatch": {

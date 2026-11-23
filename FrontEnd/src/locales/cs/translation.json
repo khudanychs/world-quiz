@@ -417,6 +417,29 @@
       "rivers": "Řeky a jezera",
       "deserts": "Světové pouště",
       "waters": "Moře, oceány a průlivy"
+    },
+    "iconLegend": {
+      "buttonLabel": "Legenda ikon",
+      "title": "Legenda mapových ikon",
+      "subtitle": "Každá ikona ve hře napovídá, jaký typ geografického útvaru na mapě hledáte.",
+      "close": "Zavřít",
+      "descriptions": {
+        "mountain": "Jednotlivý horský vrchol",
+        "mountain_range": "Souvislé horské pásmo či masiv",
+        "volcano": "Sopečný kužel nebo vulkán",
+        "depression": "Území ležící pod hladinou moře",
+        "desert": "Poušť nebo polopouštní oblast",
+        "lake": "Vnitrozemské jezero obklopené pevninou",
+        "river": "Vodní tok tekoucí pevninou",
+        "ocean": "Rozsáhlý otevřený světový oceán",
+        "sea": "Okrajové či vnitřní moře při pobřeží",
+        "gulf": "Hlubší záliv sevřený pevninou ze tří stran",
+        "bay": "Širší, otevřenější pobřežní zátoka",
+        "strait": "Úzký přirozený průliv mezi dvěma břehy",
+        "canal": "Uměle vybudovaný lodní průplav",
+        "channel": "Širší mořský průliv (kanál) podél ostrova",
+        "passage": "Široký otevřený průjezd mezi vzdálenými mysy"
+      }
     }
   },
   "flagMatch": {

@@ -28,6 +28,7 @@
 }
 
 .phys-category-content {
+  position: relative;
   text-align: center;
   animation: physScaleIn 0.3s ease-out;
   max-width: min(90vw, 600px);
@@ -38,10 +39,16 @@
 }
 
 .phys-category-title {
-  font-size: clamp(28px, 6vw, 48px);
-  margin: 0 0 12px;
+  font-size: clamp(24px, 5.5vw, 44px);
+  margin: 8px 0 12px;
   color: #f59e0b;
   font-weight: 700;
+}
+
+@media (max-width: 520px) {
+  .phys-category-title {
+    padding-inline: 34px;
+  }
 }
 
 .phys-category-subtitle {
