@@ -346,7 +346,17 @@
     "exchangeRatesUpdated": "Stand aktuell",
     "languages": "Sprachen",
     "timezones": "Zeitzonen",
-    "borderingCountries": "Nachbarn"
+    "borderingCountries": "Nachbarn",
+    "overviewTitle": "Geografischer Überblick: {{country}}",
+    "overviewIntroWithCapital": "{{country}} liegt in der Region {{region}} und hat {{capital}} als Hauptstadt. Das Land erstreckt sich über {{area}} km² und zählt rund {{population}} Einwohner.",
+    "overviewIntroNoCapital": "{{country}} liegt in der Region {{region}}, umfasst eine Fläche von {{area}} km² und zählt geschätzt {{population}} Einwohner.",
+    "overviewDensity": "Die durchschnittliche Bevölkerungsdichte beträgt etwa {{density}} Einwohner pro km².",
+    "overviewBordersSome": "{{country}} grenzt auf dem Landweg an {{count}} Nachbarländer, darunter {{borders}}.",
+    "overviewBordersNone": "{{country}} hat keine Landgrenzen und ist vollständig von Wasser umgeben oder ein Inselgebiet.",
+    "overviewLanguages": "Zu den offiziellen oder wichtigsten Sprachen zählen {{languages}}.",
+    "practiceRegionFlags": "Flaggen-Quiz {{region}} üben",
+    "exploreWorldMap": "Auf der interaktiven Weltkarte ansehen",
+    "allCountriesLink": "Alle Länder im Überblick"
   },
   "notFound": {
     "title": "Nicht gefunden",
@@ -450,7 +460,9 @@
     "tryAdjustingFilters": "Passe Suche oder Kontinent an.",
     "seoTitleWithCountry": "{{country}} – Infos & Flagge | World Quiz",
     "seoDescriptionWithCountry": "Fakten über {{country}}: Hauptstadt, Einwohner, Fläche, Sprachen und Nachbarn auf einen Blick.",
-    "flagAlt": "{{name}} Flagge"
+    "flagAlt": "{{name}} Flagge",
+    "seoDescriptionWithCountryAndCapital": "Fakten über {{country}} ({{region}}): Hauptstadt {{capital}}, Flagge, Einwohner, Fläche, Amtssprachen und Nachbarländer im World Quiz Lexikon.",
+    "seoDescriptionWithCountryNoCapital": "Fakten über {{country}} ({{region}}): Flagge, Fläche, Einwohner, geografische Übersicht und regionale Infos im World Quiz Länderlexikon."
   },
   "worldMap": {
     "loading": "Lädt Daten...",
@@ -470,39 +482,39 @@
       },
       "leaderboards": {
         "title": "Bestenlisten: Flaggen & Geografie | World Quiz",
-        "description": "Top-Spieler im Flaggen-Quiz, Geo-Match und Länder-Raten. Vergleiche deine Ergebnisse weltweit."
+        "description": "Entdecke die besten Spieler im Flaggen-Quiz, Geo-Match und Länder-Raten. Vergleiche tägliche und globale Bestenlisten direkt auf World Quiz."
       },
       "map": {
         "title": "Interaktive Weltkarte & Geografie-Lernspiel",
-        "description": "Erkunde Länder, Hauptstädte und Flaggen auf unserer Karte. Perfekt, um schnell Erdkunde zu lernen."
+        "description": "Erkunde alle Länder, Hauptstädte und Flaggen auf unserer interaktiven Weltkarte. Ideal zum schnellen Lernen und Wiederholen in Erdkunde."
       },
       "countries": {
         "title": "Länderlexikon & Flaggen der Welt | World Quiz",
-        "description": "Die große Geografie-Datenbank. Finde Fakten über alle Länder: Hauptstädte, Einwohner, Flächen, Sprachen und Nachbarn."
+        "description": "Die große Geografie-Datenbank: Entdecke Fakten über alle Länder der Welt mit Flaggen, Hauptstädten, Einwohnern, Flächen, Sprachen und Nachbarn."
       },
       "flagMatch": {
-        "title": "Flaggen-Quiz: Länder und Flaggen lernen | World Quiz",
-        "description": "Meistere das Flaggen-Quiz. Trainiere dein Gedächtnis und lerne alle Flaggen der Welt oder nach Kontinent."
+        "title": "Flaggen-Quiz – Welt oder Kontinent | World Quiz",
+        "description": "Wähle den Weltmodus oder einen Kontinent im World Quiz Flaggen-Quiz. Trainiere Flaggen aus Europa, Asien, Afrika, Amerika und Ozeanien online."
       },
       "shapeMatch": {
         "title": "Geo-Match: Flaggen und Umrisse | World Quiz",
-        "description": "Ordne Flaggen, Länder, Hauptstädte und Umrisse gegen die Zeit zu. Ein rasantes Quiz für alle."
+        "description": "Ordne Flaggen, Ländernamen, Hauptstädte und Umrisse gegen die Zeit zu. Sammle Serienboni und erreiche Top-Plätze in der World Quiz Rangliste."
       },
       "physicalGeo": {
-        "title": "Naturgeografie & Weltkarte Quiz | World Quiz",
-        "description": "Finde Berge, Flüsse, Seen und Wüsten in unserem interaktiven Quiz auf der stummen Karte."
+        "title": "Naturgeografie-Quiz – Kategorien | World Quiz",
+        "description": "Wähle eine Naturgeografie-Kategorie auf der stummen Weltkarte: finde berühmte Gebirge, große Flüsse, bekannte Wüsten, Seen und Meere."
       },
       "guessCountry": {
         "title": "Land erraten: Das Geografie-Rätsel | World Quiz",
-        "description": "Finde das gesuchte Land in 5 Versuchen durch Hinweise zu Distanz und Richtung."
+        "description": "Errate das geheime Land in fünf Versuchen mithilfe von Distanz-, Richtungs- und Kontinenthinweisen auf der interaktiven World Quiz Weltkarte."
       },
       "terms": {
-        "title": "AGB | World Quiz",
-        "description": "Lies die Nutzungsbedingungen und Fair-Play-Richtlinien für World Quiz."
+        "title": "Nutzungsbedingungen & AGB | World Quiz",
+        "description": "Lies die Nutzungsbedingungen von World Quiz zu Benutzerkonten, Fair-Play-Regeln in Bestenlisten, Urheberrechten und sicherer Plattformnutzung."
       },
       "privacy": {
-        "title": "Datenschutz | World Quiz",
-        "description": "Erfahre, wie World Quiz mit deinen Daten, Cookies und Kontoinfos umgeht."
+        "title": "Datenschutzerklärung | World Quiz",
+        "description": "Erfahre in der Datenschutzerklärung von World Quiz, wie wir Kontodaten, Cookies und Analysen sicher gemäß DSGVO verarbeiten und schützen."
       },
       "auth": {
         "title": "Login | World Quiz",
@@ -519,15 +531,184 @@
       "notFound": {
         "title": "Nicht gefunden | World Quiz",
         "description": "Diese Seite existiert nicht. Kehre zurück zu unseren Geografie-Spielen."
+      },
+      "flagMatchWorld": {
+        "title": "Welt-Flaggen-Quiz – Alle Länder | World Quiz",
+        "description": "Ordne alle Nationalflaggen auf der interaktiven Weltkarte zu. Teste dein Wissen über alle Länder, sammle Serien und klettere in der Rangliste."
+      },
+      "flagMatchEurope": {
+        "title": "Europa Flaggen-Quiz – Stumme Karte | World Quiz",
+        "description": "Trainiere alle europäischen Flaggen auf der interaktiven Karte. Lerne jedes Land in Europa von Island bis Griechenland schnell und gezielt."
+      },
+      "flagMatchAsia": {
+        "title": "Asien Flaggen-Quiz – Länder lernen | World Quiz",
+        "description": "Ordne die Flaggen asiatischer Länder auf der stummen Karte zu. Übe Nahost, Süd-, Ost- und Südostasien und festige dein Geografiewissen."
+      },
+      "flagMatchAfrica": {
+        "title": "Afrika Flaggen-Quiz – Stumme Karte | World Quiz",
+        "description": "Meistere alle Flaggen Afrikas auf der interaktiven Karte. Trainiere Länder in Nord-, West-, Zentral-, Ost- und Südafrika Schritt für Schritt."
+      },
+      "flagMatchAmericas": {
+        "title": "Amerika Flaggen-Quiz – Nord & Süd | World Quiz",
+        "description": "Lerne die Flaggen von Nord-, Mittel- und Südamerika sowie der Karibik auf der Karte. Ideal zum gezielten Üben aller amerikanischen Staaten."
+      },
+      "flagMatchOceania": {
+        "title": "Ozeanien Flaggen-Quiz – Pazifik | World Quiz",
+        "description": "Übe die Flaggen von Australien, Neuseeland und den Pazifik-Inselstaaten Ozeaniens auf der interaktiven Karte mit präzisen Inselmarkierungen."
+      },
+      "physicalGeoMountains": {
+        "title": "Gebirge der Welt Quiz – Stumme Karte | World Quiz",
+        "description": "Finde berühmte Gebirge und Gipfel auf der stummen Weltkarte. Teste dein Wissen über Himalaya, Anden, Alpen, Rocky Mountains, Ural und mehr."
+      },
+      "physicalGeoRivers": {
+        "title": "Flüsse der Welt Quiz – Nil & Amazonas | World Quiz",
+        "description": "Finde die wichtigsten Flüsse der Welt auf der interaktiven Karte. Übe Nil, Amazonas, Jangtse, Mississippi, Donau und viele weitere Ströme."
+      },
+      "physicalGeoDeserts": {
+        "title": "Wüsten der Welt Quiz – Sahara & Gobi | World Quiz",
+        "description": "Finde die größten Wüsten der Erde auf der stummen Karte. Teste dich an Sahara, Gobi, Kalahari, Atacama, Arabischer Wüste und Mojave-Wüste."
+      },
+      "physicalGeoWaters": {
+        "title": "Meere, Ozeane & Seen Quiz – Gewässer | World Quiz",
+        "description": "Erkenne Ozeane, Meere, Buchten, Meerengen und große Seen auf der stummen Weltkarte. Übe Mittelmeer, Kaspisches Meer, Baikalsee und mehr."
       }
     },
     "h1": {
       "mainMenu": "Geografie-Quiz & Flaggen-Raten",
       "worldMap": "Interaktive Weltkarte",
-      "flagMatch": "Flaggen-Quiz",
-      "physicalGeo": "Naturgeografie Quiz",
+      "flagMatch": "Flaggen-Quiz – Region wählen",
+      "physicalGeo": "Naturgeografie-Quiz",
       "shapeMatch": "Geo-Zuordnungsspiel",
-      "guessCountry": "Land erraten Quiz"
+      "guessCountry": "Land erraten Quiz",
+      "flagMatchWorld": "Welt-Flaggen-Quiz",
+      "flagMatchEurope": "Europa Flaggen-Quiz",
+      "flagMatchAsia": "Asien Flaggen-Quiz",
+      "flagMatchAfrica": "Afrika Flaggen-Quiz",
+      "flagMatchAmericas": "Amerika Flaggen-Quiz",
+      "flagMatchOceania": "Ozeanien Flaggen-Quiz",
+      "physicalGeoMountains": "Gebirge der Welt Quiz",
+      "physicalGeoRivers": "Flüsse der Welt Quiz",
+      "physicalGeoDeserts": "Wüsten der Welt Quiz",
+      "physicalGeoWaters": "Meere, Ozeane und Seen Quiz"
+    },
+    "guides": {
+      "common": {
+        "rulesTitle": "So wird gespielt",
+        "scopeTitle": "Was du hier trainierst",
+        "relatedTitle": "Weitere Modi entdecken"
+      },
+      "flagMatch": {
+        "heading": "Wähle deine Flaggen-Quiz-Region",
+        "summary": "Starte den Weltmodus für globale Bestenlisten oder trainiere gezielt einen einzelnen Kontinent, um Flaggen und Lagen schneller zu verinnerlichen.",
+        "rule1": "Im Weltmodus zählen deine besten Serien für die täglichen und globalen Bestenlisten.",
+        "rule2": "Wähle Europa, Asien, Afrika, Amerika oder Ozeanien zum fokussierten Üben.",
+        "rule3": "Zoome frei hinein; kleine Inselstaaten besitzen eigene klickbare Markierungen.",
+        "scope": "Umfasst rund 200 Staaten und spielbare Gebiete mit scharfen Vektorflaggen, deutschen Ländernamen, optionalen Namenshinweisen und sofortigem Feedback."
+      },
+      "flagMatchWorld": {
+        "heading": "Über das Welt-Flaggen-Quiz",
+        "summary": "Erkenne jede Nationalflagge und klicke das passende Land auf der interaktiven Weltkarte an. Halte deine Serie fehlerfrei und klettere in der Rangliste.",
+        "rule1": "Sieh dir die Flagge oben im HUD an und klicke auf das zugehörige Land auf der Karte.",
+        "rule2": "Blende zum Lernen optional den Ländernamen ein oder überspringe schwierige Flaggen.",
+        "rule3": "Mit Konto wird deine längste Serie im Weltmodus in den Tages- und Gesamtranglisten gespeichert.",
+        "scope": "Deckt alle souveränen Staaten und ausgewählte Gebiete ab – inklusive Markierungen für Zwergstaaten sowie Karibik- und Pazifikinseln."
+      },
+      "flagMatchEurope": {
+        "heading": "Über das Europa Flaggen-Quiz",
+        "summary": "Konzentriere dich vollständig auf europäische Länder – von skandinavischen Kreuzflaggen und dem Baltikum über Mitteleuropa und den Balkan bis zu Zwergstaaten.",
+        "rule1": "Alle gesuchten Flaggen stammen aus Europa; andere Kontinente sind deaktiviert.",
+        "rule2": "Zoome hinein, um Malta, Andorra, Liechtenstein, San Marino und den Vatikan exakt zu treffen.",
+        "rule3": "Übe im eigenen Tempo mit direkter Farbrückmeldung und Serienanzeige.",
+        "scope": "Perfekt, um ähnliche europäische Trikoloren und Landesgrenzen sicher zu unterscheiden, bevor du den Weltmodus spielst."
+      },
+      "flagMatchAsia": {
+        "heading": "Über das Asien Flaggen-Quiz",
+        "summary": "Trainiere asiatische Nationalflaggen vom Nahen Osten und Kaukasus über Zentral- und Südasien bis nach Ost- und Südostasien.",
+        "rule1": "Ordne jede angezeigte asiatische Flagge ihrem Land auf der zoombaren Karte zu.",
+        "rule2": "Zoome für genaue Klicks auf die Arabische Halbinsel, den Kaukasus und Südostasien.",
+        "rule3": "Nutze den Namenshinweis beim Lernen und starte eine neue Runde für deine Bestserie.",
+        "scope": "Enthält alle asiatischen Staaten sowie Taiwan und Palästina und hilft, panarabische Farben und Halbmond-Flaggen klar auseinanderzuhalten."
+      },
+      "flagMatchAfrica": {
+        "heading": "Über das Afrika Flaggen-Quiz",
+        "summary": "Lerne alle Flaggen Afrikas von Nordafrika und der Sahelzone über das Horn von Afrika und Zentralafrika bis ins südliche Afrika.",
+        "rule1": "Klicke auf das afrikanische Land, das zur oben gezeigten Flagge passt.",
+        "rule2": "Nutze Zoom und runde Inselmarker für Kap Verde, Komoren, Mauritius, Seychellen und São Tomé.",
+        "rule3": "Verfolge deine Serie quer über den Kontinent und überspringe unbekannte Flaggen zum Wiederholen.",
+        "scope": "Ideal, um panafrikanische Rot-Gelb-Grün-Flaggen sicher zu trennen und alle fünf Teilregionen Afrikas zu beherrschen."
+      },
+      "flagMatchAmericas": {
+        "heading": "Über das Amerika Flaggen-Quiz",
+        "summary": "Übe die Flaggen Nord-, Mittel- und Südamerikas sowie der Karibikstaaten auf einer einzigen interaktiven Karte.",
+        "rule1": "Ordne jede Flagge dem richtigen Festlandstaat oder einer karibischen Insel zu.",
+        "rule2": "Zoome in die Kleinen Antillen, wo eigene Inselmarkierungen präzise Klicks ermöglichen.",
+        "rule3": "Baue deine Serie aus und blende bei Bedarf den Ländernamen als Lernhilfe ein.",
+        "scope": "Hilft dir, blau-weiße Flaggen Mittelamerikas, Anden-Trikoloren und vielfältige Karibikflaggen schnell wiederzuerkennen."
+      },
+      "flagMatchOceania": {
+        "heading": "Über das Ozeanien Flaggen-Quiz",
+        "summary": "Teste dein Wissen über Australien, Neuseeland, Papua-Neuguinea und die Pazifik-Inselstaaten in Melanesien, Mikronesien und Polynesien.",
+        "rule1": "Ordne jede Flagge Ozeaniens der richtigen Landmasse oder Pazifik-Inselmarkierung zu.",
+        "rule2": "Verschiebe und zoome die Pazifikkarte, um benachbarte Inselgruppen sauber zu trennen.",
+        "rule3": "Lerne unbekannte Inselstaaten mit dem Namenshinweis und schaffe 100 % Trefferquote.",
+        "scope": "Trainiert Kreuz-des-Südens-Flaggen und abgelegene Pazifikinseln, an denen im Weltmodus oft lange Serien scheitern."
+      },
+      "physicalGeo": {
+        "heading": "Überblick: Naturgeografie-Quiz",
+        "summary": "Lerne die Erde jenseits politischer Grenzen kennen und finde bedeutende Gebirge, Flüsse, Wüsten, Meere und Seen auf der stummen Karte.",
+        "rule1": "Wähle eine von vier Kategorien: Gebirge, Flüsse, Wüsten oder Gewässer.",
+        "rule2": "Lies den gesuchten Namen im oberen HUD und klicke auf das passende Naturmerkmal.",
+        "rule3": "Zoome bei kleineren Flüssen, Meerengen, Seen und eng liegenden Gebirgszügen hinein.",
+        "scope": "Deckt klassische Naturräume weltweit mit deutschen Bezeichnungen, klaren Vektorformen und direktem Feedback ab."
+      },
+      "physicalGeoMountains": {
+        "heading": "Über das Gebirge-der-Welt-Quiz",
+        "summary": "Bestimme die Lage großer Gebirgszüge auf der stummen Karte – von Himalaya, Anden und Rocky Mountains bis zu Alpen, Ural und Kaukasus.",
+        "rule1": "Klicke direkt auf die markierte Gebirgsregion, die oben im HUD angezeigt wird.",
+        "rule2": "Zoome in Europa oder Zentralasien hinein, wenn mehrere Gebirge nah beieinanderliegen.",
+        "rule3": "Beim Überspringen schwenkt die Karte automatisch auf das richtige Gebirge zum Einprägen.",
+        "scope": "Enthält wichtige Gebirgsketten und Hochländer aller bewohnten Kontinente für Schule, Studium und Allgemeinwissen."
+      },
+      "physicalGeoRivers": {
+        "heading": "Über das Flüsse-der-Welt-Quiz",
+        "summary": "Finde die größten Ströme aller Kontinente auf der Karte – darunter Nil, Amazonas, Jangtse, Mississippi, Donau, Rhein, Ganges und Mekong.",
+        "rule1": "Klicke entlang des Flusslaufs, der im oberen Panel abgefragt wird.",
+        "rule2": "Nutze den Zoom in dichten Flussnetzen Europas, Chinas und Südamerikas.",
+        "rule3": "Mit Überspringen zeigt dir die Karte sofort Verlauf und Lage unbekannter Flüsse.",
+        "scope": "Festigt Wissen über große Einzugsgebiete, Flussmündungen und wichtige Wasserstraßen weltweit."
+      },
+      "physicalGeoDeserts": {
+        "heading": "Über das Wüsten-der-Welt-Quiz",
+        "summary": "Ordne die größten Hitze- und Kältewüsten der Erde zu – Sahara, Gobi, Kalahari, Atacama, Arabische Wüste, Mojave und australische Wüsten.",
+        "rule1": "Klicke auf die hervorgehobene Wüstenfläche passend zum gesuchten Namen.",
+        "rule2": "Achte besonders auf angrenzende Wüstengebiete in Zentralasien, Australien und Nordamerika.",
+        "rule3": "Überspringe unsichere Wüsten, um die Karte direkt auf ihre genaue Region zu zentrieren.",
+        "scope": "Umfasst die wichtigsten Subtropen-, Küsten- und Binnenwüsten aus dem Erdkundeunterricht."
+      },
+      "physicalGeoWaters": {
+        "heading": "Über das Meere-, Ozeane- & Seen-Quiz",
+        "summary": "Erkenne Weltmeere, Randmeere, Buchten, Meerengen und große Binnenseen auf einer interaktiven Gewässerkarte.",
+        "rule1": "Klicke auf den Ozean, das Meer, die Bucht oder den See aus dem oberen Hinweis.",
+        "rule2": "Zoome in enge Seegebiete wie Mittelmeer, Ostsee, Rotes Meer oder die Großen Seen.",
+        "rule3": "Nutze Überspringen, um kleinere Randmeere und Seen sofort auf der Karte zu sehen.",
+        "scope": "Verbindet marine Gewässer mit den größten Süß- und Salzseen der Erde wie Baikalsee, Kaspischem Meer und Victoriasee."
+      },
+      "guessCountry": {
+        "heading": "Über das Spiel Land erraten",
+        "summary": "Finde ein geheimes Land in maximal fünf Versuchen mithilfe von Kilometerdistanz, Kompassrichtung und Kontinenthinweisen auf der Weltkarte.",
+        "rule1": "Klicke ein beliebiges Land an, um deinen ersten Tipp abzugeben.",
+        "rule2": "Nutze Entfernung, Richtungspfeil und Farbabstufung, um dich schrittweise anzunähern.",
+        "rule3": "Errate das Zielland innerhalb von fünf Versuchen und starte sofort eine neue Runde.",
+        "scope": "Schult räumliches Orientierungsvermögen, Entfernungsgefühl und Nachbarschaftsbeziehungen ganz ohne Flaggenhinweis."
+      },
+      "worldMap": {
+        "heading": "Interaktive Weltkarte zum Entdecken",
+        "summary": "Erkunde jedes Land auf unserer stufenlos zoombaren Weltkarte mit Nationalflagge, deutschem Namen und Hauptstadt als Vorbereitung auf die Quizze.",
+        "rule1": "Fahre am Desktop über ein Land oder tippe mobil für eine schnelle Namensvorschau.",
+        "rule2": "Klicke ein Land an, um Flagge, Namen und Hauptstadt im oberen Infobereich anzuzeigen.",
+        "rule3": "Zoome per Mausrad oder Geste in Europa, die Karibik oder die Pazifikinseln.",
+        "scope": "Eignet sich ideal als visuelles Nachschlagewerk neben dem Länderlexikon und den Flaggen- und Naturgeografie-Quizzen."
+      }
     }
   },
   "game": {

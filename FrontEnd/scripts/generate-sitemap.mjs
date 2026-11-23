@@ -214,7 +214,7 @@ async function main() {
   ];
 
   const staticGameRoutes = [
-    // Note: /game/flags (without region) is an interactive selector, not a prerenderable page
+    { path: "/game/flags", changefreq: "weekly", priority: 0.8, lastmod: flagsLastmod },
     { path: "/game/shape-match", changefreq: "weekly", priority: 0.7, lastmod: baseLastmod },
     { path: "/game/guess-country", changefreq: "weekly", priority: 0.7, lastmod: baseLastmod },
     { path: "/game/physical-geo", changefreq: "weekly", priority: 0.8, lastmod: physicalGeoLastmod },

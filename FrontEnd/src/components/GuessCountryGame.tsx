@@ -32,6 +32,7 @@ import {
 } from "../utils/guessCountryMath";
 import GuessResultRow, { type GuessResultRowData } from "./GuessResultRow";
 import { SEOHelmet } from "./SEOHelmet";
+import { GameSeoSection } from "./GameSeoSection";
 import { incrementGuessCountryWins } from "../utils/leaderboardUtils";
 import { useAuth } from "../contexts/AuthContext";
 import { buildLocalizedPath, getBaseLanguage } from "../utils/localeRouting";
@@ -494,6 +495,16 @@ export default function GuessCountryGame() {
         </div>
       )}
       </div>
+      <GameSeoSection
+        guideKey="guessCountry"
+        relatedLinks={[
+          { path: "/game/flags", label: t("mainMenu.games.flags.title") },
+          { path: "/game/physical-geo", label: t("mainMenu.games.physicalGeo.title") },
+          { path: "/game/shape-match", label: t("mainMenu.games.shapeMatch.title") },
+          { path: "/map", label: t("mainMenu.exploreMap") },
+          { path: "/countries", label: t("nav.countries") },
+        ]}
+      />
     </>
   );
 }

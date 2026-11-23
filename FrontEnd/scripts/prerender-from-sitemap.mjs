@@ -258,6 +258,8 @@ async function main() {
   let progressTimer;
   let seoWarningCount = 0;
   const failedRoutes = [];
+  const seenTitles = new Map();
+  const seenDescriptions = new Map();
   const intentionallyBlockedRequests = new WeakSet();
   const blockedRequestsByHost = new Map();
   const runtimeIssues = new Map();
@@ -461,6 +463,8 @@ async function main() {
         const title = document.title.trim();
         const description =
           document.querySelector('meta[name="description"]')?.getAttribute("content")?.trim() || "";
+        const h1Count = document.querySelectorAll("h1").length;
+        const hasInitialLoaderText = (document.body?.textContent || "").includes("Loading World Quiz...");
         // Validate the same DOM that is saved, including tags outside Helmet's ownership.
         const metadataCounts = singletonSelectors.map((selector) => ({
           selector,
@@ -474,6 +478,8 @@ async function main() {
           jsonLd,
           title,
           description,
+          h1Count,
+          hasInitialLoaderText,
           metadataCounts,
           contentStates: Array.from(document.querySelectorAll('[data-prerender-state]')).map((node) => ({
             state: node.getAttribute("data-prerender-state"),
@@ -500,6 +506,15 @@ async function main() {
       }
       if (!seoSnapshot.title) missingBits.push("title");
       if (!seoSnapshot.description) missingBits.push("description");
+      if (seoSnapshot.description && (seoSnapshot.description.length < 115 || seoSnapshot.description.length > 160)) {
+        missingBits.push(`description-length(${seoSnapshot.description.length}, expected 115-160)`);
+      }
+      if (seoSnapshot.h1Count !== 1) {
+        missingBits.push(`h1-count(${seoSnapshot.h1Count}, expected 1)`);
+      }
+      if (seoSnapshot.hasInitialLoaderText) {
+        missingBits.push("initial-loader-text");
+      }
       if (!seoSnapshot.canonical) missingBits.push("canonical");
       if (seoSnapshot.hreflangs < 4) missingBits.push(`hreflang(<4: ${seoSnapshot.hreflangs})`);
       if (seoSnapshot.jsonLd < 1) missingBits.push("jsonld");
@@ -554,6 +569,17 @@ async function main() {
         if (seoWarningCount <= 20) {
           console.warn(`[prerender][seo-warning] ${routePath} missing: ${missingBits.join(", ")}`);
         }
+      }
+
+      if (seoSnapshot.title) {
+        const routesWithTitle = seenTitles.get(seoSnapshot.title) || [];
+        routesWithTitle.push(routePath);
+        seenTitles.set(seoSnapshot.title, routesWithTitle);
+      }
+      if (seoSnapshot.description) {
+        const routesWithDesc = seenDescriptions.get(seoSnapshot.description) || [];
+        routesWithDesc.push(routePath);
+        seenDescriptions.set(seoSnapshot.description, routesWithDesc);
       }
 
       const outputPath = toOutputHtmlPath(routePath);
@@ -677,6 +703,22 @@ async function main() {
     console.error(`Prerender failed for ${failedRoutes.length} routes`);
     for (const failure of failedRoutes.slice(0, 10)) {
       console.error(`- ${failure.routePath}: ${failure.error}`);
+    }
+    process.exitCode = 1;
+    return;
+  }
+
+  const duplicateTitleGroups = Array.from(seenTitles.entries()).filter(([, list]) => list.length > 1);
+  const duplicateDescriptionGroups = Array.from(seenDescriptions.entries()).filter(([, list]) => list.length > 1);
+  if (strictSeoMode && (duplicateTitleGroups.length > 0 || duplicateDescriptionGroups.length > 0)) {
+    console.error(
+      `Strict SEO validation failed: ${duplicateTitleGroups.length} duplicate title group(s), ${duplicateDescriptionGroups.length} duplicate description group(s).`,
+    );
+    for (const [titleText, list] of duplicateTitleGroups.slice(0, 10)) {
+      console.error(`- Duplicate title (${list.length}): ${JSON.stringify(titleText)} -> ${list.join(", ")}`);
+    }
+    for (const [descText, list] of duplicateDescriptionGroups.slice(0, 10)) {
+      console.error(`- Duplicate description (${list.length}): ${JSON.stringify(descText)} -> ${list.join(", ")}`);
     }
     process.exitCode = 1;
     return;

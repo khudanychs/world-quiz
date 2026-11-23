@@ -78,6 +78,11 @@
     ],
     "redirects": [
       {
+        "regex": "^/$",
+        "destination": "/en",
+        "type": 301
+      },
+      {
         "regex": "^/cz/?$",
         "destination": "/cs",
         "type": 301

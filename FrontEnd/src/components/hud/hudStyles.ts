@@ -45,9 +45,12 @@ export function getGameContainerStyle(
   const isStackedLayout = isPortrait || isConstrained;
   return {
     ...PAGE_CONTAINER_STYLE,
-    overflowY: isStackedLayout ? "auto" : "hidden",
-    height: "100%",
-    maxHeight: "100%",
+    // Keep a single scroll container (.container-fluid) in stacked layouts so
+    // constrained screens scroll directly to the map without nested scroll traps.
+    overflowY: "hidden",
+    minHeight: "100%",
+    height: isStackedLayout ? "auto" : "100%",
+    maxHeight: isStackedLayout ? "none" : "100%",
     justifyContent: isStackedLayout ? "flex-start" : "center",
     paddingTop: isStackedLayout
       ? "max(48px, calc(env(safe-area-inset-top) + 38px))"

@@ -137,7 +137,7 @@ export function Navbar() {
               height={56}
               decoding="async"
             />
-            <h1 className="m-0">{t('nav.appName')}</h1>
+            <span className="navbar-brand-title m-0">{t('nav.appName')}</span>
           </Link>
 
           {/* Desktop Navigation Links */}

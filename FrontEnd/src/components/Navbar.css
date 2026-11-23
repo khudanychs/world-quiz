@@ -44,7 +44,7 @@
   width: auto;
 }
 
-.navbar-brand h1 {
+.navbar-brand-title {
   font-size: 18px;
   color: #fff;
   font-weight: 600;
@@ -52,7 +52,7 @@
 }
 
 @media (min-width: 768px) {
-  .navbar-brand h1 {
+  .navbar-brand-title {
     font-size: 24px;
   }
 }
@@ -252,7 +252,7 @@
 }
 
 @media (max-width: 1180px) {
-  .navbar-brand h1 {
+  .navbar-brand-title {
     font-size: 20px;
   }
 

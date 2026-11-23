@@ -4,6 +4,7 @@ import { Link, useParams } from "react-router-dom";
 import { useTranslation } from 'react-i18next';
 import { BackButton } from "./BackButton";
 import { SEOHelmet } from "./SEOHelmet";
+import { GameSeoSection, type GameGuideKey } from "./GameSeoSection";
 import GameHUD from "./GameHUD";
 import {
   HUDCard,
@@ -40,15 +41,27 @@ const FLAG_REGION_ROUTES: Record<string, string | null> = {
   oceania: "Oceania",
 };
 
+const FLAG_REGION_SEO_KEYS: Record<string, GameGuideKey> = {
+  world: "flagMatchWorld",
+  europe: "flagMatchEurope",
+  asia: "flagMatchAsia",
+  africa: "flagMatchAfrica",
+  americas: "flagMatchAmericas",
+  oceania: "flagMatchOceania",
+};
+
 export default function FlagMatchGame() {
   const { t, i18n } = useTranslation();
-  const seoH1 = t("seo.h1.flagMatch");
   const currentLanguage = getBaseLanguage(i18n.language);
   const { user } = useAuth();
   const { regionKey } = useParams<{ regionKey?: string }>();
 
   const routeRegionKey = regionKey?.toLowerCase();
   const hasValidRegionRoute = !!routeRegionKey && routeRegionKey in FLAG_REGION_ROUTES;
+  const seoGuideKey: GameGuideKey = hasValidRegionRoute && routeRegionKey
+    ? FLAG_REGION_SEO_KEYS[routeRegionKey]
+    : "flagMatch";
+  const seoH1 = t(`seo.h1.${seoGuideKey}`);
   const selectedRegion = useMemo<string | null>(() => {
     if (!hasValidRegionRoute || !routeRegionKey) {
       return null;
@@ -59,7 +72,7 @@ export default function FlagMatchGame() {
   const hasUserSelected = !showRegionSelector;
   const canonicalFlagPath = hasValidRegionRoute && routeRegionKey
     ? `/game/flags/${routeRegionKey}`
-    : "/game/flags/world";
+    : "/game/flags";
 
   const [showRegionalIndicator, setShowRegionalIndicator] = useState(true);
   const [mapReadyRoute, setMapReadyRoute] = useState<string | null>(null);
@@ -512,6 +525,20 @@ export default function FlagMatchGame() {
         </Suspense>
       </div>
     </div>
+    <GameSeoSection
+      guideKey={seoGuideKey}
+      defaultOpen={showRegionSelector}
+      relatedLinks={[
+        { path: "/game/flags/world", label: t("flagMatch.regionWorld") },
+        { path: "/game/flags/europe", label: t("flagMatch.regionEurope") },
+        { path: "/game/flags/asia", label: t("flagMatch.regionAsia") },
+        { path: "/game/flags/africa", label: t("flagMatch.regionAfrica") },
+        { path: "/game/flags/americas", label: t("flagMatch.regionAmericas") },
+        { path: "/game/flags/oceania", label: t("flagMatch.regionOceania") },
+        { path: "/countries", label: t("nav.countries") },
+        { path: "/leaderboards", label: t("nav.leaderboards") },
+      ].filter((item) => item.path !== canonicalFlagPath)}
+    />
     </>
   );
 }

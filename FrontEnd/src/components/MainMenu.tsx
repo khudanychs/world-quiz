@@ -12,13 +12,14 @@ export default function MainMenu() {
   const currentLanguage = getBaseLanguage(i18n.language);
   const bangUrl = currentLanguage === 'cs' ? 'https://bang.honzaa.cz/cs' : 'https://bang.honzaa.cz/en';
   const canonicalHome = toCanonicalUrlWithLanguage(seo.path, currentLanguage);
+  const homeDescription = t('seo.routes.home.description', { defaultValue: seo.description });
   const homeStructuredData = {
     "@context": "https://schema.org",
     "@type": "WebSite",
     name: "World Quiz",
     url: canonicalHome,
-    description: seo.description,
-    inLanguage: "en",
+    description: homeDescription,
+    inLanguage: currentLanguage,
   };
 
   return (

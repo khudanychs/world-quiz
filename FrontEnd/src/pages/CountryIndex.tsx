@@ -231,25 +231,43 @@ export default function CountryIndex() {
     );
   }
 
+  const getCountrySeoDescription = (country: Country) => {
+    const localizedName = getLocalizedOfficialName(country);
+    const regionLabel = getRegionLabel(country.region);
+    if (country.capital.length > 0) {
+      return t('countryIndex.seoDescriptionWithCountryAndCapital', {
+        country: localizedName,
+        region: regionLabel,
+        capital: country.capital[0],
+      });
+    }
+    return t('countryIndex.seoDescriptionWithCountryNoCapital', {
+      country: localizedName,
+      region: regionLabel,
+    });
+  };
+
   return (
     <>
       <SEOHelmet
         title={selectedCountry ? t('countryIndex.seoTitleWithCountry', { country: getLocalizedOfficialName(selectedCountry) }) : seo.title}
-        description={selectedCountry ? t('countryIndex.seoDescriptionWithCountry', { country: getLocalizedOfficialName(selectedCountry) }) : seo.description}
+        description={selectedCountry ? getCountrySeoDescription(selectedCountry) : seo.description}
         canonicalUrl={selectedCountry ? toCanonicalUrlWithLanguage(`/countries/${selectedCountry.cca2.toLowerCase()}`, currentLanguage) : toCanonicalUrlWithLanguage(seo.path, currentLanguage)}
         ogImage={getSeoOgImage(seo)}
         preserveExplicitMeta={!!selectedCountry}
         contentReady={!countryCode || !!selectedCountry}
         contentError={loadError}
       />
-      
-      <div 
-        className="country-index-wrap"
-        aria-hidden={!!selectedCountry}
-        style={selectedCountry ? { visibility: 'hidden' } : undefined}
-      >
-        <div className="country-index-container">
-          <>
+
+      {/* Render either the country detail view or the full directory so each route exposes a single <h1> and clean HTML. */}
+      {selectedCountry ? (
+        <CountryDetails
+          country={selectedCountry}
+          onClose={handleCloseDetails}
+        />
+      ) : (
+        <div className="country-index-wrap">
+          <div className="country-index-container">
             <header className="country-index-header">
               <h1>{t('countryIndex.title')}</h1>
               <p>{t('countryIndex.subtitle', { count: countries.length })}</p>
@@ -302,7 +320,7 @@ export default function CountryIndex() {
                     className="country-card"
                     to={buildLocalizedPath(`/countries/${country.cca2.toLowerCase()}`, currentLanguage)}
                   >
-                    <FlagImage code={country.cca2} name={country.name} eager={!selectedCountry && index < 36} />
+                    <FlagImage code={country.cca2} name={country.name} eager={index < 36} />
                     <div className="country-card-info">
                       <h2 className="country-card-name">
                         {getLocalizedName(
@@ -323,16 +341,8 @@ export default function CountryIndex() {
                 ))}
               </div>
             )}
-          </>
+          </div>
         </div>
-      </div>
-
-      {/* Tady je kouzlo. Modal se jen vykreslí přes to všechno výše. */}
-      {selectedCountry && (
-        <CountryDetails
-          country={selectedCountry}
-          onClose={handleCloseDetails}
-        />
       )}
     </>
   );

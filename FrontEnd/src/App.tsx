@@ -60,7 +60,7 @@ const LoadingFallback = () => {
 
 function VerifiedOrGuestRoute({ children }: { children: React.ReactNode }) {
   const { user, logout, loading } = useAuth();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [checking, setChecking] = useState(false);
   const [error, setError] = useState('');
 
@@ -98,7 +98,7 @@ function VerifiedOrGuestRoute({ children }: { children: React.ReactNode }) {
             <button onClick={handleCheckVerification} disabled={checking} style={{ padding: '12px 24px', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: 'white', borderRadius: '8px', cursor: 'pointer' }}>
               {checking ? t('auth.verification.checkingStatus') : t('auth.verification.verifyButton')}
             </button>
-            <button onClick={async () => { await logout(); window.location.href = '/'; }} style={{ padding: '12px 24px', background: 'rgba(0, 0, 0, 0.1)', border: '1px solid #ddd', borderRadius: '8px', cursor: 'pointer' }}>
+            <button onClick={async () => { await logout(); window.location.href = buildLocalizedPath('/', i18n.language); }} style={{ padding: '12px 24px', background: 'rgba(0, 0, 0, 0.1)', border: '1px solid #ddd', borderRadius: '8px', cursor: 'pointer' }}>
               {t('auth.verification.logoutGuest')}
             </button>
           </div>
@@ -283,7 +283,7 @@ export default function App() {
           // An opaque scroll surface lets desktop Chromium reuse rasterized content while scrolling.
           backgroundColor: '#0b1020',
           overflowX: 'hidden',
-          overflowY: isMapRoute ? 'hidden' : 'auto',
+          overflowY: 'auto',
         }}
       >
         <Suspense fallback={<LoadingFallback />}>

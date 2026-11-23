@@ -27,8 +27,18 @@ type SeoRouteKey =
   | "map"
   | "countries"
   | "flagMatch"
+  | "flagMatchWorld"
+  | "flagMatchEurope"
+  | "flagMatchAsia"
+  | "flagMatchAfrica"
+  | "flagMatchAmericas"
+  | "flagMatchOceania"
   | "shapeMatch"
   | "physicalGeo"
+  | "physicalGeoMountains"
+  | "physicalGeoRivers"
+  | "physicalGeoDeserts"
+  | "physicalGeoWaters"
   | "guessCountry"
   | "terms"
   | "privacy"
@@ -36,6 +46,22 @@ type SeoRouteKey =
   | "setNickname"
   | "settings"
   | "notFound";
+
+const FLAG_MATCH_ROUTE_KEYS: Record<string, SeoRouteKey> = {
+  world: "flagMatchWorld",
+  europe: "flagMatchEurope",
+  asia: "flagMatchAsia",
+  africa: "flagMatchAfrica",
+  americas: "flagMatchAmericas",
+  oceania: "flagMatchOceania",
+};
+
+const PHYSICAL_GEO_ROUTE_KEYS: Record<string, SeoRouteKey> = {
+  mountains: "physicalGeoMountains",
+  rivers: "physicalGeoRivers",
+  deserts: "physicalGeoDeserts",
+  waters: "physicalGeoWaters",
+};
 
 function clipForSerp(text: string, maxLength: number): string {
   const normalized = text.replace(/\s+/g, " ").trim();
@@ -50,19 +76,26 @@ function clipForSerp(text: string, maxLength: number): string {
 }
 
 function resolveSeoRouteKey(pathname: string): SeoRouteKey {
-  if (pathname === "/") return "home";
-  if (pathname.startsWith("/leaderboards")) return "leaderboards";
-  if (pathname.startsWith("/map")) return "map";
-  if (pathname.startsWith("/countries")) return "countries";
-  if (pathname.startsWith("/game/flags")) return "flagMatch";
-  if (pathname.startsWith("/game/shape-match")) return "shapeMatch";
-  if (pathname.startsWith("/game/physical-geo")) return "physicalGeo";
-  if (pathname.startsWith("/game/guess-country")) return "guessCountry";
-  if (pathname.startsWith("/terms")) return "terms";
-  if (pathname.startsWith("/privacy")) return "privacy";
-  if (pathname.startsWith("/auth")) return "auth";
-  if (pathname.startsWith("/set-nickname")) return "setNickname";
-  if (pathname.startsWith("/settings")) return "settings";
+  const normalized = pathname.replace(/\/+$/, "") || "/";
+  if (normalized === "/") return "home";
+  if (normalized.startsWith("/leaderboards")) return "leaderboards";
+  if (normalized.startsWith("/map")) return "map";
+  if (normalized.startsWith("/countries")) return "countries";
+  if (normalized === "/game/flags" || normalized.startsWith("/game/flags/")) {
+    const region = normalized.slice("/game/flags/".length).toLowerCase();
+    return FLAG_MATCH_ROUTE_KEYS[region] ?? "flagMatch";
+  }
+  if (normalized.startsWith("/game/shape-match")) return "shapeMatch";
+  if (normalized === "/game/physical-geo" || normalized.startsWith("/game/physical-geo/")) {
+    const mode = normalized.slice("/game/physical-geo/".length).toLowerCase();
+    return PHYSICAL_GEO_ROUTE_KEYS[mode] ?? "physicalGeo";
+  }
+  if (normalized.startsWith("/game/guess-country")) return "guessCountry";
+  if (normalized.startsWith("/terms")) return "terms";
+  if (normalized.startsWith("/privacy")) return "privacy";
+  if (normalized.startsWith("/auth")) return "auth";
+  if (normalized.startsWith("/set-nickname")) return "setNickname";
+  if (normalized.startsWith("/settings")) return "settings";
   return "notFound";
 }
 

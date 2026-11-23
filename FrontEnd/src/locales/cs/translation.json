@@ -346,7 +346,17 @@
     "exchangeRatesUpdated": "kurz aktualizován",
     "languages": "Úřední jazyky",
     "timezones": "Časová pásma",
-    "borderingCountries": "Sousední státy"
+    "borderingCountries": "Sousední státy",
+    "overviewTitle": "Zeměpisný přehled: {{country}}",
+    "overviewIntroWithCapital": "{{country}} leží v oblasti {{region}} a hlavním městem je {{capital}}. Rozloha území činí {{area}} km² a žije zde přibližně {{population}} obyvatel.",
+    "overviewIntroNoCapital": "{{country}} leží v oblasti {{region}}, má rozlohu {{area}} km² a odhadovaný počet obyvatel činí {{population}}.",
+    "overviewDensity": "Průměrná hustota zalidnění dosahuje zhruba {{density}} obyvatel na km².",
+    "overviewBordersSome": "{{country}} sdílí pozemní hranici s {{count}} sousedními státy, mezi které patří {{borders}}.",
+    "overviewBordersNone": "{{country}} nemá žádné pozemní hranice a jedná se o ostrovní nebo vodou obklopené území.",
+    "overviewLanguages": "Mezi úřední či hlavní jazyky patří {{languages}}.",
+    "practiceRegionFlags": "Procvičit vlajky: {{region}}",
+    "exploreWorldMap": "Zobrazit na interaktivní mapě světa",
+    "allCountriesLink": "Zpět na všechny státy"
   },
   "notFound": {
     "title": "Stránka nenalezena",
@@ -450,7 +460,9 @@
     "tryAdjustingFilters": "Zkuste změnit hledaný výraz nebo vybraný kontinent.",
     "seoTitleWithCountry": "{{country}} – Základní informace a vlajka | World Quiz",
     "seoDescriptionWithCountry": "Vše o státu {{country}}: hlavní město, počet obyvatel, rozloha, úřední jazyky a sousední státy.",
-    "flagAlt": "{{name}} vlajka"
+    "flagAlt": "{{name}} vlajka",
+    "seoDescriptionWithCountryAndCapital": "Vše o státu {{country}} ({{region}}): hlavní město {{capital}}, vlajka, počet obyvatel, rozloha, úřední jazyky a sousední země na World Quiz.",
+    "seoDescriptionWithCountryNoCapital": "Vše o území {{country}} ({{region}}): vlajka, rozloha, základní geografická fakta, počet obyvatel a přehled v encyklopedii World Quiz."
   },
   "worldMap": {
     "loading": "Načítám data...",
@@ -474,35 +486,35 @@
       },
       "map": {
         "title": "Interaktivní mapa světa & Státy a hlavní města",
-        "description": "Klikací mapa světa pro rychlé učení zeměpisu. Prozkoumejte všechny státy, jejich vlajky, hlavní města a zajímavosti."
+        "description": "Klikací mapa světa pro rychlé učení zeměpisu. Prozkoumejte všechny státy, jejich vlajky, hlavní města a základní fakta v režimu průzkumu."
       },
       "countries": {
         "title": "Vlajky států světa a zeměpisná encyklopedie",
         "description": "Kompletní databáze států. Vyhledejte si vlajky, hlavní města, sousední země a demografické údaje pro váš referát do zeměpisu."
       },
       "flagMatch": {
-        "title": "Kvíz: Poznávačka vlajek na slepé mapě",
-        "description": "Otestujte se v poznávání vlajek světa i jednotlivých kontinentů. Dokážete přiřadit vlajku ke správnému státu na slepé mapě?"
+        "title": "Poznávačka vlajek – Svět nebo kontinent | World Quiz",
+        "description": "Vyberte si režim celého světa nebo konkrétní kontinent v poznávačce vlajek. Procvičte vlajky Evropy, Asie, Afriky, Ameriky i Oceánie zdarma."
       },
       "shapeMatch": {
-        "title": "Zeměpisná přiřazovačka a pexeso | World Quiz",
-        "description": "Přiřazujte vlajky, názvy států, hlavní města a obrysy zemí proti neúprosnému času. Zábavný trénink geografie pro každého."
+        "title": "Přiřazovačka: Vlajky, státy a obrysy | World Quiz",
+        "description": "Spojujte dvojice vlajek, států, hlavních měst a obrysů v časovém limitu. Sbírejte kombinace, trénujte postřeh a soupeřte v žebříčku World Quiz."
       },
       "physicalGeo": {
-        "title": "Slepá mapa: Hory, řeky a povrch světa",
-        "description": "Fyzická geografie hravě. Najděte na mapě nejznámější pohoří, veletoky, pouště a moře v našem interaktivním kvízu."
+        "title": "Fyzická geografie – Výběr kategorie | World Quiz",
+        "description": "Vyberte si kategorii fyzické geografie na slepé mapě světa: procvičte nejznámější pohoří, veletoky, pouště, jezera, zálivy i světová moře."
       },
       "guessCountry": {
-        "title": "Hádej zemi: Detektivní zeměpisný kvíz",
-        "description": "Máte 5 pokusů na odhalení tajného státu na mapě. Řiďte se nápovědami o vzdálenosti a světových stranách."
+        "title": "Hádání státu podle nápověd na mapě | World Quiz",
+        "description": "Uhodněte tajný stát světa na pět pokusů pomocí přesné vzdálenosti, směru kompasu a nápovědy kontinentu na interaktivní mapě World Quiz."
       },
       "terms": {
-        "title": "Obchodní podmínky | World Quiz",
-        "description": "Přečtěte si pravidla užívání, zásady vedení účtu a podmínky fair-play pro naši kvízovou platformu."
+        "title": "Podmínky použití | World Quiz",
+        "description": "Přečtěte si podmínky použití platformy World Quiz: pravidla uživatelských účtů, zásady fair-play v žebříčcích, autorská práva a odpovědnost."
       },
       "privacy": {
         "title": "Ochrana soukromí | World Quiz",
-        "description": "Zásady zpracování osobních údajů. Podívejte se, jak pečujeme o vaše data a soukromí."
+        "description": "Přečtěte si zásady ochrany osobních údajů na World Quiz: jak nakládáme s účty, cookies, analytikou a právy uživatelů podle nařízení GDPR."
       },
       "auth": {
         "title": "Přihlášení do hry | World Quiz",
@@ -519,15 +531,184 @@
       "notFound": {
         "title": "Tady nic není (Chyba 404) | World Quiz",
         "description": "Zabloudili jste mimo mapu. Zkuste se vrátit do hlavního menu a vybrat si jeden z našich kvízů."
+      },
+      "flagMatchWorld": {
+        "title": "Poznávačka vlajek světa – Všechny státy | World Quiz",
+        "description": "Přiřaďte vlajky všech států světa na interaktivní slepé mapě. Trénujte paměť, prodlužujte vítěznou sérii a zapište se do světového žebříčku."
+      },
+      "flagMatchEurope": {
+        "title": "Poznávačka vlajek Evropy – Slepá mapa | World Quiz",
+        "description": "Procvičte si vlajky evropských států na interaktivní slepé mapě. Naučte se bezchybně rozpoznat všechny země Evropy od Islandu po Řecko."
+      },
+      "flagMatchAsia": {
+        "title": "Poznávačka vlajek Asie – Státy na mapě | World Quiz",
+        "description": "Otestujte znalost vlajek asijských států na slepé mapě. Procvičte Blízký východ, jižní, východní i jihovýchodní Asii v interaktivním kvízu."
+      },
+      "flagMatchAfrica": {
+        "title": "Poznávačka vlajek Afriky – Slepá mapa | World Quiz",
+        "description": "Zvládněte vlajky všech afrických států na interaktivní slepé mapě. Trénujte severní, západní, střední, východní i jižní Afriku přehledně."
+      },
+      "flagMatchAmericas": {
+        "title": "Poznávačka vlajek Ameriky – Slepá mapa | World Quiz",
+        "description": "Naučte se vlajky Severní, Střední a Jižní Ameriky i Karibiku na interaktivní slepé mapě. Ideální procvičování polohy i státních symbolů."
+      },
+      "flagMatchOceania": {
+        "title": "Poznávačka vlajek Oceánie – Pacifik | World Quiz",
+        "description": "Procvičte si vlajky Austrálie, Nového Zélandu a ostrovních států Tichomoří v Oceánii na interaktivní mapě s přehlednými značkami ostrovů."
+      },
+      "physicalGeoMountains": {
+        "title": "Slepá mapa pohoří světa – Zeměpisný kvíz | World Quiz",
+        "description": "Najděte nejznámější pohoří a vrcholy na slepé mapě světa. Otestujte si Himálaj, Andy, Alpy, Skalnaté hory, Ural i další horské masivy."
+      },
+      "physicalGeoRivers": {
+        "title": "Slepá mapa řek světa – Nil a Amazonka | World Quiz",
+        "description": "Určete nejvýznamnější světové veletoky na interaktivní slepé mapě. Procvičte Nil, Amazonku, Jang-c’-ťiang, Mississippi, Dunaj a další řeky."
+      },
+      "physicalGeoDeserts": {
+        "title": "Slepá mapa pouští světa – Sahara a Gobi | World Quiz",
+        "description": "Vyhledejte největší světové pouště na slepé mapě. Otestujte polohu Sahary, Gobi, Kalahari, Atacamy, Arabské i Velké písečné pouště v kvízu."
+      },
+      "physicalGeoWaters": {
+        "title": "Slepá mapa moří, oceánů a jezer | World Quiz",
+        "description": "Poznávejte oceány, moře, zálivy, průlivy a velká jezera na slepé mapě světa. Procvičte Středozemní moře, Kaspik, Bajkal i Karibské moře."
       }
     },
     "h1": {
       "mainMenu": "Zeměpisný kvíz a poznávačka vlajek",
       "worldMap": "Interaktivní mapa států světa",
-      "flagMatch": "Kvíz: Poznávačka vlajek",
+      "flagMatch": "Poznávačka vlajek – Výběr regionu",
       "physicalGeo": "Slepá mapa: Fyzická geografie",
       "shapeMatch": "Geografická hra: Přiřazovačka",
-      "guessCountry": "Kvíz: Uhodni tajný stát"
+      "guessCountry": "Kvíz: Uhodni tajný stát",
+      "flagMatchWorld": "Poznávačka vlajek celého světa",
+      "flagMatchEurope": "Poznávačka vlajek Evropy",
+      "flagMatchAsia": "Poznávačka vlajek Asie",
+      "flagMatchAfrica": "Poznávačka vlajek Afriky",
+      "flagMatchAmericas": "Poznávačka vlajek Ameriky",
+      "flagMatchOceania": "Poznávačka vlajek Oceánie",
+      "physicalGeoMountains": "Slepá mapa pohoří světa",
+      "physicalGeoRivers": "Slepá mapa řek světa",
+      "physicalGeoDeserts": "Slepá mapa pouští světa",
+      "physicalGeoWaters": "Slepá mapa moří, oceánů a jezer"
+    },
+    "guides": {
+      "common": {
+        "rulesTitle": "Jak hrát",
+        "scopeTitle": "Co si procvičíte",
+        "relatedTitle": "Další kvízy a přehledy"
+      },
+      "flagMatch": {
+        "heading": "Vyberte si režim poznávačky vlajek",
+        "summary": "Zvolte celý svět pro zápis do žebříčků nebo si vyberte jednotlivý kontinent a natrénujte vlajky po menších celcích na interaktivní slepé mapě.",
+        "rule1": "Režim Celý svět ukládá vaše nejlepší série do denních i historických žebříčků.",
+        "rule2": "Regionální režimy (Evropa, Asie, Afrika, Amerika, Oceánie) slouží k cílenému procvičování.",
+        "rule3": "Mapu lze libovolně přibližovat; malé ostrovní státy mají přehledné klikatelné body.",
+        "scope": "Obsahuje zhruba 200 států a vybraných území s vektorovými vlajkami, českými názvy, volitelnou nápovědou názvu a okamžitou zpětnou vazbou."
+      },
+      "flagMatchWorld": {
+        "heading": "O kvízu Poznávačka vlajek světa",
+        "summary": "Rozpoznejte zobrazenou státní vlajku a klikněte na správnou zemi na slepé mapě světa. Budujte co nejdelší sérii bez chyby a soupeřte v žebříčku.",
+        "rule1": "Podívejte se na vlajku v horním panelu a vyberte odpovídající stát na mapě.",
+        "rule2": "Při učení si můžete zobrazit název státu nebo složitou vlajku přeskočit.",
+        "rule3": "Přihlášeným hráčům se nejdelší série v režimu Celý svět započítává do světového žebříčku.",
+        "scope": "Zahrnuje suverénní státy všech kontinentů i vybraná území, včetně samostatných značek pro ministáty a ostrovy v Karibiku i Tichomoří."
+      },
+      "flagMatchEurope": {
+        "heading": "O kvízu Poznávačka vlajek Evropy",
+        "summary": "Procvičte si všechny evropské státy – od severských křížů a pobaltských republik přes střední Evropu a Balkán až po středomořské ministáty.",
+        "rule1": "Všechny zadávané vlajky patří do Evropy; ostatní kontinenty jsou neaktivní.",
+        "rule2": "Pro kliknutí na Maltu, Andorru, Lichtenštejnsko, San Marino či Vatikán použijte přiblížení mapy.",
+        "rule3": "Trénujte vlastním tempem s okamžitým barevným vyhodnocením i sledováním série.",
+        "scope": "Skvělá příprava do školy i na rozlišení podobných evropských trikolor před spuštěním celosvětového režimu."
+      },
+      "flagMatchAsia": {
+        "heading": "O kvízu Poznávačka vlajek Asie",
+        "summary": "Otestujte znalost vlajek asijských zemí od Blízkého východu a Kavkazu přes střední a jižní Asii až po východní a jihovýchodní Asii.",
+        "rule1": "Přiřaďte každou asijskou vlajku správnému státu na interaktivní slepé mapě.",
+        "rule2": "V oblasti Perského zálivu, Kavkazu a ostrovní jihovýchodní Asie si mapu pohodlně přibližte.",
+        "rule3": "Využijte volitelnou nápovědu názvu státu a postupně zlepšujte svou nejdelší sérii.",
+        "scope": "Pokrývá všechny asijské státy i Tchaj-wan a Palestinu; pomůže odlišit panarabské barvy i vlajky s půlměsícem."
+      },
+      "flagMatchAfrica": {
+        "heading": "O kvízu Poznávačka vlajek Afriky",
+        "summary": "Zvládněte vlajky všech afrických zemí od severní Afriky a Sahelu přes Africký roh a střední Afriku až po jižní cíp kontinentu.",
+        "rule1": "Klikněte na africký stát, který odpovídá vlajce zobrazené v horním panelu.",
+        "rule2": "Pro ostrovní státy jako Kapverdy, Komory, Mauricius, Seychely a Svatý Tomáš slouží kulaté značky.",
+        "rule3": "Sledujte svou sérii napříč celým kontinentem a nejasné vlajky přeskočte k zopakování.",
+        "scope": "Ideální trénink pro rozlišení panafrických červeno-žluto-zelených vlajek a orientaci v hranicích afrických států."
+      },
+      "flagMatchAmericas": {
+        "heading": "O kvízu Poznávačka vlajek Ameriky",
+        "summary": "Naučte se vlajky Severní, Střední a Jižní Ameriky včetně karibských ostrovních států na jedné přehledné slepé mapě.",
+        "rule1": "Přiřaďte zobrazenou vlajku správné zemi na americkém kontinentu či v Karibiku.",
+        "rule2": "Přibližte oblast Malých Antil, kde vám klikání usnadní samostatné značky ostrovů.",
+        "rule3": "Prodlužujte sérii správných odpovědí a při nejistotě si zobrazte název země.",
+        "scope": "Pomůže spolehlivě rozlišit modro-bílé středoamerické vlajky, andské trikolory i pestré symboly karibských ostrovů."
+      },
+      "flagMatchOceania": {
+        "heading": "O kvízu Poznávačka vlajek Oceánie",
+        "summary": "Prověřte si znalost vlajek Austrálie, Nového Zélandu, Papuy-Nové Guineje a tichomořských států Melanésie, Mikronésie a Polynésie.",
+        "rule1": "Přiřaďte každou vlajku Oceánie ke správné pevnině nebo označenému tichomořskému ostrovu.",
+        "rule2": "Posouvejte a přibližujte mapu Pacifiku pro přesné rozlišení sousedních souostroví.",
+        "rule3": "Přepněte nápovědu názvu u méně známých ostrovů a hrajte znovu pro 100% výsledek.",
+        "scope": "Výborné procvičení vlajek s Jižním křížem a tichomořských ostrovů, na kterých často končí dlouhé série ve světovém režimu."
+      },
+      "physicalGeo": {
+        "heading": "Přehled kvízu Fyzická geografie",
+        "summary": "Vyzkoušejte si orientaci na fyzické mapě bez státních hranic – najděte největší světová pohoří, veletoky, pouště, moře i jezera.",
+        "rule1": "Vyberte jednu ze čtyř kategorií: Pohoří, Řeky, Pouště nebo Vodstvo.",
+        "rule2": "Přečtěte si název přírodního útvaru v horním panelu a klikněte na jeho polohu na mapě.",
+        "rule3": "Přibližte mapu pro menší řeky, průlivy, jezera a blízko sebe ležící horské masivy.",
+        "scope": "Zahrnuje klíčové přírodní útvary z učiva zeměpisu s českými názvy, vektorovým zvýrazněním a okamžitým vyhodnocením."
+      },
+      "physicalGeoMountains": {
+        "heading": "O slepé mapě pohoří světa",
+        "summary": "Určujte nejvýznamnější horská pásma a vysočiny světa – od Himálaje, And a Skalnatých hor až po Alpy, Ural, Kavkaz a Karpaty.",
+        "rule1": "Klikněte přímo na vyznačenou oblast pohoří požadovaného v horním panelu.",
+        "rule2": "V hustěji členěných oblastech Evropy a střední Asie si mapu přibližte.",
+        "rule3": "Při přeskočení se mapa automaticky posune na správné pohoří, abyste si jej zapamatovali.",
+        "scope": "Pokrývá hlavní horské soustavy všech obydlených kontinentů tak, jak se probírají na základních i středních školách."
+      },
+      "physicalGeoRivers": {
+        "heading": "O slepé mapě řek světa",
+        "summary": "Vyhledávejte největší světové veletoky na slepé mapě – Nil, Amazonku, Jang-c’-ťiang, Mississippi, Dunaj, Rýn, Gangu i Mekong.",
+        "rule1": "Klikněte na tok řeky zobrazené v zadání na horní liště.",
+        "rule2": "V hustých říčních sítích Evropy, Číny a Jižní Ameriky využijte přiblížení mapy.",
+        "rule3": "Tlačítkem Přeskočit si necháte polohu neznámé řeky ukázat a posunout na střed obrazovky.",
+        "scope": "Pomáhá zafixovat hlavní říční povodí, ústí do moří a klíčové vodní toky napříč všemi světadíly."
+      },
+      "physicalGeoDeserts": {
+        "heading": "O slepé mapě pouští světa",
+        "summary": "Najděte největší horké i chladné pouště planety – Saharu, Gobi, Kalahari, Atakamu, Arabskou poušť, Mohavskou i australské pouště.",
+        "rule1": "Klikněte na vyznačenou oblast pouště podle názvu v horním panelu.",
+        "rule2": "Dávejte pozor na sousedící pouštní oblasti ve střední Asii, Austrálii a Severní Americe.",
+        "rule3": "Neznámou poušť můžete přeskočit a mapa vás ihned navede na její polohu.",
+        "scope": "Obsahuje nejznámější subtropické, pobřežní i vnitrozemské pouště důležité pro školní i všeobecný zeměpisný přehled."
+      },
+      "physicalGeoWaters": {
+        "heading": "O slepé mapě moří, oceánů a jezer",
+        "summary": "Poznávejte světové oceány, okrajová i vnitřní moře, zálivy, průlivy a velká jezera na jedné interaktivní hydrografické mapě.",
+        "rule1": "Klikněte na oceán, moře, záliv či jezero zadané v horním panelu.",
+        "rule2": "Pro menší zálivy, průlivy a vnitrozemská jezera si mapu přibližte.",
+        "rule3": "Přeskočení vám automaticky zobrazí a přiblíží hledanou vodní plochu.",
+        "scope": "Spojuje světová moře s největšími sladkovodními i slanými jezery (Bajkal, Kaspické moře, Viktoriino jezero, Tanganika a další)."
+      },
+      "guessCountry": {
+        "heading": "O hře Uhodni tajný stát",
+        "summary": "Odhalte ukrytý stát světa maximálně na pět pokusů pomocí přesné vzdálenosti v kilometrech, směru kompasu a nápovědy kontinentu.",
+        "rule1": "Klikněte na libovolný stát na mapě a odešlete svůj první tip.",
+        "rule2": "Podle vzdálenosti, šipky směru a barevného odlišení postupně zužujte hledání.",
+        "rule3": "Uhodněte cílový stát do pěti pokusů a ihned si rozehrajte další náhodné kolo.",
+        "scope": "Rozvíjí prostorovou představivost, odhad vzdáleností a orientaci na mapě bez předchozí nápovědy vlajkou."
+      },
+      "worldMap": {
+        "heading": "Interaktivní mapa světa k učení",
+        "summary": "Prohlížejte všechny státy na plynule přibližovatelné mapě světa – zjistěte jejich vlajky, české názvy i hlavní města ještě před spuštěním kvízu.",
+        "rule1": "Na počítači přejeďte myší přes stát nebo na mobilu klepněte pro rychlý náhled názvu.",
+        "rule2": "Kliknutím na zemi zobrazíte v horním panelu její vlajku, název a hlavní město.",
+        "rule3": "Kolečkem myši nebo gestem přibližte Evropu, Karibik i ostrovní státy Oceánie.",
+        "scope": "Slouží jako rychlá vizuální pomůcka ke studiu spolu se Zeměpisnou encyklopedií a všemi kvízy na World Quiz."
+      }
     }
   },
   "game": {

@@ -3,6 +3,7 @@ import { useEffect, useRef, useState, lazy, Suspense, useCallback } from "react"
 import { useTranslation } from 'react-i18next';
 import { BackButton } from './components/BackButton';
 import { SEOHelmet } from './components/SEOHelmet';
+import { GameSeoSection } from './components/GameSeoSection';
 import {
   PAGE_CONTAINER_STYLE,
   getMapWrapperStyle,
@@ -379,6 +380,16 @@ export default function WorldMap() {
         </Suspense>
       </div>
       </div>
+      <GameSeoSection
+        guideKey="worldMap"
+        relatedLinks={[
+          { path: "/game/flags/world", label: t("flagMatch.regionWorld") },
+          { path: "/game/physical-geo", label: t("mainMenu.games.physicalGeo.title") },
+          { path: "/game/guess-country", label: t("mainMenu.games.guessCountry.title") },
+          { path: "/game/shape-match", label: t("mainMenu.games.shapeMatch.title") },
+          { path: "/countries", label: t("nav.countries") },
+        ]}
+      />
     </>
   );
 }

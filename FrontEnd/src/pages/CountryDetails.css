@@ -228,6 +228,20 @@
   box-shadow: 0 4px 8px rgba(102, 126, 234, 0.2);
 }
 
+.country-overview-text {
+  margin: 0 0 12px;
+  font-size: 15px;
+  line-height: 1.65;
+  color: rgba(230, 233, 245, 0.85);
+}
+
+.country-overview-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+
 /* Loading state */
 .country-detail-loading {
   padding: 60px 20px;

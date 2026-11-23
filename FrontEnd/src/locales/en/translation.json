@@ -346,7 +346,17 @@
     "exchangeRatesUpdated": "exchange rates updated",
     "languages": "Languages",
     "timezones": "Timezones",
-    "borderingCountries": "Bordering Countries"
+    "borderingCountries": "Bordering Countries",
+    "overviewTitle": "Geography overview of {{country}}",
+    "overviewIntroWithCapital": "{{country}} is located in {{region}} with {{capital}} as its capital city. It covers an area of {{area}} km² and has a population of approximately {{population}} people.",
+    "overviewIntroNoCapital": "{{country}} is located in {{region}}, covering an area of {{area}} km² with an estimated population of {{population}} people.",
+    "overviewDensity": "Its average population density is roughly {{density}} inhabitants per km².",
+    "overviewBordersSome": "{{country}} shares land borders with {{count}} neighboring countries, including {{borders}}.",
+    "overviewBordersNone": "{{country}} has no land borders and is surrounded by water or sits as an island territory.",
+    "overviewLanguages": "Official or primary languages include {{languages}}.",
+    "practiceRegionFlags": "Practice {{region}} flags quiz",
+    "exploreWorldMap": "Explore on interactive world map",
+    "allCountriesLink": "Browse all countries"
   },
   "notFound": {
     "title": "Page Not Found",
@@ -450,7 +460,9 @@
     "tryAdjustingFilters": "Try adjusting your search or region filter.",
     "seoTitleWithCountry": "{{country}} - Country Encyclopedia - World Quiz",
     "seoDescriptionWithCountry": "Explore facts about {{country}}: capital, population, area, languages, and neighboring countries.",
-    "flagAlt": "{{name}} flag"
+    "flagAlt": "{{name}} flag",
+    "seoDescriptionWithCountryAndCapital": "Explore {{country}} in {{region}}: capital {{capital}}, flag, population, area, official languages, and neighboring countries on World Quiz.",
+    "seoDescriptionWithCountryNoCapital": "Explore {{country}} in {{region}}: flag, population, area, geography facts, official languages, and regional details on World Quiz."
   },
   "worldMap": {
     "loading": "Loading world data...",
@@ -470,7 +482,7 @@
       },
       "leaderboards": {
         "title": "Flag Match & Map Quiz Leaderboards | World Quiz",
-        "description": "See top scores for the flag match game, cards match, and guess country. Compare daily and all-time geography rankings."
+        "description": "See top scores for Flag Match, Cards Match, and Guess the Country. Compare daily and all-time global geography quiz rankings on World Quiz."
       },
       "map": {
         "title": "Interactive World Map & Geography Game",
@@ -478,31 +490,31 @@
       },
       "countries": {
         "title": "Country Encyclopedia & Flags | World Quiz",
-        "description": "Browse country facts, world flags, capitals, languages, and neighbors in the ultimate World Quiz geography encyclopedia."
+        "description": "Browse country facts, world flags, capitals, population, area, languages, and neighbors in the complete World Quiz geography encyclopedia."
       },
       "flagMatch": {
-        "title": "Play Country Flag Matching Game | World Quiz",
-        "description": "Master the country flag matching game in world or region mode. Train your memory, learn world flags, and improve your speed."
+        "title": "Flag Match Regions – World or Continent | World Quiz",
+        "description": "Choose world mode or a continent in the World Quiz flag matching game. Practice flags of Europe, Asia, Africa, Americas, and Oceania online."
       },
       "shapeMatch": {
         "title": "Cards Match Geography Game | World Quiz",
-        "description": "Match flags, countries, capitals, and country shapes against the clock in this fast-paced interactive geography game."
+        "description": "Match country flags, names, capitals, and silhouettes against the clock in Cards Match. Build combos and climb the World Quiz leaderboard."
       },
       "physicalGeo": {
-        "title": "Physical Geography Map Quiz | World Quiz",
-        "description": "Locate mountains, rivers, lakes, deserts, and seas in a fast-paced physical geography interactive map challenge."
+        "title": "Physical Geography Map Quiz – Categories | World Quiz",
+        "description": "Pick a physical geography challenge on our blank world map: locate famous mountain ranges, major rivers, iconic deserts, lakes, and seas."
       },
       "guessCountry": {
         "title": "Guess the Country Map Quiz | World Quiz",
-        "description": "Find the hidden country in five attempts using precise distance, direction, and region hints on our interactive world map."
+        "description": "Guess the hidden country in five attempts using distance, compass direction, and region hints on an interactive world map in World Quiz."
       },
       "terms": {
         "title": "Terms and Conditions | World Quiz",
-        "description": "Read the World Quiz terms and conditions, account rules, and fair-play requirements."
+        "description": "Read the World Quiz terms and conditions covering account rules, fair-play standards, leaderboard conduct, intellectual property, and usage."
       },
       "privacy": {
         "title": "Privacy Policy | World Quiz",
-        "description": "Learn how World Quiz handles personal data, cookies, and account information."
+        "description": "Learn how World Quiz collects, stores, and protects personal data, account details, cookies, and analytics under GDPR and privacy standards."
       },
       "auth": {
         "title": "Sign In to World Quiz",
@@ -519,15 +531,184 @@
       "notFound": {
         "title": "Page Not Found | World Quiz",
         "description": "This page could not be found. Explore World Quiz games, interactive maps, and our country encyclopedia."
+      },
+      "flagMatchWorld": {
+        "title": "World Flag Matching Game – All Countries | World Quiz",
+        "description": "Match every national flag on an interactive world map. Test your memory across all sovereign countries, build streaks, and rank globally."
+      },
+      "flagMatchEurope": {
+        "title": "Europe Flag Matching Game – Map Quiz | World Quiz",
+        "description": "Practice matching European country flags on an interactive map. Learn every flag across Europe from Iceland to Greece and master geography."
+      },
+      "flagMatchAsia": {
+        "title": "Asia Flag Matching Game – Asian Countries | World Quiz",
+        "description": "Match flags of Asian countries on an interactive map. Practice Middle East, South, East, and Southeast Asia flags to sharpen your geography."
+      },
+      "flagMatchAfrica": {
+        "title": "Africa Flag Matching Game – Map Quiz | World Quiz",
+        "description": "Master African country flags on an interactive map. Practice all nations across North, West, East, Central, and Southern Africa step by step."
+      },
+      "flagMatchAmericas": {
+        "title": "Americas Flag Matching Game – Map Quiz | World Quiz",
+        "description": "Learn flags of North, Central, and South America plus Caribbean islands on an interactive map. Build accuracy and speed in regional mode."
+      },
+      "flagMatchOceania": {
+        "title": "Oceania Flag Matching Game – Pacific Map | World Quiz",
+        "description": "Practice matching flags of Australia, New Zealand, and Pacific island nations in Oceania on an interactive map with pinpoint island markers."
+      },
+      "physicalGeoMountains": {
+        "title": "World Mountain Ranges Map Quiz | World Quiz",
+        "description": "Locate major mountain ranges and peaks on a blank world map. Test your knowledge of the Himalayas, Andes, Rockies, Alps, Urals, and more."
+      },
+      "physicalGeoRivers": {
+        "title": "World Rivers Map Quiz – Nile & Amazon | World Quiz",
+        "description": "Find major world rivers on an interactive physical map. Practice tracing the Nile, Amazon, Yangtze, Mississippi, Danube, and more online."
+      },
+      "physicalGeoDeserts": {
+        "title": "World Deserts Map Quiz – Sahara & Gobi | World Quiz",
+        "description": "Locate the world's major deserts on a blank map. Challenge yourself to find the Sahara, Gobi, Kalahari, Atacama, Arabian, and Mojave deserts."
+      },
+      "physicalGeoWaters": {
+        "title": "Seas, Oceans & Lakes Map Quiz | World Quiz",
+        "description": "Identify oceans, seas, bays, straits, and major lakes on an interactive world map. Practice Mediterranean, Caspian, Baikal, and more online."
       }
     },
     "h1": {
       "mainMenu": "Country Flag Matching Game & World Quiz",
       "worldMap": "Interactive World Map Explorer",
-      "flagMatch": "Flag Matching Game",
+      "flagMatch": "Country Flag Matching Game – Choose Region",
       "physicalGeo": "Physical Geography Map Quiz",
       "shapeMatch": "Cards Match Geography Game",
-      "guessCountry": "Guess the Country Quiz"
+      "guessCountry": "Guess the Country Quiz",
+      "flagMatchWorld": "World Flag Matching Game",
+      "flagMatchEurope": "Europe Flag Matching Game",
+      "flagMatchAsia": "Asia Flag Matching Game",
+      "flagMatchAfrica": "Africa Flag Matching Game",
+      "flagMatchAmericas": "Americas Flag Matching Game",
+      "flagMatchOceania": "Oceania Flag Matching Game",
+      "physicalGeoMountains": "World Mountain Ranges Map Quiz",
+      "physicalGeoRivers": "World Rivers Map Quiz",
+      "physicalGeoDeserts": "World Deserts Map Quiz",
+      "physicalGeoWaters": "World Seas, Oceans and Lakes Map Quiz"
+    },
+    "guides": {
+      "common": {
+        "rulesTitle": "How to play",
+        "scopeTitle": "What you will practice",
+        "relatedTitle": "Explore more modes"
+      },
+      "flagMatch": {
+        "heading": "Choose your Flag Matching challenge",
+        "summary": "Pick the full World mode for ranked streaks or focus on a single continent to memorize regional flags faster on an interactive blank map.",
+        "rule1": "Select World mode to compete on the daily and all-time global leaderboards.",
+        "rule2": "Choose any continent (Europe, Asia, Africa, Americas, or Oceania) for focused practice.",
+        "rule3": "Zoom and pan freely; small island nations include clickable circular markers.",
+        "scope": "Covers around 200 sovereign states and playable territories with crisp vector flags, localized country names, optional name hints, and instant feedback."
+      },
+      "flagMatchWorld": {
+        "heading": "About World Flag Match",
+        "summary": "Identify every national flag and click the matching country on the interactive world map. Build the longest error-free streak to climb global leaderboards.",
+        "rule1": "Look at the flag displayed in the top HUD and click its country on the map.",
+        "rule2": "Toggle the country name hint if you are learning, or skip tough flags to keep moving.",
+        "rule3": "Your best streak in World mode counts toward both daily and all-time rankings when signed in.",
+        "scope": "Includes sovereign nations across all continents plus special territories, with dedicated markers for microstates and Pacific or Caribbean islands."
+      },
+      "flagMatchEurope": {
+        "heading": "About Europe Flag Match",
+        "summary": "Focus exclusively on European nations, from Nordic and Baltic flags to Central Europe, the Balkans, and Mediterranean microstates.",
+        "rule1": "Every target flag belongs to Europe; non-European countries are locked out.",
+        "rule2": "Use zoom to click smaller states like Malta, Andorra, Liechtenstein, San Marino, and Vatican City.",
+        "rule3": "Practice freely at your own pace with instant color feedback and streak tracking.",
+        "scope": "Great for mastering look-alike tricolors, Nordic crosses, and Eastern European borders before attempting the full World Flag Match challenge."
+      },
+      "flagMatchAsia": {
+        "heading": "About Asia Flag Match",
+        "summary": "Train your recognition of Asian country flags across the Middle East, Central Asia, South Asia, East Asia, and Southeast Asia.",
+        "rule1": "Match each displayed Asian flag to its territory on the zoomable blank map.",
+        "rule2": "Zoom in on the Arabian Peninsula, Caucasus, and Southeast Asian archipelagos for precise clicks.",
+        "rule3": "Reveal the country name whenever you need a hint, then replay to beat your streak.",
+        "scope": "Covers all Asian sovereign states plus Taiwan and Palestine, helping you separate similar crescent, star, and pan-Arab flag designs."
+      },
+      "flagMatchAfrica": {
+        "heading": "About Africa Flag Match",
+        "summary": "Master all African country flags from the Maghreb and Sahel to the Horn of Africa, Central Africa, and Southern African nations.",
+        "rule1": "Click the African country that matches the flag shown in the top panel.",
+        "rule2": "Use zoom and circular island markers for Cape Verde, Comoros, Mauritius, Seychelles, and São Tomé.",
+        "rule3": "Track your streak across the whole continent and skip any flag to review it later.",
+        "scope": "Designed to help you tell apart pan-African red-yellow-green flags and memorize borders across all five African subregions."
+      },
+      "flagMatchAmericas": {
+        "heading": "About Americas Flag Match",
+        "summary": "Practice flags of North America, Central America, South America, and the Caribbean islands on a single interactive map.",
+        "rule1": "Match each flag to its country across mainland America and Caribbean island chains.",
+        "rule2": "Zoom into the Lesser Antilles where island markers make tiny nations easy to click.",
+        "rule3": "Build a continuous streak and reveal country names anytime to reinforce memory.",
+        "scope": "Ideal for distinguishing Central American blue-and-white flags, Andean tricolors, and island flags across the Caribbean Sea."
+      },
+      "flagMatchOceania": {
+        "heading": "About Oceania Flag Match",
+        "summary": "Test your knowledge of Australia, New Zealand, Papua New Guinea, and Pacific island nations scattered across Melanesia, Micronesia, and Polynesia.",
+        "rule1": "Match each Oceanian flag to its landmass or highlighted Pacific island marker.",
+        "rule2": "Pan across the Pacific Ocean and zoom in to separate neighboring island archipelagos.",
+        "rule3": "Use the name toggle to learn unfamiliar island flags and replay until you score 100%.",
+        "scope": "Helps you master Union Jack ensigns, Southern Cross stars, and remote Pacific island locations that often end World mode streaks."
+      },
+      "physicalGeo": {
+        "heading": "Physical Geography Map Quiz Overview",
+        "summary": "Go beyond political borders and test where Earth’s major landforms and bodies of water sit on a borderless physical world map.",
+        "rule1": "Choose one of four categories: Mountain Ranges, Rivers, Deserts, or Waters.",
+        "rule2": "Read the highlighted feature name in the HUD and click its exact shape on the map.",
+        "rule3": "Zoom in closely for smaller rivers, lakes, straits, and regional mountain chains.",
+        "scope": "Covers iconic natural features worldwide with localized EN, CS, and DE names, smooth vector overlays, and instant streak feedback."
+      },
+      "physicalGeoMountains": {
+        "heading": "About World Mountain Ranges Quiz",
+        "summary": "Locate major mountain systems and highland chains on a blank physical map, from the Himalayas and Andes to the Alps, Rockies, and Urals.",
+        "rule1": "Find the prompted mountain range on the map and click directly on its highlighted polygon.",
+        "rule2": "Zoom in on Europe, Central Asia, or the Americas when ranges sit close together.",
+        "rule3": "Skip tricky ranges to see the map automatically pan to their location and learn them.",
+        "scope": "Includes major continental divides, alpine systems, and classic school-geography mountain ranges across every inhabited continent."
+      },
+      "physicalGeoRivers": {
+        "heading": "About World Rivers Quiz",
+        "summary": "Trace Earth’s great river systems across all continents, including the Nile, Amazon, Yangtze, Mississippi, Danube, Rhine, and Mekong.",
+        "rule1": "Click along the course of the river requested in the top HUD bar.",
+        "rule2": "Zoom into dense river basins in Europe, China, and South America for pinpoint accuracy.",
+        "rule3": "Use Skip to pan directly to an unknown river and build your streak on the next run.",
+        "scope": "Great for students and trivia players learning major drainage basins, river mouths, and transboundary waterways around the globe."
+      },
+      "physicalGeoDeserts": {
+        "heading": "About World Deserts Quiz",
+        "summary": "Pinpoint the largest hot and cold deserts on Earth, including the Sahara, Arabian, Gobi, Kalahari, Atacama, Mojave, and Australian deserts.",
+        "rule1": "Click the shaded desert region that matches the name shown in the HUD.",
+        "rule2": "Pay attention to neighboring deserts in Central Asia, Australia, and North America.",
+        "rule3": "Skip any unfamiliar desert to center the map on its exact geographic region.",
+        "scope": "Covers classic subtropical, rain-shadow, coastal, and continental deserts taught in physical geography courses."
+      },
+      "physicalGeoWaters": {
+        "heading": "About Seas, Oceans and Lakes Quiz",
+        "summary": "Identify the world’s oceans, marginal seas, gulfs, bays, straits, and major inland lakes on an interactive hydrographic map.",
+        "rule1": "Click the ocean, sea, gulf, or lake requested in the top prompt.",
+        "rule2": "Zoom into enclosed waterways such as the Mediterranean, Baltic, Red Sea, or Great Lakes.",
+        "rule3": "Use Skip to reveal and pan directly to smaller seas and inland basins.",
+        "scope": "Combines marine regions and major freshwater or saline lakes (like Baikal, Caspian, Victoria, and Tanganyika) in one comprehensive water quiz."
+      },
+      "guessCountry": {
+        "heading": "About Guess the Country Quiz",
+        "summary": "Deduce a mystery country in up to five guesses using real-time geodesic distance, compass bearing, and continent clues on the world map.",
+        "rule1": "Click any country on the map to submit your first guess and reveal how close you are.",
+        "rule2": "Follow the kilometer distance, compass arrow, and color temperature toward the hidden nation.",
+        "rule3": "Find the target within five attempts to win, then start a new randomized round immediately.",
+        "scope": "Trains spatial intuition, relative positions, and continental geography across all playable countries without relying on flags or names first."
+      },
+      "worldMap": {
+        "heading": "Interactive World Map Explorer",
+        "summary": "Browse every country on a smooth zoomable world map to inspect national flags, official names, and capital cities before taking a quiz.",
+        "rule1": "Hover over any country on desktop or tap on mobile to preview its name.",
+        "rule2": "Click a country to lock its flag, localized name, and capital in the top info panel.",
+        "rule3": "Scroll or pinch to zoom into Europe, the Caribbean, or the Pacific Islands.",
+        "scope": "Built as a fast visual study companion alongside the Country Encyclopedia and Flag Match quizzes, supporting English, Czech, and German names."
+      }
     }
   },
   "game": {

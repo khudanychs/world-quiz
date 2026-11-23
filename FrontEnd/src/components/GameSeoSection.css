@@ -1,0 +1,141 @@
+.game-seo-section {
+  width: 100%;
+  background: #0b1020;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  color: rgba(230, 233, 245, 0.88);
+  box-sizing: border-box;
+}
+
+.game-seo-details {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+.game-seo-toggle {
+  list-style: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 4px;
+  cursor: pointer;
+  user-select: none;
+  color: rgba(226, 232, 240, 0.86);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.game-seo-toggle::-webkit-details-marker {
+  display: none;
+}
+
+.game-seo-toggle:hover {
+  color: #ffffff;
+}
+
+.game-seo-toggle-title {
+  overflow-wrap: break-word;
+}
+
+.game-seo-toggle-chevron {
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+  opacity: 0.75;
+}
+
+.game-seo-details[open] .game-seo-toggle-chevron {
+  transform: rotate(180deg);
+}
+
+.game-seo-inner {
+  padding: 8px 4px 36px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.game-seo-summary {
+  margin: 0;
+  font-size: 15.5px;
+  line-height: 1.65;
+  color: rgba(226, 232, 240, 0.85);
+}
+
+.game-seo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+}
+
+.game-seo-card {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 14px;
+  padding: 18px;
+}
+
+.game-seo-card h3 {
+  margin: 0 0 10px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #e2e8f0;
+}
+
+.game-seo-card p {
+  margin: 0;
+  font-size: 14.5px;
+  line-height: 1.6;
+  color: rgba(226, 232, 240, 0.82);
+}
+
+.game-seo-rules {
+  margin: 0;
+  padding-left: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 14.5px;
+  line-height: 1.55;
+  color: rgba(226, 232, 240, 0.82);
+}
+
+.game-seo-related {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.game-seo-related-label {
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: rgba(148, 163, 184, 0.9);
+}
+
+.game-seo-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.game-seo-link {
+  display: inline-flex;
+  align-items: center;
+  padding: 7px 13px;
+  border-radius: 10px;
+  border: 1px solid rgba(102, 126, 234, 0.35);
+  background: rgba(102, 126, 234, 0.12);
+  color: #e2e8f0;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.game-seo-link:hover {
+  background: rgba(102, 126, 234, 0.24);
+  border-color: rgba(129, 140, 248, 0.6);
+  color: #ffffff;
+}

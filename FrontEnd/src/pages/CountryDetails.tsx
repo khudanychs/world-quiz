@@ -145,6 +145,50 @@ export default function CountryDetails({ country, onClose }: CountryDetailsProps
   }
 
   const currency = stats.currencies[currencyCode || ''];
+  const numberLocale = currentLanguage === 'cs' ? 'cs-CZ' : currentLanguage === 'de' ? 'de-DE' : 'en-US';
+  const formattedPopulation = stats.population.toLocaleString(numberLocale);
+  const formattedArea = stats.area.toLocaleString(numberLocale);
+  const formattedDensity = stats.population > 0 && stats.area > 0
+    ? (stats.population / stats.area > 1
+        ? (stats.population / stats.area).toFixed(1)
+        : (stats.population / stats.area).toPrecision(2))
+    : null;
+  const regionQuizKeyMap: Record<string, string> = {
+    Europe: 'europe',
+    Asia: 'asia',
+    Africa: 'africa',
+    Americas: 'americas',
+    Oceania: 'oceania',
+  };
+  const regionLabelKeyMap: Record<string, string> = {
+    Africa: 'countryIndex.regions.africa',
+    Americas: 'countryIndex.regions.americas',
+    Antarctic: 'countryIndex.regions.antarctic',
+    Asia: 'countryIndex.regions.asia',
+    Europe: 'countryIndex.regions.europe',
+    Oceania: 'countryIndex.regions.oceania',
+    Unknown: 'countryIndex.regions.unknown',
+  };
+  const localizedRegionLabel = regionLabelKeyMap[country.region]
+    ? t(regionLabelKeyMap[country.region], { defaultValue: country.region })
+    : country.region;
+  const areaContextLabel = localizedSubregion || localizedRegionLabel;
+  const localizedLanguageNames = stats.officialLanguages.map(getLocalizedLanguage);
+  const flagQuizPath = regionQuizKeyMap[country.region]
+    ? `/game/flags/${regionQuizKeyMap[country.region]}`
+    : '/game/flags/world';
+  const borderSummaryText = stats.borderCountries.length > 0
+    ? t('countryDetails.overviewBordersSome', {
+        country: displayCountryName,
+        count: stats.borderCountries.length,
+        borders: stats.borderCountries.slice(0, 5).map((b) => b.name).join(', '),
+      })
+    : t('countryDetails.overviewBordersNone', { country: displayCountryName });
+  const languagesSummaryText = localizedLanguageNames.length > 0
+    ? t('countryDetails.overviewLanguages', {
+        languages: localizedLanguageNames.slice(0, 4).join(', '),
+      })
+    : '';
 
   return (
     <div className="country-detail-modal" onClick={handleBackdropClick} data-prerender-state="ready">
@@ -281,6 +325,52 @@ export default function CountryDetails({ country, onClose }: CountryDetailsProps
               </div>
             </section>
           )}
+
+          {/* Geographic Overview & Practice Links */}
+          <section className="country-detail-section country-detail-overview">
+            <h2>{t('countryDetails.overviewTitle', { country: displayCountryName })}</h2>
+            <p className="country-overview-text">
+              {country.capital[0]
+                ? t('countryDetails.overviewIntroWithCapital', {
+                    country: displayCountryName,
+                    region: areaContextLabel,
+                    capital: country.capital[0],
+                    area: formattedArea,
+                    population: formattedPopulation,
+                  })
+                : t('countryDetails.overviewIntroNoCapital', {
+                    country: displayCountryName,
+                    region: areaContextLabel,
+                    area: formattedArea,
+                    population: formattedPopulation,
+                  })}
+              {formattedDensity ? ` ${t('countryDetails.overviewDensity', { density: formattedDensity })}` : ''}
+            </p>
+            <p className="country-overview-text">
+              {borderSummaryText}
+              {languagesSummaryText ? ` ${languagesSummaryText}` : ''}
+            </p>
+            <div className="country-overview-links">
+              <Link
+                className="detail-chip clickable"
+                to={buildLocalizedPath(flagQuizPath, currentLanguage)}
+              >
+                {t('countryDetails.practiceRegionFlags', { region: localizedRegionLabel })}
+              </Link>
+              <Link
+                className="detail-chip clickable"
+                to={buildLocalizedPath('/map', currentLanguage)}
+              >
+                {t('countryDetails.exploreWorldMap')}
+              </Link>
+              <Link
+                className="detail-chip clickable"
+                to={buildLocalizedPath('/countries', currentLanguage)}
+              >
+                {t('countryDetails.allCountriesLink')}
+              </Link>
+            </div>
+          </section>
         </div>
       </article>
     </div>

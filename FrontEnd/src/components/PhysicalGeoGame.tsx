@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { BackButton } from "./BackButton";
 import { SEOHelmet } from "./SEOHelmet";
+import { GameSeoSection, type GameGuideKey } from "./GameSeoSection";
 import PhysicalGeoHUD from "./PhysicalGeoHUD";
 import {
   HUDCard,
@@ -38,9 +39,15 @@ import "./PhysicalGeoGame.css";
 
 const InteractiveMap = lazy(() => import("./InteractiveMap"));
 
+const PHYSICAL_GEO_SEO_KEYS: Record<string, GameGuideKey> = {
+  mountains: "physicalGeoMountains",
+  rivers: "physicalGeoRivers",
+  deserts: "physicalGeoDeserts",
+  waters: "physicalGeoWaters",
+};
+
 export default function PhysicalGeoGame() {
   const { t, i18n } = useTranslation();
-  const seoH1 = t("seo.h1.physicalGeo");
   const currentLanguage = getBaseLanguage(i18n.language);
   const navigate = useNavigate();
   const { modeKey } = useParams<{ modeKey?: string }>();
@@ -50,6 +57,10 @@ export default function PhysicalGeoGame() {
     }
     return CATEGORY_GROUPS.some((group) => group.key === modeKey) ? modeKey : null;
   }, [modeKey]);
+  const seoGuideKey: GameGuideKey = categoryKey && categoryKey in PHYSICAL_GEO_SEO_KEYS
+    ? PHYSICAL_GEO_SEO_KEYS[categoryKey]
+    : "physicalGeo";
+  const seoH1 = t(`seo.h1.${seoGuideKey}`);
   const showSelector = categoryKey === null;
   const canonicalPhysicalGeoPath = categoryKey
     ? `/game/physical-geo/${categoryKey}`
@@ -509,6 +520,19 @@ export default function PhysicalGeoGame() {
           )}
         </div>
       </div>
+      <GameSeoSection
+        guideKey={seoGuideKey}
+        defaultOpen={showSelector}
+        relatedLinks={[
+          { path: "/game/physical-geo/mountains", label: t("physicalGeoGame.categories.mountains") },
+          { path: "/game/physical-geo/rivers", label: t("physicalGeoGame.categories.rivers") },
+          { path: "/game/physical-geo/deserts", label: t("physicalGeoGame.categories.deserts") },
+          { path: "/game/physical-geo/waters", label: t("physicalGeoGame.categories.waters") },
+          { path: "/game/flags", label: t("mainMenu.games.flags.title") },
+          { path: "/map", label: t("mainMenu.exploreMap") },
+          { path: "/countries", label: t("nav.countries") },
+        ].filter((item) => item.path !== canonicalPhysicalGeoPath)}
+      />
     </>
   );
 }
